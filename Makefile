@@ -52,21 +52,21 @@ endif
 APP_NAME = $(DIST_DIR)/$(MODULE)_app
 SALMONELLA_LOG = $(BUILD_DIR)/salmonella_$(MODULE).log
 
-.PHONY: all build test test-salmonella test-all-salmonella \
+.PHONY: all test test-salmonella test-all-salmonella \
         build-all clean help info
 
 # Default target
 all: build
 
-# Check directories exist
-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
 
-$(DIST_DIR):
-	@mkdir -p $(DIST_DIR)
+# Directory setup (avoid naming collision with 'build' target)
+# Create both directories from a single phony target so we don't define
+# a target named 'build' (which would conflict with the real build target).
+dirs:
+	@mkdir -p $(BUILD_DIR) $(DIST_DIR)
 
 # Build target
-build: $(BUILD_DIR) $(DIST_DIR)
+build: dirs
 	@echo "[BUILD] Compiling $(MODULE)..."
 	@if [ -n "$(MODULE_SRC)" ]; then \
 		$(CSC) $(CFLAGS) $(MODULE_SRC) -o $(APP_NAME); \
@@ -79,7 +79,7 @@ build: $(BUILD_DIR) $(DIST_DIR)
 test: build
 	@echo "[TEST] Running tests for $(MODULE)..."
 	@if [ -f "$(MODULE_TESTS)" ]; then \
-		$(CSC) $(CFLAGS) $(MODULE_TESTS) $(MODULE_DEPS) -o /tmp/test_$(MODULE); \
+		$(CSC) $(CFLAGS) $(MODULE_TESTS) -o /tmp/test_$(MODULE); \
 		/tmp/test_$(MODULE) || true; \
 		rm -f /tmp/test_$(MODULE); \
 	else \
@@ -100,7 +100,8 @@ test-salmonella: build $(MODULE_EGG)
 			$(SALMONELLA) --log-file=$(SALMONELLA_LOG) --verbosity=2 $(MODULE) || true; \
 			echo "[INFO] Log: $(SALMONELLA_LOG)"; \
 		else \
-			echo "[ERROR] Salmonella is still not available; skipping Salmonella tests"; \
+			echo "[ERROR] Salmonella is still not available; running unit tests as a fallback"; \
+			$(MAKE) test || true; \
 		fi; \
 	fi
 

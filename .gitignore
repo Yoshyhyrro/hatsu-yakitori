@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+dist/
+
+# Compiled Scheme files
+*.c
+*.o
+*.a
+*.so
+*.dylib
+
+# Temporary files
+*~
+*.swp
+*.swo
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Setup script (distribution-time only)
+setup.bash
