@@ -1,0 +1,19 @@
+{
+  "name": "hatsu-yakitori",
+  "version": "0.1.0",
+  "summary": "KAK-inspired bounded-computation core (SSSP / FMM / particle sims)",
+  "description": "HATSU-YAKITORI (Heart of the Skewer) is a high-performance Chicken Scheme egg providing a core framework for bounded computation. It utilizes a KAK-inspired, e-logarithmic decomposition to manage scale and frontiers efficiently. This package contains core libraries and example modules for SSSP, FMM and particle simulations.",
+  "authors": [
+    { "name": "Yoshihiro Hasegawa", "email": "" }
+  ],
+  "license": "BSD-3-Clause",
+  "requires": {
+    "chicken": ">=5.0"
+  },
+  "provides": {
+    "modules": ["kak-decomposition", "boids", "fmm", "sssp"]
+  },
+  "files": ["core/*", "modules/*", "eggs/*", "tests/*", "Makefile", "README.md", "LICENSE"],
+  "platforms": ["unix", "linux", "darwin"],
+  "meta-spec": "1.1"
+}

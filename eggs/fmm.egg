@@ -1,0 +1,14 @@
+((name fmm)
+ (version "1.0.0")
+ (author "Yoshihiro Hasegawa")
+ (license "BSD")
+ (category algorithm physics)
+ (description "Fast Multipole Method using KAK decomposition")
+ (documentation "doc/fmm.html")
+ (depends kak-decomposition srfi-1 srfi-69)
+ (test-depends)
+ (components
+  (extension fmm
+    (source "modules/fmm/fmm_main.scm"
+            "core/kak_decomposition.scm"
+            "core/machine_constants.scm"))))
