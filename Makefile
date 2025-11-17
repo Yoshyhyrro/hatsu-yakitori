@@ -6,6 +6,7 @@ BUILD_DIR    ?= build
 DIST_DIR     ?= dist
 CSC          ?= csc
 SALMONELLA   ?= salmonella
+GOLAY_TOOL  ?= golay24-tool
 
 CFLAGS_BASE  ?= -O3 -optimize-leaf-routines
 DEBUG        ?= 0
@@ -22,7 +23,7 @@ CORE_LIBS = core/kak_decomposition.scm \
             core/cartan_utils.scm
 
 # Module paths
-MODULES_AVAILABLE = boids fmm sssp kak-decomposition
+MODULES_AVAILABLE = boids fmm sssp kak-decomposition golay24-tool
 
 # Module-specific definitions
 ifeq ($(MODULE), boids)
@@ -45,6 +46,13 @@ else ifeq ($(MODULE), kak-decomposition)
     MODULE_EGG = eggs/kak-decomposition.egg
     MODULE_DEPS = $(CORE_LIBS)
     MODULE_TESTS = tests/kak_tests.scm
+
+else ifeq ($(MODULE), golay24-tool)
+    MODULE_SRC = tools/golay24-tool/golay24_main.scm
+    MODULE_EGG = eggs/golay24-tool.egg
+    MODULE_DEPS = $(CORE_LIBS)
+    MODULE_TESTS = tests/golay24_tests.scm
+
 else
     $(error Unknown MODULE: $(MODULE). Available: $(MODULES_AVAILABLE))
 endif
@@ -133,7 +141,7 @@ test-all-salmonella: $(BUILD_DIR)
 		echo "[INFO] Running $$INSTANCES instances"; \
 		salmonella-epidemy --instances=$$INSTANCES \
 			--log-file=$(BUILD_DIR)/salmonella_all.log \
-			boids fmm sssp kak-decomposition || true; \
+			boids fmm sssp kak-decomposition golay24-tool || true; \
 	else \
 		echo "[WARN] salmonella-epidemy not found"; \
 		echo "[INFO] Installing salmonella..."; \
