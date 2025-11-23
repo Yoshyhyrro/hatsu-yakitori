@@ -77,7 +77,7 @@ dirs:
 build: dirs
 	@echo "[BUILD] Compiling $(MODULE)..."
 	@if [ -n "$(MODULE_SRC)" ]; then \
-		$(CSC) $(CFLAGS) $(MODULE_SRC) -o $(APP_NAME); \
+		$(CSC) $(CFLAGS) -I . -module $(MODULE) $(MODULE_SRC) -o $(APP_NAME); \
 	else \
 		echo "[INFO] $(MODULE) is a library-only module"; \
 	fi
