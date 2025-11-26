@@ -4,31 +4,21 @@
 ;;; ---------------------------------------------------------------------------
 
 ;; Chicken 5 Import Strategy
-;; We must import specific modules instead of the generic 'chicken'
 (import scheme)
 (import (chicken base)
         (chicken bitwise)
         (chicken format)
-        (chicken process-context) ;; Required for (command-line)
-        (chicken string))         ;; Required for string manipulation
+        (chicken process-context)
+        (chicken string))
 
 (import srfi-1   ;; Lists
         srfi-13) ;; Strings
 
 ;; ---------------------------------------------------------------------------
-;; INCLUDES (vs LOADS)
-;; Use 'include' so the core libraries are compiled INTO the binary.
-;; 'load' would look for these files at runtime on the disk, which is fragile.
-;; 
-;; We assume these paths based on running 'make' from the project root.
-;; If your Makefile uses -I ., we can reference core/ directly.
+;; IMPORT MODULES (not include, since they're defined as modules)
 ;; ---------------------------------------------------------------------------
-
-(include "core/machine_constants.scm")
-
-;; Note: You may need to ensure this file exists or update the path
-;; if it is not in the exact location relative to project root.
-(include "core/golay_frontier.scm") 
+(import machine-constants)
+(import golay-frontier)
 
 ;; ---------------------------------------------------------------------------
 ;; UTILITIES
@@ -62,7 +52,6 @@
       
     (let ((cw (encode-golay24 masked-info)))
       (let ((tau (golay-weight cw))
-            ;; Ensure frontier-mode-from-golay exists in your included files
             (mode (frontier-mode-from-golay (golay-weight cw))))
         (format #t "info: ~a (~a)~%" masked-info (hex-str masked-info))
         (format #t "codeword: ~a (~a)~%" cw (hex-str cw))
@@ -84,7 +73,7 @@
 ;; ---------------------------------------------------------------------------
 
 (define (main)
-  (let ((args (command-line-arguments))) ;; Chicken specific: returns args without program name
+  (let ((args (command-line-arguments)))
     (cond
       ((null? args)
        (format #t "golay24-tool: usage examples:~%")

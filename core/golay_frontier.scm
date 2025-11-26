@@ -24,11 +24,18 @@
    adaptive-frontier-tau
    
    ;; --- Integration with KAK ---
-   frontier-mode-from-golay
-   )
+   frontier-mode-from-golay)
+   
   
-  (import chicken scheme)
-  (use srfi-1 srfi-69 bitwise machine-constants)
+  (import scheme)
+  (import (chicken base)
+          (chicken bitwise)
+          (chicken format)
+          srfi-1
+          srfi-69)
+  
+  ;; Import machine constants module instead of including
+  (import machine-constants)
   
   ;; ============================================================
   ;; Golay[24,12] Code Constants
@@ -37,13 +44,52 @@
   ;; Generator matrix for Golay[24,12]
   ;; Converts 12-bit information to 24-bit codeword
   (define golay24-generator
-    '#(0x#xB25 0x#xB2D 0x#xB33 0x#xB36 0x#xB39 0x#xB3A 0x#xB3C 0x#xB44
-       0x#xB46 0x#xB49 0x#xB4A 0x#xB4C))
+    '#(0xB25 0xB2D 0xB33 0xB36 0xB39 0xB3A 0xB3C 0xB44
+       0xB46 0xB49 0xB4A 0xB4C))
   
   ;; Parity check matrix
   (define golay24-parity-check
-    '#(0x#xB25 0x#xB2D 0x#xB33 0x#xB36 0x#xB39 0x#xB3A 0x#xB3C 0x#xB44
-       0x#xB46 0x#xB49 0x#xB4A 0x#xB4C))
+    '#(0xB25 0xB2D 0xB33 0xB36 0xB39 0xB3A 0xB3C 0xB44
+       0xB46 0xB49 0xB4A 0xB4C))
+  
+  ;; ============================================================
+  ;; Helper Functions for Encoding (Stubs - need implementation)
+  ;; ============================================================
+  
+  ;; Convert integer to bit list
+  (define (int->bits n len)
+    (let loop ((i 0) (acc '()))
+      (if (>= i len)
+          (reverse acc)
+          (loop (+ i 1)
+                (cons (bitwise-and (arithmetic-shift n (- i)) 1) acc)))))
+  
+  ;; Convert bit list to integer
+  (define (bits->int lst)
+    (let loop ((bits lst) (acc 0))
+      (if (null? bits)
+          acc
+          (loop (cdr bits)
+                (+ (arithmetic-shift acc 1) (car bits))))))
+  
+  ;; Simplified Golay encoding helper (stub)
+  (define (encode-23 bits)
+    ;; Placeholder: real implementation would use generator matrix
+    ;; For now, just return the bits padded with parity
+    (append bits (make-list 11 0)))
+  
+  ;; Extend 23-bit code to 24-bit
+  (define (extend-24 code23)
+    (append code23 (list 0)))
+  
+  ;; Generate codeword->info mapping (for decoding)
+  (define (codeword->info-map)
+    ;; Generate all 2^12 = 4096 codewords
+    (let loop ((info 0) (acc '()))
+      (if (>= info 4096)
+          acc
+          (loop (+ info 1)
+                (cons (cons (encode-golay24 info) info) acc)))))
   
   ;; ============================================================
   ;; Golay Weight Calculation
@@ -193,16 +239,16 @@
     (let ((mode (adaptive-frontier-mode frontier))
           (tau (adaptive-frontier-tau frontier))
           (tau-norm (adaptive-frontier-tau-normalized frontier)))
-      (printf "╔════════════════════════════════════════╗~n")
-      (printf "║ Golay-Controlled Adaptive Frontier    ║~n")
-      (printf "╠════════════════════════════════════════╣~n")
-      (printf "║ Mode (τ-dependent):  ~a~n" mode)
-      (printf "║ Codeword weight τ:   ~2d / 24~n" tau)
-      (printf "║ Normalized τ̂:      ~5,3f~n" tau-norm)
-      (printf "║ Behavior:            ~a~n"
+      (printf "╔════════════════════════════════════════╗~%")
+      (printf "║ Golay-Controlled Adaptive Frontier    ║~%")
+      (printf "╠════════════════════════════════════════╣~%")
+      (printf "║ Mode (τ-dependent):  ~a~%" mode)
+      (printf "║ Codeword weight τ:   ~2d / 24~%" tau)
+      (printf "║ Normalized τ̂:      ~5,3f~%" tau-norm)
+      (printf "║ Behavior:            ~a~%"
               (if (< tau-norm 0.5)
                   "DFS (deep exploration)"
                   "BFS (broad exploration)"))
-      (printf "╚════════════════════════════════════════╝~n")))
+      (printf "╚════════════════════════════════════════╝~%"))))
   
-  ) ;; end module
+   ;; end module

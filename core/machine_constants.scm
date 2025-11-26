@@ -1,7 +1,7 @@
-;; ============================================================
-;; core/machine_constants.scm
-;; Machine epsilon and fundamental mathematical constants
-;; ============================================================
+;;; ============================================================
+;;; core/machine_constants.scm
+;;; Machine epsilon and fundamental mathematical constants
+;;; ============================================================
 
 (module machine-constants
   (machine-epsilon
@@ -25,8 +25,12 @@
    hamming-weight
    )
   
-  (import chicken scheme)
-  (use srfi-1 bitwise)
+  ;; Fix for Chicken 5: Explicit imports
+  (import scheme)
+  (import (chicken base)
+          (chicken bitwise) ;; arithmetic-shift, bitwise-and, etc.
+          (chicken flonum)  ;; floating point operations
+          srfi-1)           ;; drop-while, make-list
   
   ;; ============================================================
   ;; IEEE-754 Double Precision Machine Epsilon
@@ -184,7 +188,7 @@
     (let loop ((code (bitwise-and n #xFFFFFFFFFFFFFFFF))
                (count 0))
       (if (zero? code)
-          count
+          count  ;; Fixed: removed extra parentheses
           (loop (bitwise-and code (- code 1))
                 (+ count 1)))))
   

@@ -1,12 +1,17 @@
-;; cartan_utils.scm - Utility functions for Cartan decomposition
+;;; ---------------------------------------------------------------------------
+;;; cartan_utils.scm - Utility functions for Cartan decomposition
+;;; ---------------------------------------------------------------------------
 
 (module cartan-utils
   (pretty-print-decomposition
    validate-decomposition
-   cartan-log-decompose)          ;; 追加: エクスポート
+   cartan-log-decompose)          ;; エクスポート
 
-  (import chicken scheme)
-  (use srfi-1 machine-constants)   ;; 追加: safe-log 等を利用
+  (import scheme)
+  (import (chicken base)
+          (chicken format)        ;; printf を使うために必要
+          srfi-1                  ;; iota, map
+          machine-constants)      ;; safe-log 等を利用 (ローカルモジュール)
 
   ;; Validate decomposition parameters
   (define (validate-decomposition B steps)

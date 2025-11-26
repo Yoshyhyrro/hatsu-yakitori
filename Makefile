@@ -6,7 +6,7 @@ BUILD_DIR    ?= build
 DIST_DIR     ?= dist
 CSC          ?= csc
 SALMONELLA   ?= salmonella
-GOLAY_TOOL  ?= golay24-tool
+GOLAY_TOOL   ?= golay24-tool
 
 CFLAGS_BASE  ?= -O3 -optimize-leaf-routines
 DEBUG        ?= 0
@@ -17,10 +17,17 @@ else
     CFLAGS = $(CFLAGS_BASE)
 endif
 
-# Core libraries
-CORE_LIBS = core/kak_decomposition.scm \
-            core/machine_constants.scm \
-            core/cartan_utils.scm
+# Core libraries (hierarchical dependencies)
+CORE_BASIC = core/machine_constants.scm
+CORE_GOLAY = core/golay_frontier.scm
+CORE_CARTAN = core/cartan_utils.scm
+CORE_KAK = core/kak_decomposition.scm
+
+# Full set (KAK needs everything)
+CORE_LIBS_FULL = $(CORE_BASIC) $(CORE_GOLAY) $(CORE_CARTAN) $(CORE_KAK)
+
+# Golay-only (no KAK dependency)
+CORE_LIBS_GOLAY = $(CORE_BASIC) $(CORE_GOLAY)
 
 # Module paths
 MODULES_AVAILABLE = boids fmm sssp kak-decomposition golay24-tool
@@ -29,28 +36,32 @@ MODULES_AVAILABLE = boids fmm sssp kak-decomposition golay24-tool
 ifeq ($(MODULE), boids)
     MODULE_SRC = modules/boids/boids_main.scm
     MODULE_EGG = eggs/boids.egg
-    MODULE_DEPS = $(CORE_LIBS)
+    MODULE_DEPS = $(CORE_LIBS_FULL)
     MODULE_TESTS = tests/boids_tests.scm
+
 else ifeq ($(MODULE), fmm)
     MODULE_SRC = modules/fmm/fmm_main.scm
     MODULE_EGG = eggs/fmm.egg
-    MODULE_DEPS = $(CORE_LIBS)
+    MODULE_DEPS = $(CORE_LIBS_FULL)
     MODULE_TESTS = tests/fmm_tests.scm
+
 else ifeq ($(MODULE), sssp)
     MODULE_SRC = modules/sssp/sssp_main.scm
     MODULE_EGG = eggs/sssp.egg
-    MODULE_DEPS = $(CORE_LIBS)
+    MODULE_DEPS = $(CORE_LIBS_FULL)
     MODULE_TESTS = tests/sssp_tests.scm
+
 else ifeq ($(MODULE), kak-decomposition)
     MODULE_SRC = 
     MODULE_EGG = eggs/kak-decomposition.egg
-    MODULE_DEPS = $(CORE_LIBS)
+    MODULE_DEPS = $(CORE_LIBS_FULL)
     MODULE_TESTS = tests/kak_tests.scm
 
 else ifeq ($(MODULE), golay24-tool)
     MODULE_SRC = tools/golay24-tool/golay24_main.scm
     MODULE_EGG = eggs/golay24-tool.egg
-    MODULE_DEPS = $(CORE_LIBS)
+    # CRITICAL: golay24-tool only needs Golay, not KAK
+    MODULE_DEPS = $(CORE_LIBS_GOLAY)
     MODULE_TESTS = tests/golay24_tests.scm
 
 else
@@ -66,18 +77,24 @@ SALMONELLA_LOG = $(BUILD_DIR)/salmonella_$(MODULE).log
 # Default target
 all: build
 
-
-# Directory setup (avoid naming collision with 'build' target)
-# Create both directories from a single phony target so we don't define
-# a target named 'build' (which would conflict with the real build target).
+# Directory setup
 dirs:
 	@mkdir -p $(BUILD_DIR) $(DIST_DIR)
 
 # Build target
 build: dirs
 	@echo "[BUILD] Compiling $(MODULE)..."
+	@echo "[DEBUG] Dependencies: $(MODULE_DEPS)"
+	@# First compile dependency modules if they exist
+	@for dep in $(MODULE_DEPS); do \
+		if [ -f "$dep" ]; then \
+			echo "[DEP] Compiling $dep..."; \
+			$(CSC) $(CFLAGS) -c -J $dep || exit 1; \
+		fi; \
+	done
+	@# Then compile the main module
 	@if [ -n "$(MODULE_SRC)" ]; then \
-		$(CSC) $(CFLAGS) -I . -module $(MODULE) $(MODULE_SRC) -o $(APP_NAME); \
+		$(CSC) $(CFLAGS) $(MODULE_SRC) -o $(APP_NAME); \
 	else \
 		echo "[INFO] $(MODULE) is a library-only module"; \
 	fi
@@ -175,19 +192,16 @@ info:
 	@echo "BUILD_DIR: $(BUILD_DIR)"
 	@echo "DIST_DIR: $(DIST_DIR)"
 	@echo "DEBUG: $(DEBUG)"
+	@echo "DEPENDENCIES: $(MODULE_DEPS)"
 	@echo ""
 	@echo "=== Available Modules ==="
 	@echo "$(MODULES_AVAILABLE)"
 	@echo ""
-	@echo "=== Targets ==="
-	@echo "make               - Build (default: boids)"
-	@echo "make MODULE=sssp   - Build specific module"
-	@echo "make build-all     - Build all modules"
-	@echo "make test          - Run unit tests"
-	@echo "make test-salmonella        - Test with Salmonella"
-	@echo "make test-all-salmonella    - Test all with epidemy"
-	@echo "make statistics    - Show test statistics"
-	@echo "make clean         - Clean artifacts"
+	@echo "=== Dependency Layers ==="
+	@echo "CORE_BASIC:  $(CORE_BASIC)"
+	@echo "CORE_GOLAY:  $(CORE_GOLAY)"
+	@echo "CORE_CARTAN: $(CORE_CARTAN)"
+	@echo "CORE_KAK:    $(CORE_KAK)"
 
 # Help
 help:
@@ -208,11 +222,11 @@ help:
 	@echo "  help                     Show this message"
 	@echo ""
 	@echo "Variables:"
-	@echo "  MODULE=name    Select module (boids, fmm, sssp, kak-decomposition)"
+	@echo "  MODULE=name    Select module (boids, fmm, sssp, kak-decomposition, golay24-tool)"
 	@echo "  DEBUG=1        Build with debug symbols"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make MODULE=sssp build"
+	@echo "  make MODULE=golay24-tool build"
 	@echo "  make MODULE=fmm DEBUG=1 build"
 	@echo "  make test-all-salmonella"
-	@echo "  make statistics"
