@@ -1,232 +1,29 @@
-# hatsu-yakitori Multi-Module Build System
-# KAK decomposition framework for Chicken Scheme
+# hatsu-yakitori Ultimate Build System (2025 Final Form)
+# make で実行 → Shake に処理を委譲する
 
-MODULE       ?= boids
-BUILD_DIR    ?= build
-DIST_DIR     ?= dist
-CSC          ?= csc
-SALMONELLA   ?= salmonella
-GOLAY_TOOL   ?= golay24-tool
+.PHONY: all build test test-salmonella clean info help
+.PHONY: boids fmm sssp kak-decomposition golay24-tool
 
-CFLAGS_BASE  ?= -O3 -optimize-leaf-routines
-DEBUG        ?= 0
+# デフォルトは help
+all: help
 
-ifeq ($(DEBUG), 1)
-    CFLAGS = $(CFLAGS_BASE) -g -debug-level 3
-else
-    CFLAGS = $(CFLAGS_BASE)
-endif
+# すべてのターゲットを Shake に移行
+%::
+	@stack runhaskell shake/Shake.hs $@
 
-# Core libraries (hierarchical dependencies)
-CORE_BASIC = core/machine_constants.scm
-CORE_GOLAY = core/golay_frontier.scm
-CORE_CARTAN = core/cartan_utils.scm
-CORE_KAK = core/kak_decomposition.scm
+# 直接 make boids のように呼び出された場合も対応
+boids fmm sssp kak-decomposition golay24-tool:
+	@stack runhaskell shake/Shake.hs $@
 
-# Full set (KAK needs everything)
-CORE_LIBS_FULL = $(CORE_BASIC) $(CORE_GOLAY) $(CORE_CARTAN) $(CORE_KAK)
-
-# Golay-only (no KAK dependency)
-CORE_LIBS_GOLAY = $(CORE_BASIC) $(CORE_GOLAY)
-
-# Module paths
-MODULES_AVAILABLE = boids fmm sssp kak-decomposition golay24-tool
-
-# Module-specific definitions
-ifeq ($(MODULE), boids)
-    MODULE_SRC = modules/boids/boids_main.scm
-    MODULE_EGG = eggs/boids.egg
-    MODULE_DEPS = $(CORE_LIBS_FULL)
-    MODULE_TESTS = tests/boids_tests.scm
-
-else ifeq ($(MODULE), fmm)
-    MODULE_SRC = modules/fmm/fmm_main.scm
-    MODULE_EGG = eggs/fmm.egg
-    MODULE_DEPS = $(CORE_LIBS_FULL)
-    MODULE_TESTS = tests/fmm_tests.scm
-
-else ifeq ($(MODULE), sssp)
-    MODULE_SRC = modules/sssp/sssp_main.scm
-    MODULE_EGG = eggs/sssp.egg
-    MODULE_DEPS = $(CORE_LIBS_FULL)
-    MODULE_TESTS = tests/sssp_tests.scm
-
-else ifeq ($(MODULE), kak-decomposition)
-    MODULE_SRC = 
-    MODULE_EGG = eggs/kak-decomposition.egg
-    MODULE_DEPS = $(CORE_LIBS_FULL)
-    MODULE_TESTS = tests/kak_tests.scm
-
-else ifeq ($(MODULE), golay24-tool)
-    MODULE_SRC = tools/golay24-tool/golay24_main.scm
-    MODULE_EGG = eggs/golay24-tool.egg
-    # CRITICAL: golay24-tool only needs Golay, not KAK
-    MODULE_DEPS = $(CORE_LIBS_GOLAY)
-    MODULE_TESTS = tests/golay24_tests.scm
-
-else
-    $(error Unknown MODULE: $(MODULE). Available: $(MODULES_AVAILABLE))
-endif
-
-APP_NAME = $(DIST_DIR)/$(MODULE)_app
-SALMONELLA_LOG = $(BUILD_DIR)/salmonella_$(MODULE).log
-
-.PHONY: all test test-salmonella test-all-salmonella \
-        build-all clean help info
-
-# Default target
-all: build
-
-# Directory setup
-dirs:
-	@mkdir -p $(BUILD_DIR) $(DIST_DIR)
-
-# Build target
-build: dirs
-	@echo "[BUILD] Compiling $(MODULE)..."
-	@echo "[DEBUG] Dependencies: $(MODULE_DEPS)"
-	@# First compile dependency modules if they exist
-	@for dep in $(MODULE_DEPS); do \
-		if [ -f "$dep" ]; then \
-			echo "[DEP] Compiling $dep..."; \
-			$(CSC) $(CFLAGS) -c -J $dep || exit 1; \
-		fi; \
-	done
-	@# Then compile the main module
-	@if [ -n "$(MODULE_SRC)" ]; then \
-		$(CSC) $(CFLAGS) $(MODULE_SRC) -o $(APP_NAME); \
-	else \
-		echo "[INFO] $(MODULE) is a library-only module"; \
-	fi
-	@echo "[SUCCESS] Module $(MODULE) ready"
-
-# Unit tests
-test: build
-	@echo "[TEST] Running tests for $(MODULE)..."
-	@if [ -f "$(MODULE_TESTS)" ]; then \
-		$(CSC) $(CFLAGS) $(MODULE_TESTS) -o /tmp/test_$(MODULE); \
-		/tmp/test_$(MODULE) || true; \
-		rm -f /tmp/test_$(MODULE); \
-	else \
-		echo "[INFO] No test file found: $(MODULE_TESTS)"; \
-	fi
-
-# Salmonella test (single module)
-test-salmonella: build $(MODULE_EGG)
-	@echo "[SALMONELLA] Testing $(MODULE)..."
-	@if command -v $(SALMONELLA) >/dev/null 2>&1; then \
-		$(SALMONELLA) --log-file=$(SALMONELLA_LOG) --verbosity=2 $(MODULE) || true; \
-		echo "[INFO] Log: $(SALMONELLA_LOG)"; \
-	else \
-		echo "[WARN] Salmonella not found. Attempting to install..."; \
-		chicken-install -s salmonella 2>/dev/null || \
-			echo "[WARN] Could not auto-install salmonella; install manually with: chicken-install -s salmonella"; \
-		if command -v $(SALMONELLA) >/dev/null 2>&1; then \
-			$(SALMONELLA) --log-file=$(SALMONELLA_LOG) --verbosity=2 $(MODULE) || true; \
-			echo "[INFO] Log: $(SALMONELLA_LOG)"; \
-		else \
-			echo "[ERROR] Salmonella is still not available; running unit tests as a fallback"; \
-			$(MAKE) test || true; \
-		fi; \
-	fi
-
-# View Salmonella results
-test-view:
-	@if [ -f "$(SALMONELLA_LOG)" ]; then \
-		if command -v salmonella-log-viewer >/dev/null 2>&1; then \
-			salmonella-log-viewer $(SALMONELLA_LOG); \
-		else \
-			cat $(SALMONELLA_LOG); \
-		fi; \
-	else \
-		echo "[ERROR] No log file found: $(SALMONELLA_LOG)"; \
-	fi
-
-# Build all modules
-build-all:
-	@for mod in $(MODULES_AVAILABLE); do \
-		echo "[BUILD] Building $$mod..."; \
-		$(MAKE) MODULE=$$mod build || exit 1; \
-	done
-	@echo "[SUCCESS] All modules built"
-
-# Test all modules with Salmonella
-test-all-salmonella: $(BUILD_DIR)
-	@echo "[SALMONELLA] Testing all modules..."
-	@if command -v salmonella-epidemy >/dev/null 2>&1; then \
-		INSTANCES=$$(nproc --ignore=1); \
-		echo "[INFO] Running $$INSTANCES instances"; \
-		salmonella-epidemy --instances=$$INSTANCES \
-			--log-file=$(BUILD_DIR)/salmonella_all.log \
-			boids fmm sssp kak-decomposition golay24-tool || true; \
-	else \
-		echo "[WARN] salmonella-epidemy not found"; \
-		echo "[INFO] Installing salmonella..."; \
-		chicken-install -s salmonella 2>/dev/null || true; \
-		for mod in $(MODULES_AVAILABLE); do \
-			$(MAKE) MODULE=$$mod test-salmonella; \
-		done; \
-	fi
-
-# Show statistics
-statistics:
-	@if [ -f "$(BUILD_DIR)/salmonella_all.log" ]; then \
-		if command -v salmonella-log-inquirer >/dev/null 2>&1; then \
-			salmonella-log-inquirer --statistics $(BUILD_DIR)/salmonella_all.log; \
-		fi; \
-	else \
-		echo "[ERROR] No statistics log found"; \
-	fi
-
-# Clean
-clean:
-	@echo "[CLEAN] Removing build artifacts..."
-	@rm -rf $(BUILD_DIR) $(DIST_DIR)
-	@echo "[CLEAN] Done"
-
-# Information
-info:
-	@echo "=== Build Configuration ==="
-	@echo "PROJECT: hatsu-yakitori"
-	@echo "MODULE: $(MODULE)"
-	@echo "BUILD_DIR: $(BUILD_DIR)"
-	@echo "DIST_DIR: $(DIST_DIR)"
-	@echo "DEBUG: $(DEBUG)"
-	@echo "DEPENDENCIES: $(MODULE_DEPS)"
-	@echo ""
-	@echo "=== Available Modules ==="
-	@echo "$(MODULES_AVAILABLE)"
-	@echo ""
-	@echo "=== Dependency Layers ==="
-	@echo "CORE_BASIC:  $(CORE_BASIC)"
-	@echo "CORE_GOLAY:  $(CORE_GOLAY)"
-	@echo "CORE_CARTAN: $(CORE_CARTAN)"
-	@echo "CORE_KAK:    $(CORE_KAK)"
-
-# Help
 help:
-	@echo "hatsu-yakitori Build System"
+	@echo "hatsu-yakitori — KAK decomposition framework for Chicken Scheme"
 	@echo ""
-	@echo "Usage: make [TARGET] [VAR=value]"
-	@echo ""
-	@echo "Targets:"
-	@echo "  build                    Build selected module (default)"
-	@echo "  build-all                Build all modules"
-	@echo "  test                     Run unit tests"
-	@echo "  test-salmonella          Test with Salmonella"
-	@echo "  test-view                View latest Salmonella results"
-	@echo "  test-all-salmonella      Test all modules (parallel)"
-	@echo "  statistics               Show test statistics"
-	@echo "  clean                    Remove build artifacts"
-	@echo "  info                     Show configuration"
-	@echo "  help                     Show this message"
-	@echo ""
-	@echo "Variables:"
-	@echo "  MODULE=name    Select module (boids, fmm, sssp, kak-decomposition, golay24-tool)"
-	@echo "  DEBUG=1        Build with debug symbols"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make MODULE=sssp build"
-	@echo "  make MODULE=golay24-tool build"
-	@echo "  make MODULE=fmm DEBUG=1 build"
+	@echo "Usage:"
+	@echo "  make                    → show this help"
+	@echo "  make build MODULE=boids → build specific module"
+	@echo "  make test MODULE=fmm    → test specific module"
+	@echo "  make boids              → shortcut for build + test boids"
 	@echo "  make test-all-salmonella"
+	@echo "  make clean"
+	@echo ""
+	@echo "Available modules: boids fmm sssp kak-decomposition golay24-tool"
