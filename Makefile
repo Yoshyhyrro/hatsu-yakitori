@@ -1,29 +1,51 @@
-# hatsu-yakitori Ultimate Build System (2025 Final Form)
-# make で実行 → Shake に処理を委譲する
+# hatsu-yakitori Build System
+# Delegates all build logic to Shake
 
-.PHONY: all build test test-salmonella clean info help
-.PHONY: boids fmm sssp kak-decomposition golay24-tool
+SHAKE := stack runhaskell shake/Shake.hs
 
-# デフォルトは help
+# Module names
+MODULES := boids fmm sssp kak-decomposition golay24-tool
+
+.PHONY: all help clean info
+.PHONY: build test test-salmonella test-all-salmonella
+.PHONY: $(MODULES)
+
+# Default target
 all: help
 
-# すべてのターゲットを Shake に移行
-%::
-	@stack runhaskell shake/Shake.hs $@
-
-# 直接 make boids のように呼び出された場合も対応
-boids fmm sssp kak-decomposition golay24-tool:
-	@stack runhaskell shake/Shake.hs $@
-
+# Help (defined in Make for quick access)
 help:
-	@echo "hatsu-yakitori — KAK decomposition framework for Chicken Scheme"
+	@echo "hatsu-yakitori — KAK decomposition framework"
 	@echo ""
-	@echo "Usage:"
-	@echo "  make                    → show this help"
-	@echo "  make build MODULE=boids → build specific module"
-	@echo "  make test MODULE=fmm    → test specific module"
-	@echo "  make boids              → shortcut for build + test boids"
+	@echo "Quick commands:"
+	@echo "  make <module>          - Build and test a module"
+	@echo "  make build MODULE=name - Build specific module"
+	@echo "  make test MODULE=name  - Test specific module"
+	@echo ""
+	@echo "Available modules:"
+	@echo "  $(MODULES)"
+	@echo ""
+	@echo "Advanced:"
 	@echo "  make test-all-salmonella"
 	@echo "  make clean"
+	@echo "  make info"
 	@echo ""
-	@echo "Available modules: boids fmm sssp kak-decomposition golay24-tool"
+	@echo "Run '$(SHAKE) help' for full Shake documentation"
+
+# Module shortcuts (build + test)
+$(MODULES):
+	@$(SHAKE) $@
+
+# Generic targets with MODULE parameter
+build test test-salmonella:
+	@if [ -z "$(MODULE)" ]; then \
+		echo "Error: MODULE parameter required"; \
+		echo "Usage: make $@ MODULE=<name>"; \
+		echo "Available: $(MODULES)"; \
+		exit 1; \
+	fi
+	@$(SHAKE) $@ MODULE=$(MODULE)
+
+# Targets without MODULE parameter
+test-all-salmonella clean info:
+	@$(SHAKE) $@
