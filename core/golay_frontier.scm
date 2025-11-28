@@ -171,8 +171,8 @@
       (printf "║ Golay-Controlled Adaptive Frontier    ║~%")
       (printf "╠═══════════════════════════════════════╣~%")
       (printf "║ Mode (τ-dependent):  ~a~%" mode)
-      (printf "║ Codeword weight τ:   ~2d / 24~%" tau)
-      (printf "║ Normalized τ̂:      ~5,3f~%" tau-norm)
+      (printf "║ Codeword weight τ:   ~a / 24~%" tau)
+      (printf "║ Normalized τ̂:      ~a~%" tau-norm)
       (printf "║ Behavior:            ~a~%"
               (if (< tau-norm 0.5)
                   "DFS (deep exploration)"

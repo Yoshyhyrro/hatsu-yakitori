@@ -11,7 +11,7 @@ import Control.Monad
 import System.Console.GetOpt
 import System.Directory (removeFile)
 import Data.Maybe (fromMaybe, listToMaybe)
-import Data.List (find, isSuffixOf)
+import Data.List (find)
 import Data.Typeable
 import GHC.Generics
 
@@ -34,10 +34,10 @@ flags =
     ]
 
 -- | Oracle for build configuration
-newtype BuildConfig = BuildConfig ()
+newtype BuildConfig a = BuildConfig ()
     deriving (Show, Typeable, Eq, Hashable, Binary, NFData)
 
-type instance RuleResult BuildConfig = String
+type instance RuleResult (BuildConfig String) = String
 
 -- | Module definition
 data Module = Module
@@ -98,7 +98,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Help target
     phony "help" $ do
-        putInfo $ unlines $
+        putInfo $ unlines
           [ "Shake Build System for hatsu-yakitori"
           , ""
           , "Usage:"
@@ -146,23 +146,23 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Generic build target
     phony "build" $ do
-        let targetName = case flagModule mergedFlags of
+        let modName = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required (use --module=NAME or MODULE=NAME)"
         
-        case findModule targetName of
-            Nothing -> error $ "Unknown module: " ++ targetName ++ "\nAvailable: " ++ 
+        case findModule modName of
+            Nothing -> error $ "Unknown module: " ++ modName ++ "\nAvailable: " ++ 
                               unwords (map (\m -> modName m) modules)
             Just m  -> need ["build-" ++ modName m]
 
     -- Generic test target
     phony "test" $ do
-        let targetName = case flagModule mergedFlags of
+        let modName = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required"
         
-        case findModule targetName of
-            Nothing -> error $ "Unknown module: " ++ targetName
+        case findModule modName of
+            Nothing -> error $ "Unknown module: " ++ modName
             Just m  -> need ["test-" ++ modName m]
 
     -- Build individual modules
@@ -177,18 +177,14 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Application binaries (cross-platform with exe)
     (distDir </> "*_app" <.> exe) %> \out -> do
-        let nameWithApp = takeBaseName $ dropExtension out
-            name = if "_app" `isSuffixOf` nameWithApp
-                   then take (length nameWithApp - length "_app") nameWithApp
-                   else nameWithApp
+        let name = takeBaseName $ dropExtension out
         case findModule name of
-            Nothing -> error $ "No module definition for " ++ nameWithApp
+            Nothing -> error $ "No module definition for " ++ name
             Just m | null (modSrc m) -> error $ "Module " ++ name ++ " is library-only"
                    | otherwise -> do
                 need [buildDir </> name <.> "stamp"]
                 flags <- askOracle (BuildConfig ())
-                -- 修正: cmd_ を使用して型注釈の問題を解決
-                cmd_ csc flags [modSrc m] "-o" [out]
+                cmd csc flags [modSrc m] "-o" [out]
                 putInfo $ "✓ Built " ++ out
 
     -- Module stamps (dependency compilation)
@@ -199,10 +195,10 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             Just m -> do
                 need (modDeps m)
                 flags <- askOracle (BuildConfig ())
-                -- Compile dependencies
-                -- 修正: cmd_ を使用
-                forM_ (modDeps m) $ \dep ->
-                    cmd_ csc flags "-c -J" [dep]
+                -- Compile dependencies IN ORDER (important for imports)
+                forM_ (modDeps m) $ \dep -> do
+                    putInfo $ "Compiling dependency: " ++ dep
+                    cmd csc flags "-c -J" [dep]
                 writeFile' out ""
                 putInfo $ "✓ Compiled " ++ name ++ " dependencies"
 
@@ -211,26 +207,23 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         need ["build-" ++ modName m]
         let testBin = "/tmp/test_" ++ modName m <.> exe
         flags <- askOracle (BuildConfig ())
-        -- 修正: cmd_ を使用
-        cmd_ csc flags [modTest m] "-o" [testBin]
-        -- 修正: cmd_ を使用
-        cmd_ testBin
+        cmd csc flags [modTest m] "-o" [testBin]
+        cmd testBin
         liftIO $ removeFile testBin
         putInfo $ "✓ Tests passed for " ++ modName m
 
     -- Salmonella testing
     phony "test-salmonella" $ do
-        let targetName = case flagModule mergedFlags of
+        let modName = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required for salmonella testing"
         
-        case findModule targetName of
-            Nothing -> error $ "Unknown module: " ++ targetName
+        case findModule modName of
+            Nothing -> error $ "Unknown module: " ++ modName
             Just m -> do
                 need ["build-" ++ modName m]
                 let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
-                -- 修正: cmd_ を使用
-                cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" targetName
+                cmd "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" modName
 
     -- Test all with salmonella
     phony "test-all-salmonella" $ do
@@ -241,8 +234,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
     forM_ modules $ \m -> phony ("salmonella-" ++ modName m) $ do
         need ["build-" ++ modName m]
         let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
-        -- 修正: cmd_ を使用
-        cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
+        cmd "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
 
     -- Clean
     phony "clean" $ do
