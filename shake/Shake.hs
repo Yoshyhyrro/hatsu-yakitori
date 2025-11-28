@@ -11,7 +11,7 @@ import Control.Monad
 import System.Console.GetOpt
 import System.Directory (removeFile)
 import Data.Maybe (fromMaybe, listToMaybe)
-import Data.List (find)
+import Data.List (find, isSuffixOf)
 import Data.Typeable
 import GHC.Generics
 
@@ -177,9 +177,12 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Application binaries (cross-platform with exe)
     (distDir </> "*_app" <.> exe) %> \out -> do
-        let name = takeBaseName $ dropExtension out
+        let nameWithApp = takeBaseName $ dropExtension out
+            name = if "_app" `isSuffixOf` nameWithApp
+                   then take (length nameWithApp - length "_app") nameWithApp
+                   else nameWithApp
         case findModule name of
-            Nothing -> error $ "No module definition for " ++ name
+            Nothing -> error $ "No module definition for " ++ nameWithApp
             Just m | null (modSrc m) -> error $ "Module " ++ name ++ " is library-only"
                    | otherwise -> do
                 need [buildDir </> name <.> "stamp"]
