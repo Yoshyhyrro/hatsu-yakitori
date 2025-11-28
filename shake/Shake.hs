@@ -11,7 +11,7 @@ import Control.Monad
 import System.Console.GetOpt
 import System.Directory (removeFile)
 import Data.Maybe (fromMaybe, listToMaybe)
-import Data.List (find, unwords)
+import Data.List (find, unwords, isSuffixOf) -- isSuffixOf を追加
 import Data.Typeable
 import GHC.Generics
 
@@ -146,23 +146,25 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Generic build target
     phony "build" $ do
-        let selectedModuleName = case flagModule mergedFlags of
+        -- 【修正】変数名を target に変更（modName関数との衝突を回避）
+        let target = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required (use --module=NAME or MODULE=NAME)"
         
-        case findModule selectedModuleName of
-            Nothing -> error $ "Unknown module: " ++ selectedModuleName ++ "\nAvailable: " ++ 
+        case findModule target of
+            Nothing -> error $ "Unknown module: " ++ target ++ "\nAvailable: " ++ 
                               unwords (map modName modules)
             Just m  -> need ["build-" ++ modName m]
 
     -- Generic test target
     phony "test" $ do
-        let selectedModuleName = case flagModule mergedFlags of
+        -- 【修正】変数名を target に変更
+        let target = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required"
         
-        case findModule selectedModuleName of
-            Nothing -> error $ "Unknown module: " ++ selectedModuleName
+        case findModule target of
+            Nothing -> error $ "Unknown module: " ++ target
             Just m  -> need ["test-" ++ modName m]
 
     -- Build individual modules
@@ -177,7 +179,11 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Application binaries (cross-platform with exe)
     (distDir </> "*_app" <.> exe) %> \out -> do
-        let name = takeBaseName $ dropExtension out
+        let baseName = takeBaseName $ dropExtension out
+        -- 【修正】_app サフィックスを安全に除去してモジュール名を特定
+        let name | "_app" `isSuffixOf` baseName = take (length baseName - 4) baseName
+                 | otherwise = baseName
+
         case findModule name of
             Nothing -> error $ "No module definition for " ++ name
             Just m | null (modSrc m) -> error $ "Module " ++ name ++ " is library-only"
@@ -214,12 +220,13 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Salmonella testing
     phony "test-salmonella" $ do
-        let selectedModuleName = case flagModule mergedFlags of
+        -- 【修正】変数名を target に変更
+        let target = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required for salmonella testing"
         
-        case findModule selectedModuleName of
-            Nothing -> error $ "Unknown module: " ++ selectedModuleName
+        case findModule target of
+            Nothing -> error $ "Unknown module: " ++ target
             Just m -> do
                 need ["build-" ++ modName m]
                 let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
