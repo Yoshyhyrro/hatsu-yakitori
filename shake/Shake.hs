@@ -11,7 +11,7 @@ import Control.Monad
 import System.Console.GetOpt
 import System.Directory (removeFile)
 import Data.Maybe (fromMaybe, listToMaybe)
-import Data.List (find)
+import Data.List (find, unwords)
 import Data.Typeable
 import GHC.Generics
 
@@ -34,10 +34,10 @@ flags =
     ]
 
 -- | Oracle for build configuration
-newtype BuildConfig a = BuildConfig ()
+newtype BuildConfig = BuildConfig ()
     deriving (Show, Typeable, Eq, Hashable, Binary, NFData)
 
-type instance RuleResult (BuildConfig String) = String
+type instance RuleResult BuildConfig = String
 
 -- | Module definition
 data Module = Module
@@ -98,7 +98,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Help target
     phony "help" $ do
-        putInfo $ unlines
+        putInfo $ unlines $
           [ "Shake Build System for hatsu-yakitori"
           , ""
           , "Usage:"
@@ -128,12 +128,12 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Info target
     phony "info" $ do
-        flags <- askOracle (BuildConfig ())
+        flagsStr <- askOracle (BuildConfig ())
         putInfo "=== Configuration ==="
         putInfo $ "Build dir: " ++ buildDir
         putInfo $ "Dist dir: " ++ distDir
         putInfo $ "Compiler: " ++ csc
-        putInfo $ "Flags: " ++ flags
+        putInfo $ "Flags: " ++ flagsStr
         putInfo $ "Debug: " ++ show (flagDebug mergedFlags)
         putInfo ""
         putInfo "=== Available Modules ==="
@@ -146,23 +146,23 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Generic build target
     phony "build" $ do
-        let modName = case flagModule mergedFlags of
+        let selectedModuleName = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required (use --module=NAME or MODULE=NAME)"
         
-        case findModule modName of
-            Nothing -> error $ "Unknown module: " ++ modName ++ "\nAvailable: " ++ 
-                              unwords (map (\m -> modName m) modules)
+        case findModule selectedModuleName of
+            Nothing -> error $ "Unknown module: " ++ selectedModuleName ++ "\nAvailable: " ++ 
+                              unwords (map modName modules)
             Just m  -> need ["build-" ++ modName m]
 
     -- Generic test target
     phony "test" $ do
-        let modName = case flagModule mergedFlags of
+        let selectedModuleName = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required"
         
-        case findModule modName of
-            Nothing -> error $ "Unknown module: " ++ modName
+        case findModule selectedModuleName of
+            Nothing -> error $ "Unknown module: " ++ selectedModuleName
             Just m  -> need ["test-" ++ modName m]
 
     -- Build individual modules
@@ -183,8 +183,8 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             Just m | null (modSrc m) -> error $ "Module " ++ name ++ " is library-only"
                    | otherwise -> do
                 need [buildDir </> name <.> "stamp"]
-                flags <- askOracle (BuildConfig ())
-                cmd csc flags [modSrc m] "-o" [out]
+                flagsStr <- askOracle (BuildConfig ())
+                cmd_ csc flagsStr [modSrc m] "-o" [out]
                 putInfo $ "✓ Built " ++ out
 
     -- Module stamps (dependency compilation)
@@ -194,11 +194,11 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             Nothing -> error $ "No module definition for " ++ name
             Just m -> do
                 need (modDeps m)
-                flags <- askOracle (BuildConfig ())
+                flagsStr <- askOracle (BuildConfig ())
                 -- Compile dependencies IN ORDER (important for imports)
                 forM_ (modDeps m) $ \dep -> do
                     putInfo $ "Compiling dependency: " ++ dep
-                    cmd csc flags "-c -J" [dep]
+                    cmd_ csc flagsStr "-c -J" [dep]
                 writeFile' out ""
                 putInfo $ "✓ Compiled " ++ name ++ " dependencies"
 
@@ -206,24 +206,24 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
         let testBin = "/tmp/test_" ++ modName m <.> exe
-        flags <- askOracle (BuildConfig ())
-        cmd csc flags [modTest m] "-o" [testBin]
-        cmd testBin
+        flagsStr <- askOracle (BuildConfig ())
+        cmd_ csc flagsStr [modTest m] "-o" [testBin]
+        cmd_ testBin
         liftIO $ removeFile testBin
         putInfo $ "✓ Tests passed for " ++ modName m
 
     -- Salmonella testing
     phony "test-salmonella" $ do
-        let modName = case flagModule mergedFlags of
+        let selectedModuleName = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required for salmonella testing"
         
-        case findModule modName of
-            Nothing -> error $ "Unknown module: " ++ modName
+        case findModule selectedModuleName of
+            Nothing -> error $ "Unknown module: " ++ selectedModuleName
             Just m -> do
                 need ["build-" ++ modName m]
                 let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
-                cmd "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" modName
+                cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
 
     -- Test all with salmonella
     phony "test-all-salmonella" $ do
@@ -234,7 +234,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
     forM_ modules $ \m -> phony ("salmonella-" ++ modName m) $ do
         need ["build-" ++ modName m]
         let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
-        cmd "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
+        cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
 
     -- Clean
     phony "clean" $ do
