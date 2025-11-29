@@ -186,3 +186,4 @@
 
 ;; Run tests
 (run-all-tests)
+(module-export all)
