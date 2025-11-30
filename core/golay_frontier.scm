@@ -36,21 +36,14 @@
   ;; Golay[24,12] Code Implementation
   ;; ============================================================
 
-  ;; The generator matrix G = [I_12 | P]. We only need to store P.
-  ;; Parity check matrix H = [P^T | I_12].
-  ;; P is a 12x12 matrix. We store it as a vector of 12 integers (rows).
   (define golay24-generator
     (vector
      #xC75 #x63B #xF68 #x7B4 #x3DA #xD99 #x6CD #x367 #xDC6 #xA97 #x93E #x8EB))
 
-  ;; Parity check matrix (P^T).
-  ;; We can compute this by transposing the generator matrix P, but for
-  ;; efficiency, we can precompute it.
   (define golay24-parity-check
     (vector
      #x8CE #xC67 #x8DD #x4B7 #x1DB #xEE1 #xC1F #xC8F #x573 #x9F9 #xB35 #xACA))
 
-  ;; Hamming weight: count number of set bits in an integer
   (define (golay-weight n)
     (let loop ((n n) (count 0))
       (if (zero? n)
@@ -58,7 +51,6 @@
           (loop (arithmetic-shift n -1)
                 (+ count (bitwise-and n 1))))))
 
-  ;; Encode a 12-bit message into a 24-bit codeword
   (define (encode-golay24 info-bits)
     (let ((p-matrix golay24-generator))
       (let loop ((i 0) (parity 0))
@@ -69,57 +61,55 @@
                   (loop (+ i 1) parity)
                   (loop (+ i 1) (bitwise-xor parity (vector-ref p-matrix i)))))))))
 
-  ;; Calculate syndrome for a 24-bit received word
   (define (calculate-syndrome codeword)
-    (let ((parity-check golay24-parity-check))
-      (let loop ((i 0) (syndrome 0))
-        (if (= i 12)
-            syndrome
-            (let ((row (vector-ref parity-check i)))
-              (let ((product (bitwise-and codeword row)))
-                (if (odd? (golay-weight product))
-                    (loop (+ i 1) (bitwise-ior syndrome (arithmetic-shift 1 i)))
-                    (loop (+ i 1) syndrome))))))))
+    (let ((recalculated-parity
+           (let ((info-prime (arithmetic-shift codeword -12)))
+             (let loop ((i 0) (parity 0))
+               (if (= i 12)
+                   parity
+                   (let ((info-bit (bitwise-and 1 (arithmetic-shift info-prime i))))
+                     (if (zero? info-bit)
+                         (loop (+ i 1) parity)
+                         (loop (+ i 1) (bitwise-xor parity (vector-ref golay24-generator i))))))))))
+      (bitwise-xor (bitwise-and codeword #xFFF) recalculated-parity)))
 
-  ;; Decode a 24-bit codeword
   (define (decode-golay24 codeword)
     (let* ((p-matrix golay24-generator)
            (info-prime (arithmetic-shift codeword -12))
-           (parity-prime (bitwise-and codeword #xFFF))
-           (syndrome-a (calculate-syndrome codeword))
-           (syndrome-a-weight (golay-weight syndrome-a)))
+           (syndrome (calculate-syndrome codeword))
+           (syndrome-weight (golay-weight syndrome)))
       (cond
-       ;; Case 1: Syndrome is zero. No errors detected.
-       ((zero? syndrome-a)
-        (values info-prime 0))
-
-       ;; Case 2: Weight of syndrome is <= 3. Error is in parity bits.
-       ((<= syndrome-a-weight 3)
-        (let ((corrected-codeword (bitwise-xor codeword syndrome-a)))
-          (values (arithmetic-shift corrected-codeword -12) syndrome-a)))
-
-       ;; Case 3: Try to find a match in P matrix rows
+       ;; Case 1: No error or error in data bits
+       ((zero? syndrome)
+        (let ((error-pos
+               (let loop ((i 0))
+                 (if (= i 12)
+                     #f
+                     (if (= (golay-weight (bitwise-xor syndrome (vector-ref p-matrix i))) 2)
+                         (arithmetic-shift 1 i)
+                         (loop (+ i 1)))))))
+          (if error-pos
+              (values (bitwise-xor info-prime error-pos) error-pos)
+              (values info-prime 0))))
+       
+       ;; Case 2: Error in parity bits
+       ((<= syndrome-weight 3)
+        (values info-prime syndrome))
+       
+       ;; Case 3: Error in data bits
        (else
-        (let loop ((i 0) (found #f))
-          (if (or (= i 12) found)
-              found
-              (let* ((row (vector-ref p-matrix i))
-                     (syndrome-b (bitwise-xor syndrome-a row))
-                     (syndrome-b-weight (golay-weight syndrome-b)))
-                (if (<= syndrome-b-weight 2)
-                    (let* ((error-pattern (bitwise-ior (arithmetic-shift 1 (+ i 12)) syndrome-b))
-                           (corrected-codeword (bitwise-xor codeword error-pattern)))
-                      (values (arithmetic-shift corrected-codeword -12) error-pattern))
-                    (loop (+ i 1) #f))))))
-        ;; If not found, try a final check.
-        (let* ((syndrome-b (calculate-syndrome (bitwise-ior (arithmetic-shift 1 23) codeword)))
-               (syndrome-b-weight (golay-weight syndrome-b)))
-          (if (<= syndrome-b-weight 2)
-              (let* ((error-pattern (bitwise-ior (arithmetic-shift 1 23) syndrome-b))
-                     (corrected-codeword (bitwise-xor codeword error-pattern)))
-                (values (arithmetic-shift corrected-codeword -12) error-pattern))
-              ;; Could not correct. Return original with non-zero syndrome.
-              (values info-prime syndrome-a)))))))
+        (let ((error-pos
+               (let loop ((i 0))
+                 (if (= i 12)
+                     #f
+                     (let* ((row (vector-ref p-matrix i))
+                            (new-syndrome (bitwise-xor syndrome row)))
+                       (if (<= (golay-weight new-syndrome) 2)
+                           (bitwise-ior (arithmetic-shift 1 i) new-syndrome)
+                           (loop (+ i 1))))))))
+          (if error-pos
+              (values (bitwise-xor info-prime (arithmetic-shift error-pos -12)) error-pos)
+              (values info-prime syndrome)))))))
 
   ;; ============================================================
   ;; Adaptive Frontier Control
@@ -186,5 +176,4 @@
               (if (< tau-norm 0.5)
                   "DFS (deep exploration)"
                   "BFS (broad exploration)"))
-      (printf "╚═══════════════════════════════════════╝~%"))))
-) ;; end module
+      (printf "╚═══════════════════════════════════════╝~%")))) ;; end module
