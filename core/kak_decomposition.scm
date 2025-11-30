@@ -1,69 +1,189 @@
-;; kak_decomposition.scm - KAK decomposition core library
+;;; ---------------------------------------------------------------------------
+;;; KAK Decomposition & Frontier Logic
+;;; ---------------------------------------------------------------------------
 
-(module kak-decomposition
-  (bmssp-cartan
-   cartan-log-decompose
-   K-frontier
-   K-push
-   K-pop
-   KAK-apply
-   relax-bound)
-  
-  (import chicken scheme)
-  (use srfi-1 srfi-69 data-structures)
-  
-  ;; Machine constants
-  (define machine-epsilon 1e-10)
-  (define log-base (exp 1.0))
-  
-  ;; K-frontier management
-  (define (K-frontier mode size)
-    (case mode
-      ((stack) '())
+;; Module declaration for Chicken 5
+(module core/kak_decomposition
+  (K-frontier K-push K-pop K-empty? K-size
+   K-frontier-adaptive
+   relax-bound graph-neighbors
+   KAK-apply KAK-apply-golay
+   +INF+)
+
+  ;; Fix: Use 'import' instead of 'use' for Chicken 5 compatibility.
+  (import scheme)
+  (import (chicken base)
+          (chicken format)
+          srfi-1    ;; Lists (fold, etc.)
+          srfi-69)  ;; Hash tables
+
+  ;; Import local dependencies
+  (import core/machine_constants)
+  (import core/golay_frontier)
+  (import core/cartan_utils)
+
+  (define +INF+ 1e99)
+
+  ;;; ============================================================
+  ;;; Frontier Implementation (Stack/Queue abstraction)
+  ;;; ============================================================
+  ;;; For 'stack: queue-data is a simple list (top at car)
+  ;;; For 'queue: queue-data is a pair (front . back) where each is a list.
+  ;;;   real-queue-list = append(front (reverse back))
+  ;;; This gives O(1) amortized push/pop for queue.
+
+  (define (K-frontier mode)
+    (cond ((eq? mode 'stack) (cons 'stack '()))
+          ((eq? mode 'queue) (cons 'queue (cons '() '()))) ; (queue . (front . back))
+          (else (error "Unknown frontier mode" mode))))
+
+  (define (K-push frontier val)
+    (let ((mode (car frontier)))
+      (case mode
+        ((stack)
+         (cons 'stack (cons val (cdr frontier))))
+        ((queue)
+         (let* ((fb (cdr frontier))
+                (front (car fb))
+                (back (cdr fb)))
+           ;; push onto back (amortized O(1))
+           (cons 'queue (cons front (cons val back)))))
+        (else (error "Unknown frontier mode" mode)))))
+
+  ;; K-pop returns three values: (success? node frontier')
+  (define (K-pop frontier)
+    (let ((mode (car frontier)))
+      (case mode
+        ((stack)
+         (let ((data (cdr frontier)))
+           (if (null? data)
+               (values #f #f frontier)
+               (values #t (car data) (cons 'stack (cdr data))))))
+        
+        ((queue)
+         (let* ((fb (cdr frontier))
+                (front (car fb))
+                (back (cdr fb)))
+           (cond
+             ((not (null? front))  ; normal case: front has elements
+              (values #t (car front)
+                      (cons 'queue (cons (cdr front) back))))
+             
+             ((null? back)         ; both front and back empty -> empty queue
+              (values #f #f frontier))
+             
+             (else                 ; front empty but back has elements
+              (let ((new-front (reverse back)))
+                (values #t (car new-front)
+                        (cons 'queue (cons (cdr new-front) '()))))))))
+        
+        (else (error "Unknown frontier mode" mode)))))
+
+  (define (K-empty? frontier)
+    (let ((mode (car frontier)))
+      (case mode
+        ((stack) (null? (cdr frontier)))
+        ((queue) 
+         (let ((fb (cdr frontier)))
+           (and (null? (car fb)) (null? (cdr fb)))))
+        (else (error "Unknown frontier mode" mode)))))
+
+  (define (K-size frontier)
+    (let ((mode (car frontier)))
+      (case mode
+        ((stack) (length (cdr frontier)))
+        ((queue)
+         (let ((fb (cdr frontier)))
+           (+ (length (car fb)) (length (cdr fb)))))
+        (else (error "Unknown frontier mode" mode)))))
+
+  ;;; ============================================================
+  ;;; Adaptive Frontier from Golay Control
+  ;;; ============================================================
+
+  (define (K-frontier-adaptive info-bits)
+    ;; Create an adaptive frontier from Golay encoding
+    ;; Returns a structure compatible with K-push/K-pop
+    (let ((af (make-adaptive-frontier info-bits)))
+      ;; Extract mode and convert to K-frontier
+      (let ((mode (adaptive-frontier-mode af)))
+        (K-frontier mode))))
+
+  ;; relax-bound unchanged except use +INF+
+  (define (relax-bound dist-table v new-dist)
+    (let ((current-dist (hash-table-ref/default dist-table v +INF+)))
+      (if (< new-dist current-dist)
+          (begin
+            (hash-table-set! dist-table v new-dist)
+            #t)
+          #f)))
+
+  (define (graph-neighbors graph node)
+    (cond
+      ((hash-table? graph) 
+       (hash-table-ref/default graph node '()))
+      ((list? graph) 
+       (let ((entry (assoc node graph)))
+         (if entry (cdr entry) '())))
       (else '())))
-  
-  ;; K-push
-  (define (K-push frontier val mode)
-    (case mode
-      ((stack) (cons val frontier))
-      ((queue) (append frontier (list val)))
-      (else frontier)))
-  
-  ;; K-pop
-  (define (K-pop frontier mode)
-    (if (null? frontier)
-        (values #f frontier)
-        (case mode
-          ((stack) (values (car frontier) (cdr frontier)))
-          ((queue) (values (car frontier) (cdr frontier)))
-          (else (values #f frontier)))))
-  
-  ;; Cartan log decompose
-  (define (cartan-log-decompose B steps)
-    (let ((logB (if (> B 0) (log B) 0)))
-      (map (lambda (k)
-             (exp (/ (* k logB) (max 1 steps))))
-           (iota (+ steps 1)))))
-  
-  ;; Relax bound
-  (define (relax-bound dist-hash v a-param d-curr)
-    (let ((current-d (hash-table-ref dist-hash v 1e99)))
-      (if (< (+ d-curr a-param) current-d)
-          (hash-table-set! dist-hash v (+ d-curr a-param)))
-      dist-hash))
-  
-  ;; KAK apply (dummy implementation)
-  (define (KAK-apply graph-data init-sources decomp-param frontier-mode max-steps relax-fn neighbor-fn)
-    (let ((dist-table (make-hash-table)))
-      (for-each (lambda (s)
-                  (hash-table-set! dist-table s 0.0))
-                init-sources)
-      dist-table))
-  
-  ;; BMSSP-Cartan macro
-  (define-syntax bmssp-cartan
-    (syntax-rules (graph sources B mode steps neighbors relax)
-      ((_ graph sources B mode steps neighbors relax)
-       (KAK-apply graph sources B mode steps relax neighbors))))
-  
-  ) ;; end module
+
+  ;;; ============================================================
+  ;;; KAK-apply: Level-by-level processing (BFS-style)
+  ;;; ============================================================
+
+  (define (KAK-apply graph sources B frontier-mode max-steps)
+    (define dist-table (make-hash-table))
+    
+    ;; initialize sources distances
+    (for-each (lambda (s) (hash-table-set! dist-table s 0.0)) sources)
+
+    (define decomp-levels (cartan-log-decompose B max-steps))
+
+    ;; initialize frontier with sources
+    (define init-front 
+      (fold (lambda (s acc) (K-push acc s)) 
+            (K-frontier frontier-mode) 
+            sources))
+
+    ;; process level-by-level
+    (let loop ((frontier init-front)
+               (step 0))
+      (if (or (>= step max-steps) (K-empty? frontier))
+          dist-table
+          ;; process all nodes currently in frontier (current-level)
+          (let loop-level ((f frontier) (next-f (K-frontier frontier-mode)))
+            (call-with-values
+                (lambda () (K-pop f))
+              (lambda (success node new-f)
+                (if (not success)
+                    ;; finished current level: move to next level and increment step
+                    (loop next-f (+ step 1))
+                    ;; process node
+                    (let* ((current-dist (hash-table-ref dist-table node))
+                           ;; the decomposition piece for current level
+                           (a-k (list-ref decomp-levels (min step (- (length decomp-levels) 1))))
+                           (neighbors (graph-neighbors graph node)))
+                      ;; relax neighbors and push into next frontier if updated
+                      (for-each
+                       (lambda (edge)
+                         ;; FIX: Use let* for sequential binding
+                         (let* ((nb (car edge)) 
+                                (edge-weight (cdr edge)) 
+                                (new-dist (+ current-dist edge-weight)))
+                           (when (relax-bound dist-table nb new-dist)
+                             (set! next-f (K-push next-f nb)))))
+                       neighbors)
+                      ;; continue processing current level
+                      (loop-level new-f next-f)))))))))
+
+  ;; Add wrapper: use Golay-controlled adaptive frontier to select mode and return tau + frontier
+  (define (KAK-apply-golay graph sources B max-steps info-bits)
+    "Wrapper: build adaptive frontier from info-bits, call KAK-apply with chosen mode.
+     Returns three values: dist-table, tau (weight), adaptive-frontier-vector"
+    (let ((af (make-adaptive-frontier info-bits)))
+      (let ((tau (adaptive-frontier-tau af))
+            (mode (adaptive-frontier-mode af)))
+        (let ((dist (KAK-apply graph sources B mode max-steps)))
+          (values dist tau af))))))
+
+ ;; end module core/kak_decomposition
