@@ -191,7 +191,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
                    | otherwise -> do
                 need [buildDir </> name <.> "stamp"]
                 flagsStr <- askOracle (BuildConfig ())
-                cmd_ csc flagsStr [modSrc m] "-o" [out]
+                cmd_ csc flagsStr "-I" "." [modSrc m] "-o" [out]
                 putInfo $ "✓ Built " ++ out
 
     -- Module stamps (dependency compilation)

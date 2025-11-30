@@ -3,7 +3,7 @@
 ;;; Machine epsilon and fundamental mathematical constants
 ;;; ============================================================
 
-(module machine-constants
+(module core/machine_constants ;; <--- CHANGED: Added 'core/' prefix
   (machine-epsilon
    default-tolerance
    e
@@ -22,8 +22,8 @@
    ;; --- Bit/integer conversion ---
    int->bits
    bits->int
-   hamming-weight
-   )
+   hamming-weight)
+   
   
   ;; Fix for Chicken 5: Explicit imports
   (import scheme)
@@ -190,6 +190,6 @@
       (if (zero? code)
           count  ;; Fixed: removed extra parentheses
           (loop (bitwise-and code (- code 1))
-                (+ count 1)))))
+                (+ count 1))))))
   
-  ) ;; end module
+   ;; end module
