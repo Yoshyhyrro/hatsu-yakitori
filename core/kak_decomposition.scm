@@ -166,9 +166,10 @@
                       ;; relax neighbors and push into next frontier if updated
                       (for-each
                        (lambda (edge)
-                         (let ((nb (car edge)) 
-                               (weight (cdr edge)) 
-                               (new-dist (+ current-dist weight)))
+                         ;; FIX: Use let* for sequential binding
+                         (let* ((nb (car edge)) 
+                                (edge-weight (cdr edge)) 
+                                (new-dist (+ current-dist edge-weight)))
                            (when (relax-bound dist-table nb new-dist)
                              (set! next-f (K-push next-f nb)))))
                        neighbors)
