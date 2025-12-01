@@ -1,5 +1,5 @@
 ;; Boids Module Tests
-
+(import boids)
 ;; basic sanity tests for boids
 (display "\n=== Boids Module Tests ===\n\n")
 

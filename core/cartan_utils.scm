@@ -11,7 +11,7 @@
   (import (chicken base)
           (chicken format)
           srfi-1
-          machine-constants)
+          core.machine_constants)
 
   ;; Simple string padding helper (avoids SRFI-13 dependency)
   (define (pad-left str width pad-char)

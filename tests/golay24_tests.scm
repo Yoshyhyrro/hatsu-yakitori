@@ -6,8 +6,8 @@
 (import scheme)
 (import (chicken base)
         (chicken format))
-(import machine-constants)
-(import golay-frontier)
+(import machine_constants)
+(import golay_frontier)
 
 ;; ============================================================
 ;; Test Framework

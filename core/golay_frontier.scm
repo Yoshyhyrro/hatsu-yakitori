@@ -30,7 +30,7 @@
           srfi-1
           srfi-69)
   
-  (import machine-constants) 
+  (import core.machine_constants) 
   
   ;; ============================================================
   ;; Golay[24,12] Code Implementation

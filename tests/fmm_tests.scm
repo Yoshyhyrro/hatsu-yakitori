@@ -1,5 +1,6 @@
 ;; FMM Module Tests
-
+(import scheme
+ fmm)
 ;; basic sanity tests for fmm
 (display "\n=== FMM Module Tests ===\n\n")
 

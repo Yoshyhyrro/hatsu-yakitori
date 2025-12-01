@@ -6,8 +6,8 @@
 (import scheme)
 (import (chicken base)
         (chicken format))
-(import machine-constants)
-(import goppa-gc-mock)
+(import machine_constants)
+(import goppa_gc_mock)
 
 ;; ============================================================
 ;; Test Framework

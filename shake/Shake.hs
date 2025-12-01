@@ -14,6 +14,7 @@ import Data.Maybe (fromMaybe, listToMaybe)
 import Data.List (find, unwords, isSuffixOf) -- isSuffixOf を追加
 import Data.Typeable
 import GHC.Generics
+import System.Info (os)
 
 -- | Build flags
 data Flags = Flags
@@ -58,7 +59,7 @@ modules =
     , Module "sssp_geometry"   "modules/sssp_geometry/sssp_geo_main.scm" "tests/sssp_geometry_tests.scm" golayDeps
     
     -- 【新規追加】Goppa GC Mock
-    , Module "goppa-gc-mock"   ""                                     "tests/goppa_gc_mock_tests.scm" goppaDeps
+    , Module "goppa_gc_mock"   ""                                     "tests/goppa_gc_mock_tests.scm" goppaDeps
     ]
   where
     -- Core dependencies (MUST BE IN DEPENDENCY ORDER)
@@ -95,7 +96,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Compiler flags based on debug setting
     let cflags = if flagDebug mergedFlags
-                 then "-O3 -g -debug-level 3"
+                 then "-O3 -debug-level 3"
                  else "-O3 -optimize-leaf-routines"
 
     -- Oracle rules for configuration
@@ -229,29 +230,36 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         putInfo $ "✓ Tests passed for " ++ modName m
 
     -- Salmonella testing
-    phony "test-salmonella" $ do
-        -- 【修正】変数名を target に変更
-        let target = case flagModule mergedFlags of
-                Just n  -> n
-                Nothing -> error "MODULE required for salmonella testing"
-        
-        case findModule target of
-            Nothing -> error $ "Unknown module: " ++ target
-            Just m -> do
-                need ["build-" ++ modName m]
-                let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
-                cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
+    if os == "mingw32" || os == "win32"
+    then do
+        let unsupportedMsg = "Salmonella tests are not supported on Windows."
+        phony "test-salmonella" $ putInfo unsupportedMsg
+        phony "test-all-salmonella" $ putInfo unsupportedMsg
+        forM_ modules $ \m -> phony ("salmonella-" ++ modName m) $ return ()
+    else do
+        phony "test-salmonella" $ do
+            -- 【修正】変数名を target に変更
+            let target = case flagModule mergedFlags of
+                    Just n  -> n
+                    Nothing -> error "MODULE required for salmonella testing"
+            
+            case findModule target of
+                Nothing -> error $ "Unknown module: " ++ target
+                Just m -> do
+                    need ["build-" ++ modName m]
+                    let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
+                    cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
 
-    -- Test all with salmonella
-    phony "test-all-salmonella" $ do
-        forM_ modules $ \m ->
-            need ["salmonella-" ++ modName m]
-        putInfo "✓ All modules passed salmonella"
+        -- Test all with salmonella
+        phony "test-all-salmonella" $ do
+            forM_ modules $ \m ->
+                need ["salmonella-" ++ modName m]
+            putInfo "✓ All modules passed salmonella"
 
-    forM_ modules $ \m -> phony ("salmonella-" ++ modName m) $ do
-        need ["build-" ++ modName m]
-        let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
-        cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
+        forM_ modules $ \m -> phony ("salmonella-" ++ modName m) $ do
+            need ["build-" ++ modName m]
+            let logFile = buildDir </> ("salmonella_" ++ modName m) <.> "log"
+            cmd_ "salmonella" ("--log-file=" ++ logFile) "--verbosity=2" (modName m)
 
     -- Clean
     phony "clean" $ do
@@ -259,4 +267,10 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         removeFilesAfter buildDir ["//*"]
         removeFilesAfter distDir ["//*"]
         removeFilesAfter "/tmp" ["test_*" <.> exe]
+        
+        -- 追加: ソースツリーを汚染した中間ファイルを削除
+        removeFilesAfter "core" ["//*.o", "//*.import.scm", "//*.link"]
+        removeFilesAfter "modules" ["//*.o", "//*.import.scm", "//*.link"]
+        removeFilesAfter "tests" ["//*.o", "//*.import.scm"] -- テストディレクトリも念のため
+        
         putInfo "✓ Clean complete"

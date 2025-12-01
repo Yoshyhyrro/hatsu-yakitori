@@ -3,7 +3,7 @@
 ;;; Machine epsilon and fundamental mathematical constants
 ;;; ============================================================
 
-(module core/machine_constants ;; <--- CHANGED: Added 'core/' prefix
+(module core.machine_constants 
   (machine-epsilon
    default-tolerance
    e

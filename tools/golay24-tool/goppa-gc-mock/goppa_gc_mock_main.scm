@@ -1,5 +1,5 @@
-;; tools/goppa-gc-mock/goppa_gc_mock_main.scm
-(import goppa-gc-mock)
+;; tools/golay24-tool/goppa-gc-mock/goppa_gc_mock_main.scm
+(import goppa_gc_mock)
 
 (define (main args)
   (printf "Goppa GC Toxic Mock Generator~%")

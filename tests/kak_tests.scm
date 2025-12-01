@@ -2,14 +2,18 @@
 ;; tests/kak_tests.scm
 ;; Unit tests for kak_decomposition module
 ;; ============================================================
+(include "core.machine_constants.scm")
+(include "core.golay_frontier.scm")
+(include "core.cartan_utils.scm")
+(include "core.kak_decomposition.scm")
 
 (import scheme)
 (import (chicken base)
         (chicken format)
         srfi-1
-        core/kak_decomposition
-        core/machine_constants
-        core/cartan_utils)
+        core.kak_decomposition
+        core.machine_constants
+        core.cartan_utils)
 
 ;; Test framework
 (define test-count 0)
