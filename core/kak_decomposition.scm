@@ -4,7 +4,7 @@
 ;;; ---------------------------------------------------------------------------
 
 ;; 修正点1: モジュール名をファイルパス/インポート名に合わせて 'core/kak_decomposition' に変更
-(module core/kak_decomposition
+(module core.kak_decomposition
   (K-frontier 
    K-push 
    K-pop 
@@ -25,9 +25,9 @@
 
   ;; 修正点2: 内部依存関係も 'core/' プレフィックスを付けてインポート
   ;; (テストファイルの import と整合性を取るため)
-  (import core/machine_constants)
-  (import core/golay_frontier) ;; ファイル名が golay_frontier.scm ならアンダースコアに注意
-  (import core/cartan_utils)
+  (import core.machine_constants)
+  (import core.golay_frontier)
+  (import core.cartan_utils)
 
   (define +INF+ 1e99)
 

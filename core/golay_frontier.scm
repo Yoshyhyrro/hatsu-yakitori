@@ -3,7 +3,7 @@
 ;; Golay code-based adaptive frontier management for KAK decomposition
 ;; ============================================================
 
-(module core/golay_frontier
+(module core.golay_frontier
   (
    ;; --- Golay codes ---
    golay24-generator
