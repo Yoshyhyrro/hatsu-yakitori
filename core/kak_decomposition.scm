@@ -3,7 +3,7 @@
 ;;; KAK Decomposition & Frontier Logic
 ;;; ---------------------------------------------------------------------------
 
-;; 修正点1: モジュール名をファイルパス/インポート名に合わせて 'core/kak_decomposition' に変更
+;; ✅ FIX: スラッシュをドットに統一
 (module core.kak_decomposition
   (K-frontier 
    K-push 
@@ -23,8 +23,7 @@
           srfi-1
           srfi-69)
 
-  ;; 修正点2: 内部依存関係も 'core/' プレフィックスを付けてインポート
-  ;; (テストファイルの import と整合性を取るため)
+  ;; ✅ FIX: すべてドット記法で統一
   (import core.machine_constants)
   (import core.golay_frontier)
   (import core.cartan_utils)
@@ -168,5 +167,3 @@
             (mode (adaptive-frontier-mode af)))
         (let ((dist (KAK-apply graph sources B mode max-steps)))
           (values dist tau af))))))
-
- ;; end module

@@ -2,20 +2,26 @@
 ;; tests/kak_tests.scm
 ;; Unit tests for kak_decomposition module
 ;; ============================================================
-(include "core.machine_constants.scm")
-(include "core.golay_frontier.scm")
-(include "core.cartan_utils.scm")
-(include "core.kak_decomposition.scm")
 
+;; ✅ FIX: includeをimportに変更
+;; CHICKENのモジュールシステムでは、コンパイル済みモジュールを
+;; importで読み込む
 (import scheme)
 (import (chicken base)
         (chicken format)
         srfi-1
-        core.kak_decomposition
-        core.machine_constants
-        core.cartan_utils)
+        srfi-69)
 
-;; Test framework
+;; ✅ 依存モジュールをimport（includeは不要）
+(import core.machine_constants)
+(import core.golay_frontier)
+(import core.cartan_utils)
+(import core.kak_decomposition)
+
+;; ============================================================
+;; Test Framework
+;; ============================================================
+
 (define test-count 0)
 (define test-passed 0)
 (define test-failed 0)
@@ -111,7 +117,7 @@
 ;; Cartan Decomposition Integration Test
 ;; ============================================================
 
-(define (test-pretty-print-decomposition)
+(define (test-cartan-decomposition)
   (printf "~%=== Cartan Decomposition ===~%")
   (let ((B 1000)
         (steps 5))
@@ -131,7 +137,7 @@
   (test-frontier-operations)
   (test-graph-operations)
   (test-kak-apply)
-  (test-pretty-print-decomposition)
+  (test-cartan-decomposition)
   
   (printf "~%========================================~%")
   (printf "Test Summary~%")

@@ -2,7 +2,8 @@
 ;;; cartan_utils.scm - Utility functions for Cartan decomposition
 ;;; ---------------------------------------------------------------------------
 
-(module core/cartan_utils
+;; ✅ FIX: スラッシュをドットに統一
+(module core.cartan_utils
   (pretty-print-decomposition
    validate-decomposition
    cartan-log-decompose)
@@ -11,7 +12,7 @@
   (import (chicken base)
           (chicken format)
           srfi-1
-          core.machine_constants)
+          core.machine_constants)  ; ✅ ドット記法で統一
 
   ;; Simple string padding helper (avoids SRFI-13 dependency)
   (define (pad-left str width pad-char)
@@ -33,16 +34,12 @@
            (iota (+ steps 1)))))
 
   ;; Pretty print decomposition hierarchy
-  ;; Simple formatting without external dependencies
   (define (pretty-print-decomposition B steps)
     (let ((decomp (cartan-log-decompose B steps)))
       (printf "Cartan decomposition (B=~a, steps=~a):~%" B steps)
       (for-each (lambda (k v)
-                  ;; Format: "  Level  0: 1.000000"
                   (printf "  Level ~a: ~a~%" 
                           (pad-left (number->string k) 2 #\space)
                           v))
                 (iota (+ steps 1))
                 decomp))))
-
-   ;; end module
