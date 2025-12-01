@@ -56,6 +56,9 @@ modules =
     , Module "kak-decomposition" "core/kak_decomposition.scm"           "tests/kak_tests.scm"         coreFiles
     , Module "golay24-tool"     "tools/golay24-tool/golay24_main.scm" "tests/golay24_tests.scm"     golayDeps
     , Module "sssp_geometry"   "modules/sssp_geometry/sssp_geo_main.scm" "tests/sssp_geometry_tests.scm" golayDeps
+    
+    -- 【新規追加】Goppa GC Mock
+    , Module "goppa-gc-mock"   ""                                     "tests/goppa_gc_mock_tests.scm" goppaDeps
     ]
   where
     -- Core dependencies (MUST BE IN DEPENDENCY ORDER)
@@ -63,9 +66,15 @@ modules =
                 , "core/golay_frontier.scm"
                 , "core/cartan_utils.scm"
                 , "core/kak_decomposition.scm" ]
+    
     -- Golay tool only needs first two
     golayDeps = [ "core/machine_constants.scm"
                 , "core/golay_frontier.scm" ]
+    
+    -- Goppa GC Mock dependencies
+    goppaDeps = [ "core/machine_constants.scm"
+                , "core/golay_frontier.scm"
+                , "core/goppa_gc_mock.scm" ]
 
 -- | Find module by name
 findModule :: String -> Maybe Module
