@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'core/golay_frontier
-      '#f
+      'core/golay_frontier
       (scheme#list)
       '((golay24-generator . core/golay_frontier#golay24-generator)
         (golay24-parity-check . core/golay_frontier#golay24-parity-check)
