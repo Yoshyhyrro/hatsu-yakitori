@@ -11,7 +11,7 @@ import Control.Monad
 import System.Console.GetOpt
 import System.Directory (removeFile)
 import Data.Maybe (fromMaybe, listToMaybe)
-import Data.List (find, unwords, isSuffixOf) -- isSuffixOf を追加
+import Data.List (find, unwords, isSuffixOf)
 import Data.Typeable
 import GHC.Generics
 import System.Info (os)
@@ -57,8 +57,6 @@ modules =
     , Module "kak-decomposition" "core/kak_decomposition.scm"           "tests/kak_tests.scm"         coreFiles
     , Module "golay24-tool"     "tools/golay24-tool/golay24_main.scm" "tests/golay24_tests.scm"     golayDeps
     , Module "sssp_geometry"   "modules/sssp_geometry/sssp_geo_main.scm" "tests/sssp_geometry_tests.scm" golayDeps
-    
-    -- 【新規追加】Goppa GC Mock
     , Module "goppa_gc_mock"   ""                                     "tests/goppa_gc_mock_tests.scm" goppaDeps
     ]
   where
@@ -68,11 +66,9 @@ modules =
                 , "core/cartan_utils.scm"
                 , "core/kak_decomposition.scm" ]
     
-    -- Golay tool only needs first two
     golayDeps = [ "core/machine_constants.scm"
                 , "core/golay_frontier.scm" ]
     
-    -- Goppa GC Mock dependencies
     goppaDeps = [ "core/machine_constants.scm"
                 , "core/golay_frontier.scm"
                 , "core/goppa_gc_mock.scm" ]
@@ -80,6 +76,11 @@ modules =
 -- | Find module by name
 findModule :: String -> Maybe Module
 findModule name = find (\m -> modName m == name) modules
+
+-- | Convert source path to object file path
+-- Example: "core/machine_constants.scm" -> "core/machine_constants.o"
+toObjFile :: FilePath -> FilePath
+toObjFile scmPath = replaceExtension scmPath "o"
 
 main :: IO ()
 main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} flags $ \flags targets -> return $ Just $ do
@@ -157,7 +158,6 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Generic build target
     phony "build" $ do
-        -- 【修正】変数名を target に変更（modName関数との衝突を回避）
         let target = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required (use --module=NAME or MODULE=NAME)"
@@ -169,7 +169,6 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- Generic test target
     phony "test" $ do
-        -- 【修正】変数名を target に変更
         let target = case flagModule mergedFlags of
                 Just n  -> n
                 Nothing -> error "MODULE required"
@@ -191,7 +190,6 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
     -- Application binaries (cross-platform with exe)
     (distDir </> "*_app" <.> exe) %> \out -> do
         let baseName = takeBaseName $ dropExtension out
-        -- 【修正】_app サフィックスを安全に除去してモジュール名を特定
         let name | "_app" `isSuffixOf` baseName = take (length baseName - 4) baseName
                  | otherwise = baseName
 
@@ -219,12 +217,18 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
                 writeFile' out ""
                 putInfo $ "✓ Compiled " ++ name ++ " dependencies"
 
-    -- Test individual modules
+    -- ✅ FIX: Test individual modules with proper linking
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
         let testBin = "/tmp/test_" ++ modName m <.> exe
         flagsStr <- askOracle (BuildConfig ())
-        cmd_ csc flagsStr [modTest m] "-o" [testBin]
+        
+        -- ✅ Generate list of .o files from dependencies
+        let objFiles = map toObjFile (modDeps m)
+        
+        -- ✅ Compile test with dependency object files linked
+        cmd_ csc flagsStr [modTest m] objFiles "-o" [testBin]
+        
         cmd_ testBin
         liftIO $ removeFile testBin
         putInfo $ "✓ Tests passed for " ++ modName m
@@ -238,7 +242,6 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         forM_ modules $ \m -> phony ("salmonella-" ++ modName m) $ return ()
     else do
         phony "test-salmonella" $ do
-            -- 【修正】変数名を target に変更
             let target = case flagModule mergedFlags of
                     Just n  -> n
                     Nothing -> error "MODULE required for salmonella testing"
@@ -267,10 +270,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         removeFilesAfter buildDir ["//*"]
         removeFilesAfter distDir ["//*"]
         removeFilesAfter "/tmp" ["test_*" <.> exe]
-        
-        -- 追加: ソースツリーを汚染した中間ファイルを削除
         removeFilesAfter "core" ["//*.o", "//*.import.scm", "//*.link"]
         removeFilesAfter "modules" ["//*.o", "//*.import.scm", "//*.link"]
-        removeFilesAfter "tests" ["//*.o", "//*.import.scm"] -- テストディレクトリも念のため
-        
+        removeFilesAfter "tests" ["//*.o", "//*.import.scm"]
         putInfo "✓ Clean complete"
