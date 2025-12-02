@@ -213,7 +213,8 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
                 -- Compile dependencies IN ORDER (important for imports)
                 forM_ (modDeps m) $ \dep -> do
                     putInfo $ "Compiling dependency: " ++ dep
-                    cmd_ csc flagsStr "-c -J" [dep]
+                    let unitName = takeBaseName dep
+                    cmd_ csc flagsStr "-c -J" "-unit" [unitName] [dep]
                 writeFile' out ""
                 putInfo $ "✓ Compiled " ++ name ++ " dependencies"
 
