@@ -1,7 +1,7 @@
 # hatsu-yakitori Build System
 # Delegates all build logic to Shake
 
-SHAKE := stack runhaskell shake/Shake.hs
+SHAKE := stack runhaskell -- -ishake shake/Shake.hs
 
 # Module names
 MODULES := boids fmm sssp kak-decomposition golay24-tool
