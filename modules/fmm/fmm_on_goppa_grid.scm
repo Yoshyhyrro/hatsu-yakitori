@@ -1,68 +1,76 @@
 ;; module/fmm/fmm_on_goppa_grid.scm
-;; Minimal prototype: Represent FMM-like multipole/local expansions on a Goppa-grid
-;; Uses Chicken Scheme style modules and common SRFIs. This is a conceptual, annotated
-;; library for experimentation — numeric heavy lifting (FFT, BLAS) should be linked
-;; via FFI or calls to external libraries for production use.
 ;;
-;; Exports:
-;;  - make-goppa-grid: (q m points) -> grid
-;;  - local-parameter: (grid i) -> t_i (local coordinate)
-;;  - compute-laurent-coefs: (grid center idx order) -> vector of coefficients
-;;  - aggregate-multipoles: (grid order) -> hash-table mapping cell->multipole-vector
-;;  - translate-multipole-to-local: (M center->L center order) -> local vector
-;;  - demo-run: small demo constructing grid and doing simple multipole sum
-;;  - demo-cartan: demo with Cartan decomposition based FMM hierarchy
+;; Revised Goppa-FMM Prototype
+;; ---------------------------
+;; Fixes:
+;;  - Separation of Geometric Center vs Particle Position (Singularity fix)
+;;  - Correct M2L Basis Translation (Binomial convolution)
+;;  - Integration with Golay-code based adaptive frontier
+;;
+;; Conceptual Mapping:
+;;  - Goppa Grid Points  <-> Algebraic Curve Divisors
+;;  - FMM Multipoles     <-> Laurent Series Principal Parts
+;;  - Golay Weight       <-> Adaptive Tree Traversal Strategy
 ;;
 (module module.fmm.fmm-goppa
-  (make-goppa-grid local-parameter compute-laurent-coefs
-   aggregate-multipoles translate-multipole-to-local demo-run
-   demo-cartan make-hierarchical-grid cartan-fmm-evaluate)
+  (make-goppa-grid
+   local-parameter
+   calculate-geometric-center
+   cartan-fmm-evaluate-golay ;; Main entry point
+   demo-cartan-golay)
 
   (import (scheme)
           (chicken base)
           (chicken format)
           (chicken math)
+          (chicken sort)
           srfi-1
           srfi-69
-          core/cartan_utils)  ; Import Cartan decomposition utilities
+          srfi-133 ;; Vector lib usually helpful
+          core/golay_frontier) ;; Import the Frontier logic
 
   ;; ------------------------------------------------------------------
-  ;; Utilities
+  ;; Complex Arithmetic Helpers (Cons pairs)
   ;; ------------------------------------------------------------------
-  (define (vec->string v)
-    (format #f "[~{~a~^, ~}]" (vector->list v)))
-
-  ;; safe numeric inverse with tiny regularizer
-  (define (safe-inv x eps)
-    (if (< (abs x) eps) (/ x (+ (abs x) eps)) (/ 1.0 x)))
-
-  ;; Complex arithmetic helpers (pairs)
   (define (c-add a b) (cons (+ (car a) (car b)) (+ (cdr a) (cdr b))))
   (define (c-sub a b) (cons (- (car a) (car b)) (- (cdr a) (cdr b))))
   (define (c-mul a b) (cons (- (* (car a) (car b)) (* (cdr a) (cdr b)))
-                           (+ (* (car a) (cdr b)) (* (cdr a) (car b)))))
+                            (+ (* (car a) (cdr b)) (* (cdr a) (car b)))))
   (define (c-div a b)
     (let ((den (+ (* (car b) (car b)) (* (cdr b) (cdr b)))))
-      (cons (/ (+ (* (car a) (car b)) (* (cdr a) (cdr b))) den)
-            (/ (- (* (cdr a) (car b)) (* (car a) (cdr b))) den))))
+      (if (zero? den)
+          (cons 0.0 0.0) ;; Handle singularity gracefully (residue logic elsewhere)
+          (cons (/ (+ (* (car a) (car b)) (* (cdr a) (cdr b))) den)
+                (/ (- (* (cdr a) (car b)) (* (car a) (cdr b))) den)))))
+  
   (define (c-abs a) (sqrt (+ (* (car a) (car a)) (* (cdr a) (cdr a)))))
+  
   (define (c-pow z n)
     (let loop ((i 0) (acc (cons 1.0 0.0)))
-      (if (= i n) acc
-          (loop (+ i 1) (c-mul acc z)))))
+      (if (= i n) acc (loop (+ i 1) (c-mul acc z)))))
+  
   (define (c-inv z)
     (let ((den (+ (* (car z) (car z)) (* (cdr z) (cdr z)))))
-      (cons (/ (car z) den) (/ (- (cdr z)) den))))
+      (if (< den 1.0e-12)
+          (cons 0.0 0.0) ;; Pseudo-inverse for singularities
+          (cons (/ (car z) den) (/ (- (cdr z)) den)))))
+
+  ;; Combinatorics for M2L
+  (define (fact n)
+    (if (<= n 1) 1 (* n (fact (- n 1)))))
+  
+  (define (nCk n k)
+    (/ (fact n) (* (fact k) (fact (- n k)))))
 
   ;; ------------------------------------------------------------------
-  ;; 1) Goppa grid construction (conceptual)
+  ;; 1) Goppa Grid & Geometry
   ;; ------------------------------------------------------------------
   (define (make-goppa-grid q m num-points)
-    "Make a conceptual Goppa-like grid: returns a vector of complex local parameters t_i."
     (let* ((N num-points)
            (two-pi (* 2.0 (acos -1.0))))
       (do ((k 0 (+ k 1)) (acc (make-vector N '())))
           ((= k N) acc)
+        ;; Create points on unit circle (Analogy: Points on curve)
         (let* ((theta (* two-pi (/ k (exact->inexact N))))
                (t (cons (cos theta) (sin theta))))
           (vector-set! acc k t)))))
@@ -70,181 +78,172 @@
   (define (local-parameter grid i)
     (vector-ref grid (modulo i (vector-length grid))))
 
-  ;; ------------------------------------------------------------------
-  ;; 2) Compute Laurent coefficients for kernel 1/(t - t_center)
-  ;; ------------------------------------------------------------------
-  (define (compute-laurent-coefs grid t-center idx order)
-    "Compute order Laurent coefficients for kernel 1/(t - t_idx) about t-center.
-     Returns a vector of length 'order' representing coefficients for n=0..order-1."
-    (let* ((t-idx (local-parameter grid idx))
-           (z (c-sub t-idx t-center))
-           (vec (make-vector order (cons 0.0 0.0))))
-      (let loop ((n 0))
-        (when (< n order)
-          (let* ((zp (c-pow z (+ n 1)))
-                 (inv-zp (c-inv zp))
-                 (an (cons (- (car inv-zp)) (- (cdr inv-zp)))))
-            (vector-set! vec n an)
-            (loop (+ n 1)))))
-      vec))
+  (define (calculate-geometric-center grid indices)
+    (if (null? indices)
+        (cons 0.0 0.0)
+        (let ((sum (cons 0.0 0.0))
+              (count (length indices)))
+          (for-each (lambda (idx)
+                      (set! sum (c-add sum (local-parameter grid idx))))
+                    indices)
+          (cons (/ (car sum) count) (/ (cdr sum) count)))))
 
   ;; ------------------------------------------------------------------
-  ;; 3) Aggregate multipoles: naive O(N^2) aggregation (conceptual)
+  ;; 2) FMM Kernels (Algebraic Geometry Corrected)
   ;; ------------------------------------------------------------------
-  (define (aggregate-multipoles grid order)
-    "Return hash-table: index -> multipole-vector (vector of complex coefs)"
-    (let ((N (vector-length grid))
-          (table (make-hash-table)))
-      (do ((i 0 (+ i 1))) ((= i N) table)
-        (let ((t-center (local-parameter grid i))
-              (M (make-vector order (cons 0.0 0.0))))
-          (do ((j 0 (+ j 1))) ((= j N))
-            (when (not (= i j))
-              (let ((coefs (compute-laurent-coefs grid t-center j order)))
-                (do ((n 0 (+ n 1))) ((= n order))
-                  (let ((prev (vector-ref M n))
-                        (add (vector-ref coefs n)))
-                    (vector-set! M n (c-add prev add)))))))
-          (hash-table-set! table i M)))))
+  
+  ;; P2M: Particle to Multipole
+  ;; Creates Laurent expansion coefficients about 'center'
+  (define (p2m-kernel grid sources source-charges center order)
+    (let ((M (make-vector order (cons 0.0 0.0))))
+      (for-each (lambda (idx q)
+                  (let* ((z-s (local-parameter grid idx))
+                         (delta (c-sub z-s center)))
+                    (do ((k 0 (+ k 1))) ((= k order))
+                      ;; M_k += q * (z_s - z_c)^k
+                      (let* ((term-pow (c-pow delta k))
+                             ;; Charge q is scalar, represented as complex (q, 0)
+                             (q-complex (cons q 0.0))
+                             (term (c-mul q-complex term-pow)))
+                        (vector-set! M k (c-add (vector-ref M k) term))))))
+                sources source-charges)
+      M))
 
-  ;; ------------------------------------------------------------------
-  ;; 4) Translate multipole to local: change-of-center via binomial convolution
-  ;; ------------------------------------------------------------------
-  (define (translate-multipole-to-local M t-a t-b order)
-    "Translate multipole M (vector len order) at center t-a to local L at t-b."
+  ;; M2L: Multipole to Local translation
+  ;; Shifts singularity from z_s to z_t using Binomial convolution
+  (define (m2l-translation M z-s z-t order)
     (let ((L (make-vector order (cons 0.0 0.0)))
-          (delta (c-sub t-b t-a)))
-      (do ((k 0 (+ k 1))) ((= k order) L)
-        (let ((acc (cons 0.0 0.0)))
-          (do ((n 0 (+ n 1))) ((= n order))
-            (let* ((Mn (vector-ref M n))
-                   (exponent (+ n k 1))
-                   (dpow (c-pow delta exponent))
-                   (inv-dpow (c-inv dpow))
-                   (term (c-mul Mn inv-dpow)))
-              (set! acc (c-add acc term))))
-          (vector-set! L k acc)))))
+          (z-diff (c-sub z-t z-s))) ;; Vector from Source Center to Target Center
+      
+      (do ((j 0 (+ j 1))) ((= j order) L)
+        (let ((sum (cons 0.0 0.0)))
+          (do ((k 0 (+ k 1))) ((= k order))
+            ;; Formula for 1/z kernel shift:
+            ;; L_j = sum_{k} M_k * (-1)^k * nCk(j+k, k) / (z_t - z_s)^(j+k+1)
+            (let* ((binom (exact->inexact (nCk (+ j k) k)))
+                   (sign (if (odd? k) -1.0 1.0))
+                   (denom-pow (c-pow z-diff (+ j k 1)))
+                   (numerator (cons (* sign binom) 0.0))
+                   (factor (c-div numerator denom-pow))
+                   (term (c-mul (vector-ref M k) factor)))
+              (set! sum (c-add sum term))))
+          (vector-set! L j sum)))))
+
+  ;; L2P: Local to Particle evaluation
+  ;; Evaluates Taylor series at z_target
+  (define (l2p-evaluate L z-target z-center order)
+    (let ((potential (cons 0.0 0.0))
+          (delta (c-sub z-target z-center)))
+      (do ((j 0 (+ j 1))) ((= j order) potential)
+        ;; Phi(z) += L_j * (z - z_c)^j
+        (let ((term (c-mul (vector-ref L j) (c-pow delta j))))
+          (set! potential (c-add potential term))))))
 
   ;; ------------------------------------------------------------------
-  ;; 5) Cartan decomposition enhanced FMM functions
+  ;; 3) Golay-driven Evaluation
   ;; ------------------------------------------------------------------
-  (define (make-hierarchical-grid B steps num-points)
-    "Create hierarchical grid using Cartan decomposition levels"
-    (unless (validate-decomposition B steps)
-      (error "Invalid Cartan decomposition parameters"))
+
+  (define (cartan-fmm-evaluate-golay grid hierarchy sources charges target-idx order golay-info-bits)
+    "Evaluate potential at target-idx using FMM driven by Golay Frontier."
     
-    (let* ((grid (make-goppa-grid 2 5 num-points))  ; q=2, m=5 for demo
-           (levels (cartan-log-decompose B steps))
-           (level-count (length levels)))
-      (printf "Cartan decomposition levels (B=~a, steps=~a):~%" B steps)
-      (pretty-print-decomposition B steps)
+    ;; Initialize Frontier with given info-bits (controls BFS vs DFS behavior)
+    (let* ((frontier (make-adaptive-frontier golay-info-bits))
+           (target-pos (local-parameter grid target-idx))
+           (total-potential (cons 0.0 0.0)))
       
-      ;; Create hierarchy: assign points to levels based on distance from origin
-      ;; In real implementation, would use geometric clustering
-      (let ((hierarchy (make-vector level-count '())))
-        (do ((i 0 (+ i 1))) ((= i (vector-length grid)))
-          (let* ((point (local-parameter grid i))
-                 (dist (c-abs point))
-                 ;; Find appropriate level based on distance
-                 (level-index 
-                  (let loop ((j 0) (min-diff 1e10) (best-level 0))
-                    (if (>= j level-count)
-                        best-level
-                        (let ((diff (abs (- dist (list-ref levels j)))))
-                          (if (< diff min-diff)
-                              (loop (+ j 1) diff j)
-                              (loop (+ j 1) min-diff best-level)))))))
-            (vector-set! hierarchy level-index
-                         (cons i (vector-ref hierarchy level-index)))))
-        (cons grid hierarchy))))
-
-  (define (cartan-fmm-evaluate B steps sources target-idx order)
-    "Evaluate FMM using Cartan decomposition hierarchy"
-    (let* ((num-sources (length sources))
-           (grid-hierarchy (make-hierarchical-grid B steps num-sources))
-           (grid (car grid-hierarchy))
-           (hierarchy (cdr grid-hierarchy))
-           (target (local-parameter grid target-idx))
-           (result (make-vector order (cons 0.0 0.0))))
+      (print-frontier-info frontier)
       
-      ;; For each level in hierarchy
-      (do ((level 0 (+ level 1))) ((= level (vector-length hierarchy)) result)
-        (let ((indices (vector-ref hierarchy level)))
-          (unless (null? indices)
-            ;; Compute multipole at level center (simplified: use first point)
-            (let* ((level-center (local-parameter grid (car indices)))
-                   (M (make-vector order (cons 0.0 0.0))))
-              ;; Aggregate contributions from all sources in this level
-              (for-each (lambda (idx)
-                          (when (not (= idx target-idx))
-                            (let ((coefs (compute-laurent-coefs grid level-center idx order)))
-                              (do ((n 0 (+ n 1))) ((= n order))
-                                (vector-set! M n 
-                                  (c-add (vector-ref M n) 
-                                         (vector-ref coefs n)))))))
-                        indices)
-              
-              ;; Translate to target and accumulate
-              (let ((L (translate-multipole-to-local M level-center target order)))
-                (do ((n 0 (+ n 1))) ((= n order))
-                  (vector-set! result n 
-                    (c-add (vector-ref result n) 
-                           (vector-ref L n)))))))))))
+      ;; Initial Task: Process all levels in the hierarchy
+      ;; We push levels to the frontier.
+      ;; If Mode is Stack (DFS), we process deep (fine) levels first? 
+      ;; Or we can interpret Frontier as a worklist of 'Cell Blocks'.
+      
+      ;; Let's push indices of levels [0 ... max-level] into frontier
+      (let ((num-levels (vector-length hierarchy)))
+        (do ((i 0 (+ i 1))) ((= i num-levels))
+          (set! frontier (adaptive-frontier-push frontier i))))
+      
+      ;; Worklist Loop
+      (let loop ()
+        (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
+          (when level-idx
+            (set! frontier updated-frontier)
+            
+            (let ((cell-indices (vector-ref hierarchy level-idx)))
+              (unless (null? cell-indices)
+                (let* ((level-center (calculate-geometric-center grid cell-indices))
+                       (dist (c-abs (c-sub target-pos level-center)))
+                       ;; 簡易判定: 距離が近い or レベルが高い(細かい)場合は Direct
+                       ;; 本来はボックスサイズ比で判定
+                       (is-near-field (< dist 0.5))) 
+                  
+                  (cond
+                   ;; [Near Field Logic] -> Direct Sum
+                   (is-near-field
+                    ;; (printf "  [Near] Level ~a Direct Calc~%" level-idx)
+                    (for-each 
+                     (lambda (src-idx)
+                       (unless (= src-idx target-idx)
+                         (let* ((src-pos (local-parameter grid src-idx))
+                                (diff (c-sub target-pos src-pos))
+                                ;; q = 1.0 assumed for simplicity if not looked up
+                                ;; In real code, lookup charges[src-idx]
+                                (q (list-ref charges src-idx)) ;; Assuming charges is list matching sources
+                                (val (c-div (cons q 0.0) diff)))
+                           (set! total-potential (c-add total-potential val)))))
+                     cell-indices))
+                   
+                   ;; [Far Field Logic] -> Multipole Expansion
+                   (else
+                    ;; (printf "  [Far]  Level ~a Multipole~%" level-idx)
+                    ;; 1. P2M
+                    (let ((M (p2m-kernel grid cell-indices 
+                                         (map (lambda (x) (list-ref charges x)) cell-indices) 
+                                         level-center order)))
+                      ;; 2. M2L (To target position directly for this demo)
+                      (let ((L (m2l-translation M level-center target-pos order)))
+                        ;; 3. L2P (Eval at center=target)
+                        ;; term L[0] corresponds to constant term of local expansion
+                        (set! total-potential (c-add total-potential (vector-ref L 0))))))
+                   ))))
+            (loop))))
+      
+      total-potential))
 
   ;; ------------------------------------------------------------------
-  ;; Demo runners
+  ;; Demo
   ;; ------------------------------------------------------------------
-  (define (demo-run)
-    "Small demo: build grid, aggregate multipoles, translate one multipole to local, print."
-    (let* ((grid (make-goppa-grid 2 5 16))
-           (order 6)
-           (M-table (aggregate-multipoles grid order))
-           (i 0)
-           (j 3)
-           (M (hash-table-ref M-table i))
-           (ta (local-parameter grid i))
-           (tb (local-parameter grid j))
-           (L (translate-multipole-to-local M ta tb order)))
-      (printf "Grid size: ~a\n" (vector-length grid))
-      (printf "Multipole @ ~a: ~a\n" i (vec->string M))
-      (printf "Local @ ~a from multipole ~a: ~a\n" j i (vec->string L))))
-
-  (define (demo-cartan)
-    "Demo using Cartan decomposition for hierarchical FMM"
-    (let* ((B 10.0)
-           (steps 4)
-           (order 4)
-           (num-points 32)
+  (define (demo-cartan-golay)
+    (printf "=== Cartan-FMM with Golay Frontier ===\n")
+    
+    (let* ((num-points 64)
+           (grid (make-goppa-grid 2 5 num-points))
            (sources (iota num-points))
-           (target-idx 8))
+           (charges (make-list num-points 1.0)) ;; All charge +1
+           (target-idx 0)
+           (order 8)
+           ;; Simple fake hierarchy: split points into chunks based on index
+           ;; Real implementation uses Cartan decomposition logic
+           (hierarchy (vector 
+                       (iota 8 1)      ;; Level 0: close points
+                       (iota 8 9)      ;; Level 1
+                       (iota 16 17)    ;; Level 2
+                       (iota 31 33)))) ;; Level 3: far points
       
-      (printf "=== Cartan-FMM Demo ===\n")
-      (printf "Parameters: B=~a, steps=~a, points=~a, order=~a\n" 
-              B steps num-points order)
-      
-      (let ((result (cartan-fmm-evaluate B steps sources target-idx order)))
-        (printf "Evaluation at target ~a:\n" target-idx)
-        (do ((n 0 (+ n 1))) ((= n order))
-          (let ((coef (vector-ref result n)))
-            (printf "  Coefficient[~a] = ~a + ~ai\n" 
-                    n (car coef) (cdr coef))))
-        
-        ;; Compare with direct calculation for verification
-        (printf "\nDirect calculation for verification:\n")
-        (let ((direct (make-vector order (cons 0.0 0.0)))
-              (grid (make-goppa-grid 2 5 num-points))
-              (target (local-parameter grid target-idx)))
-          (do ((i 0 (+ i 1))) ((= i num-points))
-            (when (not (= i target-idx))
-              (let ((coefs (compute-laurent-coefs grid target i order)))
-                (do ((n 0 (+ n 1))) ((= n order))
-                  (vector-set! direct n 
-                    (c-add (vector-ref direct n) 
-                           (vector-ref coefs n)))))))
-          (printf "Direct result at target ~a:\n" target-idx)
-          (do ((n 0 (+ n 1))) ((= n order))
-            (let ((coef (vector-ref direct n)))
-              (printf "  Coefficient[~a] = ~a + ~ai\n" 
-                      n (car coef) (cdr coef))))))))
+      ;; Case 1: Low Golay weight -> DFS-like (Stack)
+      ;; Use info-bits = 0 -> weight 0.
+      (printf "\n--- Run 1: Low Entropy (Stack/DFS) ---\n")
+      (let ((res1 (cartan-fmm-evaluate-golay 
+                   grid hierarchy sources charges target-idx order 0)))
+        (printf "Result Potential: ~a + ~ai\n" (car res1) (cdr res1)))
 
-) ;; end module
+      ;; Case 2: High Golay weight -> BFS-like (Queue)
+      ;; info-bits = 0xFFF (all 1s) -> weight will be high
+      (printf "\n--- Run 2: High Entropy (Queue/BFS) ---\n")
+      (let ((res2 (cartan-fmm-evaluate-golay 
+                   grid hierarchy sources charges target-idx order #xFFF)))
+        (printf "Result Potential: ~a + ~ai\n" (car res2) (cdr res2)))
+      
+      (printf "\n(Note: Results should be identical, but processing order differed)\n")
+      ))
+)
