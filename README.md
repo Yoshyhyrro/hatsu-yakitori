@@ -1,71 +1,108 @@
-## 🍗 Module Highlight: Algebraic FMM on Goppa Grid
+# hatsu-yakitori
 
-**hatsu-yakitori** introduces a novel approach to the Fast Multipole Method (FMM) by reinterpreting potential theory through the lens of **Algebraic Geometry** and **Coding Theory**.
+**HATSU-YAKITORI** (Heart of the Skewer) is a high-performance Chicken Scheme framework exploring the intersection of **Numerical Physics** and **Algebraic Coding Theory**. 
 
-Instead of traditional geometric octrees, we treat the simulation space as a set of divisors on an algebraic curve (Riemann Surface). This allows us to leverage **Goppa Codes** for grid construction and **Golay Codes** for adaptive frontier control.
+It provides a core foundation for bounded computation by reinterpreting the Fast Multipole Method (FMM) through the lens of **Goppa Codes** on algebraic curves. By mapping physical potentials to divisors and utilizing **Golay[24,12]** codes for entropy-based control flow, the framework offers a novel approach to adaptive hierarchical computation.
 
-### Key Concepts
+## Core Philosophy: The Goppa-FMM Analogy
 
-1.  **Goppa Grid Analogy**:
-    *   **FMM Particles** $\leftrightarrow$ **Divisors (Points)** on a curve.
-    *   **Multipole Expansion** $\leftrightarrow$ **Laurent Series Principal Parts** at poles.
-    *   **Translation (M2L)** $\leftrightarrow$ **Change of Basis** for local parameters.
-    *   This formulation mathematically separates singularities from expansion centers, naturally handling Periodic Boundary Conditions (PBC) as elliptic functions.
+This project implements a rigorous mathematical isomorphism between classical N-body algorithms and algebraic geometry codes:
 
-2.  **Entropic Frontier Control (Golay-Driven)**:
-    *   We utilize the **Golay [24,12] Code** to manage the traversal frontier.
-    *   The Hamming weight ($\tau$) of the codeword acts as an entropy metric for the current computational state.
-    *   **Low $\tau$ (Low Entropy)**: Switches to **DFS (Stack)** for deep, localized precision.
-    *   **High $\tau$ (High Entropy)**: Switches to **BFS (Queue)** for broad, global approximations.
+| Physical Concept (FMM) | Algebraic Concept (Goppa/Curve) |
+| :--- | :--- |
+| **Grid / Space** | Points on an Algebraic Curve (Divisors) |
+| **Potential Field** | Rational Function / Differential Form |
+| **Multipole Expansion** | Laurent Series (Principal Parts) at a point |
+| **Expansion Center** | Local Parameter $t$ / Change of Basis |
+| **Singularity** | Pole of a function |
+| **Adaptive Hierarchy** | Divisor Degree / Genus constraints |
 
-### Implementation Snippet
+## Features
 
-The following Scheme snippet demonstrates how the **Golay Frontier** orchestrates the FMM evaluation, dynamically switching between direct summation (Near-field) and multipole expansion (Far-field) based on algebraic distance and code weight.
+- 🧬 **Algebraic FMM**: Re-derivation of multipole expansions using local parameters on Goppa grids.
+- 🎛️ **Golay-Driven Frontiers**: Uses the **Hamming weight ($\tau$)** of Golay codewords to dynamically switch traversal strategies (DFS vs. BFS) based on "computational entropy."
+- 🧮 **KAK Decomposition**: Logarithmic-scale decomposition for handling interaction matrices.
+- 📐 **Finite Geometry**: Morton encoding and hypercube graphs for SSSP validation.
+- 🎯 **ε-Bounded Precision**: Algorithms designed with explicit error-correction bounds.
+
+## Architecture
+
+```
+hatsu-yakitori/
+├── core/
+│   ├── golay_frontier.scm       # Golay[24,12] adaptive frontier logic
+│   ├── kak_decomposition.scm    # KAK decomposition strategy
+│   └── machine_constants.scm    # Fundamental constants & GF(2) arithmetic
+├── modules/
+│   ├── fmm/
+│   │   └── fmm_on_goppa_grid.scm # The Goppa-FMM implementation
+│   ├── sssp/                    # Single-Source Shortest Path
+│   └── boids/                   # Particle simulation
+└── tools/                       # CLI utilities
+```
+
+## Implementation Highlight: Golay-Controlled Frontier
+
+The kernel of the framework is the **Adaptive Frontier**. Instead of hardcoded heuristics, the simulation strategy is dictated by the properties of the Golay code.
+
+- **Low Weight ($\tau$)**: Implies low entropy/noise → **DFS (Stack)** mode for deep, precise local corrections.
+- **High Weight ($\tau$)**: Implies high entropy → **BFS (Queue)** mode for global, multipole-based sweeps.
+
+### Code Excerpt (`modules/fmm/fmm_on_goppa_grid.scm`)
+
+The interaction loop delegates flow control to the Golay frontier:
 
 ```scheme
-;; module/fmm/fmm_on_goppa_grid.scm
-
-(define (cartan-fmm-evaluate-golay grid hierarchy sources charges target-idx order info-bits)
-  ;; Initialize Frontier with Golay code entropy (info-bits)
-  (let ((frontier (make-adaptive-frontier info-bits))
-        (target-pos (local-parameter grid target-idx)))
-    
-    ;; Adaptive Traversal Loop
-    (let loop ()
-      (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
-        (when level-idx
-          (let ((cell-indices (vector-ref hierarchy level-idx)))
-             ;; Geometric Center for Divisor expansion
-             (let* ((level-center (calculate-geometric-center grid cell-indices))
-                    (dist (c-abs (c-sub target-pos level-center))))
-               
-               (if (< dist THRESHOLD)
-                   ;; [Near Field] Direct Interaction (Residue Sum)
-                   (compute-direct-sum grid cell-indices target-pos)
-                   
-                   ;; [Far Field] Algebraic Multipole Method
-                   ;; P2M -> M2L (Binomial Convolution) -> L2P
-                   (let* ((M (p2m-kernel grid cell-indices charges level-center order))
-                          (L (m2l-translation M level-center target-pos order)))
-                     (accumulate-potential L)))))
-          (loop))))))
+;; Inside cartan-fmm-evaluate-golay
+(let loop ()
+  ;; Pop the next task based on Golay-determined strategy (Stack vs Queue)
+  (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
+    (when level-idx
+      (set! frontier updated-frontier)
+      
+      (let ((cell-indices (vector-ref hierarchy level-idx)))
+        (unless (null? cell-indices)
+          (let* ((level-center (calculate-geometric-center grid cell-indices))
+                 (dist (c-abs (c-sub target-pos level-center)))
+                 ;; Determine if we need direct calculation (Near) or expansion (Far)
+                 (is-near-field (< dist 0.5))) 
+            
+            (cond
+             ;; [Near Field] Direct discrete summation (Residue evaluation)
+             (is-near-field
+              (calculate-direct-interaction ...))
+             
+             ;; [Far Field] Algebraic Multipole Expansion (Laurent Series)
+             (else
+              ;; 1. P2M: Particle to Multipole
+              ;; 2. M2L: Basis translation via Binomial convolution
+              ;; 3. L2P: Local evaluation
+              (perform-algebraic-multipole ...))))))
+      (loop))))
 ```
-## Testing with Salmonella ⚗️
 
-This project includes a Salmonella-based test harness. Salmonella is an external test tool for Chicken Scheme and may need to be installed on your system before running the Salmonella tests.
+## Quick Start
 
-Install Salmonella manually:
+### Prerequisites
+
+- [Chicken Scheme 5.x](https://www.call-cc.org/)
+- [Stack](https://docs.haskellstack.org/) (for Shake build system)
+
+### Building and Running
+
+The project uses a Shake-based build system. To run the Goppa-FMM demo:
 
 ```bash
-chicken-install -s salmonella
-# or with sudo if your environment requires it
-sudo chicken-install -s salmonella
+# Build and run the FMM module
+stack runhaskell shake/Shake.hs fmm
+
+# Run extended tests
+stack runhaskell shake/Shake.hs --module=fmm test
+
+# Clean build artifacts
+stack runhaskell shake/Shake.hs clean
 ```
 
-Run Salmonella tests for the `sssp` module:
+## Future Direction
 
-```bash
-make MODULE=sssp test-salmonella
-```
-
-If Salmonella is not available (e.g., in CI), the Makefile will automatically fall back to running plain unit tests with `make test`.
+The roadmap includes extending the `make-goppa-grid` generator from the unit circle (genus $g=0$) to **Elliptic Curves** (genus $g=1$). This will allow the framework to handle **Periodic Boundary Conditions (PBC)** naturally via Weierstrass $\wp$-functions, providing a unified algebraic alternative to Ewald summation.
