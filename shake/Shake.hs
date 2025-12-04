@@ -9,12 +9,12 @@ import Development.Shake.Classes
 import Control.Monad
 import System.Console.GetOpt
 import Data.Maybe (fromMaybe)
-import Data.List (find)
+import Data.List (find,isSuffixOf)
 import Data.Typeable
 import GHC.Generics
 
--- Chickenモジュールをインポート（同じディレクトリにある場合）
-import Chicken
+-- Chickenモジュールをインポート
+import qualified Chicken
 
 -- -----------------------------------------------------------------------------
 -- Configuration & Types
@@ -34,18 +34,21 @@ flags =
     , Option "m" ["module"] (ReqArg (\m -> Right defaultFlags{flagModule = Just m}) "MODULE") "Specify module"
     ]
 
+-- | Oracle for build configuration
+-- Oracleは実行時に一度だけ計算され、キャッシュされる値を提供します
 newtype BuildConfig = BuildConfig ()
     deriving (Show, Typeable, Eq, Hashable, Binary, NFData)
+
 type instance RuleResult BuildConfig = String
 
 data Module = Module
     { modName :: String
     , modSrc  :: FilePath
     , modTest :: FilePath
-    , modDeps :: [FilePath] -- Source dependencies (.scm)
+    , modDeps :: [FilePath]
     } deriving (Show, Eq)
 
--- モジュール定義（変更なし）
+-- モジュール定義
 modules :: [Module]
 modules =
     [ Module "boids"            "modules/boids/boids_main.scm"        "tests/boids_tests.scm"       coreFiles
@@ -76,39 +79,74 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     -- csc用のフラグ設定
     let cflags = if flagDebug mergedFlags
-                 then "-O0 -d3" -- Debug: 最適化なし、デバッグ情報最大
+                 then "-O0 -d3"
                  else "-O3 -optimize-leaf-routines -inline -local"
 
+    -- Oracleを登録: ビルド中に何度も問い合わせできるグローバル設定
     addOracle $ \(BuildConfig ()) -> return cflags
+    
+    -- Chickenのカスタムルールを登録
+    Chicken.chickenRules cflags
 
     if null targets then want ["help"] else want targets
 
-    phony "help" $ putInfo "Usage: make [options] <target>"
-    phony "info" $ askOracle (BuildConfig ()) >>= \f -> putInfo $ "Flags: " ++ f
+    phony "help" $ do
+        putInfo "Usage: ./Shake.hs [options] <target>"
+        putInfo ""
+        putInfo "Options:"
+        putInfo "  -d, --debug        Build with debug symbols"
+        putInfo "  -m, --module=NAME  Specify module to build/test"
+        putInfo ""
+        putInfo "Targets:"
+        putInfo "  help               Show this help"
+        putInfo "  info               Show build configuration"
+        putInfo "  build              Build specified module (requires -m)"
+        putInfo "  test               Test specified module (requires -m)"
+        putInfo "  <module-name>      Build and test specific module"
+        putInfo "  clean              Clean all build artifacts"
+        putInfo ""
+        putInfo "Available modules:"
+        forM_ modules $ \m -> putInfo $ "  - " ++ modName m
+
+    phony "info" $ do
+        f <- askOracle (BuildConfig ())
+        putInfo $ "Compiler flags: " ++ f
 
     -- 各モジュールのショートカット
-    forM_ modules $ \m -> phony (modName m) $ need ["build-" ++ modName m, "test-" ++ modName m]
+    forM_ modules $ \m -> 
+        phony (modName m) $ need ["build-" ++ modName m, "test-" ++ modName m]
 
     -- Generic targets
     phony "build" $ withModule mergedFlags $ \m -> need ["build-" ++ modName m]
     phony "test"  $ withModule mergedFlags $ \m -> need ["test-" ++ modName m]
 
+    -- モジュールごとのビルドターゲット
+    forM_ modules $ \m -> phony ("build-" ++ modName m) $ do
+        need [buildDir </> modName m <.> "stamp"]
+        unless (null $ modSrc m) $ do
+            let app = distDir </> modName m ++ "_app" <.> exe
+            need [app]
+
     -- アプリケーションのビルド (.exe)
+    -- パターンマッチを使った宣言的ルール定義
     (distDir </> "*_app" <.> exe) %> \out -> do
-        let name = dropExtension $ takeBaseName out -- "kak-decomposition_app" -> "kak-decomposition"
+        let name = dropExtension $ takeBaseName out
             modNameStr = if "_app" `isSuffixOf` name then take (length name - 4) name else name
         
         case findModule modNameStr of
             Nothing -> fail $ "No module definition for " ++ modNameStr
             Just m -> do
-                -- 依存関係（スタンプ）を要求
+                -- 依存関係を要求
                 need [buildDir </> modNameStr <.> "stamp"]
-                flagsStr <- askOracle (BuildConfig ())
                 
-                -- 依存ファイルのオブジェクトパス計算
+                -- 型安全なChicken APIを使用
+                forM_ (modDeps m) $ \dep -> 
+                    Chicken.needUnit dep
+                
+                flagsStr <- askOracle (BuildConfig ())
                 let depObjs = map Chicken.objectFile (modDeps m)
                 
-                -- リンク実行 (Chickenモジュールに委譲)
+                -- リンク実行
                 Chicken.linkProgram flagsStr [modSrc m] depObjs out
 
     -- 依存関係のコンパイル (Stamp file pattern)
@@ -117,21 +155,25 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         case findModule name of
             Nothing -> fail $ "Unknown module: " ++ name
             Just m -> do
-                need (modDeps m)
-                flagsStr <- askOracle (BuildConfig ())
-
-                -- 依存ファイルを順番にコンパイル
-                -- 注: 本来は %.o %> %.scm のルールを書くべきですが、
-                -- 既存ロジック(依存順序)を維持するためここで回します
-                forM_ (modDeps m) $ \src -> do
-                    let obj = Chicken.objectFile src
-                    Chicken.compileUnit flagsStr src obj
+                -- 型安全な依存関係の宣言
+                forM_ (modDeps m) $ \dep -> 
+                    Chicken.needUnit dep
                 
+                -- スタンプファイルを作成
                 writeFile' out ""
+
+    -- オブジェクトファイルのビルドルール
+    -- Chickenのカスタムルールが自動的に処理しますが、
+    -- 明示的な依存関係も定義できます
+    "//*.o" %> \out -> do
+        let src = replaceExtension out "scm"
+        need [src]
+        -- Chicken.needUnit が実際のコンパイルを実行
 
     -- テスト実行
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
+        
         flagsStr <- askOracle (BuildConfig ())
         let testBin = "/tmp/test_" ++ modName m <.> exe
         let depObjs = map Chicken.objectFile (modDeps m)
@@ -146,15 +188,15 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         putInfo "Cleaning..."
         removeFilesAfter buildDir ["//*"]
         removeFilesAfter distDir ["//*"]
-        -- Chickenモジュール定義のパターンを使ってクリーン
         removeFilesAfter "." Chicken.cleanArtifacts
         putInfo "✓ Clean complete"
 
--- Helper
+-- Helper function
 withModule :: Flags -> (Module -> Action ()) -> Action ()
 withModule flags act = 
     case flagModule flags of
-        Nothing -> fail "MODULE parameter required (e.g., -m boids)"
+        Nothing -> fail "MODULE parameter required (use -m <module-name>)"
         Just name -> case findModule name of
-            Nothing -> fail $ "Unknown module: " ++ name
+            Nothing -> fail $ "Unknown module: " ++ name ++ "\nAvailable modules: " ++ 
+                             unwords (map modName modules)
             Just m -> act m
