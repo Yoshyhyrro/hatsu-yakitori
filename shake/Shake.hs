@@ -168,10 +168,18 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
     -- オブジェクトファイルのビルドルール
     -- Chickenのカスタムルールが自動的に処理しますが、
     -- 明示的な依存関係も定義できます
-    "//*.o" %> \out -> do
-        let src = replaceExtension out "scm"
-        need [src]
-        -- Chicken.needUnit が実際のコンパイルを実行
+    "dist//*.o" %> \out -> do
+        let objName = takeBaseName out
+        
+        -- 全ての既知のソースファイルリストを作成
+        let allSources = [ modSrc m | m <- modules ] ++ concat [ modDeps m | m <- modules ]
+        
+        -- ベース名(拡張子なし)が一致するソースファイルを探す
+        case find (\s -> takeBaseName s == objName) allSources of
+            Nothing -> fail $ "Source file not found for object: " ++ out
+            Just src -> do
+                -- 正しいソースファイルを使ってChickenのルールを呼び出す
+                Chicken.needUnit src
 
     -- テスト実行(withTempDir使用版)
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do

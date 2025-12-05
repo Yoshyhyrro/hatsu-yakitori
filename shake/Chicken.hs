@@ -86,12 +86,10 @@ runUnit flags (ChickenUnit src) oldStore mode = do
                 _ -> do
                     putInfo $ "Compiling unit: " ++ unitName
                     
-                    -- withTempFileを使って原子的にコンパイル
+                    -- 一時ファイルを使って原子的にコンパイル
                     withTempFile $ \tmpObj -> do
-                        -- 一時ファイルにコンパイル
                         liftIO $ createDirectoryIfMissing True "dist"
-                        cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" tmpObj
-                        
+                        cmd_ "csc" (words flags) "-c" "-J" "-unit" unitName src "-o" tmpObj
                         -- 成功したら最終的な場所に移動(原子的操作)
                         copyFile' tmpObj out
                     
@@ -114,9 +112,9 @@ runObject flags (ChickenObject src) oldStore mode = do
                     let out = replaceExtension src "o"
                     putInfo $ "Compiling object: " ++ src
                     
-                    -- withTempFileを使って原子的にコンパイル
+                    -- 一時ファイルを使って原子的にコンパイル
                     withTempFile $ \tmpObj -> do
-                        cmd_ "csc" flags "-c" src "-o" tmpObj
+                        cmd_ "csc" (words flags) "-c" src "-o" tmpObj
                         -- 成功したら最終的な場所に移動
                         copyFile' tmpObj out
                     
@@ -162,10 +160,10 @@ compileUnit flags src out = do
     let unitName = takeBaseName src 
     putInfo $ "Compiling unit: " ++ unitName
     
-    -- withTempFileを使って原子的にコンパイル
+    -- 一時ファイルを使って原子的にコンパイル
     withTempFile $ \tmpObj -> do
         liftIO $ createDirectoryIfMissing True (takeDirectory out)
-        cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" tmpObj
+        cmd_ "csc" (words flags) "-c" "-J" "-unit" unitName src "-o" tmpObj
         -- 成功したら最終的な場所に移動
         copyFile' tmpObj out
 
@@ -174,12 +172,19 @@ linkProgram :: String -> [FilePath] -> [FilePath] -> FilePath -> Action ()
 linkProgram flags sources objects out = do
     putInfo $ "Linking executable: " ++ out
     
-    -- withTempFileを使って原子的にリンク
+    -- 一時ファイルを使って原子的にリンク
     withTempFile $ \tmpExe -> do
-        let includePaths = ["-I", ".", "-I", "core", "-I", "dist", "-I", "_build", "-L", "dist"]
-        cmd_ "csc" flags includePaths (sources ++ objects) "-o" tmpExe
-        -- 成功したら最終的な場所に移動
         liftIO $ createDirectoryIfMissing True (takeDirectory out)
+        
+        -- フラグを個別の引数として分割
+        let compilerFlags = words flags
+            -- インクルードパスとライブラリパスを正しく分割
+            includePaths = ["-I.", "-Icore", "-Idist", "-I_build"]
+            libraryPaths = ["-Ldist"]
+            allArgs = compilerFlags ++ includePaths ++ libraryPaths ++ sources ++ objects ++ ["-o", tmpExe]
+        
+        cmd_ "csc" allArgs
+        -- 成功したら最終的な場所に移動
         copyFile' tmpExe out
 
 -- | クリーンアップ対象のパターンリスト

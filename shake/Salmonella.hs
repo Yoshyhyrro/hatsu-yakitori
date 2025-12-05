@@ -16,10 +16,11 @@ module Salmonella
 import Development.Shake
 import Development.Shake.FilePath
 import Development.Shake.Command
+import Development.Shake.Util
 import Control.Monad (forM, forM_, when)
 import Control.Monad.IO.Class (liftIO)
 import Data.List (intercalate)
-import Data.Time.Clock (getCurrentTime)
+import Data.Time.Clock (getCurrentTime, diffUTCTime, NominalDiffTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import System.Exit (ExitCode(..))
 import System.Directory (createDirectoryIfMissing)
@@ -81,18 +82,16 @@ runModuleTests config modName testBinary deps = do
     startTime <- liftIO getCurrentTime
     
     let envVars = defaultEnvVars ++ tcEnvironment config
-        cmdOpts = map (\(k, v) -> AddEnv k v) envVars ++ 
-                  [Shell, EchoStdout (tcVerbose config), EchoStderr True]
+        cmdOpts = map (\(k, v) -> AddEnv k v) envVars ++ [Shell]
     
-    -- withTempDirでテスト実行
-    (exitCode, stdout', stderr') <- withTempDir $ \tmpDir -> do
-        -- テスト環境のセットアップ
-        cmd cmdOpts testBinary
+    -- テスト実行とエラーハンドリング
+    -- cmd関数の正しい使用法: Stdout, Stderr, ExitCodeを明示的に要求
+    (Exit exitCode, Stdout stdout', Stderr stderr') <- cmd cmdOpts testBinary
     
     endTime <- liftIO getCurrentTime
-    let duration = realToFrac $ diffUTCTime endTime startTime
+    let duration = realToFrac $ diffUTCTime endTime startTime :: Double
     
-    -- 結果の記録
+    -- 結果の判定
     let passed = case exitCode of
                    ExitSuccess -> True
                    _           -> False
@@ -129,7 +128,9 @@ runModuleTests config modName testBinary deps = do
 -- | 全モジュールのテストを実行
 runAllTests :: TestConfig -> [(String, FilePath, [FilePath])] -> Action TestReport
 runAllTests config modules = do
-    timestamp <- liftIO $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" <$> getCurrentTime
+    timestamp <- liftIO $ do
+        t <- getCurrentTime
+        return $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
     
     putInfo "=== Running all module tests ==="
     putInfo ""
