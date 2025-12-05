@@ -24,19 +24,19 @@ import Development.Shake.Classes
 import Development.Shake.FilePath
 import Development.Shake.Rule
 import Development.Shake.Command
+import Control.Monad.IO.Class (liftIO)
 import Data.List (isSuffixOf)
 import Data.Typeable
 import GHC.Generics
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BS8
+import System.Directory (createDirectoryIfMissing, removePathForcibly, removeFile)
 
 -- ============================================================================
 -- Phantom Types for Type Safety
 -- ============================================================================
 
--- | ユニット（コンパイル済みモジュール）を表すPhantom Type
--- Phantom type parameterはコンパイル時の型安全性を提供しますが、
--- 実行時には消去されます
+-- | ユニット(コンパイル済みモジュール)を表すPhantom Type
 newtype ChickenUnit = ChickenUnit FilePath
     deriving (Show, Eq, Typeable, Hashable, Binary, NFData, Generic)
 
@@ -48,7 +48,7 @@ newtype ChickenObject = ChickenObject FilePath
 newtype ChickenExec = ChickenExec FilePath
     deriving (Show, Eq, Typeable, Hashable, Binary, NFData, Generic)
 
--- RuleResult型の関連付け - ユニットは何も返さない
+-- RuleResult型の関連付け
 type instance RuleResult ChickenUnit = ()
 type instance RuleResult ChickenObject = ()
 type instance RuleResult ChickenExec = ()
@@ -58,7 +58,6 @@ type instance RuleResult ChickenExec = ()
 -- ============================================================================
 
 -- | Chickenのビルドルールを登録
--- addBuiltinRuleを使用して、型安全なビルドルールを定義
 chickenRules :: String -> Rules ()
 chickenRules flags = do
     -- ユニットのコンパイルルール
@@ -72,32 +71,29 @@ chickenRules flags = do
 runUnit :: String -> BuiltinRun ChickenUnit ()
 runUnit flags (ChickenUnit src) oldStore mode = do
     let unitName = takeBaseName src
+    let out = "dist" </> replaceExtension (takeFileName src) "o"
     
-    -- REMOVED liftIO HERE
     exists <- doesFileExist src
     if not exists
         then fail $ "Source file not found: " ++ src
         else do
-            -- BS.readFile IS IO, SO KEEP liftIO HERE
             content <- liftIO $ BS.readFile src
             let newStore = content
             
-            -- 変更検出
             case mode of
                 RunDependenciesSame | Just old <- oldStore, old == newStore -> 
-                    -- 何も変わっていない
                     return $ RunResult ChangedNothing newStore ()
                 _ -> do
-                    -- 再コンパイル
-                    let out = replaceExtension src "o"
                     putInfo $ "Compiling unit: " ++ unitName
-                    cmd_ "csc" flags "-c -J" "-unit" unitName src "-o" out
+                    -- liftIO で IO アクションを Action に持ち上げる
+                    liftIO $ createDirectoryIfMissing True "dist"
+                    -- -d オプションを削除し、出力ディレクトリは -o で指定
+                    cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" out
                     return $ RunResult ChangedRecomputeDiff newStore ()
 
 -- | オブジェクトのビルドルール実装
 runObject :: String -> BuiltinRun ChickenObject ()
 runObject flags (ChickenObject src) oldStore mode = do
-    -- REMOVED liftIO HERE
     exists <- doesFileExist src
     if not exists
         then fail $ "Source file not found: " ++ src
@@ -117,26 +113,24 @@ runObject flags (ChickenObject src) oldStore mode = do
 -- | 実行ファイルのビルドルール実装
 runExec :: String -> BuiltinRun ChickenExec ()
 runExec flags (ChickenExec out) oldStore mode = do
-    -- 実行ファイルは常に依存関係が変わったら再リンク
     case mode of
         RunDependenciesSame | Just old <- oldStore -> 
             return $ RunResult ChangedNothing old ()
         _ -> do
             putInfo $ "Linking executable: " ++ out
-            -- リンクは外部で行われるため、ここでは何もしない
             return $ RunResult ChangedRecomputeDiff BS.empty ()
 
 -- ============================================================================
 -- Public API - Type-safe wrappers
 -- ============================================================================
 
--- | ユニットへの依存を宣言（型安全）
+-- | ユニットへの依存を宣言(型安全)
 needUnit :: FilePath -> Action ()
 needUnit src = do
     () <- apply1 $ ChickenUnit src
     return ()
 
--- | オブジェクトへの依存を宣言（型安全）
+-- | オブジェクトへの依存を宣言(型安全)
 needObject :: FilePath -> Action ()
 needObject src = do
     () <- apply1 $ ChickenObject src
@@ -148,20 +142,24 @@ needObject src = do
 
 -- | ソースファイルからオブジェクトファイルのパスを計算
 objectFile :: FilePath -> FilePath
-objectFile src = replaceExtension src "o"
+objectFile src = "dist" </> replaceExtension (takeFileName src) "o"
 
--- | ユニット（ライブラリ/モジュール）のコンパイル
+-- | ユニット(ライブラリ/モジュール)のコンパイル
 compileUnit :: String -> FilePath -> FilePath -> Action ()
 compileUnit flags src out = do
     let unitName = takeBaseName src 
     putInfo $ "Compiling unit: " ++ unitName
-    cmd_ "csc" flags "-c -J" "-unit" unitName src "-o" out
+    -- liftIO で IO アクションを Action に持ち上げる
+    liftIO $ createDirectoryIfMissing True (takeDirectory out)
+    -- -d オプションを削除
+    cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" out
 
 -- | 実行ファイルのリンク
 linkProgram :: String -> [FilePath] -> [FilePath] -> FilePath -> Action ()
 linkProgram flags sources objects out = do
     putInfo $ "Linking executable: " ++ out
-    cmd_ "csc" flags "-I" "." (sources ++ objects) "-o" out
+    let includePaths = ["-I", ".", "-I", "core", "-I", "dist", "-I", "_build", "-L", "dist"]
+    cmd_ "csc" flags includePaths (sources ++ objects) "-o" out
 
 -- | クリーンアップ対象のパターンリスト
 cleanArtifacts :: [FilePattern]
@@ -170,4 +168,5 @@ cleanArtifacts =
     , "//*.import.scm"
     , "//*.link"
     , "//*.deploy"
+    , "dist//*"
     ]
