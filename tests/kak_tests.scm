@@ -7,6 +7,7 @@
 (import (chicken base)
         (chicken format)
         srfi-1
+        srfi-69  ;; hash-table用に追加 (もしcoreに含まれていなければ)
         core/kak_decomposition
         core/machine_constants
         core/cartan_utils)
@@ -37,6 +38,18 @@
         (printf "[FAIL] ~a~%       Expected: ~a~%       Got: ~a~%"
                 description expected actual))))
 
+;; 数値専用の比較アサートを追加 (0 と 0.0 を同一視するため)
+(define (assert-num-equal actual expected description)
+  (set! test-count (+ test-count 1))
+  (if (= actual expected)
+      (begin
+        (set! test-passed (+ test-passed 1))
+        (printf "[PASS] ~a~%" description))
+      (begin
+        (set! test-failed (+ test-failed 1))
+        (printf "[FAIL] ~a~%       Expected: ~a~%       Got: ~a~%"
+                description expected actual))))
+
 ;; ============================================================
 ;; Frontier Tests
 ;; ============================================================
@@ -44,7 +57,6 @@
 (define (test-frontier-operations)
   (printf "~%=== Frontier Operations ===~%")
   
-  ;; Test stack frontier
   (let* ((f1 (K-frontier 'stack))
          (f2 (K-push f1 'a))
          (f3 (K-push f2 'b)))
@@ -57,7 +69,6 @@
         (assert-true success "Stack pop succeeds")
         (assert-equal val 'b "Stack pops last item (LIFO)"))))
   
-  ;; Test queue frontier
   (let* ((f1 (K-frontier 'queue))
          (f2 (K-push f1 'x))
          (f3 (K-push f2 'y)))
@@ -75,13 +86,13 @@
 (define (test-graph-operations)
   (printf "~%=== Graph Operations ===~%")
   
-  ;; Test graph as alist
   (let ((graph '((a . ((b . 1.0) (c . 2.0)))
                  (b . ((c . 1.5)))
                  (c . ()))))
     (let ((neighbors-a (graph-neighbors graph 'a)))
       (assert-equal (length neighbors-a) 2 "Node 'a' has 2 neighbors")
-      (assert-true (member '(b . 1.0) neighbors-a) "Neighbor 'b' with weight 1.0 exists"))))
+      ;; memberの戻り値はリストか#fなので、リストならTrue扱い
+      (assert-true (if (member '(b . 1.0) neighbors-a) #t #f) "Neighbor 'b' with weight 1.0 exists"))))
 
 ;; ============================================================
 ;; KAK-apply Tests
@@ -90,18 +101,21 @@
 (define (test-kak-apply)
   (printf "~%=== KAK-apply Tests ===~%")
   
-  ;; Simple test graph
   (let ((test-graph
          '((0 . ((1 . 1.0) (2 . 4.0)))
            (1 . ((2 . 2.0) (3 . 5.0)))
            (2 . ((3 . 1.0)))
            (3 . ()))))
     
-    ;; Test with stack mode
     (let ((dist (KAK-apply test-graph '(0) 10.0 'stack 10)))
       (assert-true (hash-table? dist) "KAK-apply returns hash-table")
-      (assert-equal (hash-table-ref dist 0) 0.0 "Source distance is 0")
-      (assert-true (< (hash-table-ref dist 1) +INF+) "Node 1 is reachable"))))
+      
+      ;; 修正箇所: hash-table-ref/default を使い、数値比較を使用
+      (let ((d0 (hash-table-ref/default dist 0 -1)))
+         (assert-num-equal d0 0.0 "Source distance is 0"))
+         
+      (let ((d1 (hash-table-ref/default dist 1 +INF+)))
+         (assert-true (< d1 +INF+) "Node 1 is reachable")))))
 
 ;; ============================================================
 ;; Cartan Decomposition Integration Test
@@ -111,6 +125,7 @@
   (printf "~%=== Cartan Decomposition ===~%")
   (let ((B 1000)
         (steps 5))
+    ;; エラーが起きずに通過すればOK
     (pretty-print-decomposition B steps)
     (assert-true #t "Decomposition prints without error")))
 
@@ -141,5 +156,4 @@
       (exit 1)
       (exit 0)))
 
-;; Run tests
 (run-tests)

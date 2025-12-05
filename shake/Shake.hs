@@ -37,8 +37,6 @@ flags =
     , Option "m" ["module"] (ReqArg (\m -> Right defaultFlags{flagModule = Just m}) "MODULE") "Specify module"
     ]
 
--- | Oracle for build configuration
--- Oracleは実行時に一度だけ計算され、キャッシュされる値を提供します
 newtype BuildConfig = BuildConfig ()
     deriving (Show, Typeable, Eq, Hashable, Binary, NFData)
 
@@ -80,15 +78,12 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
     let mergedFlags = foldl (\(Flags d1 m1) (Flags d2 m2) -> Flags (d1 || d2) (m2 `mplus` m1)) defaultFlags flags
         mplus Nothing x = x; mplus x _ = x
 
-    -- csc用のフラグ設定
     let cflags = if flagDebug mergedFlags
                  then "-O0 -d3"
                  else "-O3 -optimize-leaf-routines -inline -local"
 
-    -- Oracleを登録: ビルド中に何度も問い合わせできるグローバル設定
     addOracle $ \(BuildConfig ()) -> return cflags
     
-    -- Chickenのカスタムルールを登録
     Chicken.chickenRules cflags
 
     if null targets then want ["help"] else want targets
@@ -115,23 +110,18 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         f <- askOracle (BuildConfig ())
         putInfo $ "Compiler flags: " ++ f
 
-    -- 各モジュールのショートカット
     forM_ modules $ \m -> 
         phony (modName m) $ need ["build-" ++ modName m, "test-" ++ modName m]
 
-    -- Generic targets
     phony "build" $ withModule mergedFlags $ \m -> need ["build-" ++ modName m]
     phony "test"  $ withModule mergedFlags $ \m -> need ["test-" ++ modName m]
 
-    -- モジュールごとのビルドターゲット
     forM_ modules $ \m -> phony ("build-" ++ modName m) $ do
         need [buildDir </> modName m <.> "stamp"]
         unless (null $ modSrc m) $ do
             let app = distDir </> modName m ++ "_app" <.> exe
             need [app]
 
-    -- アプリケーションのビルド (.exe)
-    -- パターンマッチを使った宣言的ルール定義
     (distDir </> "*_app" <.> exe) %> \out -> do
         let name = dropExtension $ takeBaseName out
             modNameStr = if "_app" `isSuffixOf` name then take (length name - 4) name else name
@@ -139,65 +129,52 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         case findModule modNameStr of
             Nothing -> fail $ "No module definition for " ++ modNameStr
             Just m -> do
-                -- 依存関係を要求
                 need [buildDir </> modNameStr <.> "stamp"]
                 
-                -- 型安全なChicken APIを使用
                 forM_ (modDeps m) $ \dep -> 
                     Chicken.needUnit dep
                 
                 flagsStr <- askOracle (BuildConfig ())
                 let depObjs = map Chicken.objectFile (modDeps m)
                 
-                -- リンク実行
                 Chicken.linkProgram flagsStr [modSrc m] depObjs out
 
-    -- 依存関係のコンパイル (Stamp file pattern)
     (buildDir </> "*.stamp") %> \out -> do
         let name = dropExtension $ takeFileName out
         case findModule name of
             Nothing -> fail $ "Unknown module: " ++ name
             Just m -> do
-                -- 型安全な依存関係の宣言
                 forM_ (modDeps m) $ \dep -> 
                     Chicken.needUnit dep
                 
-                -- スタンプファイルを作成
                 writeFile' out ""
 
-    -- オブジェクトファイルのビルドルール
-    -- Chickenのカスタムルールが自動的に処理しますが、
-    -- 明示的な依存関係も定義できます
     "dist//*.o" %> \out -> do
         let objName = takeBaseName out
         
-        -- 全ての既知のソースファイルリストを作成
         let allSources = [ modSrc m | m <- modules ] ++ concat [ modDeps m | m <- modules ]
         
-        -- ベース名(拡張子なし)が一致するソースファイルを探す
         case find (\s -> takeBaseName s == objName) allSources of
             Nothing -> fail $ "Source file not found for object: " ++ out
             Just src -> do
-                -- 正しいソースファイルを使ってChickenのルールを呼び出す
                 Chicken.needUnit src
 
-    -- テスト実行(withTempDir使用版)
+    -- FIXED: テストのリンク時にはソースを再コンパイルしない
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
         
         flagsStr <- askOracle (BuildConfig ())
-        let depObjs = map Chicken.objectFile (modDeps m)
         
-        -- withTempDirを使って一時ディレクトリ内でテストを実行
+        let depObjs = map Chicken.objectFile (modDeps m)
+
         withTempDir $ \tmpDir -> do
             let testBin = tmpDir </> "test_" ++ modName m <.> exe
             
             putInfo $ "Building test binary in: " ++ tmpDir
             
-            -- テストバイナリのリンク
+            -- FIX: テストファイルだけをコンパイルし、依存関係は.oでリンク
             Chicken.linkProgram flagsStr [modTest m] depObjs testBin
             
-            -- Salmonellaモジュールを使ってテスト実行
             let config = Salmonella.defaultTestConfig
             result <- Salmonella.runModuleTests config (modName m) testBin depObjs
             
@@ -205,24 +182,21 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
                 fail $ "Tests failed for " ++ modName m
             
             putInfo $ "✓ Tests passed for " ++ modName m
-            -- withTempDir が自動的にクリーンアップ
 
-    -- 全テスト実行
     phony "test-all" $ do
         putInfo "Building all modules..."
         forM_ modules $ \m -> need ["build-" ++ modName m]
         
         flagsStr <- askOracle (BuildConfig ())
         
-        -- テストバイナリのリスト作成
         testInfos <- forM modules $ \m -> withTempDir $ \tmpDir -> do
             let testBin = tmpDir </> "test_" ++ modName m <.> exe
                 depObjs = map Chicken.objectFile (modDeps m)
             
+            -- FIX: ここも同じ修正
             Chicken.linkProgram flagsStr [modTest m] depObjs testBin
             return (modName m, testBin, depObjs)
         
-        -- 全テスト実行
         let config = Salmonella.defaultTestConfig
         _report <- Salmonella.runAllTests config testInfos
         
@@ -232,9 +206,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         putInfo "Cleaning..."
         removeFilesAfter buildDir ["//*"]
         removeFilesAfter distDir ["//*"]
-        -- Chicken.cleanArtifacts を直接渡す
         removeFilesAfter "." Chicken.cleanArtifacts
-        -- IO操作だけを liftIO 内で実行
         liftIO $ do
             distExists <- Dir.doesDirectoryExist "dist"
             when distExists $ Dir.removeDirectoryRecursive "dist"
@@ -242,7 +214,6 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             when buildExists $ Dir.removeDirectoryRecursive "_build"
         putInfo "✓ Clean complete"
 
--- Helper function
 withModule :: Flags -> (Module -> Action ()) -> Action ()
 withModule flags act = 
     case flagModule flags of
