@@ -85,10 +85,16 @@ runUnit flags (ChickenUnit src) oldStore mode = do
                     return $ RunResult ChangedNothing newStore ()
                 _ -> do
                     putInfo $ "Compiling unit: " ++ unitName
-                    -- liftIO で IO アクションを Action に持ち上げる
-                    liftIO $ createDirectoryIfMissing True "dist"
-                    -- -d オプションを削除し、出力ディレクトリは -o で指定
-                    cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" out
+                    
+                    -- withTempFileを使って原子的にコンパイル
+                    withTempFile $ \tmpObj -> do
+                        -- 一時ファイルにコンパイル
+                        liftIO $ createDirectoryIfMissing True "dist"
+                        cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" tmpObj
+                        
+                        -- 成功したら最終的な場所に移動(原子的操作)
+                        copyFile' tmpObj out
+                    
                     return $ RunResult ChangedRecomputeDiff newStore ()
 
 -- | オブジェクトのビルドルール実装
@@ -107,7 +113,13 @@ runObject flags (ChickenObject src) oldStore mode = do
                 _ -> do
                     let out = replaceExtension src "o"
                     putInfo $ "Compiling object: " ++ src
-                    cmd_ "csc" flags "-c" src "-o" out
+                    
+                    -- withTempFileを使って原子的にコンパイル
+                    withTempFile $ \tmpObj -> do
+                        cmd_ "csc" flags "-c" src "-o" tmpObj
+                        -- 成功したら最終的な場所に移動
+                        copyFile' tmpObj out
+                    
                     return $ RunResult ChangedRecomputeDiff newStore ()
 
 -- | 実行ファイルのビルドルール実装
@@ -149,17 +161,26 @@ compileUnit :: String -> FilePath -> FilePath -> Action ()
 compileUnit flags src out = do
     let unitName = takeBaseName src 
     putInfo $ "Compiling unit: " ++ unitName
-    -- liftIO で IO アクションを Action に持ち上げる
-    liftIO $ createDirectoryIfMissing True (takeDirectory out)
-    -- -d オプションを削除
-    cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" out
+    
+    -- withTempFileを使って原子的にコンパイル
+    withTempFile $ \tmpObj -> do
+        liftIO $ createDirectoryIfMissing True (takeDirectory out)
+        cmd_ "csc" flags "-c" "-J" "-unit" unitName src "-o" tmpObj
+        -- 成功したら最終的な場所に移動
+        copyFile' tmpObj out
 
 -- | 実行ファイルのリンク
 linkProgram :: String -> [FilePath] -> [FilePath] -> FilePath -> Action ()
 linkProgram flags sources objects out = do
     putInfo $ "Linking executable: " ++ out
-    let includePaths = ["-I", ".", "-I", "core", "-I", "dist", "-I", "_build", "-L", "dist"]
-    cmd_ "csc" flags includePaths (sources ++ objects) "-o" out
+    
+    -- withTempFileを使って原子的にリンク
+    withTempFile $ \tmpExe -> do
+        let includePaths = ["-I", ".", "-I", "core", "-I", "dist", "-I", "_build", "-L", "dist"]
+        cmd_ "csc" flags includePaths (sources ++ objects) "-o" tmpExe
+        -- 成功したら最終的な場所に移動
+        liftIO $ createDirectoryIfMissing True (takeDirectory out)
+        copyFile' tmpExe out
 
 -- | クリーンアップ対象のパターンリスト
 cleanArtifacts :: [FilePattern]

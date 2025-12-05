@@ -10,7 +10,7 @@ import Development.Shake.Classes
 import Control.Monad
 import System.Console.GetOpt
 import Data.Maybe (fromMaybe)
-import Data.List (find, isSuffixOf, intercalate)  -- ADD THIS LINE
+import Data.List (find, isSuffixOf, intercalate)
 import qualified System.Directory as Dir
 import Data.Typeable
 import GHC.Generics
@@ -172,42 +172,43 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         need [src]
         -- Chicken.needUnit が実際のコンパイルを実行
 
-    -- テスト実行(WSL対応版)
+    -- テスト実行(withTempDir使用版)
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
         
         flagsStr <- askOracle (BuildConfig ())
-        let testBin = "/tmp/test_" ++ modName m <.> exe
-        
-        -- WSLでは/tmpが特殊なので確認
-        liftIO $ Dir.createDirectoryIfMissing True "/tmp"
-        
         let depObjs = map Chicken.objectFile (modDeps m)
         
-        -- テストバイナリのリンク
-        Chicken.linkProgram flagsStr [modTest m] depObjs testBin
-        
-        -- WSLで動かすための環境変数設定
-        cmd_ 
-            [ AddEnv "CHICKEN_INCLUDE_PATH" (intercalate ":" ["core", "dist", ".", "_build"])
-            , AddEnv "CHICKEN_REPOSITORY_PATH" (intercalate ":" ["dist", "~/.chicken", "/usr/local/lib/chicken"])
-            , AddEnv "CHICKEN_INSTALL_REPOSITORY" "dist"
-            , AddEnv "LD_LIBRARY_PATH" (intercalate ":" ["dist", "/usr/local/lib"])
-            , AddEnv "C_INCLUDE_PATH" (intercalate ":" ["/usr/include", "core"])
-            , Shell  -- WSLではShellモードが安定
-            ] 
-            testBin 
-        
-        removeFilesAfter "/tmp" [testBin]
-        putInfo $ "✓ Tests passed for " ++ modName m
-        
+        -- withTempDirを使って一時ディレクトリ内でテストを実行
+        withTempDir $ \tmpDir -> do
+            let testBin = tmpDir </> "test_" ++ modName m <.> exe
+            
+            putInfo $ "Building test binary in: " ++ tmpDir
+            
+            -- テストバイナリのリンク
+            Chicken.linkProgram flagsStr [modTest m] depObjs testBin
+            
+            -- WSLで動かすための環境変数設定
+            cmd_ 
+                [ AddEnv "CHICKEN_INCLUDE_PATH" (intercalate ":" ["core", "dist", ".", "_build"])
+                , AddEnv "CHICKEN_REPOSITORY_PATH" (intercalate ":" ["dist", "~/.chicken", "/usr/local/lib/chicken"])
+                , AddEnv "CHICKEN_INSTALL_REPOSITORY" "dist"
+                , AddEnv "LD_LIBRARY_PATH" (intercalate ":" ["dist", "/usr/local/lib"])
+                , AddEnv "C_INCLUDE_PATH" (intercalate ":" ["/usr/include", "core"])
+                , Shell  -- WSLではShellモードが安定
+                ] 
+                testBin 
+            
+            putInfo $ "✓ Tests passed for " ++ modName m
+            -- withTempDir が自動的にクリーンアップ
+
     phony "clean" $ do
         putInfo "Cleaning..."
         removeFilesAfter buildDir ["//*"]
         removeFilesAfter distDir ["//*"]
-        -- Chicken.cleanArtifacts はすでに Action モナド内で実行
+        -- Chicken.cleanArtifacts を直接渡す
         removeFilesAfter "." Chicken.cleanArtifacts
-        -- liftIO が必要な場合
+        -- IO操作だけを liftIO 内で実行
         liftIO $ do
             distExists <- Dir.doesDirectoryExist "dist"
             when distExists $ Dir.removeDirectoryRecursive "dist"
