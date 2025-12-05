@@ -1,0 +1,15 @@
+=== Test Report for golay24-tool ===
+Status: FAILED
+Duration: 0.06s
+
+=== Output ===
+
+
+=== Errors ===
+
+Error: cannot load extension: machine_constants
+
+	Call history:
+
+	tests/golay24_tests.scm:9: chicken.load#load-extension	  	<--
+

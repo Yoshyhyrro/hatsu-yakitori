@@ -4,7 +4,7 @@
 ;; ============================================================
 
 (import chicken scheme)
-(use srfi-1 machine-constants cartan-utils golay-frontier kak-decomposition)
+(use srfi-1 core/machine_constants cartan-utils core/golay_frontier kak-decomposition)
 
 ;; ============================================================
 ;; Test Framework
