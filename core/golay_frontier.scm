@@ -30,7 +30,8 @@
           srfi-1
           srfi-69)
   
-  (import machine-constants) 
+  ;; FIX: Import must match the module name defined in machine_constants.scm
+  (import core/machine_constants) 
   
   ;; ============================================================
   ;; Golay[24,12] Code Implementation

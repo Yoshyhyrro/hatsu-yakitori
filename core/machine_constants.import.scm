@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'core/machine_constants
-      '#f
+      'machine_constants
       (scheme#list)
       '((machine-epsilon . core/machine_constants#machine-epsilon)
         (default-tolerance . core/machine_constants#default-tolerance)

@@ -1,0 +1,16 @@
+;; hatsu-yakitori.egg
+((version "0.0.1")
+ (summary "KAK-inspired bounded-computation core (SSSP / FMM / particle math)")
+ (license "BSD-3-Clause")
+ (author "Yoshihiro Hasegawa")
+ (category science)                 
+           math logic tools)                        
+ (components
+   (extension kak-decomposition
+              (csc-options "-O3" "-d1"))
+   (extension boids)
+   (extension fmm)
+   (extension sssp))
+ (test-dependencies test)
+ (dependencies srfi-1 srfi-69)   
+ (files "core" "modules" "eggs" "tests" "Makefile" "README.md" "LICENSE"))

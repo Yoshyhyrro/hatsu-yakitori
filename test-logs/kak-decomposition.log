@@ -1,0 +1,15 @@
+=== Test Report for kak-decomposition ===
+Status: FAILED
+Duration: 0.06s
+
+=== Output ===
+
+
+=== Errors ===
+
+Error: cannot load extension: srfi-1
+
+	Call history:
+
+	tests/kak_tests.scm:7: chicken.load#load-extension	  	<--
+

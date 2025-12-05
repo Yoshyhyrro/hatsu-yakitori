@@ -3,14 +3,21 @@
 ;;; ---------------------------------------------------------------------------
 
 ;; Module declaration for Chicken 5
+;; Module name matches the file path (core/kak_decomposition.scm)
 (module core/kak_decomposition
-  (K-frontier K-push K-pop K-empty? K-size
+  ;; Exports
+  (K-frontier
+   K-push
+   K-pop
+   K-empty?
+   K-size
    K-frontier-adaptive
-   relax-bound graph-neighbors
-   KAK-apply KAK-apply-golay
+   relax-bound
+   graph-neighbors
+   KAK-apply
+   KAK-apply-golay
    +INF+)
 
-  ;; Fix: Use 'import' instead of 'use' for Chicken 5 compatibility.
   (import scheme)
   (import (chicken base)
           (chicken format)
@@ -18,6 +25,7 @@
           srfi-69)  ;; Hash tables
 
   ;; Import local dependencies
+  ;; Ensure these modules are built and available via -J in Shake
   (import core/machine_constants)
   (import core/golay_frontier)
   (import core/cartan_utils)
@@ -27,10 +35,6 @@
   ;;; ============================================================
   ;;; Frontier Implementation (Stack/Queue abstraction)
   ;;; ============================================================
-  ;;; For 'stack: queue-data is a simple list (top at car)
-  ;;; For 'queue: queue-data is a pair (front . back) where each is a list.
-  ;;;   real-queue-list = append(front (reverse back))
-  ;;; This gives O(1) amortized push/pop for queue.
 
   (define (K-frontier mode)
     (cond ((eq? mode 'stack) (cons 'stack '()))
@@ -103,13 +107,11 @@
 
   (define (K-frontier-adaptive info-bits)
     ;; Create an adaptive frontier from Golay encoding
-    ;; Returns a structure compatible with K-push/K-pop
     (let ((af (make-adaptive-frontier info-bits)))
       ;; Extract mode and convert to K-frontier
       (let ((mode (adaptive-frontier-mode af)))
         (K-frontier mode))))
 
-  ;; relax-bound unchanged except use +INF+
   (define (relax-bound dist-table v new-dist)
     (let ((current-dist (hash-table-ref/default dist-table v +INF+)))
       (if (< new-dist current-dist)
@@ -161,22 +163,25 @@
                     ;; process node
                     (let* ((current-dist (hash-table-ref dist-table node))
                            ;; the decomposition piece for current level
-                           (a-k (list-ref decomp-levels (min step (- (length decomp-levels) 1))))
+                           ;; (Assuming decomp-levels has enough entries or we clamp it)
+                           (idx (min step (- (length decomp-levels) 1)))
+                           (a-k (list-ref decomp-levels idx))
                            (neighbors (graph-neighbors graph node)))
+                      
                       ;; relax neighbors and push into next frontier if updated
                       (for-each
                        (lambda (edge)
-                         ;; FIX: Use let* for sequential binding
                          (let* ((nb (car edge)) 
                                 (edge-weight (cdr edge)) 
                                 (new-dist (+ current-dist edge-weight)))
                            (when (relax-bound dist-table nb new-dist)
                              (set! next-f (K-push next-f nb)))))
                        neighbors)
+                      
                       ;; continue processing current level
                       (loop-level new-f next-f)))))))))
 
-  ;; Add wrapper: use Golay-controlled adaptive frontier to select mode and return tau + frontier
+  ;; Wrapper: use Golay-controlled adaptive frontier
   (define (KAK-apply-golay graph sources B max-steps info-bits)
     "Wrapper: build adaptive frontier from info-bits, call KAK-apply with chosen mode.
      Returns three values: dist-table, tau (weight), adaptive-frontier-vector"
@@ -186,4 +191,4 @@
         (let ((dist (KAK-apply graph sources B mode max-steps)))
           (values dist tau af))))))
 
- ;; end module core/kak_decomposition
+ ;; end module

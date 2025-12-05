@@ -1,5 +1,5 @@
 name: hatsu-yakitori
-version: 0.1.0
+version: 0.0.1
 summary: "KAK-inspired bounded-computation core (SSSP / FMM / particle sims)"
 description: |
   HATSU-YAKITORI (Heart of the Skewer) is a high-performance Chicken Scheme

@@ -8,8 +8,8 @@
 (import (chicken base)
         (chicken format)
         (chicken process-context))
-(import machine-constants)
-(import golay-frontier)
+(import core/machine_constants)
+(import core/golay_frontier)
 
 ;; ============================================================
 ;; Command-line Interface
