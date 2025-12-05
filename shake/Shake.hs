@@ -17,6 +17,7 @@ import GHC.Generics
 
 -- Chickenモジュールをインポート
 import qualified Chicken
+import qualified Salmonella
 
 -- -----------------------------------------------------------------------------
 -- Configuration & Types
@@ -188,19 +189,36 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             -- テストバイナリのリンク
             Chicken.linkProgram flagsStr [modTest m] depObjs testBin
             
-            -- WSLで動かすための環境変数設定
-            cmd_ 
-                [ AddEnv "CHICKEN_INCLUDE_PATH" (intercalate ":" ["core", "dist", ".", "_build"])
-                , AddEnv "CHICKEN_REPOSITORY_PATH" (intercalate ":" ["dist", "~/.chicken", "/usr/local/lib/chicken"])
-                , AddEnv "CHICKEN_INSTALL_REPOSITORY" "dist"
-                , AddEnv "LD_LIBRARY_PATH" (intercalate ":" ["dist", "/usr/local/lib"])
-                , AddEnv "C_INCLUDE_PATH" (intercalate ":" ["/usr/include", "core"])
-                , Shell  -- WSLではShellモードが安定
-                ] 
-                testBin 
+            -- Salmonellaモジュールを使ってテスト実行
+            let config = Salmonella.defaultTestConfig
+            result <- Salmonella.runModuleTests config (modName m) testBin depObjs
+            
+            when (not $ Salmonella.trPassed result) $
+                fail $ "Tests failed for " ++ modName m
             
             putInfo $ "✓ Tests passed for " ++ modName m
             -- withTempDir が自動的にクリーンアップ
+
+    -- 全テスト実行
+    phony "test-all" $ do
+        putInfo "Building all modules..."
+        forM_ modules $ \m -> need ["build-" ++ modName m]
+        
+        flagsStr <- askOracle (BuildConfig ())
+        
+        -- テストバイナリのリスト作成
+        testInfos <- forM modules $ \m -> withTempDir $ \tmpDir -> do
+            let testBin = tmpDir </> "test_" ++ modName m <.> exe
+                depObjs = map Chicken.objectFile (modDeps m)
+            
+            Chicken.linkProgram flagsStr [modTest m] depObjs testBin
+            return (modName m, testBin, depObjs)
+        
+        -- 全テスト実行
+        let config = Salmonella.defaultTestConfig
+        _report <- Salmonella.runAllTests config testInfos
+        
+        putInfo "✓ All tests passed"
 
     phony "clean" $ do
         putInfo "Cleaning..."
