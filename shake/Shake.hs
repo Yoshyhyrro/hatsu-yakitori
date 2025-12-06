@@ -61,7 +61,11 @@ modules =
     ]
   where
     coreFiles = [ "core/machine_constants.scm", "core/golay_frontier.scm", "core/cartan_utils.scm", "core/kak_decomposition.scm" ]
-    golayDeps = [ "core/machine_constants.scm", "core/golay_frontier.scm" ]
+    golayDeps = [ "core/machine_constants.scm"
+                , "core/golay_frontier.scm"
+                , "core/cartan_utils.scm" 
+                , "core/kak_decomposition.scm"
+                ]
 
 findModule :: String -> Maybe Module
 findModule name = find (\m -> modName m == name) modules

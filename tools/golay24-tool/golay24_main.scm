@@ -12,6 +12,16 @@
 (import core/golay_frontier)
 
 ;; ============================================================
+;; Helper: Format hex with padding
+;; ============================================================
+
+(define (format-hex-padded n width)
+  "Format number as hex with zero padding"
+  (let ((hex-str (number->string n 16)))
+    (let ((pad-needed (max 0 (- width (string-length hex-str)))))
+      (string-append (make-string pad-needed #\0) hex-str))))
+
+;; ============================================================
 ;; Command-line Interface
 ;; ============================================================
 
@@ -57,8 +67,8 @@
               (printf "Error: Info must be 12-bit (0-4095)~%")
               (exit 1))
             (let ((codeword (encode-golay24 info)))
-              (printf "Input (12-bit):  0x~x (~a)~%" info info)
-              (printf "Codeword (24-bit): 0x~x (~a)~%" codeword codeword)
+              (printf "Input (12-bit):  0x~a (~a)~%" (format-hex-padded info 3) info)
+              (printf "Codeword (24-bit): 0x~a (~a)~%" (format-hex-padded codeword 6) codeword)
               (printf "Weight: ~a~%" (golay-weight codeword)))))))
 
 (define (cmd-decode args)
@@ -74,13 +84,13 @@
               (printf "Error: Codeword must be 24-bit (0-16777215)~%")
               (exit 1))
             (let-values (((info syndrome) (decode-golay24 codeword)))
-              (printf "Codeword (24-bit): 0x~x~%" codeword)
-              (printf "Decoded info (12-bit): 0x~x (~a)~%" info info)
-              (printf "Syndrome: 0x~x~%" syndrome)
+              (printf "Codeword (24-bit): 0x~a~%" (format-hex-padded codeword 6))
+              (printf "Decoded info (12-bit): 0x~a (~a)~%" (format-hex-padded info 3) info)
+              (printf "Syndrome: 0x~a~%" (format-hex-padded syndrome 3))
               (if (zero? syndrome)
                   (printf "Status: Valid codeword (no errors)~%")
                   (printf "Status: Corrected ~a bit(s)~%" 
-                          (hamming-weight syndrome))))))))
+                          (golay-weight syndrome))))))))
 
 (define (cmd-weight args)
   (if (null? args)
@@ -95,9 +105,9 @@
               (printf "Error: Codeword must be 24-bit~%")
               (exit 1))
             (let ((weight (golay-weight codeword)))
-              (printf "Codeword: 0x~x~%" codeword)
+              (printf "Codeword: 0x~a~%" (format-hex-padded codeword 6))
               (printf "Weight: ~a / 24~%" weight)
-              (printf "Normalized: ~a~%" (/ weight 24.0)))))))
+              (printf "Normalized: ~a~%" (exact->inexact (/ weight 24))))))))
 
 (define (cmd-frontier args)
   (if (null? args)
@@ -129,9 +139,9 @@
 
 (define (cmd-demo args)
   (printf "~%")
-  (printf "╔════════════════════════════════════════╗~%")
+  (printf "╔═══════════════════════════════════════╗~%")
   (printf "║  Golay24 Interactive Demo              ║~%")
-  (printf "╚════════════════════════════════════════╝~%")
+  (printf "╚═══════════════════════════════════════╝~%")
   (printf "~%")
   
   ;; Demo 1: Basic encoding
@@ -139,8 +149,10 @@
   (printf "----------------------~%")
   (let* ((info #x123)
          (codeword (encode-golay24 info)))
-    (printf "Info: 0x~x → Codeword: 0x~x (weight: ~a)~%~%"
-            info codeword (golay-weight codeword)))
+    (printf "Info: 0x~a → Codeword: 0x~a (weight: ~a)~%~%"
+            (format-hex-padded info 3)
+            (format-hex-padded codeword 6)
+            (golay-weight codeword)))
   
   ;; Demo 2: Weight distribution
   (printf "Demo 2: Weight Distribution~%")
@@ -149,8 +161,8 @@
               (let* ((cw (encode-golay24 info))
                      (w (golay-weight cw))
                      (mode (frontier-mode-from-golay w)))
-                (printf "Info: 0x~3,'0x → Weight: ~2d → Mode: ~a~%"
-                        info w mode)))
+                (printf "Info: 0x~a → Weight: ~2d → Mode: ~a~%"
+                        (format-hex-padded info 3) w mode)))
             '(#x000 #x111 #x555 #xAAA #xFFF))
   (printf "~%")
   

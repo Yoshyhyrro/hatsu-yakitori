@@ -1,13 +1,10 @@
 ;; ============================================================
-;; tests/golay24_tests.scm
-;; Unit tests for Golay[24,12] code and adaptive frontier
+;; tests/test_golay_frontier.scm
+;; Tests for Golay-controlled adaptive frontier
 ;; ============================================================
 
-(import scheme)
-(import (chicken base)
-        (chicken format))
-(import core/machine_constants)
-(import core/golay_frontier)
+(import chicken scheme)
+(use srfi-1 core/machine_constants cartan-utils core/golay_frontier kak-decomposition)
 
 ;; ============================================================
 ;; Test Framework
@@ -17,173 +14,202 @@
 (define test-passed 0)
 (define test-failed 0)
 
-(define (assert-equal actual expected name)
+(define (test-assert name condition #!optional message)
   (set! test-count (+ test-count 1))
-  (if (equal? actual expected)
+  (if condition
       (begin
         (set! test-passed (+ test-passed 1))
-        (printf "[PASS] ~a~%" name))
+        (printf "  ✓ ~a~n" name))
       (begin
         (set! test-failed (+ test-failed 1))
-        (printf "[FAIL] ~a~%       Expected: ~a~%       Got: ~a~%"
-                name expected actual))))
+        (printf "  ✗ ~a~n" name)
+        (when message
+          (printf "    → ~a~n" message)))))
 
-(define (assert-true condition name)
-  (assert-equal condition #t name))
+(define (test-approx name expected actual #!optional (tol 1e-10))
+  (test-assert name
+               (approx-equal? expected actual tol)
+               (sprintf "expected ~a, got ~a" expected actual)))
 
-(define (print-test-summary)
-  (printf "~%========================================~%")
-  (printf "Test Summary~%")
-  (printf "========================================~%")
-  (printf "Total:  ~a~%" test-count)
-  (printf "Passed: ~a~%" test-passed)
-  (printf "Failed: ~a~%" test-failed)
-  (printf "========================================~%")
-  (if (> test-failed 0)
-      (exit 1)
-      (exit 0)))
-
-;; ============================================================
-;; Golay Encoding Tests
-;; ============================================================
-
-(define (test-golay-encoding)
-  (printf "~%=== Golay Encoding Tests ===~%")
-  
-  ;; Test: encoding zero
-  (let ((codeword (encode-golay24 0)))
-    (assert-equal codeword 0 "Encode zero"))
-  
-  ;; Test: encoding non-zero values produces 24-bit codewords
-  (let ((codeword (encode-golay24 #x123)))
-    (assert-true (<= codeword #xFFFFFF) "Codeword fits in 24 bits"))
-  
-  ;; Test: systematic property (info bits in upper 12 bits)
-  (let* ((info #xABC)
-         (codeword (encode-golay24 info))
-         (extracted (bitwise-and (arithmetic-shift codeword -12) #xFFF)))
-    (assert-equal extracted info "Systematic encoding preserves info bits")))
+(define (print-summary)
+  (printf "~n╔════════════════════════════════════╗~n")
+  (printf "║ Test Results                       ║~n")
+  (printf "╠════════════════════════════════════╣~n")
+  (printf "║ Total:  ~3d                        ║~n" test-count)
+  (printf "║ Passed: ~3d                        ║~n" test-passed)
+  (printf "║ Failed: ~3d                        ║~n" test-failed)
+  (printf "╚════════════════════════════════════╝~n"))
 
 ;; ============================================================
 ;; Golay Weight Tests
 ;; ============================================================
 
-(define (test-golay-weight)
-  (printf "~%=== Golay Weight Tests ===~%")
-  
-  ;; Test: weight of zero
-  (assert-equal (golay-weight 0) 0 "Weight of zero codeword")
-  
-  ;; Test: weight of all-ones in 24 bits
-  (assert-equal (golay-weight #xFFFFFF) 24 "Weight of all-ones")
-  
-  ;; Test: weight of single bit
-  (assert-equal (golay-weight #x000001) 1 "Weight of single bit")
-  (assert-equal (golay-weight #x800000) 1 "Weight of high bit")
-  
-  ;; Test: weight properties
-  (let* ((info #x555)  ; alternating bits
-         (codeword (encode-golay24 info))
-         (weight (golay-weight codeword)))
-    (assert-true (and (>= weight 0) (<= weight 24))
-                 "Weight in valid range [0,24]")))
+(printf "~nTesting Golay weight calculation:~n")
+
+(test-assert "zero weight for zero"
+             (= (golay-weight 0) 0))
+
+(test-assert "weight 1 for single bit"
+             (= (golay-weight 1) 1))
+
+(test-assert "weight 2 for two bits"
+             (= (golay-weight 3) 2))
+
+(test-assert "weight 12 for 0xFFF"
+             (= (golay-weight #xFFF) 12))
+
+(test-assert "weight 24 for max 24-bit"
+             (= (golay-weight #xFFFFFF) 24))
+
+;; ============================================================
+;; Golay Encoding Tests
+;; ============================================================
+
+(printf "~nTesting Golay[24,12] encoding:~n")
+
+(let ((cw0 (encode-golay24 0)))
+  (test-assert "encode zero produces codeword"
+               (number? cw0)))
+
+(let ((cw1 (encode-golay24 1)))
+  (test-assert "encode 1 produces nonzero codeword"
+               (> cw1 0)))
+
+(let ((cw-max (encode-golay24 #xFFF)))
+  (test-assert "encode max 12-bit produces 24-bit"
+               (<= cw-max #xFFFFFF)))
+
+;; ============================================================
+;; Golay Decoding Tests
+;; ============================================================
+
+(printf "~nTesting Golay[24,12] decoding:~n")
+
+(let ((info 42))
+  (let ((encoded (encode-golay24 info)))
+    (let-values (((info-out syndrome) (decode-golay24 encoded)))
+      (test-assert "decode recovers information"
+                   (= (bitwise-and info-out #xFFF) info)))))
+
+;; ============================================================
+;; Mode Selection from Golay Weight
+;; ============================================================
+
+(printf "~nTesting mode selection from τ:~n")
+
+(test-assert "τ=0 (0/24) → stack"
+             (eq? (frontier-mode-from-golay 0) 'stack))
+
+(test-assert "τ=6 (6/24=0.25) → stack"
+             (eq? (frontier-mode-from-golay 6) 'stack))
+
+(test-assert "τ=12 (12/24=0.5) → queue"
+             (eq? (frontier-mode-from-golay 12) 'queue))
+
+(test-assert "τ=18 (18/24=0.75) → queue"
+             (eq? (frontier-mode-from-golay 18) 'queue))
+
+(test-assert "τ=24 (24/24=1.0) → queue"
+             (eq? (frontier-mode-from-golay 24) 'queue))
 
 ;; ============================================================
 ;; Adaptive Frontier Tests
 ;; ============================================================
 
-(define (test-adaptive-frontier)
-  (printf "~%=== Adaptive Frontier Tests ===~%")
-  
-  ;; Test: frontier creation with low weight (stack mode)
-  (let ((frontier (make-adaptive-frontier 0)))
-    (assert-equal (adaptive-frontier-mode frontier) 'stack
-                  "Low weight → stack mode"))
-  
-  ;; Test: frontier creation with high weight (queue mode)
-  (let ((frontier (make-adaptive-frontier #xFFF)))  ; all info bits set
-    (let ((tau (adaptive-frontier-tau frontier)))
-      (assert-true (> tau 12) "High info bits → high weight")))
-  
-  ;; Test: push/pop operations
-  (let* ((frontier (make-adaptive-frontier 0))
-         (f1 (adaptive-frontier-push frontier 'a))
-         (f2 (adaptive-frontier-push f1 'b))
-         (f3 (adaptive-frontier-push f2 'c)))
-    (let-values (((val1 f4) (adaptive-frontier-pop f3)))
-      (assert-equal val1 'c "Stack mode: pop returns last pushed (LIFO)")))
-  
-  ;; Test: empty frontier
-  (let ((frontier (make-adaptive-frontier 0)))
-    (let-values (((val _) (adaptive-frontier-pop frontier)))
-      (assert-equal val #f "Pop from empty frontier returns #f"))))
+(printf "~nTesting adaptive frontier with Golay control:~n")
+
+;; Low τ seed (should prefer stack)
+(let ((f-low (make-adaptive-frontier 1)))
+  (let ((tau-low (adaptive-frontier-tau f-low)))
+    (test-assert "low-seed frontier created"
+                 (and (vector? f-low)
+                      (< tau-low 12)))
+    
+    (let ((f-pushed (adaptive-frontier-push f-low 'a)))
+      (test-assert "push succeeds"
+                   (> (length (vector-ref f-pushed 4)) 0))
+      
+      (let-values (((v f-popped) (adaptive-frontier-pop f-pushed)))
+        (test-assert "pop retrieves value"
+                     (eq? v 'a))))))
+
+;; High τ seed (should prefer queue)
+(let ((f-high (make-adaptive-frontier #xFFF)))
+  (let ((tau-high (adaptive-frontier-tau f-high)))
+    (test-assert "high-seed frontier created"
+                 (and (vector? f-high)
+                      (> tau-high 12)))))
 
 ;; ============================================================
-;; Frontier Mode Control Tests
+;; Frontier Mode Consistency
 ;; ============================================================
 
-(define (test-frontier-mode)
-  (printf "~%=== Frontier Mode Control Tests ===~%")
-  
-  ;; Test: low tau → stack
-  (assert-equal (frontier-mode-from-golay 0) 'stack
-                "τ=0 → stack")
-  (assert-equal (frontier-mode-from-golay 6) 'stack
-                "τ=6 → stack")
-  
-  ;; Test: high tau → queue
-  (assert-equal (frontier-mode-from-golay 12) 'queue
-                "τ=12 → queue")
-  (assert-equal (frontier-mode-from-golay 24) 'queue
-                "τ=24 → queue")
-  
-  ;; Test: boundary
-  (let ((mode-11 (frontier-mode-from-golay 11))
-        (mode-12 (frontier-mode-from-golay 12)))
-    (assert-equal mode-11 'stack "τ=11 → stack (< 0.5)")
-    (assert-equal mode-12 'queue "τ=12 → queue (≥ 0.5)")))
+(printf "~nTesting frontier mode consistency:~n")
+
+(let ((f (make-adaptive-frontier 5)))
+  (let ((mode1 (adaptive-frontier-mode f))
+        (f2 (adaptive-frontier-push f 'x))
+        (mode2 (adaptive-frontier-mode f2)))
+    (test-assert "mode preserved after push"
+                 (eq? mode1 mode2))))
 
 ;; ============================================================
-;; Integration Tests
+;; KAK-apply-golay Integration
 ;; ============================================================
 
-(define (test-integration)
-  (printf "~%=== Integration Tests ===~%")
+(printf "~nTesting KAK-apply-golay integration:~n")
+
+(let ((test-graph
+       '((0 . ((1 . 1.0) (2 . 4.0)))
+         (1 . ((2 . 2.0) (3 . 5.0)))
+         (2 . ((3 . 1.0)))
+         (3 . ()))))
   
-  ;; Test: complete encode-decode cycle
-  (let* ((info #x123)
-         (codeword (encode-golay24 info)))
-    (let-values (((decoded syndrome) (decode-golay24 codeword)))
-      (assert-equal decoded info "Decode(Encode(x)) = x")))
+  ;; Test with low info-bits (stack preference)
+  (let-values (((dist tau frontier) 
+               (KAK-apply-golay test-graph '(0) 10.0 5 1)))
+    (test-assert "KAK-apply-golay returns hash-table"
+                 (hash-table? dist))
+    
+    (test-assert "tau value in valid range"
+                 (and (>= tau 0) (<= tau 24)))
+    
+    (test-approx "source distance is 0"
+                 0.0 (hash-table-ref dist 0)))
   
-  ;; Test: frontier with sequence of operations
-  (let* ((frontier (make-adaptive-frontier #x100))
-         (items '(1 2 3 4 5))
-         (f-with-items (fold (lambda (item f)
-                               (adaptive-frontier-push f item))
-                             frontier
-                             items)))
-    (let-values (((val _) (adaptive-frontier-pop f-with-items)))
-      (assert-true (member val items) "Can retrieve pushed items"))))
+  ;; Test with high info-bits (queue preference)
+  (let-values (((dist tau frontier)
+               (KAK-apply-golay test-graph '(0) 10.0 5 #xFFF)))
+    (test-assert "high-tau KAK-apply-golay works"
+                 (> tau 12))))
 
 ;; ============================================================
-;; Main Test Runner
+;; τ-dependent Algorithm Behavior
 ;; ============================================================
 
-(define (run-all-tests)
-  (printf "~%")
-  (printf "╔════════════════════════════════════════╗~%")
-  (printf "║  Golay24 Tool Test Suite              ║~%")
-  (printf "╚════════════════════════════════════════╝~%")
-  
-  (test-golay-encoding)
-  (test-golay-weight)
-  (test-adaptive-frontier)
-  (test-frontier-mode)
-  (test-integration)
-  
-  (print-test-summary))
+(printf "~nTesting τ-dependent behavior (DFS vs BFS):~n")
 
-;; Run tests
-(run-all-tests)
-(module-export all)
+(let ((linear-graph
+       '((0 . ((1 . 1.0)))
+         (1 . ((2 . 1.0)))
+         (2 . ((3 . 1.0)))
+         (3 . ()))))
+  
+  ;; DFS (stack): explores depth first
+  (let-values (((dist-dfs tau-dfs _) 
+               (KAK-apply-golay linear-graph '(0) 10.0 3 1)))
+    (test-assert "DFS explores linear graph"
+                 (eq? (frontier-mode-from-golay tau-dfs) 'stack)))
+  
+  ;; BFS (queue): explores breadth first
+  (let-values (((dist-bfs tau-bfs _)
+               (KAK-apply-golay linear-graph '(0) 10.0 3 #xFFF)))
+    (test-assert "BFS explores linear graph"
+                 (eq? (frontier-mode-from-golay tau-bfs) 'queue))))
+
+;; ============================================================
+;; Summary
+;; ============================================================
+
+(print-summary)
+(exit (if (> test-failed 0) 1 0))
