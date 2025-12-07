@@ -14,6 +14,7 @@ import Data.List (find, isSuffixOf, intercalate)
 import qualified System.Directory as Dir
 import Data.Typeable
 import GHC.Generics
+import Development.Shake.Command
 
 -- Chickenモジュールをインポート
 import qualified Chicken
@@ -163,7 +164,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             Just src -> do
                 Chicken.needUnit src
 
-    -- FIXED: テストのリンク時にはソースを再コンパイルしない
+    -- FIXED: テストは実行可能ファイルとしてコンパイル（-unitなし）
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
         
@@ -176,8 +177,15 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             
             putInfo $ "Building test binary in: " ++ tmpDir
             
-            -- FIX: テストファイルだけをコンパイルし、依存関係は.oでリンク
-            Chicken.linkProgram flagsStr [modTest m] depObjs testBin
+            -- テストファイルを実行可能ファイルとしてコンパイル（-unitなし）
+            liftIO $ Dir.createDirectoryIfMissing True tmpDir
+            
+            let compilerFlags = words flagsStr
+                includePaths = ["-I.", "-Icore", "-Idist", "-I_build"]
+                libraryPaths = ["-Ldist"]
+                allArgs = compilerFlags ++ includePaths ++ libraryPaths ++ [modTest m] ++ depObjs ++ ["-o", testBin]
+            
+            cmd_ "csc" allArgs
             
             let config = Salmonella.defaultTestConfig
             result <- Salmonella.runModuleTests config (modName m) testBin depObjs
@@ -197,8 +205,15 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             let testBin = tmpDir </> "test_" ++ modName m <.> exe
                 depObjs = map Chicken.objectFile (modDeps m)
             
-            -- FIX: ここも同じ修正
-            Chicken.linkProgram flagsStr [modTest m] depObjs testBin
+            liftIO $ Dir.createDirectoryIfMissing True tmpDir
+            
+            let compilerFlags = words flagsStr
+                includePaths = ["-I.", "-Icore", "-Idist", "-I_build"]
+                libraryPaths = ["-Ldist"]
+                allArgs = compilerFlags ++ includePaths ++ libraryPaths ++ [modTest m] ++ depObjs ++ ["-o", testBin]
+            
+            cmd_ "csc" allArgs
+            
             return (modName m, testBin, depObjs)
         
         let config = Salmonella.defaultTestConfig

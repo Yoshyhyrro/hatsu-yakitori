@@ -1,10 +1,17 @@
 ;; ============================================================
-;; tests/test_golay_frontier.scm
+;; tests/golay24_tests.scm
 ;; Tests for Golay-controlled adaptive frontier
 ;; ============================================================
 
-(import chicken scheme)
-(use srfi-1 core/machine_constants cartan-utils core/golay_frontier kak-decomposition)
+(import scheme
+        (chicken base)       
+        (chicken format)     
+        (chicken process-context) 
+        (srfi 1)
+        core/machine_constants
+        core/golay_frontier
+        core/cartan_utils
+        core/kak_decomposition)
 
 ;; ============================================================
 ;; Test Framework
@@ -32,13 +39,19 @@
                (sprintf "expected ~a, got ~a" expected actual)))
 
 (define (print-summary)
-  (printf "~n╔════════════════════════════════════╗~n")
+  (printf "~n╔═══════════════════════════════════╗~n")
   (printf "║ Test Results                       ║~n")
-  (printf "╠════════════════════════════════════╣~n")
-  (printf "║ Total:  ~3d                        ║~n" test-count)
-  (printf "║ Passed: ~3d                        ║~n" test-passed)
-  (printf "║ Failed: ~3d                        ║~n" test-failed)
-  (printf "╚════════════════════════════════════╝~n"))
+  (printf "╠═══════════════════════════════════╣~n")
+  (printf "║ Total:  ~a~a║~n" 
+          test-count 
+          (make-string (max 0 (- 28 (string-length (number->string test-count)))) #\space))
+  (printf "║ Passed: ~a~a║~n" 
+          test-passed 
+          (make-string (max 0 (- 28 (string-length (number->string test-passed)))) #\space))
+  (printf "║ Failed: ~a~a║~n" 
+          test-failed 
+          (make-string (max 0 (- 28 (string-length (number->string test-failed)))) #\space))
+  (printf "╚═══════════════════════════════════╝~n"))
 
 ;; ============================================================
 ;; Golay Weight Tests

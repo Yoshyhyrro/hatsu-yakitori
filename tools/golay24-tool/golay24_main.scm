@@ -1,12 +1,11 @@
 ;; ============================================================
 ;; tools/golay24-tool/golay24_main.scm
-;; Command-line tool for Golay[24,12] encoding/decoding
-;; and adaptive frontier demonstration
 ;; ============================================================
 
 (import scheme)
 (import (chicken base)
         (chicken format)
+        (chicken string)
         (chicken process-context))
 (import core/machine_constants)
 (import core/golay_frontier)
@@ -20,6 +19,32 @@
   (let ((hex-str (number->string n 16)))
     (let ((pad-needed (max 0 (- width (string-length hex-str)))))
       (string-append (make-string pad-needed #\0) hex-str))))
+
+;; ============================================================
+;; Helper: String prefix check
+;; ============================================================
+
+(define (has-prefix? str prefix)
+  "Check if string starts with prefix"
+  (and (>= (string-length str) (string-length prefix))
+       (string=? (substring str 0 (string-length prefix)) prefix)))
+
+;; ============================================================
+;; Helper: Display frontier information
+;; ============================================================
+
+(define (display-frontier-info frontier)
+  "Display information about an adaptive frontier"
+  (let ((tau (adaptive-frontier-tau frontier))
+        (mode (adaptive-frontier-mode frontier))
+        (codeword (adaptive-frontier-codeword frontier)))
+    (printf "Frontier Information:~%")
+    (printf "  Codeword: 0x~a~%" (format-hex-padded codeword 6))
+    (printf "  Tau (t): ~a / 24~%" tau)
+    (printf "  Normalized: ~a~%" (exact->inexact (/ tau 24)))
+    (printf "  Mode: ~a~%" mode)
+    (printf "  Strategy: ~a~%"
+            (if (eq? mode 'stack) "DFS (depth-first)" "BFS (breadth-first)"))))
 
 ;; ============================================================
 ;; Command-line Interface
@@ -44,11 +69,18 @@
   (printf "  golay24-tool decode 0xABCDEF~%")
   (printf "  golay24-tool frontier 0x555~%"))
 
-;; Parse hex or decimal number
+;; Parse hex or decimal number with error handling
 (define (parse-number str)
-  (if (string-prefix? "0x" str)
-      (string->number (substring str 2) 16)
-      (string->number str)))
+  (cond
+    ((not (string? str)) #f)
+    ((has-prefix? str "0x")
+     (let ((hex-part (substring str 2)))
+       (if (> (string-length hex-part) 0)
+           (string->number hex-part 16)
+           #f)))
+    ((> (string-length str) 0)
+     (string->number str))
+    (else #f)))
 
 ;; ============================================================
 ;; Commands
@@ -123,7 +155,7 @@
               (exit 1))
             (let ((frontier (make-adaptive-frontier info)))
               (printf "~%")
-              (print-frontier-info frontier)
+              (display-frontier-info frontier)
               (printf "~%")
               (printf "Demonstration: Push/Pop operations~%")
               (let* ((f1 (adaptive-frontier-push frontier 'task-a))
@@ -139,9 +171,9 @@
 
 (define (cmd-demo args)
   (printf "~%")
-  (printf "╔═══════════════════════════════════════╗~%")
-  (printf "║  Golay24 Interactive Demo              ║~%")
-  (printf "╚═══════════════════════════════════════╝~%")
+  (printf "========================================~%")
+  (printf "  Golay24 Interactive Demo~%")
+  (printf "========================================~%")
   (printf "~%")
   
   ;; Demo 1: Basic encoding
@@ -149,7 +181,7 @@
   (printf "----------------------~%")
   (let* ((info #x123)
          (codeword (encode-golay24 info)))
-    (printf "Info: 0x~a → Codeword: 0x~a (weight: ~a)~%~%"
+    (printf "Info: 0x~a -> Codeword: 0x~a (weight: ~a)~%~%"
             (format-hex-padded info 3)
             (format-hex-padded codeword 6)
             (golay-weight codeword)))
@@ -161,8 +193,10 @@
               (let* ((cw (encode-golay24 info))
                      (w (golay-weight cw))
                      (mode (frontier-mode-from-golay w)))
-                (printf "Info: 0x~a → Weight: ~2d → Mode: ~a~%"
-                        (format-hex-padded info 3) w mode)))
+                (printf "Info: 0x~a -> Weight: ~a -> Mode: ~a~%"
+                        (format-hex-padded info 3)
+                        w
+                        mode)))
             '(#x000 #x111 #x555 #xAAA #xFFF))
   (printf "~%")
   
@@ -171,10 +205,10 @@
   (printf "-----------------------------------~%")
   (let ((frontier-low (make-adaptive-frontier #x000))
         (frontier-high (make-adaptive-frontier #xFFF)))
-    (printf "Low weight frontier (τ=~a): ~a mode~%"
+    (printf "Low weight frontier (t=~a): ~a mode~%"
             (adaptive-frontier-tau frontier-low)
             (adaptive-frontier-mode frontier-low))
-    (printf "High weight frontier (τ=~a): ~a mode~%~%"
+    (printf "High weight frontier (t=~a): ~a mode~%~%"
             (adaptive-frontier-tau frontier-high)
             (adaptive-frontier-mode frontier-high)))
   

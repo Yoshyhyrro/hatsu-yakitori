@@ -1,15 +1,15 @@
 === Test Report for golay24-tool ===
 Status: FAILED
-Duration: 0.07s
+Duration: 0.06s
 
 === Output ===
 
 
 === Errors ===
 
-Error: cannot load extension: machine_constants
+Error: cannot load extension: srfi-1
 
 	Call history:
 
-	tests/golay24_tests.scm:9: chicken.load#load-extension	  	<--
+	tests/golay24_tests.scm:6: chicken.load#load-extension	  	<--
 
