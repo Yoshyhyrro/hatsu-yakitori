@@ -26,9 +26,9 @@ import System.Exit (ExitCode(..))
 import System.Directory (createDirectoryIfMissing)
 import Text.Printf (printf)
 
--- ============================================================================
+-- ============================================================================ 
 -- Types
--- ============================================================================
+-- ============================================================================ 
 
 data TestConfig = TestConfig
     { tcLogDir      :: FilePath
@@ -61,9 +61,9 @@ data TestReport = TestReport
     , reportFailed    :: Int
     } deriving (Show, Eq)
 
--- ============================================================================
+-- ============================================================================ 
 -- Test Execution
--- ============================================================================
+-- ============================================================================ 
 
 -- | 単一モジュールのテストを実行
 runModuleTests :: TestConfig -> String -> FilePath -> [FilePath] -> Action TestResult
@@ -112,9 +112,9 @@ runModuleTests config modName testBinary deps = do
         ]
     
     when passed $ 
-        putInfo $ "✓ Tests passed for " ++ modName ++ printf " (%.2fs)" duration
+        putInfo $ "✓ Tests passed for " ++ modName ++ printf " (%.2fs)"
     
-    when (not passed) $
+    when (not passed) $ 
         putInfo $ "✗ Tests FAILED for " ++ modName
     
     return TestResult
@@ -162,7 +162,8 @@ runAllTests config modules = do
     -- レポートファイルの作成
     let reportFile = tcLogDir config </> "test-report.txt"
     liftIO $ writeFile reportFile $ formatReport TestReport
-        { reportTimestamp = timestamp
+        {
+         reportTimestamp = timestamp
         , reportResults = results
         , reportTotal = total
         , reportPassed = passed
@@ -176,16 +177,17 @@ runAllTests config modules = do
         fail $ show failed ++ " test(s) failed"
     
     return TestReport
-        { reportTimestamp = timestamp
+        {
+         reportTimestamp = timestamp
         , reportResults = results
         , reportTotal = total
         , reportPassed = passed
         , reportFailed = failed
         }
 
--- ============================================================================
+-- ============================================================================ 
 -- Utilities
--- ============================================================================
+-- ============================================================================ 
 
 -- | デフォルトの環境変数
 defaultEnvVars :: [(String, String)]
@@ -200,7 +202,7 @@ defaultEnvVars =
 -- | レポートのフォーマット
 formatReport :: TestReport -> String
 formatReport report = unlines
-    [ "=== Test Report ==="
+    ["=== Test Report ==="
     , "Timestamp: " ++ reportTimestamp report
     , ""
     , "Summary:"
@@ -213,7 +215,7 @@ formatReport report = unlines
     ]
   where
     formatResult r = unlines
-        [ "  " ++ trModule r ++ ": " ++ status r
+        ["  " ++ trModule r ++ ": " ++ status r
         , "    Duration: " ++ printf "%.2f" (trDuration r) ++ "s"
         ]
     status r = if trPassed r then "PASSED ✓" else "FAILED ✗"
