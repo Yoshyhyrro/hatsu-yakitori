@@ -16,7 +16,6 @@ import Data.Typeable
 import GHC.Generics
 import Development.Shake.Command
 
-import qualified Verification as Verification
 -- Chickenモジュールをインポート
 import qualified Chicken
 import qualified Salmonella
@@ -78,7 +77,6 @@ findModule name = find (\m -> modName m == name) modules
 
 main :: IO ()
 main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} flags $ \flags targets -> return $ Just $ do
-    Verification.verificationRules
     let buildDir = "_build"
         distDir  = "dist"
     
@@ -166,7 +164,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             Just src -> do
                 Chicken.needUnit src
 
-    -- FIXED: テストは実行可能ファイルとしてコンパイル（-unitなし）
+    -- テストは実行可能ファイルとしてコンパイル(-unitなし)
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
         
@@ -179,7 +177,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             
             putInfo $ "Building test binary in: " ++ tmpDir
             
-            -- テストファイルを実行可能ファイルとしてコンパイル（-unitなし）
+            -- テストファイルを実行可能ファイルとしてコンパイル(-unitなし)
             liftIO $ Dir.createDirectoryIfMissing True tmpDir
             
             let compilerFlags = words flagsStr

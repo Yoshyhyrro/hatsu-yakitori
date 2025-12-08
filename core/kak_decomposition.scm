@@ -134,61 +134,99 @@
   ;;; ============================================================
 
   (define (KAK-apply graph sources B frontier-mode max-steps)
+    "Apply KAK decomposition algorithm with Cartan log-space levels.
+     Args:
+       graph: adjacency structure (hash-table or alist)
+       sources: list of source nodes
+       B: upper bound for decomposition (must be > 1)
+       frontier-mode: 'stack or 'queue
+       max-steps: number of decomposition steps
+     Returns: hash-table of shortest distances from sources"
+    
     (define dist-table (make-hash-table))
     
-    ;; initialize sources distances
+    ;; Initialize source distances to 0
     (for-each (lambda (s) (hash-table-set! dist-table s 0.0)) sources)
 
+    ;; Compute Cartan decomposition levels: [B^(1/steps), ..., B^(steps/steps)]
+    ;; This now returns exactly max-steps elements (fixed bug)
     (define decomp-levels (cartan-log-decompose B max-steps))
 
-    ;; initialize frontier with sources
+    ;; Validate decomposition length matches max-steps
+    (unless (= (length decomp-levels) max-steps)
+      (error "KAK-apply: decomposition length mismatch"
+             (length decomp-levels) max-steps))
+
+    ;; Initialize frontier with all source nodes
     (define init-front 
       (fold (lambda (s acc) (K-push acc s)) 
             (K-frontier frontier-mode) 
             sources))
 
-    ;; process level-by-level
+    ;; Process level-by-level (breadth-first style)
     (let loop ((frontier init-front)
                (step 0))
       (if (or (>= step max-steps) (K-empty? frontier))
           dist-table
-          ;; process all nodes currently in frontier (current-level)
+          
+          ;; Process all nodes at current level
           (let loop-level ((f frontier) (next-f (K-frontier frontier-mode)))
             (call-with-values
                 (lambda () (K-pop f))
               (lambda (success node new-f)
                 (if (not success)
-                    ;; finished current level: move to next level and increment step
+                    ;; Finished current level: move to next level
                     (loop next-f (+ step 1))
-                    ;; process node
+                    
+                    ;; Process current node
                     (let* ((current-dist (hash-table-ref dist-table node))
-                           ;; the decomposition piece for current level
-                           ;; (Assuming decomp-levels has enough entries or we clamp it)
-                           (idx (min step (- (length decomp-levels) 1)))
-                           (a-k (list-ref decomp-levels idx))
+                           ;; Get decomposition coefficient for current step
+                           ;; step ∈ {0, 1, ..., max-steps-1}
+                           ;; decomp-levels has exactly max-steps elements
+                           (a-k (list-ref decomp-levels step))
                            (neighbors (graph-neighbors graph node)))
                       
-                      ;; relax neighbors and push into next frontier if updated
+                      ;; Relax all neighbors with scaled edge weights
                       (for-each
                        (lambda (edge)
                          (let* ((nb (car edge)) 
-                                (edge-weight (cdr edge)) 
-                                (new-dist (+ current-dist edge-weight)))
+                                (edge-weight (cdr edge))
+                                ;; Scale edge weight by Cartan coefficient
+                                (new-dist (+ current-dist (* edge-weight a-k))))
                            (when (relax-bound dist-table nb new-dist)
+                             ;; Distance improved: add neighbor to next frontier
                              (set! next-f (K-push next-f nb)))))
                        neighbors)
                       
-                      ;; continue processing current level
+                      ;; Continue processing current level
                       (loop-level new-f next-f)))))))))
 
-  ;; Wrapper: use Golay-controlled adaptive frontier
+  ;;; ============================================================
+  ;;; Golay-Controlled Wrapper
+  ;;; ============================================================
+
   (define (KAK-apply-golay graph sources B max-steps info-bits)
-    "Wrapper: build adaptive frontier from info-bits, call KAK-apply with chosen mode.
-     Returns three values: dist-table, tau (weight), adaptive-frontier-vector"
+    "Wrapper: build adaptive frontier from Golay-encoded info-bits.
+     Args:
+       graph: adjacency structure
+       sources: list of source nodes
+       B: upper bound for decomposition
+       max-steps: number of decomposition steps
+       info-bits: 12-bit info word for Golay encoding
+     Returns: three values
+       1. dist-table: hash-table of distances
+       2. tau: Golay codeword weight (error correction capability)
+       3. af: adaptive-frontier structure"
+    
+    ;; Create adaptive frontier from Golay encoding
     (let ((af (make-adaptive-frontier info-bits)))
       (let ((tau (adaptive-frontier-tau af))
             (mode (adaptive-frontier-mode af)))
+        
+        ;; Run KAK algorithm with chosen frontier mode
         (let ((dist (KAK-apply graph sources B mode max-steps)))
+          
+          ;; Return all three components
           (values dist tau af))))))
 
  ;; end module
