@@ -24,6 +24,7 @@ import Data.Time.Clock (getCurrentTime, diffUTCTime, NominalDiffTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import System.Exit (ExitCode(..))
 import System.Directory (createDirectoryIfMissing)
+import System.Environment (getEnvironment)
 import Text.Printf (printf)
 
 -- ============================================================================ 
@@ -81,12 +82,12 @@ runModuleTests config modName testBinary deps = do
     -- テスト実行
     startTime <- liftIO getCurrentTime
     
-    let envVars = defaultEnvVars ++ tcEnvironment config
-        cmdOpts = map (\(k, v) -> AddEnv k v) envVars ++ [Shell]
+    -- 環境変数の準備：デフォルト + カスタム
+    let mergedEnv = defaultEnvVars ++ tcEnvironment config
     
-    -- テスト実行とエラーハンドリング
-    -- cmd関数の正しい使用法: Stdout, Stderr, ExitCodeを明示的に要求
-    (Exit exitCode, Stdout stdout', Stderr stderr') <- cmd cmdOpts testBinary
+    -- cmd実行：環境変数を正しく設定
+    (Exit exitCode, Stdout stdout', Stderr stderr') <- 
+        cmd (Cwd "." : map (uncurry AddEnv) mergedEnv ++ [Shell]) testBinary
     
     endTime <- liftIO getCurrentTime
     let duration = realToFrac $ diffUTCTime endTime startTime :: Double
@@ -112,7 +113,7 @@ runModuleTests config modName testBinary deps = do
         ]
     
     when passed $ 
-        putInfo $ "✓ Tests passed for " ++ modName ++ printf " (%.2fs)"
+        putInfo $ "✓ Tests passed for " ++ modName ++ printf " (%.2fs)" duration
     
     when (not passed) $ 
         putInfo $ "✗ Tests FAILED for " ++ modName

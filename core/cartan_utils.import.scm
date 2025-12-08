@@ -10,7 +10,12 @@
           .
           core/cartan_utils#pretty-print-decomposition)
         (validate-decomposition . core/cartan_utils#validate-decomposition)
-        (cartan-log-decompose . core/cartan_utils#cartan-log-decompose))
+        (cartan-log-decompose . core/cartan_utils#cartan-log-decompose)
+        (cartan-inverse-lookup . core/cartan_utils#cartan-inverse-lookup)
+        (cartan-step-ratio . core/cartan_utils#cartan-step-ratio)
+        (test-cartan-decomposition
+          .
+          core/cartan_utils#test-cartan-decomposition))
       (scheme#list)
       (scheme#list)
       (scheme#list))))
