@@ -8,6 +8,7 @@
         (chicken format)     
         (chicken process-context) 
         (srfi 1)
+        (srfi 69) ; <--- [修正1] ハッシュテーブル用ライブラリを追加
         core/machine_constants
         core/golay_frontier
         core/cartan_utils
@@ -160,9 +161,10 @@
 (printf "~nTesting frontier mode consistency:~n")
 
 (let ((f (make-adaptive-frontier 5)))
-  (let ((mode1 (adaptive-frontier-mode f))
-        (f2 (adaptive-frontier-push f 'x))
-        (mode2 (adaptive-frontier-mode f2)))
+  ;; [修正2] let から let* に変更
+  (let* ((mode1 (adaptive-frontier-mode f))
+         (f2 (adaptive-frontier-push f 'x))
+         (mode2 (adaptive-frontier-mode f2))) ; f2を参照するため let* が必須
     (test-assert "mode preserved after push"
                  (eq? mode1 mode2))))
 

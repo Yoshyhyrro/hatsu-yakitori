@@ -16,6 +16,7 @@ import Data.Typeable
 import GHC.Generics
 import Development.Shake.Command
 
+import qualified Verification as Verification
 -- Chickenモジュールをインポート
 import qualified Chicken
 import qualified Salmonella
@@ -77,6 +78,7 @@ findModule name = find (\m -> modName m == name) modules
 
 main :: IO ()
 main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} flags $ \flags targets -> return $ Just $ do
+    Verification.verificationRules
     let buildDir = "_build"
         distDir  = "dist"
     
