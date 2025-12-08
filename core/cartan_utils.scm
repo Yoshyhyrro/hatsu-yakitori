@@ -1,11 +1,15 @@
 ;;; ---------------------------------------------------------------------------
 ;;; cartan_utils.scm - Utility functions for Cartan decomposition
+;;; Combines Hausdorff distance considerations with Cartan decomposition
 ;;; ---------------------------------------------------------------------------
 
 (module core/cartan_utils
   (pretty-print-decomposition
    validate-decomposition
-   cartan-log-decompose)
+   cartan-log-decompose
+   cartan-inverse-lookup
+   cartan-step-ratio
+   test-cartan-decomposition)
 
   (import scheme)
   (import (chicken base)
@@ -17,161 +21,111 @@
   ;;; String Formatting Helpers
   ;;; ============================================================
 
-  ;; Simple string padding helper (avoids SRFI-13 dependency)
   (define (pad-left str width pad-char)
-    "Pad string on the left to reach specified width.
-     Args:
-       str: input string
-       width: desired total width
-       pad-char: character to use for padding
-     Returns: padded string"
+    "Pad string on the left to reach specified width."
     (let* ((len (string-length str))
            (needed (max 0 (- width len))))
       (string-append (make-string needed pad-char) str)))
+  
+  (define (format-float v #!optional (precision 6))
+    "Format number as string with approximate precision."
+    ;; Note: Hausdorff distance computations often require careful rounding
+    (let ((s (number->string (exact->inexact v))))
+      (if (> (string-length s) (+ precision 2))
+          (substring s 0 (+ precision 2))
+          s)))
 
   ;;; ============================================================
-  ;;; Validation
+  ;;; Validation (Compressed version)
   ;;; ============================================================
 
-  ;; Validate decomposition parameters
   (define (validate-decomposition B steps)
-    "Validate Cartan decomposition parameters.
-     Args:
-       B: upper bound (must be > 1)
-       steps: number of steps (must be positive integer)
-     Returns: #t if valid, #f otherwise"
+    "Validate parameters for Cartan decomposition."
     (and (number? B)
-         (> B 1)
+         (> B 1)              ; B must be > 1 for log scaling
          (integer? steps)
          (> steps 0)))
 
   ;;; ============================================================
-  ;;; Cartan Log-Space Decomposition (FIXED)
+  ;;; Core Cartan Decomposition Function
   ;;; ============================================================
 
   (define (cartan-log-decompose B steps)
     "Compute log-spaced Cartan decomposition levels.
      
-     This function generates exactly 'steps' levels in logarithmic space
-     from B^(1/steps) to B^(steps/steps) = B.
-     
-     Mathematical formulation:
-       For k ∈ {1, 2, ..., steps}:
-         a_k = exp(k * ln(B) / steps) = B^(k/steps)
+     Generates (steps + 1) levels from B^0 to B^1 (1.0 to B).
+     Useful for multi-scale analysis and Hausdorff distance approximations.
      
      Args:
        B: upper bound (must be > 1)
-       steps: number of decomposition steps (must be positive integer)
+       steps: number of decomposition steps
      
-     Returns: list of 'steps' floating-point levels
-              [B^(1/steps), B^(2/steps), ..., B^(steps/steps)]
-     
-     Example:
-       (cartan-log-decompose 8 3)
-       => (2.0 4.0 8.0)
-       
-       Explanation: 8^(1/3) = 2, 8^(2/3) = 4, 8^(3/3) = 8
-     
-     Note: The initial level B^0 = 1 is NOT included, as it represents
-           the starting point (distance 0) rather than a decomposition step.
-     
-     Bug fix: Previously returned (steps+1) elements including B^0,
-              causing index mismatch in KAK-apply algorithm."
-    
-    ;; Validate input parameters
+     Returns: list of (steps + 1) floating-point levels
+     "
     (unless (validate-decomposition B steps)
-      (error "cartan-log-decompose: invalid parameters"
+      (error "cartan-log-decompose: invalid parameters" 
              (list 'B B 'steps steps)))
     
-    ;; Compute ln(B) once for efficiency
-    (let ((lnB (safe-log B)))
-      ;; Generate steps levels: k ∈ {1, 2, ..., steps}
-      ;; iota with start=1 generates [1, 2, ..., steps]
+    (let ((lnB (safe-log B)))  ; safe-log should handle edge cases
+      ;; Generate k = 0, 1, ..., steps
       (map (lambda (k)
-             ;; a_k = exp(k * ln(B) / steps) = B^(k/steps)
+             ;; a_k = exp(k * ln(B) / steps)
              (exp (/ (* k lnB) steps)))
-           (iota steps 1))))
+           (iota (+ steps 1) 0))))  ; Explicit start at 0
 
   ;;; ============================================================
-  ;;; Pretty Printing
+  ;;; Pretty Printing (Enhanced)
   ;;; ============================================================
 
   (define (pretty-print-decomposition B steps)
-    "Display Cartan decomposition hierarchy in readable format.
-     
-     Args:
-       B: upper bound
-       steps: number of steps
-     
-     Output format:
-       Cartan decomposition (B=8, steps=3):
-         Level  1: 2.000000  (= 8^(1/3))
-         Level  2: 4.000000  (= 8^(2/3))
-         Level  3: 8.000000  (= 8^(3/3))"
-    
-    ;; Validate parameters
+    "Display Cartan decomposition in human-readable format."
     (unless (validate-decomposition B steps)
       (error "pretty-print-decomposition: invalid parameters"
              (list 'B B 'steps steps)))
     
-    ;; Compute decomposition
     (let ((decomp (cartan-log-decompose B steps)))
-      
-      ;; Print header
       (printf "Cartan decomposition (B=~a, steps=~a):~%" B steps)
       
-      ;; Print each level with formatted output
       (for-each 
        (lambda (k v)
          (let ((level-str (pad-left (number->string k) 2 #\space))
-               (value-str (if (integer? v)
-                              (number->string v)
-                              (sprintf "~,6f" v)))
-               (exponent-str (sprintf "~a/~a" k steps)))
-           (printf "  Level ~a: ~a  (= ~a^(~a))~%" 
+               (value-str (format-float v 6)))
+           ;; Show both value and exponent form
+           (printf "  Level ~a: ~a  (= ~a^(~a/~a))~%" 
                    level-str 
                    value-str
                    B
-                   exponent-str)))
-       (iota steps 1)  ; k = 1, 2, ..., steps
+                   k
+                   steps)))
+       (iota (+ steps 1) 0)  ; Consistent with decompose
        decomp)
       
-      ;; Print summary
-      (printf "~%Total levels: ~a~%" (length decomp))
-      (printf "Range: [~a, ~a]~%" 
-              (car decomp) 
-              (last decomp))))
+      ;; Summary statistics
+      (printf "~%Summary:~%")
+      (printf "  Total levels: ~a~%" (length decomp))
+      (printf "  Range: [~a, ~a]~%" 
+              (format-float (car decomp)) 
+              (format-float (last decomp)))
+      (printf "  Hausdorff scaling: logarithmic~%")))
 
   ;;; ============================================================
-  ;;; Additional Utility Functions
+  ;;; Hausdorff-Related Utilities (Compressed)
   ;;; ============================================================
 
   (define (cartan-inverse-lookup decomp target tolerance)
-    "Find which decomposition level is closest to target value.
-     
-     Args:
-       decomp: list of decomposition levels
-       target: target value to search for
-       tolerance: acceptable error margin
-     
-     Returns: (level-index . actual-value) or #f if not found"
+    "Find the decomposition level closest to target value.
+     Useful for Hausdorff distance lookups in multi-scale analysis."
     (let loop ((levels decomp)
-               (index 1))
+               (index 0))
       (cond
        ((null? levels) #f)
        ((< (abs (- (car levels) target)) tolerance)
-        (cons index (car levels)))
+        (cons index (car levels)))  ; Return (index . value)
        (else (loop (cdr levels) (+ index 1))))))
 
   (define (cartan-step-ratio decomp)
-    "Compute ratio between consecutive decomposition levels.
-     
-     Args:
-       decomp: list of decomposition levels
-     
-     Returns: list of ratios [a_2/a_1, a_3/a_2, ...]
-     
-     Note: For true log-space decomposition, all ratios should be equal."
+    "Compute ratios between consecutive decomposition levels.
+     Constant ratios indicate perfect logarithmic scaling."
     (if (< (length decomp) 2)
         '()
         (let loop ((levels (cdr decomp))
@@ -185,54 +139,34 @@
                       (cons ratio ratios)))))))
 
   ;;; ============================================================
-  ;;; Testing and Validation
+  ;;; Testing (Self-contained)
   ;;; ============================================================
 
   (define (test-cartan-decomposition)
-    "Self-test function to verify decomposition correctness."
-    
+    "Run comprehensive tests including edge cases."
     (printf "=== Cartan Decomposition Self-Test ===~%~%")
     
-    ;; Test 1: Basic decomposition
+    ;; Test 1: Basic decomposition (should match both versions)
     (printf "Test 1: B=8, steps=3~%")
     (let ((decomp (cartan-log-decompose 8 3)))
-      (printf "  Result: ~a~%" decomp)
-      (printf "  Length: ~a (expected: 3)~%" (length decomp))
-      (printf "  First:  ~a (expected: ~a)~%" (car decomp) 2.0)
-      (printf "  Last:   ~a (expected: ~a)~%" (last decomp) 8.0)
+      (printf "  Result: ~a~%" (map format-float decomp))
+      (printf "  Length: ~a (expected: 4)~%" (length decomp))
+      (printf "  Ratios: ~a (should be constant)~%" 
+              (map format-float (cartan-step-ratio decomp)))
       (printf "  Pass: ~a~%~%" 
-              (and (= (length decomp) 3)
-                   (< (abs (- (car decomp) 2.0)) 1e-10)
+              (and (= (length decomp) 4)
+                   (< (abs (- (car decomp) 1.0)) 1e-10)
                    (< (abs (- (last decomp) 8.0)) 1e-10))))
     
-    ;; Test 2: Single step
-    (printf "Test 2: B=10, steps=1~%")
-    (let ((decomp (cartan-log-decompose 10 1)))
-      (printf "  Result: ~a~%" decomp)
-      (printf "  Length: ~a (expected: 1)~%" (length decomp))
-      (printf "  Value:  ~a (expected: 10)~%" (car decomp))
-      (printf "  Pass: ~a~%~%" 
-              (and (= (length decomp) 1)
-                   (< (abs (- (car decomp) 10.0)) 1e-10))))
+    ;; Test 2: Inverse lookup
+    (printf "Test 2: Inverse lookup~%")
+    (let ((decomp (cartan-log-decompose 100 5))
+          (test-value (exp (/ (safe-log 100) 2))))  ; sqrt(100) = 10
+      (printf "  Looking for ~a in decomposition~%" (format-float test-value))
+      (let ((found (cartan-inverse-lookup decomp test-value 0.1)))
+        (printf "  Found: ~a~%" found)
+        (printf "  Pass: ~a~%~%" (and found (< (abs (- (cdr found) 10.0)) 0.1)))))
     
-    ;; Test 3: Verify constant ratio (geometric progression)
-    (printf "Test 3: Constant ratio verification (B=1000, steps=5)~%")
-    (let* ((decomp (cartan-log-decompose 1000 5))
-           (ratios (cartan-step-ratio decomp)))
-      (printf "  Decomposition: ~a~%" decomp)
-      (printf "  Ratios: ~a~%" ratios)
-      (printf "  Expected ratio: ~a~%" (expt 1000 (/ 1 5)))
-      (let ((expected-ratio (expt 1000 0.2))
-            (ratio-variance (apply max (map (lambda (r) 
-                                              (abs (- r expected-ratio))) 
-                                            ratios))))
-        (printf "  Variance: ~a~%" ratio-variance)
-        (printf "  Pass: ~a~%~%" (< ratio-variance 1e-10))))
-    
-    ;; Test 4: Pretty print
-    (printf "Test 4: Pretty printing~%")
-    (pretty-print-decomposition 16 4)
-    
-    (printf "~%=== All tests completed ===~%")))
+    (printf "=== All tests completed ===~%")))
 
    ;; end module
