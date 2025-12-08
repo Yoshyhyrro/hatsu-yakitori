@@ -1,222 +1,150 @@
-{- shake/Salmonella.hs -}
-{-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Salmonella
-    ( -- * Test execution
-      runModuleTests
-    , runAllTests
-    , TestResult(..)
-    , TestReport(..)
-    
-    -- * Configuration
-    , TestConfig(..)
-    , defaultTestConfig
-    ) where
+  ( runModuleTests
+  , runAllTests
+  , TestConfig(..)
+  , defaultTestConfig
+  , TestResult(..)
+  , TestReport(..)
+  ) where
 
 import Development.Shake
 import Development.Shake.FilePath
 import Development.Shake.Command
-import Development.Shake.Util
-import Control.Monad (forM, forM_, when)
-import Control.Monad.IO.Class (liftIO)
-import Data.List (intercalate)
-import Data.Time.Clock (getCurrentTime, diffUTCTime, NominalDiffTime)
+import Data.Time.Clock
 import Data.Time.Format (formatTime, defaultTimeLocale)
-import System.Exit (ExitCode(..))
 import System.Directory (createDirectoryIfMissing)
-import System.Environment (getEnvironment)
+import System.Exit (ExitCode(..))
+import Control.Monad (when, forM, forM_)
 import Text.Printf (printf)
 
--- ============================================================================ 
--- Types
--- ============================================================================ 
+-- ============================================================================
+-- Configuration & Types
+-- ============================================================================
 
 data TestConfig = TestConfig
-    { tcLogDir      :: FilePath
-    , tcTimeout     :: Maybe Int  -- タイムアウト(秒)
-    , tcVerbose     :: Bool
-    , tcEnvironment :: [(String, String)]  -- 追加の環境変数
-    } deriving (Show, Eq)
+  { tcLogDir  :: FilePath
+  , tcTimeout :: Maybe Int
+  , tcEnv     :: [(String, String)]
+  , tcVerbose :: Bool  -- 追加: 失敗時に詳細を表示するかどうか
+  }
 
 defaultTestConfig :: TestConfig
 defaultTestConfig = TestConfig
-    { tcLogDir = "test-logs"
-    , tcTimeout = Just 300  -- 5分
-    , tcVerbose = False
-    , tcEnvironment = []
-    }
+  { tcLogDir  = "test-logs"
+  , tcTimeout = Just 300
+  , tcEnv     = defaultEnvVars
+  , tcVerbose = False
+  }
 
 data TestResult = TestResult
-    { trModule    :: String
-    , trPassed    :: Bool
-    , trDuration  :: Double  -- 秒
-    , trOutput    :: String
-    , trErrors    :: [String]
-    } deriving (Show, Eq)
+  { trModule   :: String
+  , trPassed   :: Bool
+  , trDuration :: Double
+  , trStdout   :: String
+  , trStderr   :: String
+  } deriving (Show, Eq)
 
 data TestReport = TestReport
-    { reportTimestamp :: String
-    , reportResults   :: [TestResult]
-    , reportTotal     :: Int
-    , reportPassed    :: Int
-    , reportFailed    :: Int
-    } deriving (Show, Eq)
+  { reportTime   :: String
+  , reportResult :: [TestResult]
+  } deriving (Show, Eq)
 
--- ============================================================================ 
+-- ============================================================================
 -- Test Execution
--- ============================================================================ 
+-- ============================================================================
 
--- | 単一モジュールのテストを実行
-runModuleTests :: TestConfig -> String -> FilePath -> [FilePath] -> Action TestResult
-runModuleTests config modName testBinary deps = do
-    putInfo $ "Running tests for: " ++ modName
-    
-    -- ログディレクトリの作成
-    liftIO $ createDirectoryIfMissing True (tcLogDir config)
-    
-    let logFile = tcLogDir config </> modName <.> "log"
-    
-    -- 依存関係の確認
-    need (testBinary : deps)
-    
-    -- テスト実行
-    startTime <- liftIO getCurrentTime
-    
-    -- 環境変数の準備：デフォルト + カスタム
-    let mergedEnv = defaultEnvVars ++ tcEnvironment config
-    
-    -- cmd実行：環境変数を正しく設定
-    (Exit exitCode, Stdout stdout', Stderr stderr') <- 
-        cmd (Cwd "." : map (uncurry AddEnv) mergedEnv ++ [Shell]) testBinary
-    
-    endTime <- liftIO getCurrentTime
-    let duration = realToFrac $ diffUTCTime endTime startTime :: Double
-    
-    -- 結果の判定
-    let passed = case exitCode of
-                   ExitSuccess -> True
-                   _           -> False
-        errors = if passed then [] else lines stderr'
-        output = stdout'
-    
-    -- ログファイルに書き込み
-    liftIO $ writeFile logFile $ unlines
-        [ "=== Test Report for " ++ modName ++ " ==="
+runModuleTests
+  :: TestConfig -> String -> FilePath -> [FilePath]
+  -> Action TestResult
+runModuleTests cfg name bin deps = do
+  -- 1. 依存関係の解決とディレクトリ作成
+  need (bin : deps)
+  liftIO $ createDirectoryIfMissing True (tcLogDir cfg)
+  
+  putInfo $ "Running tests for: " ++ name
+
+  -- 2. 計測と実行
+  start <- liftIO getCurrentTime
+  
+  -- AddEnvを使うことで既存の環境変数を維持しつつ追加・上書きします
+  (Exit code, Stdout out, Stderr err) <-
+    cmd (map (uncurry AddEnv) (tcEnv cfg)) (Cwd ".") bin
+
+  end <- liftIO getCurrentTime
+
+  -- 3. 結果の集計
+  let passed = code == ExitSuccess
+      dur    = realToFrac (diffUTCTime end start) :: Double
+      logFile = tcLogDir cfg </> name <.> "log"
+
+  -- 4. ログファイルへの書き出し (最初のコードの良い点を取り込み)
+  let logContent = unlines
+        [ "=== Test Report for " ++ name ++ " ==="
         , "Status: " ++ if passed then "PASSED" else "FAILED"
-        , "Duration: " ++ printf "%.2f" duration ++ "s"
+        , "Duration: " ++ printf "%.2fs" dur
         , ""
-        , "=== Output ==="
-        , output
-        , ""
-        , "=== Errors ==="
-        , unlines errors
+        , "=== Stdout ==="
+        , out
+        , "=== Stderr ==="
+        , err
         ]
-    
-    when passed $ 
-        putInfo $ "✓ Tests passed for " ++ modName ++ printf " (%.2fs)" duration
-    
-    when (not passed) $ 
-        putInfo $ "✗ Tests FAILED for " ++ modName
-    
-    return TestResult
-        { trModule = modName
-        , trPassed = passed
-        , trDuration = duration
-        , trOutput = output
-        , trErrors = errors
-        }
+  liftIO $ writeFile logFile logContent
 
--- | 全モジュールのテストを実行
-runAllTests :: TestConfig -> [(String, FilePath, [FilePath])] -> Action TestReport
-runAllTests config modules = do
-    timestamp <- liftIO $ do
-        t <- getCurrentTime
-        return $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
-    
-    putInfo "=== Running all module tests ==="
-    putInfo ""
-    
-    results <- forM modules $ \(modName, testBin, deps) -> do
-        result <- runModuleTests config modName testBin deps
-        putInfo ""
-        return result
-    
-    let total = length results
-        passed = length $ filter trPassed results
-        failed = total - passed
-    
-    -- サマリーの表示
-    putInfo "=== Test Summary ==="
-    putInfo $ "Total:  " ++ show total
-    putInfo $ "Passed: " ++ show passed
-    putInfo $ "Failed: " ++ show failed
-    putInfo ""
-    
-    -- 失敗したテストの詳細
-    when (failed > 0) $ do
-        putInfo "Failed tests:"
-        forM_ (filter (not . trPassed) results) $ \result -> do
-            putInfo $ "  ✗ " ++ trModule result
-            forM_ (take 3 $ trErrors result) $ \err ->
-                putInfo $ "      " ++ err
-    
-    -- レポートファイルの作成
-    let reportFile = tcLogDir config </> "test-report.txt"
-    liftIO $ writeFile reportFile $ formatReport TestReport
-        {
-         reportTimestamp = timestamp
-        , reportResults = results
-        , reportTotal = total
-        , reportPassed = passed
-        , reportFailed = failed
-        }
-    
-    putInfo $ "Report saved to: " ++ reportFile
-    
-    -- 失敗があればエラー
-    when (failed > 0) $ 
-        fail $ show failed ++ " test(s) failed"
-    
-    return TestReport
-        {
-         reportTimestamp = timestamp
-        , reportResults = results
-        , reportTotal = total
-        , reportPassed = passed
-        , reportFailed = failed
-        }
+  -- 5. コンソールへのフィードバック
+  if passed
+    then putInfo $ printf "  ✓ %s passed (%.2fs)" name dur
+    else do
+      putInfo $ printf "  ✗ %s FAILED" name
+      -- verboseならエラーの冒頭を表示
+      when (tcVerbose cfg) $
+          putInfo $ unlines $ take 5 $ lines err
 
--- ============================================================================ 
--- Utilities
--- ============================================================================ 
+  pure (TestResult name passed dur out err)
 
--- | デフォルトの環境変数
+runAllTests
+  :: TestConfig -> [(String, FilePath, [FilePath])]
+  -> Action TestReport
+runAllTests cfg modules = do
+  putInfo "=== Starting Test Suite ==="
+  
+  -- 各モジュールのテスト実行
+  results <- forM modules $ \(m, b, d) -> 
+    runModuleTests cfg m b d
+
+  timeStr <- liftIO $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" <$> getCurrentTime
+  
+  -- サマリーの計算
+  let total  = length results
+      passed = length $ filter trPassed results
+      failed = total - passed
+
+  putInfo ""
+  putInfo "=== Test Summary ==="
+  putInfo $ printf "Total:  %d" total
+  putInfo $ printf "Passed: %d" passed
+  putInfo $ printf "Failed: %d" failed
+
+  -- 失敗があればビルド自体を失敗させる (重要)
+  when (failed > 0) $ do
+    putInfo "Failed modules:"
+    forM_ (filter (not . trPassed) results) $ \r ->
+        putInfo $ "  - " ++ trModule r
+    fail $ show failed ++ " test(s) failed."
+
+  pure (TestReport timeStr results)
+
+-- ============================================================================
+-- Default Environment
+-- ============================================================================
+
 defaultEnvVars :: [(String, String)]
 defaultEnvVars =
-    [ ("CHICKEN_INCLUDE_PATH", intercalate ":" ["core", "dist", ".", "_build"])
-    , ("CHICKEN_REPOSITORY_PATH", intercalate ":" ["dist", "~/.chicken", "/usr/local/lib/chicken"])
-    , ("CHICKEN_INSTALL_REPOSITORY", "dist")
-    , ("LD_LIBRARY_PATH", intercalate ":" ["dist", "/usr/local/lib"])
-    , ("C_INCLUDE_PATH", intercalate ":" ["/usr/include", "core"])
-    ]
-
--- | レポートのフォーマット
-formatReport :: TestReport -> String
-formatReport report = unlines
-    ["=== Test Report ==="
-    , "Timestamp: " ++ reportTimestamp report
-    , ""
-    , "Summary:"
-    , "  Total:  " ++ show (reportTotal report)
-    , "  Passed: " ++ show (reportPassed report)
-    , "  Failed: " ++ show (reportFailed report)
-    , ""
-    , "Results:"
-    , unlines $ map formatResult (reportResults report)
-    ]
-  where
-    formatResult r = unlines
-        ["  " ++ trModule r ++ ": " ++ status r
-        , "    Duration: " ++ printf "%.2f" (trDuration r) ++ "s"
-        ]
-    status r = if trPassed r then "PASSED ✓" else "FAILED ✗"
+  [ ("CHICKEN_INCLUDE_PATH", "core:dist:.:_build")
+  -- ~ (チルダ) はシェル展開されないことがあるため、絶対パスか相対パスが安全ですが
+  -- 環境変数展開はShakeのcmdがある程度面倒を見てくれる場合もあります。
+  -- トラブルを避けるなら $HOME を取得して展開するロジックを入れるのがベストです。
+  , ("CHICKEN_REPOSITORY_PATH", "dist:${HOME}/.chicken:/usr/local/lib/chicken")
+  , ("CHICKEN_INSTALL_REPOSITORY", "dist")
+  ]

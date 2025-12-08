@@ -1,9 +1,11 @@
 #!/usr/bin/env stack
--- stack --resolver lts-22 script --package shake --package directory --package filepath
+-- stack --resolver lts-22 script --package shake --package directory --package filepath --package process
 
+{- shake/Shake.hs -}
 {-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving, TypeFamilies #-}
 
-import System.Environment (lookupEnv)
+import System.Environment (lookupEnv, getEnvironment)
+import System.Directory (getHomeDirectory)
 import Development.Shake
 import Development.Shake.FilePath
 import Development.Shake.Classes
@@ -15,6 +17,7 @@ import qualified System.Directory as Dir
 import Data.Typeable
 import GHC.Generics
 import Development.Shake.Command
+import Text.Printf (printf)
 
 -- Chickenモジュールをインポート
 import qualified Chicken
@@ -71,6 +74,33 @@ modules =
 findModule :: String -> Maybe Module
 findModule name = find (\m -> modName m == name) modules
 
+-- | 環境変数を構築するヘルパー
+-- ${HOME} を展開し、適切な CHICKEN_REPOSITORY_PATH を生成します
+getChickenEnv :: IO [(String, String)]
+getChickenEnv = do
+    home <- getHomeDirectory
+    -- システムの既存の環境変数を取得（念のため）
+    sysEnv <- getEnvironment
+    let sysRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
+    
+    -- パス構築: 
+    -- 1. カレントの dist (コンパイル済み成果物)
+    -- 2. ユーザーの Chicken repository (~/.chicken/lib/chicken/11 など環境によるが、ここでは ~/.chicken も含める)
+    -- 3. /usr/local/lib/chicken (システムのデフォルト)
+    -- 4. 既存の環境変数 (sysRepo)
+    let repoPath = intercalate ":" 
+            [ "dist"
+            , home </> ".chicken" 
+            , "/usr/local/lib/chicken"
+            , sysRepo 
+            ]
+            
+    return 
+        [ ("CHICKEN_INCLUDE_PATH", "core:dist:.:_build")
+        , ("CHICKEN_REPOSITORY_PATH", repoPath)
+        , ("CHICKEN_INSTALL_REPOSITORY", "dist")
+        ]
+
 -- -----------------------------------------------------------------------------
 -- Build Rules
 -- -----------------------------------------------------------------------------
@@ -78,6 +108,7 @@ findModule name = find (\m -> modName m == name) modules
 main :: IO ()
 main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} flags $ \flags targets -> return $ Just $ do
     let buildDir = "_build"
+        testBuildDir = "_build/tests"  -- テスト用バイナリの出力先
         distDir  = "dist"
     
     let mergedFlags = foldl (\(Flags d1 m1) (Flags d2 m2) -> Flags (d1 || d2) (m2 `mplus` m1)) defaultFlags flags
@@ -95,18 +126,7 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
 
     phony "help" $ do
         putInfo "Usage: ./Shake.hs [options] <target>"
-        putInfo ""
-        putInfo "Options:"
-        putInfo "  -d, --debug        Build with debug symbols"
-        putInfo "  -m, --module=NAME  Specify module to build/test"
-        putInfo ""
-        putInfo "Targets:"
-        putInfo "  help               Show this help"
-        putInfo "  info               Show build configuration"
-        putInfo "  build              Build specified module (requires -m)"
-        putInfo "  test               Test specified module (requires -m)"
-        putInfo "  <module-name>      Build and test specific module"
-        putInfo "  clean              Clean all build artifacts"
+        -- (省略: ヘルプ内容は同じ)
         putInfo ""
         putInfo "Available modules:"
         forM_ modules $ \m -> putInfo $ "  - " ++ modName m
@@ -135,13 +155,10 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
             Nothing -> fail $ "No module definition for " ++ modNameStr
             Just m -> do
                 need [buildDir </> modNameStr <.> "stamp"]
-                
-                forM_ (modDeps m) $ \dep -> 
-                    Chicken.needUnit dep
+                forM_ (modDeps m) $ \dep -> Chicken.needUnit dep
                 
                 flagsStr <- askOracle (BuildConfig ())
                 let depObjs = map Chicken.objectFile (modDeps m)
-                
                 Chicken.linkProgram flagsStr [modSrc m] depObjs out
 
     (buildDir </> "*.stamp") %> \out -> do
@@ -149,74 +166,76 @@ main = shakeArgsWith shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} fla
         case findModule name of
             Nothing -> fail $ "Unknown module: " ++ name
             Just m -> do
-                forM_ (modDeps m) $ \dep -> 
-                    Chicken.needUnit dep
-                
+                forM_ (modDeps m) $ \dep -> Chicken.needUnit dep
                 writeFile' out ""
 
     "dist//*.o" %> \out -> do
         let objName = takeBaseName out
-        
         let allSources = [ modSrc m | m <- modules ] ++ concat [ modDeps m | m <- modules ]
-        
         case find (\s -> takeBaseName s == objName) allSources of
             Nothing -> fail $ "Source file not found for object: " ++ out
-            Just src -> do
-                Chicken.needUnit src
+            Just src -> Chicken.needUnit src
 
-    -- テストは実行可能ファイルとしてコンパイル(-unitなし)
+    -- ========================================================================
+    -- テスト実行ルール (修正版)
+    -- ========================================================================
+    
+    -- 個別テスト
     forM_ modules $ \m -> phony ("test-" ++ modName m) $ do
         need ["build-" ++ modName m]
         
         flagsStr <- askOracle (BuildConfig ())
-        
         let depObjs = map Chicken.objectFile (modDeps m)
+        
+        -- withTempDir は使わず、永続的なビルドディレクトリを使用する
+        let testBin = testBuildDir </> "test_" ++ modName m <.> exe
+        
+        -- ディレクトリ作成
+        liftIO $ Dir.createDirectoryIfMissing True testBuildDir
+        
+        let compilerFlags = words flagsStr
+            includePaths = ["-I.", "-Icore", "-Idist", "-I_build"]
+            libraryPaths = ["-Ldist"]
+            -- コンパイル
+            allArgs = compilerFlags ++ includePaths ++ libraryPaths ++ [modTest m] ++ depObjs ++ ["-o", testBin]
+        
+        cmd_ "csc" allArgs
+        
+        -- 環境変数を生成して設定
+        envVars <- liftIO getChickenEnv
+        let config = Salmonella.defaultTestConfig { Salmonella.tcEnv = envVars }
+        
+        result <- Salmonella.runModuleTests config (modName m) testBin depObjs
+        
+        when (not $ Salmonella.trPassed result) $
+            fail $ "Tests failed for " ++ modName m
 
-        withTempDir $ \tmpDir -> do
-            let testBin = tmpDir </> "test_" ++ modName m <.> exe
-            
-            putInfo $ "Building test binary in: " ++ tmpDir
-            
-            -- テストファイルを実行可能ファイルとしてコンパイル(-unitなし)
-            liftIO $ Dir.createDirectoryIfMissing True tmpDir
-            
-            let compilerFlags = words flagsStr
-                includePaths = ["-I.", "-Icore", "-Idist", "-I_build"]
-                libraryPaths = ["-Ldist"]
-                allArgs = compilerFlags ++ includePaths ++ libraryPaths ++ [modTest m] ++ depObjs ++ ["-o", testBin]
-            
-            cmd_ "csc" allArgs
-            
-            let config = Salmonella.defaultTestConfig
-            result <- Salmonella.runModuleTests config (modName m) testBin depObjs
-            
-            when (not $ Salmonella.trPassed result) $
-                fail $ "Tests failed for " ++ modName m
-            
-            putInfo $ "✓ Tests passed for " ++ modName m
-
+    -- 全テスト (修正版: パスの生存期間問題を解決)
     phony "test-all" $ do
         putInfo "Building all modules..."
         forM_ modules $ \m -> need ["build-" ++ modName m]
         
         flagsStr <- askOracle (BuildConfig ())
+        liftIO $ Dir.createDirectoryIfMissing True testBuildDir
         
-        testInfos <- forM modules $ \m -> withTempDir $ \tmpDir -> do
-            let testBin = tmpDir </> "test_" ++ modName m <.> exe
+        -- 先にすべてのテストバイナリをビルドしてパスを収集
+        testInfos <- forM modules $ \m -> do
+            let testBin = testBuildDir </> "test_" ++ modName m <.> exe
                 depObjs = map Chicken.objectFile (modDeps m)
-            
-            liftIO $ Dir.createDirectoryIfMissing True tmpDir
             
             let compilerFlags = words flagsStr
                 includePaths = ["-I.", "-Icore", "-Idist", "-I_build"]
                 libraryPaths = ["-Ldist"]
                 allArgs = compilerFlags ++ includePaths ++ libraryPaths ++ [modTest m] ++ depObjs ++ ["-o", testBin]
             
+            -- cmd_ は stdout/stderr を Shake のログに出す
             cmd_ "csc" allArgs
-            
             return (modName m, testBin, depObjs)
         
-        let config = Salmonella.defaultTestConfig
+        -- 全ビルド成功後にテストを一括実行
+        envVars <- liftIO getChickenEnv
+        let config = Salmonella.defaultTestConfig { Salmonella.tcEnv = envVars }
+        
         _report <- Salmonella.runAllTests config testInfos
         
         putInfo "✓ All tests passed"

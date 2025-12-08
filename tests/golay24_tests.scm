@@ -7,8 +7,8 @@
         (chicken base)       
         (chicken format)     
         (chicken process-context) 
-        (srfi 1)
-        (srfi 69) ; <--- [修正1] ハッシュテーブル用ライブラリを追加
+        (srfi-1)
+        (srfi-69) 
         core/machine_constants
         core/golay_frontier
         core/cartan_utils

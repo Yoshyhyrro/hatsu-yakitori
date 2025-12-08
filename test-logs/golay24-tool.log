@@ -1,11 +1,10 @@
 === Test Report for golay24-tool ===
 Status: FAILED
-Duration: 0.06s
+Duration: 0.46s
 
-=== Output ===
+=== Stdout ===
 
-
-=== Errors ===
+=== Stderr ===
 
 Error: cannot load extension: srfi-1
 
