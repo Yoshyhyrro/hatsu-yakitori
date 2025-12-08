@@ -18,6 +18,7 @@ import Data.Typeable
 import GHC.Generics
 import Development.Shake.Command
 import Text.Printf (printf)
+import System.Process (readProcess)
 
 -- Chickenモジュールをインポート
 import qualified Chicken
@@ -74,25 +75,28 @@ modules =
 findModule :: String -> Maybe Module
 findModule name = find (\m -> modName m == name) modules
 
--- | 環境変数を構築するヘルパー
--- ${HOME} を展開し、適切な CHICKEN_REPOSITORY_PATH を生成します
+-- | Helper to build environment variables
+-- Dynamically fetches the system CHICKEN_REPOSITORY_PATH
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
     home <- getHomeDirectory
-    -- システムの既存の環境変数を取得（念のため）
     sysEnv <- getEnvironment
-    let sysRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
+    let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
     
-    -- パス構築: 
-    -- 1. カレントの dist (コンパイル済み成果物)
-    -- 2. ユーザーの Chicken repository (~/.chicken/lib/chicken/11 など環境によるが、ここでは ~/.chicken も含める)
-    -- 3. /usr/local/lib/chicken (システムのデフォルト)
-    -- 4. 既存の環境変数 (sysRepo)
+    -- Ask csi for the correct library location
+    -- (filter to remove the trailing newline)
+    systemRepo <- liftM (filter (/= '\n')) $ readProcess "csi" ["-p", "(repository-path)"] ""
+    
+    -- Build path: 
+    -- 1. dist (compiled artifacts)
+    -- 2. ~/.chicken (user eggs)
+    -- 3. systemRepo (core libraries like srfi-1)
+    -- 4. Environment variable override
     let repoPath = intercalate ":" 
             [ "dist"
             , home </> ".chicken" 
-            , "/usr/local/lib/chicken"
-            , sysRepo 
+            , systemRepo
+            , sysEnvRepo 
             ]
             
     return 
