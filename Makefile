@@ -1,54 +1,64 @@
-# hatsu-yakitori Build System
-# Wrapper for Shake build system
-# 
-# Usage:
-#   make                - Default build (runs 'all' rule in Shake)
-#   make <target>       - build specific target (e.g., 'make golay24-tool')
-#   make clean          - Clean artifacts
-#   make verify         - Run formal verification
-#   make test MODULE=x  - Run tests (passed args to Shake)
+# Makefile - hatsu-yakitori Build System (Refactored)
 
-# Shake script location and invocation
-# -ishake adds the 'shake' directory to search path so modules like 'Chicken' can be imported
-SHAKE_SRC := shake/rules/Shake.hs
-SHAKE_CMD := stack runhaskell --package shake --package sbv --package process -- -ishake $(SHAKE_SRC)
+# ==============================================================================
+# 1. 設定 & コマンド定義
+# ==============================================================================
 
-# Make arguments handling
-# Allows passing arguments like 'make test -- -m golay24-tool' if your Shake handles flags,
-# or simply maps 'make target' to 'Shake target'.
+# Shakeのメインスクリプトはルートディレクトリに移動
+SHAKE_SRC := Shake.hs
+
+# 必要なパッケージを全て指定
+# shake, process, filepath, directory は依存関係として含める
+# sbv は形式検証ターゲット(verify)が必要な場合に追加
+# rules.hsのGADT/TypeFamiliesを使うため、stack runhaskell を使用
+SHAKE_PKGS := shake sbv process directory filepath
+
+# シェイクコマンドの実行方法
+# -i. : カレントディレクトリを探索パスに追加し、他のモジュール (Chicken, Rules) を見つけられるようにする
+SHAKE_CMD := stack runhaskell --package $(SHAKE_PKGS) -- -i. $(SHAKE_SRC)
+
+# Make引数処理 (ターゲットの後に続く引数を全て取得)
+# 例: make test -- -m fmm の '-- -m fmm' の部分
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
-# .PHONY helps Make understand these aren't files, but we mainly rely on the wildcard match
-.PHONY: all clean help force
+# ==============================================================================
+# 2. ターゲット定義
+# ==============================================================================
 
-# Default target
-all:
-	@$(SHAKE_CMD) all
+.PHONY: all clean help force verify test build
 
-# Catch-all rule: Delegates EVERYTHING to Shake
-# This handles 'clean', 'test', 'verify', 'golay24-tool', etc.
+# デフォルトターゲット
+all: build
+
+# 'build'ターゲットはShakeの 'build' phonyを呼び出す
+build: force
+	@$(SHAKE_CMD) build
+
+# キャッチオールルール: 'clean', 'test', 'verify', モジュール名などをShakeに委譲
 %: force
 	@$(SHAKE_CMD) "$@" $(ARGS)
 
-# Dummy target to force execution of the catch-all rule
+# ダミーターゲット
 force: ;
 
-# Explicit help to show this is a wrapper
+# 明示的なヘルプ表示
 help:
-	@echo "hatsu-yakitori Build Wrapper"
-	@echo "============================"
-	@echo "This Makefile delegates all logic to Shake."
+	@echo "hatsu-yakitori Build Wrapper (Refactored)"
+	@echo "========================================="
+	@echo "This Makefile delegates all logic to Shake (Shake.hs)."
 	@echo ""
 	@echo "Common commands:"
-	@echo "  make build           : Build all modules"
-	@echo "  make test            : Run tests"
-	@echo "  make verify          : Run formal verification (Z3/SBV)"
-	@echo "  make clean           : Clean build artifacts"
-	@echo "  make golay24-tool    : Build specific tool"
+	@echo "  make build             : Build all modules (calls Shake 'build')"
+	@echo "  make test              : Run tests (calls Shake 'test')"
+	@echo "  make verify            : Run formal verification (calls Shake 'verify')"
+	@echo "  make clean             : Clean build artifacts (calls Shake 'clean')"
+	@echo "  make <module-name>     : Build and test a specific module (e.g., 'make fmm')"
+	@echo "  make build MODULE=name : Build specific module (using flags)"
 	@echo ""
 	@echo "For detailed Shake options, run:"
 	@echo "  $(SHAKE_CMD) --help"
 
-# Avoid error "No rule to make target..." for arguments passed to Shake
+# Shakeに渡される引数（ターゲットではないもの）に対する Make のエラーを防ぐ
+# 例: make test -- -m fmm の '-m' や 'fmm' の部分
 $(ARGS): force
 	@:
