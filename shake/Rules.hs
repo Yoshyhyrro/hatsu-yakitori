@@ -56,14 +56,19 @@ buildArtifact (CompileUnit src flags) = do
   when exists $ need [importSrc]
   return (Artifact out)
 
-buildArtifact (LinkExe objs _ flags outPath) = do
-  need (map getPath objs)
+buildArtifact (LinkExe objs mainSrc flags outPath) = do
+  
+  -- 1. mainSrc も need に追加する
+  need (getPath mainSrc : map getPath objs)
+  
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory outPath)
   
-  let args = words flags ++ ["-o", outPath] ++ map getPath objs
+  -- 2. コマンドライン引数の最後に mainSrc を追加する
+  --    これにより Chicken がこのファイルをメインプログラムとしてコンパイル・リンクします
+  let args = words flags ++ ["-o", outPath] ++ map getPath objs ++ [getPath mainSrc]
+  
   putInfo $ "[Link] " ++ outPath
   
-  -- 修正: "csc" :: String と型を明示する
   cmd_ ("csc" :: String) args
   
   return (Artifact outPath)
