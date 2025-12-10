@@ -1,8 +1,9 @@
-{- Rules.hs -}
+{- shake/Rules.hs -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module Rules
   ( -- * Core Rules
@@ -17,27 +18,25 @@ module Rules
 import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad (when)
+import Control.Monad (when, unless, filterM)
 import qualified System.Directory as Dir
 import System.Process (readProcess)
 import System.Environment (getEnvironment)
 import Data.Maybe (fromMaybe)
-import Data.List (intercalate)
+import Data.List (intercalate, isSuffixOf, isPrefixOf)
 import qualified Data.ByteString.Char8 as BS8
 import Data.Binary (encode)
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Lazy as BL
-import Control.Monad (when, unless)
 
 import Chicken
 
--- | ビルド操作を表す GADT（ユーザー向け API）
+-- | ビルド操作を表す GADT
 data ChickenOp a where
   CompileObj  :: Artifact 'Src -> String -> ChickenOp (Artifact 'Obj)
   CompileUnit :: Artifact 'Src -> String -> ChickenOp (Artifact 'Unit)
   LinkExe     :: [Artifact 'Obj] -> Artifact 'Src -> String -> FilePath -> ChickenOp (Artifact 'Exe)
 
--- Derive instances
 deriving instance Show (ChickenOp a)
 deriving instance Eq (ChickenOp a)
 
@@ -51,106 +50,172 @@ buildArtifact (CompileObj src flags) = do
 buildArtifact (CompileUnit src flags) = do
   let out = artifactPathForCompileUnit src flags
   need [out]
-  -- Check and depend on .import.scm if it exists
+  -- .import.scm が生成される可能性があるため、ソース側のimportファイルがあれば依存に追加
   let importSrc = replaceExtension (getPath src) "import.scm"
-  exists <- liftIO $ Dir.doesFileExist importSrc  -- liftIO の外で need を呼ぶ
-  when exists $ need ["dist" </> takeFileName importSrc]
+  exists <- liftIO $ Dir.doesFileExist importSrc
+  when exists $ need [importSrc]
   return (Artifact out)
 
-buildArtifact (LinkExe objs mainSrc flags outPath) = do
-  need (outPath : map getPath objs ++ [getPath mainSrc])
+buildArtifact (LinkExe objs _ flags outPath) = do
+  need (map getPath objs)
+  liftIO $ Dir.createDirectoryIfMissing True (takeDirectory outPath)
+  
+  let args = words flags ++ ["-o", outPath] ++ map getPath objs
+  putInfo $ "[Link] " ++ outPath
+  
+  -- 修正: "csc" :: String と型を明示する
+  cmd_ ("csc" :: String) args
+  
   return (Artifact outPath)
 
--- | ファイルパス生成ヘルパー（フラグを含めて一意化）
+-- | パス生成ヘルパー
 hashFlags :: String -> String
 hashFlags flags = BS8.unpack $ Base16.encode $ BL.toStrict $ encode flags
 
--- Obj: dist/obj_<hash>/Main.o
 artifactPathForCompileObj :: Artifact 'Src -> String -> FilePath
 artifactPathForCompileObj (Artifact src) flags = 
   "dist" </> ("obj_" ++ hashFlags flags) </> replaceExtension (takeFileName src) "o"
 
--- Unit: dist/unit_<hash>/Utils.o （Chicken では .o がユニット本体）
 artifactPathForCompileUnit :: Artifact 'Src -> String -> FilePath
 artifactPathForCompileUnit (Artifact src) flags = 
-  "dist" </> ("unit_" ++ hashFlags flags) </> replaceExtension ( takeFileName src ) "o"
+  "dist" </> ("unit_" ++ hashFlags flags) </> replaceExtension (takeFileName src) "o"
 
 -- | ルールのセットアップ
 setupRules :: Rules ()
 setupRules = do
-  -- Rule for compiled objects (.o)
-  "dist/obj_*/" ++ "*.o" %> \out -> compileAction out False
+  -- オブジェクトファイルのコンパイルルール
+  "dist/obj_*/*.o" %> \out -> compileAction out False
 
-  -- Rule for compiled units (.o, but with -unit and .import.scm handling)
-  "dist/unit_*/" ++ "*.o" %> \out -> compileAction out True
+  -- ユニットファイルのコンパイルルール
+  "dist/unit_*/*.o" %> \out -> compileAction out True
 
-  -- Rule for executables
-  -- We assume the user explicitly calls `need [getPath exe]`, so we define a very general rule
-  "dist//*" %> \out -> do
-    -- This rule is intentionally minimal. In practice, you might want a dedicated rule
-    -- or generate this from a higher-level description.
-    putInfo $ "Linking (generic rule): " ++ out
-    -- You *must* set up the correct inputs via `need` before triggering this.
-    -- We cannot infer obj files here without metadata.
-    -- So this rule assumes the calling code has already declared dependencies.
-    -- Alternatively, store linking info in a .shake file or config.
-    return ()
+  -- インポートファイルのコピールール
+  -- ソースディレクトリから dist/unit_*/ へコピーする
+  "dist/unit_*/*.import.scm" %> \out -> do
+    let dir = takeDirectory out
+    let fileName = takeFileName out
+    -- let baseName = dropExtension fileName
+    
+    -- 標準的なパス + 再帰検索で見つける
+    let searchDirs = ["core", "modules", "tools", "."]
+    candidates <- liftIO $ concat <$> mapM (findAllFilesRecursive fileName) searchDirs
+    
+    case candidates of
+        (src:_) -> do
+            liftIO $ Dir.createDirectoryIfMissing True dir
+            copyFile' src out
+        [] -> error $ "Could not find .import.scm file for: " ++ fileName
 
 -- | 共通のコンパイルアクション
 compileAction :: FilePath -> Bool -> Action ()
 compileAction out isUnit = do
   let dir = takeDirectory out
   let baseName = dropExtension (takeFileName out)
-  let srcPath = baseName <.> "scm"
-  -- Find the source file: it must exist in the current directory or we fail
-  -- (you can adjust search logic as needed)
-  when (not (isUnit || isUnit)) $ return () -- dummy to avoid warning
+  let srcFileName = baseName <.> "scm"
 
-  -- Reconstruct source path: we assume source is in "." (or adjust as needed)
-  let srcFullPath = srcPath  -- assumes flat source layout; adjust if needed
-    
-  -- Ensure source exists
-  exists <- liftIO $ Dir.doesFileExist srcFullPath
-  unless exists $ error $ "Source file not found: " ++ srcFullPath
+  -- 1. まず標準的なパス構成を確認 (高速化)
+  let standardPaths =
+        [ "core" </> srcFileName
+        , "modules" </> srcFileName
+        , "modules" </> baseName </> srcFileName -- modules/boids/boids_main.scm 対応
+        , "tools" </> baseName ++ "-tool" </> srcFileName
+        , "tests" </> srcFileName
+        , srcFileName
+        ]
 
-  need [srcFullPath]
+  srcFullPath <- liftIO $ findSourceFile standardPaths
+  
+  finalSrc <- case srcFullPath of
+    Just path -> return path
+    Nothing -> do
+      -- 2. 見つからない場合、全ディレクトリを再帰検索
+      allSrcs <- liftIO $ findAllScmFiles [srcFileName]
+      case allSrcs of
+        (path:_) -> return path
+        []       -> error $ "Source file not found for: " ++ srcFileName ++ " (target: " ++ out ++ ")"
 
-  -- Extract flags from the directory name
-  let dirName = takeFileName dir
-  let flagHash = drop (if isUnit then 5 else 4) dirName  -- drop "unit_" or "obj_"
-  -- We can't reverse the hash, so we don't validate flags here.
-  -- The hash ensures that different flags → different output paths → different rules.
-  -- That's sufficient for correctness.
+  compileSrc finalSrc out dir baseName isUnit
 
+-- | 実際のコンパイル実行
+compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
+compileSrc srcPath out dir baseName isUnit = do
   liftIO $ Dir.createDirectoryIfMissing True dir
-  putInfo $ (if isUnit then "Compiling unit: " else "Compiling object: ") ++ srcFullPath ++ " -> " ++ out
+  putInfo $ (if isUnit then "[Unit] " else "[Obj]  ") 
+            ++ srcPath ++ " -> " ++ out
 
   let unitArgs = if isUnit
         then ["-J", "-unit", baseName]
         else []
 
-  withTempFile $ \tmpObj -> do
-    -- 型注釈を追加して曖昧さを解消
-    cmd_ ("csc" :: String) unitArgs ("-c" :: String) srcFullPath ("-o" :: String) tmpObj
-    liftIO $ Dir.copyFile tmpObj out
+  -- csc -J -unit Name -c Source -o Output
+  cmd_ ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
-  -- Handle .import.scm for units
+  -- 生成された import ファイルの扱い
   when isUnit $ do
-    let importSrc = replaceExtension srcFullPath "import.scm"
-    let importDest = dir </> takeFileName importSrc
+    -- Chicken は -J をつけると、現在のディレクトリかソースと同じ場所に .import.scm を吐く
+    -- ここではソースと同じ場所に既存の import ファイルがあるか確認し、
+    -- なければ生成されたものを利用する想定
+    let importFile = baseName ++ ".import.scm"
+    let srcImport = replaceFileName srcPath importFile
+    
     liftIO $ do
-      existsImport <- Dir.doesFileExist importSrc
-      when existsImport $ do
-        Dir.createDirectoryIfMissing True dir
-        Dir.copyFile importSrc importDest
+        exists <- Dir.doesFileExist srcImport
+        if exists 
+            then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
+            else return ()
 
--- | 環境変数の取得ロジック（そのまま使用）
+-- | 指定リストから実在するファイルを探す
+findSourceFile :: [FilePath] -> IO (Maybe FilePath)
+findSourceFile [] = return Nothing
+findSourceFile (path:paths) = do
+  if ".import.scm" `isSuffixOf` path
+    then findSourceFile paths
+    else do
+      exists <- Dir.doesFileExist path
+      if exists
+        then return (Just path)
+        else findSourceFile paths
+
+-- | ファイル名を指定して再帰的に検索 (.scm用)
+findAllScmFiles :: [String] -> IO [FilePath]
+findAllScmFiles targetNames = do
+  let searchRoots = ["core", "modules", "tools", "tests", "."]
+  concat <$> mapM (findAllFilesRecursive' targetNames) searchRoots
+
+-- | 特定のディレクトリ以下を再帰探索してマッチするファイルを返す (汎用)
+findAllFilesRecursive :: String -> FilePath -> IO [FilePath]
+findAllFilesRecursive targetName root = findAllFilesRecursive' [targetName] root
+
+findAllFilesRecursive' :: [String] -> FilePath -> IO [FilePath]
+findAllFilesRecursive' targetNames currentDir = do
+  exists <- Dir.doesDirectoryExist currentDir
+  if not exists then return []
+  else do
+    entries <- Dir.listDirectory currentDir
+    -- ファイルのマッチング
+    let files = filter (\f -> any (== f) targetNames) entries
+    let foundPaths = map (currentDir </>) files
+    
+    -- サブディレクトリの探索 (隠しファイル/ディレクトリは除外)
+    subDirs <- filterM (isValidSubDir currentDir) entries
+    nestedMatches <- concat <$> mapM (\sd -> findAllFilesRecursive' targetNames (currentDir </> sd)) subDirs
+    
+    return $ foundPaths ++ nestedMatches
+  where
+    isValidSubDir :: FilePath -> FilePath -> IO Bool
+    isValidSubDir parent sub = 
+        if "." `isPrefixOf` sub 
+            then return False 
+            else Dir.doesDirectoryExist (parent </> sub)
+
+-- | 環境変数取得
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
   sysEnv <- getEnvironment
   let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
 
+  -- システムのrepository pathを取得
   systemRepo <-
     fmap (filter (/= '\n')) $
       readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
@@ -158,10 +223,10 @@ getChickenEnv = do
   let repoPath =
         intercalate
           ":"
-          [ "dist"
-          , home </> ".chicken"
-          , systemRepo
-          , sysEnvRepo
+          [ "dist"                -- ビルド成果物
+          , home </> ".chicken"   -- ユーザーローカル
+          , systemRepo            -- システム
+          , sysEnvRepo            -- 環境変数
           ]
 
   return

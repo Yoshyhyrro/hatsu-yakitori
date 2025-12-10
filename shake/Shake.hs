@@ -1,28 +1,29 @@
-#!/usr/bin/env stack
--- stack --resolver lts-22 script --package shake --package directory --package filepath --package process --package sbv
-
-{- Shake.hs -}
+{- shake/Shake.hs -}
 {-# LANGUAGE DataKinds #-}
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, when, unless)
-import qualified System.Directory as Dir
+import Control.Monad (forM_, unless)
 
--- 自作モジュールのインポート
+-- 自作モジュール
 import Chicken
 import Rules
 import qualified Salmonella
 
--- モジュール定義
+-- ====================================================================
+--  設定・データ定義
+-- ====================================================================
+
 data Module = Module
     { modName :: String
-    , modSrc  :: FilePath
-    , modTest :: FilePath
-    , modDeps :: [FilePath] -- 依存するソースファイル
+    , modSrc  :: FilePath -- メインソース
+    , modTest :: FilePath -- テストソース
+    , modDeps :: [FilePath] -- 依存ファイル（フルパス）
     } deriving (Show)
 
 -- コア依存ファイル（全モジュールが使用）
+-- ※ Rules.hs の検索ロジックが強力になったため、フルパス推奨ですが
+--   ファイル名だけでも検索ヒットするようになっています。
 coreFiles :: [FilePath]
 coreFiles = 
     [ "core/kak_decomposition.scm"
@@ -31,52 +32,47 @@ coreFiles =
     , "core/golay_frontier.scm"
     ]
 
--- コアインポートファイル（コンパイル時に必要）
-coreImports :: [FilePath]
-coreImports =
-    [ "core/kak_decomposition.import.scm"
-    , "core/cartan_utils.import.scm"
-    , "core/machine_constants.import.scm"
-    , "core/golay_frontier.import.scm"
-    ]
-
 modules :: [Module]
 modules =
     [ Module "boids" 
              "modules/boids/boids_main.scm" 
              "tests/boids_tests.scm" 
-             (coreFiles ++ coreImports)
+             coreFiles
     
     , Module "fmm" 
              "modules/fmm/fmm_on_goppa_grid.scm"     
              "tests/fmm_tests.scm"   
-             (coreFiles ++ coreImports)
+             coreFiles
     
     , Module "sssp" 
              "modules/sssp/sssp_main.scm" 
              "tests/sssp_tests.scm" 
-             (coreFiles ++ coreImports)
+             coreFiles
     
     , Module "sssp_geometry" 
              "modules/sssp_geometry/sssp_geo_main.scm" 
              "tests/sssp_geometry_tests.scm" 
-             (coreFiles ++ coreImports)
+             coreFiles
     
     , Module "kak_decomposition" 
              "modules/kak_decomposition/kak_main.scm" 
              "tests/kak_tests.scm" 
-             (coreFiles ++ coreImports)
+             coreFiles
     
     , Module "golay24-tool" 
              "tools/golay24-tool/golay24_main.scm" 
              "tests/golay24_tests.scm" 
-             (coreFiles ++ coreImports ++ ["tools/golay24-tool/setup.scm"])
+             (coreFiles ++ ["tools/golay24-tool/setup.scm"])
     ]
+
+-- ====================================================================
+--  Main Loop
+-- ====================================================================
 
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     
-    -- 1. ルールの初期化
+    -- 1. ルールの初期化 (Rules.hs で定義されたアクションが登録される)
     setupRules
 
     -- コンパイラフラグ
@@ -88,16 +84,15 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         
         -- アプリケーションのビルド
         phony ("build-" ++ mName) $ do
-            -- 依存ファイルが存在することを確認
             need (modDeps m)
             
-            -- 依存関係をコンパイル (Source -> Unit)
+            -- 依存関係(Core等)をユニットとしてコンパイル
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
             
-            -- メインプログラムをコンパイル
+            -- メインプログラムをユニットとしてコンパイル
             mainUnit <- buildArtifact $ CompileUnit (source $ modSrc m) cflags
             
-            -- すべてのユニットをオブジェクトに変換してリンク
+            -- リンクして実行ファイルを生成
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
             let exePath = "dist" </> mName ++ "_app" <.> exe
             
@@ -111,10 +106,10 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         phony ("test-" ++ mName) $ do
             need ["build-" ++ mName]
             
-            -- テスト用バイナリをビルド
-            need (modDeps m)
+            -- テスト用の依存関係ビルド
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
             testUnit <- buildArtifact $ CompileUnit (source $ modTest m) cflags
+            
             let objArtifacts = map toObjArtifact (deps ++ [testUnit])
             let testBinPath = "_build/tests/test_" ++ mName <.> exe
             
@@ -123,7 +118,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
                                          cflags
                                          testBinPath
             
-            -- テスト実行
+            -- Salmonellaでテスト実行
             env <- liftIO getChickenEnv
             let config = Salmonella.defaultTestConfig { Salmonella.tcEnv = env }
             result <- Salmonella.runModuleTests config mName testBinPath
@@ -131,25 +126,19 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
             unless (Salmonella.trPassed result) $
                 fail $ "Tests failed for " ++ mName
 
-        -- モジュール名のショートカット: "make golay24-tool" → "build-golay24-tool"
-        phony mName $ do
-            need ["build-" ++ mName]
+        -- ショートカット
+        phony mName $ need ["build-" ++ mName]
 
     -- 3. 便利コマンド
     phony "clean" $ do
         removeFilesAfter "_build" ["//*"]
         removeFilesAfter "dist" ["//*"]
+        removeFilesAfter "test-logs" ["//*"]
 
-    phony "build" $ do
-        need ["build-" ++ modName m | m <- modules]
+    phony "build" $ need ["build-" ++ modName m | m <- modules]
+    phony "test-all" $ need ["test-" ++ modName m | m <- modules]
+    phony "test" $ need ["test-all"]
 
-    phony "test-all" $ do
-        need ["test-" ++ modName m | m <- modules]
-
-    -- 個別モジュール用の "test-MODULE" ショートカット
-    phony "test" $ do
-        need ["test-all"]
-
--- Helper function to convert Unit artifacts to Obj artifacts
+-- Helper
 toObjArtifact :: Artifact 'Unit -> Artifact 'Obj
 toObjArtifact (Artifact path) = Artifact path
