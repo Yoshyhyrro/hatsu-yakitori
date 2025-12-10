@@ -3,12 +3,16 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module Chicken where
 
 import Development.Shake.Classes
 import GHC.Generics (Generic)
 import System.FilePath (takeFileName, replaceExtension, (</>))
+import Data.Hashable (Hashable)
+import Data.Binary (Binary)
+import Control.DeepSeq (NFData)
 
 -- | ファイルの種別を表すデータカインド
 data ArtifactType
@@ -30,7 +34,7 @@ toObjectPath (Artifact p) = Artifact $ "dist" </> replaceExtension (takeFileName
 toUnitPath :: Artifact 'Src -> Artifact 'Unit
 toUnitPath (Artifact p) = Artifact $ "dist" </> replaceExtension (takeFileName p) "o"
 
--- | 拡張子を強制的に付与するスマートコンストラクタ（安全性のため）
+-- | 拡張子を強制的に付与するスマートコンストラクタ(安全性のため)
 source :: FilePath -> Artifact 'Src
 source p = Artifact p
 

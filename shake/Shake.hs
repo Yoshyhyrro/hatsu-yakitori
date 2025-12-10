@@ -6,7 +6,7 @@
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, when)
+import Control.Monad (forM_, when, unless)  -- unless を追加
 import qualified System.Directory as Dir
 
 -- 自作モジュールのインポート
@@ -29,7 +29,7 @@ modules =
     -- 必要に応じて追加
     ]
   where
-    coreFiles = [ "core/machine_constants.scm", "core/golay_frontier.scm" ]
+    coreFiles = [ "kak_decomposition.scm","core/cartan_utils.scm","core/machine_constants.scm", "core/golay_frontier.scm" ]
 
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
@@ -47,13 +47,13 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- アプリケーションのビルド
         phony ("build-" ++ mName) $ do
             -- 依存関係のコンパイル (Source -> Unit)
-            -- mapM_ で型安全に Artifact 'Src -> Artifact 'Unit を要求
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
             
             -- メインプログラムのリンク
-            -- 型システムにより、CompileUnitで作ったUnitとソース以外はリンクできない
+            -- UnitのArtifactをObjのArtifactに変換する必要がある
+            let objArtifacts = map toObjArtifact deps
             let exePath = "dist" </> mName ++ "_app" <.> exe
-            _ <- buildArtifact $ LinkExe (map (\(Artifact p) -> Artifact p) deps) -- UnitをObjとして扱うキャスト
+            _ <- buildArtifact $ LinkExe objArtifacts 
                                          (source $ modSrc m) 
                                          cflags 
                                          exePath
@@ -65,10 +65,11 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
             
             -- テスト用バイナリのビルド
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
+            let objArtifacts = map toObjArtifact deps
             let testBinPath = "_build/tests/test_" ++ mName <.> exe
             
             -- テストバイナリのリンク
-            _ <- buildArtifact $ LinkExe (map (\(Artifact p) -> Artifact p) deps)
+            _ <- buildArtifact $ LinkExe objArtifacts
                                          (source $ modTest m)
                                          cflags
                                          testBinPath
@@ -88,3 +89,8 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
     phony "test-all" $ do
         need ["test-" ++ modName m | m <- modules]
+
+-- Helper function to convert Unit artifacts to Obj artifacts
+-- This is a type-level conversion: both are represented as .o files
+toObjArtifact :: Artifact 'Unit -> Artifact 'Obj
+toObjArtifact (Artifact path) = Artifact path
