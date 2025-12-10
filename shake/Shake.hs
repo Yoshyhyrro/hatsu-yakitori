@@ -4,6 +4,8 @@
 import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_, unless)
+import System.Process (readCreateProcessWithExitCode, proc)
+import System.Exit (ExitCode(..))
 
 -- 自作モジュール
 import Chicken
@@ -22,8 +24,6 @@ data Module = Module
     } deriving (Show)
 
 -- コア依存ファイル（全モジュールが使用）
--- ※ Rules.hs の検索ロジックが強力になったため、フルパス推奨ですが
---   ファイル名だけでも検索ヒットするようになっています。
 coreFiles :: [FilePath]
 coreFiles = 
     [ "core/kak_decomposition.scm"
@@ -72,7 +72,7 @@ modules =
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     
-    -- 1. ルールの初期化 (Rules.hs で定義されたアクションが登録される)
+    -- 1. ルールの初期化
     setupRules
 
     -- コンパイラフラグ
@@ -129,7 +129,22 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
 
-    -- 3. 便利コマンド
+    -- 3. Salmonella統合: .egg ファイルでテストを実行
+    phony "salmonella" $ do
+        liftIO $ do
+            -- ローカルディレクトリの .egg ファイルを自動検出して Salmonella を実行
+            (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" []) ""
+            case exitCode of
+                ExitSuccess -> putStrLn "✓ Salmonella tests passed"
+                _ -> do
+                    putStrLn "✗ Salmonella tests failed"
+                    putStrLn "=== Stdout ==="
+                    putStrLn stdout
+                    putStrLn "=== Stderr ==="
+                    putStrLn stderr
+                    fail "Salmonella tests failed"
+
+    -- 4. 便利コマンド
     phony "clean" $ do
         removeFilesAfter "_build" ["//*"]
         removeFilesAfter "dist" ["//*"]
