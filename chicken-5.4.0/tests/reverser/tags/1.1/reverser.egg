@@ -1,3 +1,0 @@
-((synopsis "test egg")
- (components (extension reverser)))
-
