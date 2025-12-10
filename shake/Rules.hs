@@ -1,0 +1,241 @@
+{- shake/Rules.hs -}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE StandaloneDeriving #-}
+
+module Rules
+  ( -- * Core Rules
+    setupRules
+  , buildArtifact
+    -- * ChickenOp constructors
+  , ChickenOp(CompileObj, CompileUnit, LinkExe)
+    -- * Helpers
+  , getChickenEnv
+  ) where
+
+import Development.Shake
+import Development.Shake.FilePath
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad (when, unless, filterM)
+import qualified System.Directory as Dir
+import System.Process (readProcess)
+import System.Environment (getEnvironment)
+import Data.Maybe (fromMaybe)
+import Data.List (intercalate, isSuffixOf, isPrefixOf)
+import qualified Data.ByteString.Char8 as BS8
+import Data.Binary (encode)
+import qualified Data.ByteString.Base16 as Base16
+import qualified Data.ByteString.Lazy as BL
+
+import Chicken
+
+-- | ビルド操作を表す GADT
+data ChickenOp a where
+  CompileObj  :: Artifact 'Src -> String -> ChickenOp (Artifact 'Obj)
+  CompileUnit :: Artifact 'Src -> String -> ChickenOp (Artifact 'Unit)
+  LinkExe     :: [Artifact 'Obj] -> Artifact 'Src -> String -> FilePath -> ChickenOp (Artifact 'Exe)
+
+deriving instance Show (ChickenOp a)
+deriving instance Eq (ChickenOp a)
+
+-- | ユーザー向けの型安全なビルドアクション
+buildArtifact :: ChickenOp a -> Action a
+buildArtifact (CompileObj src flags) = do
+  let out = artifactPathForCompileObj src flags
+  need [out]
+  return (Artifact out)
+
+buildArtifact (CompileUnit src flags) = do
+  let out = artifactPathForCompileUnit src flags
+  need [out]
+  -- .import.scm が生成される可能性があるため、ソース側のimportファイルがあれば依存に追加
+  let importSrc = replaceExtension (getPath src) "import.scm"
+  exists <- liftIO $ Dir.doesFileExist importSrc
+  when exists $ need [importSrc]
+  return (Artifact out)
+
+buildArtifact (LinkExe objs mainSrc flags outPath) = do
+  
+  -- 1. mainSrc も need に追加する
+  need (getPath mainSrc : map getPath objs)
+  
+  liftIO $ Dir.createDirectoryIfMissing True (takeDirectory outPath)
+  
+  -- 2. コマンドライン引数の最後に mainSrc を追加する
+  --    これにより Chicken がこのファイルをメインプログラムとしてコンパイル・リンクします
+  let args = words flags ++ ["-o", outPath] ++ map getPath objs ++ [getPath mainSrc]
+  
+  putInfo $ "[Link] " ++ outPath
+  
+  cmd_ ("csc" :: String) args
+  
+  return (Artifact outPath)
+
+-- | パス生成ヘルパー
+hashFlags :: String -> String
+hashFlags flags = BS8.unpack $ Base16.encode $ BL.toStrict $ encode flags
+
+artifactPathForCompileObj :: Artifact 'Src -> String -> FilePath
+artifactPathForCompileObj (Artifact src) flags = 
+  "dist" </> ("obj_" ++ hashFlags flags) </> replaceExtension (takeFileName src) "o"
+
+artifactPathForCompileUnit :: Artifact 'Src -> String -> FilePath
+artifactPathForCompileUnit (Artifact src) flags = 
+  "dist" </> ("unit_" ++ hashFlags flags) </> replaceExtension (takeFileName src) "o"
+
+-- | ルールのセットアップ
+setupRules :: Rules ()
+setupRules = do
+  -- オブジェクトファイルのコンパイルルール
+  "dist/obj_*/*.o" %> \out -> compileAction out False
+
+  -- ユニットファイルのコンパイルルール
+  "dist/unit_*/*.o" %> \out -> compileAction out True
+
+  -- インポートファイルのコピールール
+  -- ソースディレクトリから dist/unit_*/ へコピーする
+  "dist/unit_*/*.import.scm" %> \out -> do
+    let dir = takeDirectory out
+    let fileName = takeFileName out
+    -- let baseName = dropExtension fileName
+    
+    -- 標準的なパス + 再帰検索で見つける
+    let searchDirs = ["core", "modules", "tools", "."]
+    candidates <- liftIO $ concat <$> mapM (findAllFilesRecursive fileName) searchDirs
+    
+    case candidates of
+        (src:_) -> do
+            liftIO $ Dir.createDirectoryIfMissing True dir
+            copyFile' src out
+        [] -> error $ "Could not find .import.scm file for: " ++ fileName
+
+-- | 共通のコンパイルアクション
+compileAction :: FilePath -> Bool -> Action ()
+compileAction out isUnit = do
+  let dir = takeDirectory out
+  let baseName = dropExtension (takeFileName out)
+  let srcFileName = baseName <.> "scm"
+
+  -- 1. まず標準的なパス構成を確認 (高速化)
+  let standardPaths =
+        [ "core" </> srcFileName
+        , "modules" </> srcFileName
+        , "modules" </> baseName </> srcFileName -- modules/boids/boids_main.scm 対応
+        , "tools" </> baseName ++ "-tool" </> srcFileName
+        , "tests" </> srcFileName
+        , srcFileName
+        ]
+
+  srcFullPath <- liftIO $ findSourceFile standardPaths
+  
+  finalSrc <- case srcFullPath of
+    Just path -> return path
+    Nothing -> do
+      -- 2. 見つからない場合、全ディレクトリを再帰検索
+      allSrcs <- liftIO $ findAllScmFiles [srcFileName]
+      case allSrcs of
+        (path:_) -> return path
+        []       -> error $ "Source file not found for: " ++ srcFileName ++ " (target: " ++ out ++ ")"
+
+  compileSrc finalSrc out dir baseName isUnit
+
+-- | 実際のコンパイル実行
+compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
+compileSrc srcPath out dir baseName isUnit = do
+  liftIO $ Dir.createDirectoryIfMissing True dir
+  putInfo $ (if isUnit then "[Unit] " else "[Obj]  ") 
+            ++ srcPath ++ " -> " ++ out
+
+  let unitArgs = if isUnit
+        then ["-J", "-unit", baseName]
+        else []
+
+  -- csc -J -unit Name -c Source -o Output
+  cmd_ ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
+
+  -- 生成された import ファイルの扱い
+  when isUnit $ do
+    -- Chicken は -J をつけると、現在のディレクトリかソースと同じ場所に .import.scm を吐く
+    -- ここではソースと同じ場所に既存の import ファイルがあるか確認し、
+    -- なければ生成されたものを利用する想定
+    let importFile = baseName ++ ".import.scm"
+    let srcImport = replaceFileName srcPath importFile
+    
+    liftIO $ do
+        exists <- Dir.doesFileExist srcImport
+        if exists 
+            then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
+            else return ()
+
+-- | 指定リストから実在するファイルを探す
+findSourceFile :: [FilePath] -> IO (Maybe FilePath)
+findSourceFile [] = return Nothing
+findSourceFile (path:paths) = do
+  if ".import.scm" `isSuffixOf` path
+    then findSourceFile paths
+    else do
+      exists <- Dir.doesFileExist path
+      if exists
+        then return (Just path)
+        else findSourceFile paths
+
+-- | ファイル名を指定して再帰的に検索 (.scm用)
+findAllScmFiles :: [String] -> IO [FilePath]
+findAllScmFiles targetNames = do
+  let searchRoots = ["core", "modules", "tools", "tests", "."]
+  concat <$> mapM (findAllFilesRecursive' targetNames) searchRoots
+
+-- | 特定のディレクトリ以下を再帰探索してマッチするファイルを返す (汎用)
+findAllFilesRecursive :: String -> FilePath -> IO [FilePath]
+findAllFilesRecursive targetName root = findAllFilesRecursive' [targetName] root
+
+findAllFilesRecursive' :: [String] -> FilePath -> IO [FilePath]
+findAllFilesRecursive' targetNames currentDir = do
+  exists <- Dir.doesDirectoryExist currentDir
+  if not exists then return []
+  else do
+    entries <- Dir.listDirectory currentDir
+    -- ファイルのマッチング
+    let files = filter (\f -> any (== f) targetNames) entries
+    let foundPaths = map (currentDir </>) files
+    
+    -- サブディレクトリの探索 (隠しファイル/ディレクトリは除外)
+    subDirs <- filterM (isValidSubDir currentDir) entries
+    nestedMatches <- concat <$> mapM (\sd -> findAllFilesRecursive' targetNames (currentDir </> sd)) subDirs
+    
+    return $ foundPaths ++ nestedMatches
+  where
+    isValidSubDir :: FilePath -> FilePath -> IO Bool
+    isValidSubDir parent sub = 
+        if "." `isPrefixOf` sub 
+            then return False 
+            else Dir.doesDirectoryExist (parent </> sub)
+
+-- | 環境変数取得
+getChickenEnv :: IO [(String, String)]
+getChickenEnv = do
+  home <- Dir.getHomeDirectory
+  sysEnv <- getEnvironment
+  let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
+
+  -- システムのrepository pathを取得
+  systemRepo <-
+    fmap (filter (/= '\n')) $
+      readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
+
+  let repoPath =
+        intercalate
+          ":"
+          [ "dist"                -- ビルド成果物
+          , home </> ".chicken"   -- ユーザーローカル
+          , systemRepo            -- システム
+          , sysEnvRepo            -- 環境変数
+          ]
+
+  return
+    [ ("CHICKEN_INCLUDE_PATH", "core:dist:.:_build")
+    , ("CHICKEN_REPOSITORY_PATH", repoPath)
+    , ("CHICKEN_INSTALL_REPOSITORY", "dist")
+    ]
