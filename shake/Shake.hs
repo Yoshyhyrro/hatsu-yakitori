@@ -53,12 +53,7 @@ modules =
              "modules/sssp_geometry/sssp_geo_main.scm" 
              "tests/sssp_geometry_tests.scm" 
              coreFiles
-    
-    , Module "kak_decomposition" 
-             "modules/kak_decomposition/kak_main.scm" 
-             "tests/kak_tests.scm" 
-             coreFiles
-    
+             
     , Module "golay24-tool" 
              "tools/golay24-tool/golay24_main.scm" 
              "tests/golay24_tests.scm" 
