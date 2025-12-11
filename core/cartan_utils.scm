@@ -3,7 +3,9 @@
 ;;; Combines Hausdorff distance considerations with Cartan decomposition
 ;;; ---------------------------------------------------------------------------
 
-(module core/cartan_utils
+(include-relative "machine_constants.scm")
+
+(module cartan_utils
   (pretty-print-decomposition
    validate-decomposition
    cartan-log-decompose
@@ -15,7 +17,9 @@
   (import (chicken base)
           (chicken format)
           srfi-1
-          core/machine_constants)
+          srfi-69)  ;; Hash tables
+  
+  (import machine_constants)
 
   ;;; ============================================================
   ;;; String Formatting Helpers

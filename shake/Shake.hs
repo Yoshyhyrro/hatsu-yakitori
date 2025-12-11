@@ -11,6 +11,7 @@ import System.Exit (ExitCode(..))
 import Chicken
 import Rules
 import qualified Salmonella
+import qualified Clean
 
 -- ====================================================================
 --  設定・データ定義
@@ -139,12 +140,18 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
                     putStrLn stderr
                     fail "Salmonella tests failed"
 
-    -- 4. 便利コマンド
-    phony "clean" $ do
-        removeFilesAfter "_build" ["//*"]
-        removeFilesAfter "dist" ["//*"]
-        removeFilesAfter "test-logs" ["//*"]
+    -- 4. クリーニングコマンド（Clean モジュールにて管理）
+    phony "clean" $ Clean.cleanAll
+    phony "clean-build" $ Clean.cleanBuild
+    phony "clean-tests" $ Clean.cleanTests
+    phony "clean-artifacts" $ Clean.cleanArtifacts
+    phony "clean-cache" $ Clean.cleanCache
+    
+    phony "distclean" $ do
+        Clean.cleanAll
+        putInfo "Removed all generated files and caches"
 
+    -- 5. 便利コマンド
     phony "build" $ need ["build-" ++ modName m | m <- modules]
     phony "test-all" $ need ["test-" ++ modName m | m <- modules]
     phony "test" $ need ["test-all"]

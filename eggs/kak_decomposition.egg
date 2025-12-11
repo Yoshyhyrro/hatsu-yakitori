@@ -11,4 +11,5 @@
   (extension kak_decomposition
     (source "core/kak_decomposition.scm"
             "core/machine_constants.scm"
+            "core/golay_frontier.scm"
             "core/cartan_utils.scm"))))
