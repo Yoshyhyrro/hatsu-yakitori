@@ -12,6 +12,8 @@
 ;;  - FMM Multipoles     <-> Laurent Series Principal Parts
 ;;  - Golay Weight       <-> Adaptive Tree Traversal Strategy
 ;;
+(include-relative "../../core/golay_frontier.scm")
+
 (module module.fmm.fmm-goppa
   (make-goppa-grid
    local-parameter
