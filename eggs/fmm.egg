@@ -11,4 +11,5 @@
   (extension fmm
     (source "modules/fmm/fmm_main.scm"
             "core/kak_decomposition.scm"
+            "modules/fmm/fmm_on_goppa_grid.scm"
             "core/machine_constants.scm"))))
