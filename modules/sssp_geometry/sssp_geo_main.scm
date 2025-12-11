@@ -6,6 +6,10 @@
 ;;; This integrates the geometry test functionality with a CLI interface
 ;;; for running SSSP stress tests using finite geometry structures.
 
+(include-relative "../../core/machine_constants.scm")
+(include-relative "../../core/golay_frontier.scm")
+(include-relative "../../core/cartan_utils.scm")
+
 (import scheme)
 (import (chicken base)
         (chicken format)
@@ -15,8 +19,8 @@
         srfi-1
         srfi-69)
 
-(import core/machine_constants)
-(import core/golay_frontier)
+(import machine_constants)
+(import golay_frontier)
 
 ;; ============================================================
 ;; Morton (Z-order) Code Implementation

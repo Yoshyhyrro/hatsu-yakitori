@@ -4,11 +4,14 @@
 import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_, unless)
+import System.Process (readCreateProcessWithExitCode, proc)
+import System.Exit (ExitCode(..))
 
 -- 自作モジュール
 import Chicken
 import Rules
 import qualified Salmonella
+import qualified Clean
 
 -- ====================================================================
 --  設定・データ定義
@@ -22,8 +25,6 @@ data Module = Module
     } deriving (Show)
 
 -- コア依存ファイル（全モジュールが使用）
--- ※ Rules.hs の検索ロジックが強力になったため、フルパス推奨ですが
---   ファイル名だけでも検索ヒットするようになっています。
 coreFiles :: [FilePath]
 coreFiles = 
     [ "core/kak_decomposition.scm"
@@ -53,12 +54,7 @@ modules =
              "modules/sssp_geometry/sssp_geo_main.scm" 
              "tests/sssp_geometry_tests.scm" 
              coreFiles
-    
-    , Module "kak_decomposition" 
-             "modules/kak_decomposition/kak_main.scm" 
-             "tests/kak_tests.scm" 
-             coreFiles
-    
+             
     , Module "golay24-tool" 
              "tools/golay24-tool/golay24_main.scm" 
              "tests/golay24_tests.scm" 
@@ -72,7 +68,7 @@ modules =
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     
-    -- 1. ルールの初期化 (Rules.hs で定義されたアクションが登録される)
+    -- 1. ルールの初期化
     setupRules
 
     -- コンパイラフラグ
@@ -129,12 +125,33 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
 
-    -- 3. 便利コマンド
-    phony "clean" $ do
-        removeFilesAfter "_build" ["//*"]
-        removeFilesAfter "dist" ["//*"]
-        removeFilesAfter "test-logs" ["//*"]
+    -- 3. Salmonella統合: .egg ファイルでテストを実行
+    phony "salmonella" $ do
+        liftIO $ do
+            -- ローカルディレクトリの .egg ファイルを自動検出して Salmonella を実行
+            (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" []) ""
+            case exitCode of
+                ExitSuccess -> putStrLn "✓ Salmonella tests passed"
+                _ -> do
+                    putStrLn "✗ Salmonella tests failed"
+                    putStrLn "=== Stdout ==="
+                    putStrLn stdout
+                    putStrLn "=== Stderr ==="
+                    putStrLn stderr
+                    fail "Salmonella tests failed"
 
+    -- 4. クリーニングコマンド（Clean モジュールにて管理）
+    phony "clean" $ Clean.cleanAll
+    phony "clean-build" $ Clean.cleanBuild
+    phony "clean-tests" $ Clean.cleanTests
+    phony "clean-artifacts" $ Clean.cleanArtifacts
+    phony "clean-cache" $ Clean.cleanCache
+    
+    phony "distclean" $ do
+        Clean.cleanAll
+        putInfo "Removed all generated files and caches"
+
+    -- 5. 便利コマンド
     phony "build" $ need ["build-" ++ modName m | m <- modules]
     phony "test-all" $ need ["test-" ++ modName m | m <- modules]
     phony "test" $ need ["test-all"]

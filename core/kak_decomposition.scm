@@ -1,10 +1,13 @@
-;;; ---------------------------------------------------------------------------
+;;; ============================================================
+;;; core/kak_decomposition.scm
 ;;; KAK Decomposition & Frontier Logic
-;;; ---------------------------------------------------------------------------
+;;; ============================================================
 
-;; Module declaration for Chicken 5
-;; Module name matches the file path (core/kak_decomposition.scm)
-(module core/kak_decomposition
+
+(include-relative "golay_frontier.scm")
+(include-relative "cartan_utils.scm")
+
+(module kak_decomposition
   ;; Exports
   (K-frontier
    K-push
@@ -24,12 +27,9 @@
           srfi-1    ;; Lists (fold, etc.)
           srfi-69)  ;; Hash tables
 
-  ;; Import local dependencies
-  ;; Ensure these modules are built and available via -J in Shake
-  (import core/machine_constants)
-  (import core/golay_frontier)
-  (import core/cartan_utils)
 
+  (import golay_frontier
+          cartan_utils)
   (define +INF+ 1e99)
 
   ;;; ============================================================
@@ -107,6 +107,7 @@
 
   (define (K-frontier-adaptive info-bits)
     ;; Create an adaptive frontier from Golay encoding
+    ;; Note: Assuming core/golay_frontier exports 'make-adaptive-frontier' properly now
     (let ((af (make-adaptive-frontier info-bits)))
       ;; Extract mode and convert to K-frontier
       (let ((mode (adaptive-frontier-mode af)))
@@ -148,8 +149,7 @@
     ;; Initialize source distances to 0
     (for-each (lambda (s) (hash-table-set! dist-table s 0.0)) sources)
 
-    ;; Compute Cartan decomposition levels: [B^(1/steps), ..., B^(steps/steps)]
-    ;; This now returns exactly max-steps elements (fixed bug)
+    ;; Compute Cartan decomposition levels
     (define decomp-levels (cartan-log-decompose B max-steps))
 
     ;; Validate decomposition length matches max-steps
@@ -181,8 +181,6 @@
                     ;; Process current node
                     (let* ((current-dist (hash-table-ref dist-table node))
                            ;; Get decomposition coefficient for current step
-                           ;; step ∈ {0, 1, ..., max-steps-1}
-                           ;; decomp-levels has exactly max-steps elements
                            (a-k (list-ref decomp-levels step))
                            (neighbors (graph-neighbors graph node)))
                       
@@ -206,18 +204,7 @@
   ;;; ============================================================
 
   (define (KAK-apply-golay graph sources B max-steps info-bits)
-    "Wrapper: build adaptive frontier from Golay-encoded info-bits.
-     Args:
-       graph: adjacency structure
-       sources: list of source nodes
-       B: upper bound for decomposition
-       max-steps: number of decomposition steps
-       info-bits: 12-bit info word for Golay encoding
-     Returns: three values
-       1. dist-table: hash-table of distances
-       2. tau: Golay codeword weight (error correction capability)
-       3. af: adaptive-frontier structure"
-    
+    "Wrapper: build adaptive frontier from Golay-encoded info-bits."
     ;; Create adaptive frontier from Golay encoding
     (let ((af (make-adaptive-frontier info-bits)))
       (let ((tau (adaptive-frontier-tau af))

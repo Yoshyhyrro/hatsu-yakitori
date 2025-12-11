@@ -11,7 +11,7 @@
     "chicken": ">=5.0"
   },
   "provides": {
-    "modules": ["kak-decomposition", "boids", "fmm", "sssp"]
+    "modules": ["kak_decomposition", "boids", "fmm", "sssp"]
   },
   "files": ["core/*", "modules/*", "eggs/*", "tests/*", "Makefile", "README.md", "LICENSE"],
   "platforms": ["unix", "linux", "darwin"],

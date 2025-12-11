@@ -1,16 +1,31 @@
 ;; hatsu-yakitori.egg
 ((version "0.0.1")
- (summary "KAK-inspired bounded-computation core (SSSP / FMM / particle math)")
  (license "BSD-3-Clause")
  (author "Yoshihiro Hasegawa")
- (category science)                 
-           math logic tools)                        
- (components
-   (extension kak-decomposition
-              (csc-options "-O3" "-d1"))
-   (extension boids)
-   (extension fmm)
-   (extension sssp))
+ (synopsis
+   "KAK-inspired bounded-computation core (SSSP / FMM / particle math)")
+ (category tools)
+ (dependencies srfi-1 srfi-69)
  (test-dependencies test)
- (dependencies srfi-1 srfi-69)   
- (files "core" "modules" "eggs" "tests" "Makefile" "README.md" "LICENSE"))
+ 
+ ;; REMOVED: (files ...) - this is not a valid egg property
+ 
+ (components
+   (extension kak_decomposition 
+     (source "core/kak_decomposition.scm"
+             "core/machine_constants.scm"
+             "core/cartan_utils.scm")
+     (csc-options "-O3" "-d1" "-s" "-I" "core"))
+   
+   (extension boids 
+     (source "modules/boids/boids_main.scm")
+     (csc-options "-O2" "-s" "-I" "core"))
+   
+   (extension fmm 
+     (source "modules/fmm/fmm_main.scm"
+             "modules/fmm/fmm_on_goppa_grid.scm")
+     (csc-options "-O2" "-s"))
+   
+   (extension sssp 
+     (source "modules/sssp/sssp_main.scm")
+     (csc-options "-O2" "-s"))))

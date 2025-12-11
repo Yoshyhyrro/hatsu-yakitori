@@ -1,0 +1,15 @@
+((name kak_decomposition)
+ (version "1.0.0")
+ (author "Yoshihiro Hasegawa")
+ (license "BSD-3-Clause")
+ (category algorithm math)
+ (description "KAK decomposition library for bounded computation")
+ (documentation "doc/kak_decomposition.html")
+ (depends srfi-1 srfi-69 data-structures)
+ (test-depends)
+ (components
+  (extension kak_decomposition
+    (source "core/kak_decomposition.scm"
+            "core/machine_constants.scm"
+            "core/golay_frontier.scm"
+            "core/cartan_utils.scm"))))

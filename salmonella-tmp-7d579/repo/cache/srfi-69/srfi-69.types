@@ -1,0 +1,66 @@
+(srfi-69#alist->hash-table (#(procedure #:clean #:enforce) srfi-69#alist->hash-table ((list-of pair) #!rest) (struct hash-table)))
+(srfi-69#eq?-hash (#(procedure #:clean #:enforce) srfi-69#eq?-hash (* #!optional fixnum fixnum) fixnum))
+(srfi-69#equal?-hash (#(procedure #:clean #:enforce) srfi-69#equal?-hash (* #!optional fixnum fixnum) fixnum))
+(srfi-69#eqv?-hash (#(procedure #:clean #:enforce) srfi-69#eqv?-hash (* #!optional fixnum fixnum) fixnum))
+(srfi-69#hash (#(procedure #:pure #:enforce) srfi-69#hash (* #!optional fixnum fixnum) fixnum))
+(srfi-69#hash-by-identity (#(procedure #:pure #:enforce) srfi-69#hash-by-identity (* #!optional fixnum fixnum) fixnum))
+(srfi-69#hash-table->alist (#(procedure #:clean #:enforce) srfi-69#hash-table->alist ((struct hash-table)) (list-of pair)))
+(srfi-69#hash-table-clear! (#(procedure #:clean #:enforce) srfi-69#hash-table-clear! ((struct hash-table)) undefined))
+(srfi-69#hash-table-copy (#(procedure #:clean #:enforce) srfi-69#hash-table-copy ((struct hash-table)) (struct hash-table)))
+(srfi-69#hash-table-delete! (#(procedure #:clean #:enforce) srfi-69#hash-table-delete! ((struct hash-table) *) boolean))
+(srfi-69#hash-table-equivalence-function (#(procedure #:clean #:enforce) srfi-69#hash-table-equivalence-function ((struct hash-table)) (procedure (* *) *)))
+(srfi-69#hash-table-exists? (#(procedure #:clean #:enforce) srfi-69#hash-table-exists? ((struct hash-table) *) boolean))
+(srfi-69#hash-table-fold (#(procedure #:enforce) srfi-69#hash-table-fold ((struct hash-table) (procedure (* * *) *) *) *))
+(srfi-69#hash-table-for-each (#(procedure #:enforce) srfi-69#hash-table-for-each ((struct hash-table) (procedure (* *) . *)) undefined))
+
+(srfi-69#hash-table-has-initial? (#(procedure #:clean #:enforce) srfi-69#hash-table-has-initial? ((struct hash-table)) boolean)
+			 (((struct hash-table)) (##sys#slot #(1) '9))) ;XXX might return other than #t
+
+(srfi-69#hash-table-hash-function (#(procedure #:clean #:enforce) srfi-69#hash-table-hash-function ((struct hash-table)) (procedure (* fixnum) fixnum))
+			  (((struct hash-table)) (##sys#slot #(1) '4)))
+
+(srfi-69#hash-table-initial (#(procedure #:clean #:enforce) srfi-69#hash-table-initial ((struct hash-table)) *))
+(srfi-69#hash-table-keys (#(procedure #:clean #:enforce) srfi-69#hash-table-keys ((struct hash-table)) list))
+(srfi-69#hash-table-map (#(procedure #:clean #:enforce) srfi-69#hash-table-map ((struct hash-table) (procedure (* *) *)) list))
+
+(srfi-69#hash-table-max-load (#(procedure #:clean #:enforce) srfi-69#hash-table-max-load ((struct hash-table)) fixnum)
+		     (((struct hash-table)) (##sys#slot #(1) '6)))
+
+(srfi-69#hash-table-merge (#(procedure #:clean #:enforce) srfi-69#hash-table-merge ((struct hash-table) (struct hash-table)) (struct hash-table)))
+(srfi-69#hash-table-merge! (#(procedure #:clean #:enforce) srfi-69#hash-table-merge! ((struct hash-table) (struct hash-table)) (struct hash-table)))
+
+(srfi-69#hash-table-min-load (#(procedure #:clean #:enforce) srfi-69#hash-table-min-load ((struct hash-table)) fixnum)
+		     (((struct hash-table)) (##sys#slot #(1) '5)))
+
+(srfi-69#hash-table-ref (#(procedure #:clean #:enforce) srfi-69#hash-table-ref ((struct hash-table) * #!optional (procedure () *)) *))
+(srfi-69#hash-table-ref/default (#(procedure #:clean #:enforce) srfi-69#hash-table-ref/default ((struct hash-table) * *) *))
+(srfi-69#hash-table-remove! (#(procedure #:clean #:enforce) srfi-69#hash-table-remove! ((struct hash-table) (procedure (* *) *)) undefined))
+(srfi-69#hash-table-set! (#(procedure #:clean #:enforce) srfi-69#hash-table-set! ((struct hash-table) * *) undefined))
+
+(srfi-69#hash-table-size (#(procedure #:clean #:enforce) srfi-69#hash-table-size ((struct hash-table)) fixnum)
+		 (((struct hash-table)) (##sys#slot #(1) '2)))
+
+(srfi-69#hash-table-update! (#(procedure #:enforce) srfi-69#hash-table-update! ((struct hash-table) * (procedure (*) *) #!optional (procedure () *)) *))
+(srfi-69#hash-table-update!/default (#(procedure #:clean #:enforce) srfi-69#hash-table-update!/default ((struct hash-table) * (procedure (*) *) *) *))
+(srfi-69#hash-table-values (#(procedure #:clean #:enforce) srfi-69#hash-table-values ((struct hash-table)) list))
+(srfi-69#hash-table-walk (#(procedure #:enforce) srfi-69#hash-table-walk ((struct hash-table) (procedure (* *) . *)) undefined))
+
+(srfi-69#hash-table-weak-keys (#(procedure #:clean #:enforce) srfi-69#hash-table-weak-keys ((struct hash-table)) boolean)
+		      (((struct hash-table)) (##sys#slot #(1) '7)))
+
+(srfi-69#hash-table-weak-values (#(procedure #:clean #:enforce) srfi-69#hash-table-weak-values ((struct hash-table)) boolean)
+			(((struct hash-table)) (##sys#slot #(1) '8)))
+
+(srfi-69#hash-table? (#(procedure #:pure #:predicate (struct hash-table)) srfi-69#hash-table? (*) boolean))
+
+;;XXX if we want to hardcode hash-default-bound here, we could rewrite the 1-arg case...
+;     (applies to all hash-functions)
+(srfi-69#keyword-hash (#(procedure #:clean #:enforce) srfi-69#keyword-hash (* #!optional fixnum fixnum) fixnum))
+
+(srfi-69#make-hash-table (#(procedure #:clean #:enforce) srfi-69#make-hash-table (#!rest) (struct hash-table)))
+(srfi-69#number-hash (#(procedure #:clean #:enforce) srfi-69#number-hash (fixnum #!optional fixnum fixnum) fixnum))
+(srfi-69#object-uid-hash (#(procedure #:clean #:enforce) srfi-69#object-uid-hash (* #!optional fixnum fixnum) fixnum))
+(srfi-69#symbol-hash (#(procedure #:clean #:enforce) srfi-69#symbol-hash (symbol #!optional fixnum fixnum) fixnum))
+(srfi-69#string-hash (#(procedure #:clean #:enforce) srfi-69#string-hash (string #!optional fixnum fixnum fixnum fixnum) number))
+(srfi-69#string-hash-ci (#(procedure #:clean #:enforce) srfi-69#string-hash-ci (string #!optional fixnum fixnum fixnum fixnum) number))
+(srfi-69#string-ci-hash (#(procedure #:clean #:enforce) srfi-69#string-ci-hash (string #!optional fixnum fixnum fixnum fixnum) number))
