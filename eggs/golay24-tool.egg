@@ -5,7 +5,7 @@
 (synopsis "Command-line tool for encoding and decoding Golay(24, 12) codes.")
 (description "A standalone tool primarily for testing and demonstration of the core KAK decomposition and coding theory libraries.")
 (author "hatsu-yakitori project")
-(license "BSD")
+(license "BSD-3-Clause")
 
 ;; Since this is a standalone tool, it doesn't need to be imported as a library,
 ;; but the files must be listed to satisfy tools like Salmonella.

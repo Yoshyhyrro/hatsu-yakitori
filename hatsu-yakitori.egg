@@ -8,7 +8,7 @@
  (dependencies srfi-1 srfi-69)
  (test-dependencies test)
  (components
-   (extension kak-decomposition 
+   (extension kak_decomposition 
      (source "core/kak_decomposition.scm") 
      (csc-options "-O3" "-d1"))
    

@@ -19,7 +19,7 @@ requires:
 
 provides:
   modules:
-    - kak-decomposition
+    - kak_decomposition
     - boids
     - fmm
     - sssp
