@@ -3,20 +3,25 @@
 ;;; ---------------------------------------------------------------------------
 
 ;; Fix: Import necessary Chicken 5 modules.
+
+(include-relative "../../core/machine_constants.scm")
+(include-relative "../../core/kak_decomposition.scm")
+(include-relative "../../core/cartan_utils.scm")
+
 (import scheme)
 (import (chicken base)
         (chicken process-context) ;; Required for (command-line-arguments)
-        (chicken format))
+        (chicken format
+         machine_constants
+         kak_decomposition
+         cartan_utils))
+         
 
 ;; ---------------------------------------------------------------------------
 ;; CORE LIBRARY INCLUDES
 ;; The Makefile uses 'csc -I .', allowing us to use the root-relative path 'core/'.
 ;; Changed 'load' to 'include' to embed the code into the compiled binary.
 ;; ---------------------------------------------------------------------------
-(include "core/kak_decomposition.scm")
-(include "core/machine_constants.scm")
-(include "core/cartan_utils.scm")
-
 (define (main args)
   (format #t "Fast Multipole Method (FMM) module started.~%")
   (if (pair? args)
