@@ -1,14 +1,15 @@
 ;; ============================================================
 ;; tools/golay24-tool/golay24_main.scm
 ;; ============================================================
-
+(include-relative "../../core/machine_constants.scm")
+(include-relative "../../core/golay_frontier.scm")
 (import scheme)
 (import (chicken base)
         (chicken format)
         (chicken string)
         (chicken process-context))
-(import core/machine_constants)
-(import core/golay_frontier)
+(import machine_constants)
+(import golay_frontier)
 
 ;; ============================================================
 ;; Helper: Format hex with padding

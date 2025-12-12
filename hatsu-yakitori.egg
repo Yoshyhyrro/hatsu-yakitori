@@ -17,15 +17,15 @@
              "core/cartan_utils.scm")
      (csc-options "-O3" "-d1" "-s" "-I" "core"))
    
-   (extension boids 
+   (extension boids_main
      (source "modules/boids/boids_main.scm")
      (csc-options "-O2" "-s" "-I" "core"))
    
-   (extension fmm 
+   (extension fmm_main
      (source "modules/fmm/fmm_main.scm"
              "modules/fmm/fmm_on_goppa_grid.scm")
      (csc-options "-O2" "-s"))
    
-   (extension sssp 
+   (extension sssp_main 
      (source "modules/sssp/sssp_main.scm")
      (csc-options "-O2" "-s"))))

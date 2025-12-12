@@ -127,6 +127,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
     -- 3. Salmonella統合: .egg ファイルでテストを実行
     phony "salmonella" $ do
+        need ["build-" ++ modName m | m <- modules]
         liftIO $ do
             -- ローカルディレクトリの .egg ファイルを自動検出して Salmonella を実行
             (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" []) ""
