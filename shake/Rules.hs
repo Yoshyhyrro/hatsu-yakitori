@@ -1,4 +1,4 @@
-{- shake/Rules.hs -}
+{- shake/Rules.hs (GC-integrated) -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
@@ -9,8 +9,11 @@ module Rules
   ( -- * Core Rules
     setupRules
   , buildArtifact
+  , buildArtifactWithGC
     -- * ChickenOp constructors
   , ChickenOp(CompileObj, CompileUnit, LinkExe)
+    -- * GC Rules
+  , module Rules.GC
     -- * Helpers
   , getChickenEnv
   ) where
@@ -30,8 +33,9 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Lazy as BL
 
 import Chicken
+import qualified Rules.GC as GC
 
--- | ビルド操作を表す GADT
+-- | ビルド操作を表すGADT
 data ChickenOp a where
   CompileObj  :: Artifact 'Src -> String -> ChickenOp (Artifact 'Obj)
   CompileUnit :: Artifact 'Src -> String -> ChickenOp (Artifact 'Unit)
@@ -50,30 +54,45 @@ buildArtifact (CompileObj src flags) = do
 buildArtifact (CompileUnit src flags) = do
   let out = artifactPathForCompileUnit src flags
   need [out]
-  -- .import.scm が生成される可能性があるため、ソース側のimportファイルがあれば依存に追加
   let importSrc = replaceExtension (getPath src) "import.scm"
   exists <- liftIO $ Dir.doesFileExist importSrc
   when exists $ need [importSrc]
   return (Artifact out)
 
 buildArtifact (LinkExe objs mainSrc flags outPath) = do
-  
-  -- 1. mainSrc も need に追加する
   need (getPath mainSrc : map getPath objs)
-  
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory outPath)
   
-  -- 2. コマンドライン引数の最後に mainSrc を追加する
-  --    これにより Chicken がこのファイルをメインプログラムとしてコンパイル・リンクします
   let args = words flags ++ ["-o", outPath] ++ map getPath objs ++ [getPath mainSrc]
   
   putInfo $ "[Link] " ++ outPath
-  
   cmd_ ("csc" :: String) args
   
   return (Artifact outPath)
 
--- | パス生成ヘルパー
+-- ============================================================
+-- GC-Aware Building
+-- ============================================================
+
+-- | Build artifact with optional GC compilation
+-- If gcOptimize is True, also compile a GC-optimized version
+buildArtifactWithGC :: Bool -> ChickenOp a -> Action a
+buildArtifactWithGC gcOptimize op = do
+  result <- buildArtifact op
+  
+  when gcOptimize $ case op of
+    LinkExe _ _ _ outPath -> do
+      -- Build GC-optimized version alongside
+      _ <- GC.buildGCObj outPath
+      return ()
+    _ -> return ()
+  
+  return result
+
+-- ============================================================
+-- Path Helpers
+-- ============================================================
+
 hashFlags :: String -> String
 hashFlags flags = BS8.unpack $ Base16.encode $ BL.toStrict $ encode flags
 
@@ -85,23 +104,21 @@ artifactPathForCompileUnit :: Artifact 'Src -> String -> FilePath
 artifactPathForCompileUnit (Artifact src) flags = 
   "dist" </> ("unit_" ++ hashFlags flags) </> replaceExtension (takeFileName src) "o"
 
--- | ルールのセットアップ
+-- ============================================================
+-- Rule Setup (including GC rules)
+-- ============================================================
+
 setupRules :: Rules ()
 setupRules = do
-  -- オブジェクトファイルのコンパイルルール
+  -- Standard compilation rules
   "dist/obj_*/*.o" %> \out -> compileAction out False
-
-  -- ユニットファイルのコンパイルルール
   "dist/unit_*/*.o" %> \out -> compileAction out True
 
-  -- インポートファイルのコピールール
-  -- ソースディレクトリから dist/unit_*/ へコピーする
+  -- Import file handling
   "dist/unit_*/*.import.scm" %> \out -> do
     let dir = takeDirectory out
     let fileName = takeFileName out
-    -- let baseName = dropExtension fileName
     
-    -- 標準的なパス + 再帰検索で見つける
     let searchDirs = ["core", "modules", "tools", "."]
     candidates <- liftIO $ concat <$> mapM (findAllFilesRecursive fileName) searchDirs
     
@@ -111,18 +128,23 @@ setupRules = do
             copyFile' src out
         [] -> error $ "Could not find .import.scm file for: " ++ fileName
 
--- | 共通のコンパイルアクション
+  -- GC-specific rules
+  GC.gcRule
+
+-- ============================================================
+-- Compilation Actions
+-- ============================================================
+
 compileAction :: FilePath -> Bool -> Action ()
 compileAction out isUnit = do
   let dir = takeDirectory out
   let baseName = dropExtension (takeFileName out)
   let srcFileName = baseName <.> "scm"
 
-  -- 1. まず標準的なパス構成を確認 (高速化)
   let standardPaths =
         [ "core" </> srcFileName
         , "modules" </> srcFileName
-        , "modules" </> baseName </> srcFileName -- modules/boids/boids_main.scm 対応
+        , "modules" </> baseName </> srcFileName
         , "tools" </> baseName ++ "-tool" </> srcFileName
         , "tests" </> srcFileName
         , srcFileName
@@ -133,7 +155,6 @@ compileAction out isUnit = do
   finalSrc <- case srcFullPath of
     Just path -> return path
     Nothing -> do
-      -- 2. 見つからない場合、全ディレクトリを再帰検索
       allSrcs <- liftIO $ findAllScmFiles [srcFileName]
       case allSrcs of
         (path:_) -> return path
@@ -141,7 +162,6 @@ compileAction out isUnit = do
 
   compileSrc finalSrc out dir baseName isUnit
 
--- | 実際のコンパイル実行
 compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
   liftIO $ Dir.createDirectoryIfMissing True dir
@@ -152,14 +172,9 @@ compileSrc srcPath out dir baseName isUnit = do
         then ["-J", "-unit", baseName]
         else []
 
-  -- csc -J -unit Name -c Source -o Output
   cmd_ ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
-  -- 生成された import ファイルの扱い
   when isUnit $ do
-    -- Chicken は -J をつけると、現在のディレクトリかソースと同じ場所に .import.scm を吐く
-    -- ここではソースと同じ場所に既存の import ファイルがあるか確認し、
-    -- なければ生成されたものを利用する想定
     let importFile = baseName ++ ".import.scm"
     let srcImport = replaceFileName srcPath importFile
     
@@ -169,7 +184,10 @@ compileSrc srcPath out dir baseName isUnit = do
             then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
             else return ()
 
--- | 指定リストから実在するファイルを探す
+-- ============================================================
+-- File Search Utilities
+-- ============================================================
+
 findSourceFile :: [FilePath] -> IO (Maybe FilePath)
 findSourceFile [] = return Nothing
 findSourceFile (path:paths) = do
@@ -181,13 +199,11 @@ findSourceFile (path:paths) = do
         then return (Just path)
         else findSourceFile paths
 
--- | ファイル名を指定して再帰的に検索 (.scm用)
 findAllScmFiles :: [String] -> IO [FilePath]
 findAllScmFiles targetNames = do
   let searchRoots = ["core", "modules", "tools", "tests", "."]
   concat <$> mapM (findAllFilesRecursive' targetNames) searchRoots
 
--- | 特定のディレクトリ以下を再帰探索してマッチするファイルを返す (汎用)
 findAllFilesRecursive :: String -> FilePath -> IO [FilePath]
 findAllFilesRecursive targetName root = findAllFilesRecursive' [targetName] root
 
@@ -197,11 +213,9 @@ findAllFilesRecursive' targetNames currentDir = do
   if not exists then return []
   else do
     entries <- Dir.listDirectory currentDir
-    -- ファイルのマッチング
     let files = filter (\f -> any (== f) targetNames) entries
     let foundPaths = map (currentDir </>) files
     
-    -- サブディレクトリの探索 (隠しファイル/ディレクトリは除外)
     subDirs <- filterM (isValidSubDir currentDir) entries
     nestedMatches <- concat <$> mapM (\sd -> findAllFilesRecursive' targetNames (currentDir </> sd)) subDirs
     
@@ -213,14 +227,16 @@ findAllFilesRecursive' targetNames currentDir = do
             then return False 
             else Dir.doesDirectoryExist (parent </> sub)
 
--- | 環境変数取得
+-- ============================================================
+-- Environment Setup
+-- ============================================================
+
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
   sysEnv <- getEnvironment
   let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
 
-  -- システムのrepository pathを取得
   systemRepo <-
     fmap (filter (/= '\n')) $
       readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
@@ -228,10 +244,10 @@ getChickenEnv = do
   let repoPath =
         intercalate
           ":"
-          [ "dist"                -- ビルド成果物
-          , home </> ".chicken"   -- ユーザーローカル
-          , systemRepo            -- システム
-          , sysEnvRepo            -- 環境変数
+          [ "dist"
+          , home </> ".chicken"
+          , systemRepo
+          , sysEnvRepo
           ]
 
   return

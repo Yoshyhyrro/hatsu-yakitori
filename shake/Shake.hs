@@ -1,15 +1,17 @@
-{- shake/Shake.hs -}
+{- shake/Shake.hs (GC-integrated) -}
 {-# LANGUAGE DataKinds #-}
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, unless)
+import Control.Monad (forM_, unless, when)
 import System.Process (readCreateProcessWithExitCode, proc)
 import System.Exit (ExitCode(..))
+import System.Environment (lookupEnv)
 
 -- 自作モジュール
 import Chicken
 import Rules
+import qualified Rules.GC as GC
 import qualified Salmonella
 import qualified Clean
 
@@ -19,12 +21,12 @@ import qualified Clean
 
 data Module = Module
     { modName :: String
-    , modSrc  :: FilePath -- メインソース
-    , modTest :: FilePath -- テストソース
-    , modDeps :: [FilePath] -- 依存ファイル（フルパス）
+    , modSrc  :: FilePath
+    , modTest :: FilePath
+    , modDeps :: [FilePath]
+    , modUseGC :: Bool  -- ^ Enable GC compilation for this module
     } deriving (Show)
 
--- コア依存ファイル（全モジュールが使用）
 coreFiles :: [FilePath]
 coreFiles = 
     [ "core/kak_decomposition.scm"
@@ -39,123 +41,175 @@ modules =
              "modules/boids/boids_main.scm" 
              "tests/boids_tests.scm" 
              coreFiles
+             True  -- Enable GC for boids (high allocation)
     
     , Module "fmm" 
              "modules/fmm/fmm_on_goppa_grid.scm"     
              "tests/fmm_tests.scm"   
              coreFiles
+             True  -- Enable GC for FMM (spatial locality matters)
     
     , Module "sssp" 
              "modules/sssp/sssp_main.scm" 
              "tests/sssp_tests.scm" 
              coreFiles
+             False  -- SSSP: moderate allocation
     
     , Module "sssp_geometry" 
              "modules/sssp_geometry/sssp_geo_main.scm" 
              "tests/sssp_geometry_tests.scm" 
              coreFiles
+             True  -- Enable GC for geometric variant (memory-intensive)
              
     , Module "golay24-tool" 
              "tools/golay24-tool/golay24_main.scm" 
              "tests/golay24_tests.scm" 
              (coreFiles ++ ["tools/golay24-tool/setup.scm"])
+             False  -- GC not needed for small tool
     ]
 
 -- ====================================================================
---  Main Loop
+--  Build Configuration
+-- ====================================================================
+
+data BuildConfig = BuildConfig
+    { cfgEnableGC :: Bool
+    , cfgOptLevel :: String
+    , cfgVerbose  :: Bool
+    } deriving (Show)
+
+defaultBuildConfig :: BuildConfig
+defaultBuildConfig = BuildConfig
+    { cfgEnableGC = False
+    , cfgOptLevel = "-O3"
+    , cfgVerbose = False
+    }
+
+-- ====================================================================
+--  Main
 -- ====================================================================
 
 main :: IO ()
-main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
+main = do
+    -- Check environment for GC flag
+    gcEnv <- lookupEnv "ENABLE_GC_OPT"
+    let enableGC = case gcEnv of
+            Just "1" -> True
+            Just "true" -> True
+            _ -> False
     
-    -- 1. ルールの初期化
-    setupRules
-
-    -- コンパイラフラグ
-    let cflags = "-O3 -d0"
-
-    -- 2. 各モジュールのビルドターゲット定義
-    forM_ modules $ \m -> do
-        let mName = modName m
+    let config = defaultBuildConfig { cfgEnableGC = enableGC }
+    
+    shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         
-        -- アプリケーションのビルド
-        phony ("build-" ++ mName) $ do
-            need (modDeps m)
+        -- 1. ルール初期化（GC含む）
+        setupRules
+        
+        -- コンパイラフラグ
+        let cflags = cfgOptLevel config ++ " -d0"
+        
+        -- 2. 各モジュールのビルドターゲット
+        forM_ modules $ \m -> do
+            let mName = modName m
+            let useGC = cfgEnableGC config && modUseGC m
             
-            -- 依存関係(Core等)をユニットとしてコンパイル
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
+            -- メインアプリケーション
+            phony ("build-" ++ mName) $ do
+                need (modDeps m)
+                
+                -- 依存コンパイル
+                deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) 
+                             (modDeps m)
+                
+                -- メイン単位
+                mainUnit <- if useGC
+                    then buildArtifactWithGC True $ CompileUnit (source $ modSrc m) cflags
+                    else buildArtifact $ CompileUnit (source $ modSrc m) cflags
+                
+                let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
+                let exePath = "dist" </> mName ++ "_app" <.> exe
+                
+                _ <- buildArtifact $ LinkExe objArtifacts 
+                                             (source $ modSrc m) 
+                                             cflags 
+                                             exePath
+                
+                -- GC-optimized compilation if enabled
+                when useGC $ do
+                    putInfo $ "[GC] Building GC-optimized version for " ++ mName
+                    gcObj <- GC.buildGCObj exePath
+                    putInfo $ "[GC] Created: " ++ getPath gcObj
+                
+                return ()
             
-            -- メインプログラムをユニットとしてコンパイル
-            mainUnit <- buildArtifact $ CompileUnit (source $ modSrc m) cflags
+            -- テスト実行
+            phony ("test-" ++ mName) $ do
+                need ["build-" ++ mName]
+                
+                deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) 
+                             (modDeps m)
+                testUnit <- buildArtifact $ CompileUnit (source $ modTest m) cflags
+                
+                let objArtifacts = map toObjArtifact (deps ++ [testUnit])
+                let testBinPath = "_build/tests/test_" ++ mName <.> exe
+                
+                _ <- buildArtifact $ LinkExe objArtifacts
+                                             (source $ modTest m)
+                                             cflags
+                                             testBinPath
+                
+                env <- liftIO getChickenEnv
+                let tcfg = Salmonella.defaultTestConfig { Salmonella.tcEnv = env }
+                result <- Salmonella.runModuleTests tcfg mName testBinPath
+                
+                unless (Salmonella.trPassed result) $
+                    fail $ "Tests failed for " ++ mName
             
-            -- リンクして実行ファイルを生成
-            let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
-            let exePath = "dist" </> mName ++ "_app" <.> exe
-            
-            _ <- buildArtifact $ LinkExe objArtifacts 
-                                         (source $ modSrc m) 
-                                         cflags 
-                                         exePath
-            return ()
+            -- ショートカット
+            phony mName $ need ["build-" ++ mName]
+        
+        -- 3. Salmonella
+        phony "salmonella" $ do
+            liftIO $ do
+                (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" []) ""
+                case exitCode of
+                    ExitSuccess -> putStrLn "✓ Salmonella tests passed"
+                    _ -> do
+                        putStrLn "✗ Salmonella tests failed"
+                        putStrLn "=== Stdout ==="
+                        putStrLn stdout
+                        putStrLn "=== Stderr ==="
+                        putStrLn stderr
+                        fail "Salmonella tests failed"
+        
+        -- 4. クリーニング
+        phony "clean" $ Clean.cleanAll
+        phony "clean-build" $ Clean.cleanBuild
+        phony "clean-tests" $ Clean.cleanTests
+        phony "clean-artifacts" $ Clean.cleanArtifacts
+        phony "clean-cache" $ Clean.cleanCache
+        phony "distclean" $ do
+            Clean.cleanAll
+            putInfo "Removed all generated files and caches"
+        
+        -- 5. 便利コマンド
+        phony "build" $ need ["build-" ++ modName m | m <- modules]
+        phony "test-all" $ need ["test-" ++ modName m | m <- modules]
+        phony "test" $ need ["test-all"]
+        
+        -- GC統計
+        phony "gc-stats" $ liftIO $ do
+            putStrLn "=== GC Configuration ==="
+            putStrLn $ "Global GC enabled: " ++ show (cfgEnableGC config)
+            putStrLn ""
+            putStrLn "Per-module GC settings:"
+            forM_ modules $ \m -> do
+                let status = if modUseGC m then "✓ enabled" else "✗ disabled"
+                putStrLn $ "  " ++ modName m ++ ": " ++ status
 
-        -- テストの実行
-        phony ("test-" ++ mName) $ do
-            need ["build-" ++ mName]
-            
-            -- テスト用の依存関係ビルド
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
-            testUnit <- buildArtifact $ CompileUnit (source $ modTest m) cflags
-            
-            let objArtifacts = map toObjArtifact (deps ++ [testUnit])
-            let testBinPath = "_build/tests/test_" ++ mName <.> exe
-            
-            _ <- buildArtifact $ LinkExe objArtifacts
-                                         (source $ modTest m)
-                                         cflags
-                                         testBinPath
-            
-            -- Salmonellaでテスト実行
-            env <- liftIO getChickenEnv
-            let config = Salmonella.defaultTestConfig { Salmonella.tcEnv = env }
-            result <- Salmonella.runModuleTests config mName testBinPath
-            
-            unless (Salmonella.trPassed result) $
-                fail $ "Tests failed for " ++ mName
+-- ============================================================
+-- Helpers
+-- ============================================================
 
-        -- ショートカット
-        phony mName $ need ["build-" ++ mName]
-
-    -- 3. Salmonella統合: .egg ファイルでテストを実行
-    phony "salmonella" $ do
-        liftIO $ do
-            -- ローカルディレクトリの .egg ファイルを自動検出して Salmonella を実行
-            (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" []) ""
-            case exitCode of
-                ExitSuccess -> putStrLn "✓ Salmonella tests passed"
-                _ -> do
-                    putStrLn "✗ Salmonella tests failed"
-                    putStrLn "=== Stdout ==="
-                    putStrLn stdout
-                    putStrLn "=== Stderr ==="
-                    putStrLn stderr
-                    fail "Salmonella tests failed"
-
-    -- 4. クリーニングコマンド（Clean モジュールにて管理）
-    phony "clean" $ Clean.cleanAll
-    phony "clean-build" $ Clean.cleanBuild
-    phony "clean-tests" $ Clean.cleanTests
-    phony "clean-artifacts" $ Clean.cleanArtifacts
-    phony "clean-cache" $ Clean.cleanCache
-    
-    phony "distclean" $ do
-        Clean.cleanAll
-        putInfo "Removed all generated files and caches"
-
-    -- 5. 便利コマンド
-    phony "build" $ need ["build-" ++ modName m | m <- modules]
-    phony "test-all" $ need ["test-" ++ modName m | m <- modules]
-    phony "test" $ need ["test-all"]
-
--- Helper
 toObjArtifact :: Artifact 'Unit -> Artifact 'Obj
 toObjArtifact (Artifact path) = Artifact path
