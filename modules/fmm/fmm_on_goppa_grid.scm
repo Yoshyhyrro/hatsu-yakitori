@@ -1,6 +1,5 @@
 ;; module/fmm/fmm_on_goppa_grid.scm
 
-(include-relative "../../core/golay_frontier.scm")
 (module module.fmm.fmm-goppa
   (make-goppa-grid
    local-parameter
@@ -12,6 +11,7 @@
           (chicken base)
           (chicken format)
           (chicken sort)
+          (chicken flonum) ;; For optimized float math if needed
           srfi-1
           srfi-69
           srfi-133
@@ -21,10 +21,9 @@
   ;; Math Helpers
   ;; ------------------------------------------------------------------
   (define pi (* 4 (atan 1)))
-  (define (sin x) (##core#inline_allocate ("C_sin" 4) x))
-  (define (cos x) (##core#inline_allocate ("C_cos" 4) x))
-  (define (sqrt x) (##core#inline_allocate ("C_sqrt" 4) x))
-  (define (acos x) (##core#inline_allocate ("C_acos" 4) x))
+  
+  ;; NOTE: Removed incorrect redefinitions of sin, cos, etc.
+  ;; Standard Scheme functions handle types correctly and are optimized.
 
   ;; ------------------------------------------------------------------
   ;; Complex Arithmetic Helpers
@@ -60,7 +59,7 @@
     (/ (fact n) (* (fact k) (fact (- n k)))))
 
   ;; ------------------------------------------------------------------
-  ;; Frontier Operations (スタック/キューの実装)
+  ;; Frontier Operations
   ;; ------------------------------------------------------------------
   (define (make-stack) '())
   (define (stack-push stack item) (cons item stack))
@@ -110,7 +109,6 @@
             (vector-set! frontier 4 new-data)
             (values item frontier)))))
 
-  ;; 表示用 (golay_frontierからインポートしたものをエイリアス)
   (define print-frontier-info print-golay-info)
 
   ;; ------------------------------------------------------------------
@@ -176,7 +174,6 @@
   (define (cartan-fmm-evaluate-golay grid hierarchy sources charges target-idx order golay-info-bits)
     "Evaluate potential at target-idx using FMM driven by Golay Frontier."
     
-    ;; 拡張されたフロンティア構造を作成 (5番目の要素にデータを追加)
     (let* ((base-frontier (make-adaptive-frontier golay-info-bits))
            (frontier (vector-append base-frontier (vector (make-stack))))
            (target-pos (local-parameter grid target-idx))
