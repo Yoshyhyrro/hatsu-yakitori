@@ -4,6 +4,7 @@
 ;;; ============================================================
 
 
+(include-relative "machine_constants.scm")
 (include-relative "golay_frontier.scm")
 (include-relative "cartan_utils.scm")
 
