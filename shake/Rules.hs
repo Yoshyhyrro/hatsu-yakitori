@@ -1,4 +1,4 @@
-{- shake/Rules.hs (GC-integrated) -}
+{- shake/Rules.hs -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
@@ -13,7 +13,8 @@ module Rules
     -- * ChickenOp constructors
   , ChickenOp(CompileObj, CompileUnit, LinkExe)
     -- * GC Rules
-  , module Rules.GC
+  , GC.gcRule           -- Export specific items from GC
+  , GC.buildGCObj       -- Add other exports as needed
     -- * Helpers
   , getChickenEnv
   ) where
@@ -55,6 +56,7 @@ buildArtifact (CompileUnit src flags) = do
   let out = artifactPathForCompileUnit src flags
   need [out]
   let importSrc = replaceExtension (getPath src) "import.scm"
+  -- import.scm がソース側にあるかチェック（あれば依存に追加）
   exists <- liftIO $ Dir.doesFileExist importSrc
   when exists $ need [importSrc]
   return (Artifact out)
@@ -164,6 +166,9 @@ compileAction out isUnit = do
 
 compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
+  -- 【重要】ここでソースファイルへの依存を宣言しないと、ソースを変更してもリビルドされません
+  need [srcPath]
+
   liftIO $ Dir.createDirectoryIfMissing True dir
   putInfo $ (if isUnit then "[Unit] " else "[Obj]  ") 
             ++ srcPath ++ " -> " ++ out
@@ -172,17 +177,21 @@ compileSrc srcPath out dir baseName isUnit = do
         then ["-J", "-unit", baseName]
         else []
 
+  -- csc コマンドの実行
   cmd_ ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
   when isUnit $ do
     let importFile = baseName ++ ".import.scm"
     let srcImport = replaceFileName srcPath importFile
     
+    -- インポートファイルがソースと同じ場所にある場合のチェック
     liftIO $ do
         exists <- Dir.doesFileExist srcImport
         if exists 
             then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
             else return ()
+    -- ここで srcImport も need すべきかはケースバイケースですが、
+    -- 通常 .import.scm は出力物として扱われることが多いので一旦除外しています。
 
 -- ============================================================
 -- File Search Utilities
@@ -237,6 +246,7 @@ getChickenEnv = do
   sysEnv <- getEnvironment
   let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
 
+  -- chicken-install -repository の値を取得するフォールバック
   systemRepo <-
     fmap (filter (/= '\n')) $
       readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
