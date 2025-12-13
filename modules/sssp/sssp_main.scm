@@ -13,9 +13,6 @@
 ;; The Makefile uses 'csc -I .', allowing us to use the root-relative path 'core/'.
 ;; Changed 'load' to 'include' to embed the code into the compiled binary.
 ;; ---------------------------------------------------------------------------
-(include "core/kak_decomposition.scm")
-(include "core/machine_constants.scm")
-(include "core/cartan_utils.scm")
 
 (define (main args)
   (format #t "Single Source Shortest Path (SSSP) module started.~%")

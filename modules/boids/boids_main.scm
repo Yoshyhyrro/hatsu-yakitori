@@ -1,12 +1,15 @@
 ;;; ---------------------------------------------------------------------------
 ;;; Boids Simulation Main Application Entry
 ;;; ---------------------------------------------------------------------------
-
 ;; Fix: Import 'chicken process-context' to resolve 'command-line-arguments'
 (import scheme)
 (import (chicken base)
-        (chicken process-context) ;; コマンドライン引数 (command-line-arguments) を提供
-        (chicken format))
+        (chicken process-context)
+        (chicken format)
+        machine_constants
+        cartan_utils
+        kak_decomposition)
+
         
 ;; ---------------------------------------------------------------------------
 ;; CORE LIBRARY INCLUDES
@@ -14,9 +17,6 @@
 ;; ---------------------------------------------------------------------------
 
 ;; Note: If the main program needs definitions from these files, they must be included here.
-(include "core/kak_decomposition.scm")
-(include "core/machine_constants.scm")
-(include "core/cartan_utils.scm")
 
 ;; Placeholder for the main Boids application logic
 (define (run-boids args)

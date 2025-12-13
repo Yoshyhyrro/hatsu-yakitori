@@ -24,17 +24,21 @@
 (define test-passed 0)
 (define test-failed 0)
 
+;; 修正: 数値同士の比較には = を使い、それ以外は equal? を使うように変更
 (define (assert-equal actual expected description)
   (set! test-count (+ test-count 1))
-  (if (equal? actual expected)
-      (begin
-        (set! test-passed (+ test-passed 1))
-        (printf "[PASS] ~a~%" description))
-      (begin
-        (set! test-failed (+ test-failed 1))
-        (printf "[FAIL] ~a~%" description)
-        (printf "  Expected: ~a~%" expected)
-        (printf "  Actual:   ~a~%" actual))))
+  (let ((passed? (if (and (number? actual) (number? expected))
+                     (= actual expected)      ;; 数値なら = (1 と 1.0 を同一視)
+                     (equal? actual expected)))) ;; それ以外は equal?
+    (if passed?
+        (begin
+          (set! test-passed (+ test-passed 1))
+          (printf "[PASS] ~a~%" description))
+        (begin
+          (set! test-failed (+ test-failed 1))
+          (printf "[FAIL] ~a~%" description)
+          (printf "  Expected: ~a~%" expected)
+          (printf "  Actual:   ~a~%" actual)))))
 
 (define (assert-true condition description)
   (set! test-count (+ test-count 1))

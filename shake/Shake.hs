@@ -6,6 +6,7 @@ import Development.Shake.FilePath
 import Control.Monad (forM_, unless)
 import System.Process (readCreateProcessWithExitCode, proc)
 import System.Exit (ExitCode(..))
+import Data.List (words)  -- words関数をインポート
 
 -- 自作モジュール
 import Chicken
@@ -56,9 +57,13 @@ modules =
              coreFiles
              
     , Module "golay24-tool" 
-             "tools/golay24-tool/golay24_main.scm" 
-             "tests/golay24_tests.scm" 
-             (coreFiles ++ ["tools/golay24-tool/setup.scm"])
+         "tools/golay24-tool/golay24_main.scm" 
+         "tests/golay24_tests.scm" 
+         (coreFiles ++ 
+          [ "tools/golay24-tool/setup.scm"
+          -- KAK統合テストを実行する場合は以下も追加
+          , "modules/sssp_geometry/sssp_geo_main.scm"
+          ])
     ]
 
 -- ====================================================================
@@ -100,24 +105,19 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
         -- テストの実行
         phony ("test-" ++ mName) $ do
-            need ["build-" ++ mName]
+            -- need ["build-" ++ mName]  -- ← この行を削除！
             
-            -- テスト用の依存関係ビルド
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
-            testUnit <- buildArtifact $ CompileUnit (source $ modTest m) cflags
-            
-            let objArtifacts = map toObjArtifact (deps ++ [testUnit])
-            let testBinPath = "_build/tests/test_" ++ mName <.> exe
-            
-            _ <- buildArtifact $ LinkExe objArtifacts
-                                         (source $ modTest m)
-                                         cflags
-                                         testBinPath
-            
-            -- Salmonellaでテスト実行
+            -- Salmonellaを使って独立したテストを構築・実行
             env <- liftIO getChickenEnv
-            let config = Salmonella.defaultTestConfig { Salmonella.tcEnv = env }
-            result <- Salmonella.runModuleTests config mName testBinPath
+            let config = Salmonella.defaultTestConfig 
+                    { Salmonella.tcEnv = env
+                    , Salmonella.tcCompileFlags = words cflags  -- wordsで文字列をリストに変換
+                    }
+            
+            result <- Salmonella.runIsolatedModuleTests config 
+                                                         mName 
+                                                         (modTest m) 
+                                                         (modDeps m)
             
             unless (Salmonella.trPassed result) $
                 fail $ "Tests failed for " ++ mName

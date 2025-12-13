@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'kak_decomposition
-      'boids_main
+      'kak_decomposition
       (scheme#list)
       '((K-frontier . kak_decomposition#K-frontier)
         (K-push . kak_decomposition#K-push)

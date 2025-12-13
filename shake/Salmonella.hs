@@ -2,19 +2,27 @@
 module Salmonella where
 
 import Development.Shake
+import Development.Shake.FilePath
 import System.Process (readCreateProcessWithExitCode, proc, CreateProcess(..))
 import System.Exit (ExitCode(..))
 import Control.Monad (forM, unless)
 import qualified System.Environment as Env
 import Data.List (nubBy)
+import System.Directory (createDirectoryIfMissing)  -- 追加したインポート
 
 -- | テスト設定
 data TestConfig = TestConfig
     { tcEnv :: [(String, String)] 
+    , tcCompileFlags :: [String]  -- Changed from String to [String]
+    , tcBuildDir :: FilePath
     } deriving (Show, Eq)
 
 defaultTestConfig :: TestConfig
-defaultTestConfig = TestConfig { tcEnv = [] }
+defaultTestConfig = TestConfig 
+    { tcEnv = []
+    , tcCompileFlags = ["-O3", "-d0"]  -- Changed to list
+    , tcBuildDir = "_build"
+    }
 
 data TestResult = TestResult
     { trName   :: String
@@ -26,7 +34,50 @@ data TestResult = TestResult
 mergeEnv :: [(String, String)] -> [(String, String)] -> [(String, String)]
 mergeEnv custom system = nubBy (\(k1, _) (k2, _) -> k1 == k2) (custom ++ system)
 
--- | テスト実行 (パスは通常の FilePath を受け取る)
+-- | モジュールテストを独立して構築・実行する
+runIsolatedModuleTests :: TestConfig -> String -> FilePath -> [FilePath] -> Action TestResult
+runIsolatedModuleTests config modName testSource deps = do
+    putInfo $ "Building and running tests for: " ++ modName
+    
+    -- 必要なディレクトリを作成
+    let buildDir = tcBuildDir config
+    let testsDir = buildDir </> "tests"
+    liftIO $ do
+        createDirectoryIfMissing True buildDir
+        createDirectoryIfMissing True testsDir
+    
+    -- 依存関係をコンパイル
+    depObjs <- mapM (\src -> do
+        let objName = buildDir </> takeBaseName src <.> "o"
+        let unitName = takeBaseName src
+        -- 依存関係ファイルがあるディレクトリも確認
+        liftIO $ createDirectoryIfMissing True (takeDirectory objName)
+        cmd_ "csc" (["-c"] ++ tcCompileFlags config ++ ["-unit", unitName, src, "-o", objName])
+        return objName
+        ) deps
+    
+    -- テストソースをコンパイル（テストファイル自体をオブジェクト化）
+    let testObj = testsDir </> takeBaseName testSource <.> "o"
+    let testUnitName = takeBaseName testSource
+    need depObjs
+    cmd_ "csc" (["-c"] ++ tcCompileFlags config ++ 
+                ["-I", "core",           -- core ディレクトリを追加
+                "-I", ".",              -- カレントディレクトリも追加
+                "-unit", testUnitName, 
+                testSource, 
+                "-o", testObj])
+    
+    -- テストバイナリをリンク（テストソースを最初のソースファイルとして直接渡す）
+    let testBin = testsDir </> "test_" ++ modName <.> exe
+    let allObjs = depObjs ++ [testObj]
+    
+    -- 修正：テストソースファイルを最初の引数として直接渡す
+    cmd_ "csc" (tcCompileFlags config ++ ["-o", testBin, testSource] ++ allObjs)
+    
+    -- テスト実行
+    runModuleTests config modName testBin
+
+-- | 既存のテスト実行（バイナリのみ）
 runModuleTests :: TestConfig -> String -> FilePath -> Action TestResult
 runModuleTests config modName bin = do
     putInfo $ "Running tests for: " ++ modName
