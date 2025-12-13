@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'machine_constants
-      'machine_constants
+      'golay24_tests
       (scheme#list)
       '((machine-epsilon . machine_constants#machine-epsilon)
         (default-tolerance . machine_constants#default-tolerance)

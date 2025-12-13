@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'cartan_utils
-      'cartan_utils
+      'boids_main
       (scheme#list)
       '((pretty-print-decomposition . cartan_utils#pretty-print-decomposition)
         (validate-decomposition . cartan_utils#validate-decomposition)

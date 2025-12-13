@@ -3,7 +3,8 @@
 ;;; Finite Geometry & Group Theory based Stress Tests for SSSP
 ;;; 有限幾何学と群論に基づくSSSP（最短経路）のストレステスト
 ;;; ============================================================
-
+(include-relative "../core/machine_constants.scm")
+(include-relative "../core/golay_frontier.scm")
 (import scheme)
 (import (chicken base)
         (chicken bitwise)
@@ -12,8 +13,8 @@
         srfi-1
         srfi-69)
 
-(import core/machine_constants)
-(import core/golay_frontier)
+(import machine_constants)
+(import golay_frontier)
 
 ;; ============================================================
 ;; Test Framework

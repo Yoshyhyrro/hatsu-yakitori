@@ -2,17 +2,18 @@
 ;; tests/golay24_tests.scm
 ;; Tests for Golay-controlled adaptive frontier
 ;; ============================================================
-
+(include-relative "../core/machine_constants.scm")
+(include-relative "../core/golay_frontier.scm")
 (import scheme
         (chicken base)       
         (chicken format)     
         (chicken process-context) 
         (srfi-1)
         (srfi-69) 
-        core/machine_constants
-        core/golay_frontier
-        core/cartan_utils
-        core/kak_decomposition)
+        machine_constants
+        golay_frontier
+        cartan_utils
+        kak_decomposition)
 
 ;; ============================================================
 ;; Test Framework

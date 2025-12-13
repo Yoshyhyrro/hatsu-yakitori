@@ -118,6 +118,10 @@ compileAction out isUnit = do
   let baseName = dropExtension (takeFileName out)
   let srcFileName = baseName <.> "scm"
 
+  -- Skip unit compilation for test files
+  let isTest = "test" `isPrefixOf` baseName
+  let actuallyUnit = isUnit && not isTest
+
   -- 1. まず標準的なパス構成を確認 (高速化)
   let standardPaths =
         [ "core" </> srcFileName
