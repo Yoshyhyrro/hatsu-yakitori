@@ -1,6 +1,6 @@
 ;; module/fmm/fmm_on_goppa_grid.scm
 
-(module module.fmm.fmm-goppa
+(module module.fmm.fmm-goppa *
   (make-goppa-grid
    local-parameter
    calculate-geometric-center

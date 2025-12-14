@@ -1,20 +1,16 @@
-((name "core")
- (version "0.0.1")
- (author "Yoshihiro Hasegawa")
- 
- (components
-  (extension
-   name: machine_constants
-   source: "machine_constants.scm")
-  
-  (extension
-   name: golay_frontier
-   source: "golay_frontier.scm")
-  
-  (extension
-   name: cartan_utils
-   source: "cartan_utils.scm")
-  
-  (extension
-   name: kak_decomposition
-   source: "kak_decomposition.scm")))
+(name core)
+(version "0.0.1")
+(author "Yoshihiro Hasegawa")
+
+(components
+ (extension machine_constants
+   (source "machine_constants.scm"))
+
+ (extension golay_frontier
+   (source "golay_frontier.scm"))
+
+ (extension cartan_utils
+   (source "cartan_utils.scm"))
+
+ (extension kak_decomposition
+   (source "kak_decomposition.scm")))

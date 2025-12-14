@@ -1,31 +1,49 @@
 ;; hatsu-yakitori.egg
-((version "0.0.1")
- (license "BSD-3-Clause")
- (author "Yoshihiro Hasegawa")
- (synopsis
-   "KAK-inspired bounded-computation core (SSSP / FMM / particle math)")
- (category tools)
- (dependencies srfi-1 srfi-69)
- (test-dependencies test)
- 
- ;; REMOVED: (files ...) - this is not a valid egg property
- 
- (components
-   (extension kak_decomposition 
-     (source "core/kak_decomposition.scm"
-             "core/machine_constants.scm"
-             "core/cartan_utils.scm")
-     (csc-options "-O3" "-d1" "-s" "-I" "core"))
-   
-   (extension boids 
-     (source "modules/boids/boids_main.scm")
-     (csc-options "-O2" "-s" "-I" "core"))
-   
-   (extension fmm 
-     (source "modules/fmm/fmm_main.scm"
-             "modules/fmm/fmm_on_goppa_grid.scm")
-     (csc-options "-O2" "-s"))
-   
-   (extension sssp 
-     (source "modules/sssp/sssp_main.scm")
-     (csc-options "-O2" "-s"))))
+(name hatsu-yakitori)
+(version "0.0.1")
+(author "Yoshihiro Hasegawa")
+(license "BSD-3-Clause")
+(category tools)
+(synopsis "KAK-inspired bounded-computation core")
+(description "HATSU-YAKITORI core framework.")
+
+(depends srfi-1 srfi-69 easyffi)
+
+;; --- 1. 部品 (依存なし) ---
+(extension machine_constants
+  (source "core/machine_constants.scm")
+  (csc-options "-O3" "-s" "-J"))
+
+(extension cartan_utils
+  (source "core/cartan_utils.scm")
+  (csc-options "-O3" "-s" "-J"))
+
+(extension golay_frontier
+  (source "core/golay_frontier.scm")
+  (csc-options "-O3" "-s" "-J"))
+
+;; --- 2. コア (部品に依存) ---
+(extension kak_decomposition
+  (source "core/kak_decomposition.scm")
+  (csc-options "-O3" "-d1" "-s" "-J"))
+
+;; --- 3. アプリケーション (コアに依存) ---
+(extension fmm_on_goppa_grid
+  (source "modules/fmm/fmm_on_goppa_grid.scm")
+  (csc-options "-O2" "-s" "-J"))
+
+(extension fmm_main
+  (source "modules/fmm/fmm_main.scm")
+  (csc-options "-O2" "-s" "-J"))
+
+(extension boids_main
+  (source "modules/boids/boids_main.scm")
+  (csc-options "-O2" "-s" "-J"))
+
+(extension sssp_main
+  (source "modules/sssp/sssp_main.scm")
+  (csc-options "-O2" "-s" "-J"))
+
+(extension sssp_geo_main
+  (source "modules/sssp_geometry/sssp_geo_main.scm")
+  (csc-options "-O2" "-s" "-J"))

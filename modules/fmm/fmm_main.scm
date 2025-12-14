@@ -8,6 +8,7 @@
 (include-relative "../../core/kak_decomposition.scm")
 (include-relative "../../core/cartan_utils.scm")
 
+(module fmm_main)
 (import scheme)
 (import (chicken base)
         (chicken process-context) ;; Required for (command-line-arguments)

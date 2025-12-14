@@ -118,6 +118,10 @@ compileAction out isUnit = do
   let baseName = dropExtension (takeFileName out)
   let srcFileName = baseName <.> "scm"
 
+  -- Skip unit compilation for test files
+  let isTest = "test" `isPrefixOf` baseName
+  let actuallyUnit = isUnit && not isTest
+
   -- 1. まず標準的なパス構成を確認 (高速化)
   let standardPaths =
         [ "core" </> srcFileName
@@ -144,22 +148,27 @@ compileAction out isUnit = do
 -- | 実際のコンパイル実行
 compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
-  liftIO $ Dir.createDirectoryIfMissing True dir
-  putInfo $ (if isUnit then "[Unit] " else "[Obj]  ") 
-            ++ srcPath ++ " -> " ++ out
-
+  --getChickenEnv は IO なので liftIO で持ち上げる
+  env <- liftIO getChickenEnv
+  
   let unitArgs = if isUnit
-        then ["-J", "-unit", baseName]
+        then [ "-J", "-unit", baseName
+             , "-setup-mode"
+             , "-regenerate-import-libraries"
+             ]
         else []
+  
+  --環境変数リスト [(Key, Val)] を CmdOption のリスト [AddEnv Key Val] に変換
+  let envOpts = map (uncurry AddEnv) env
+  
+  -- csc -J -unit Name -c Source -o Output ...
+  -- cmd_ には [CmdOption] を渡すことができます。(Cwd dir) と結合して渡します。
+  let cmdOptions = Cwd dir : envOpts
 
-  -- csc -J -unit Name -c Source -o Output
-  cmd_ ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
+  cmd_ cmdOptions ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
   -- 生成された import ファイルの扱い
   when isUnit $ do
-    -- Chicken は -J をつけると、現在のディレクトリかソースと同じ場所に .import.scm を吐く
-    -- ここではソースと同じ場所に既存の import ファイルがあるか確認し、
-    -- なければ生成されたものを利用する想定
     let importFile = baseName ++ ".import.scm"
     let srcImport = replaceFileName srcPath importFile
     

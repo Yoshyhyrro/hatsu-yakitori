@@ -1,0 +1,16 @@
+# eggs/golay24-tool.egg
+(name golay24-tool)
+(version "0.0.1")
+(author "hatsu-yakitori project")
+(license "BSD-3-Clause")
+(category tool)
+(tags "tool" "cli" "coding-theory")
+(synopsis "Command-line tool for Golay(24, 12) codes")
+(description "A standalone tool for testing and demonstrating the KAK decomposition and coding theory libraries.")
+(depends srfi-1 srfi-13)
+(test-depends)
+(components
+ (extension golay24-tool
+   (source "tools/golay24-tool/golay24_main.scm"
+           "core/kak_decomposition.scm"
+           "core/machine_constants.scm")))
