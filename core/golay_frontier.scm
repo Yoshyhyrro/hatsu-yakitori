@@ -12,11 +12,14 @@
    decode-golay24
    golay-weight
    
-   ;; --- Strategy/Config Exports (名前を統一・修正) ---
+   ;; --- Strategy/Config Exports ---
    make-adaptive-frontier
    adaptive-frontier-mode
    adaptive-frontier-tau
    adaptive-frontier-codeword
+   frontier-mode-from-golay
+   adaptive-frontier-push
+   adaptive-frontier-pop
    
    ;; --- Utility ---
    print-golay-info)
@@ -43,7 +46,6 @@
     (let loop ((n n) (count 0))
       (if (zero? n)
           count
-          ;; ここは -1 なので右シフトで正しい
           (loop (arithmetic-shift n -1)
                 (+ count (bitwise-and n 1))))))
 
@@ -52,7 +54,6 @@
       (let loop ((i 0) (parity 0))
         (if (= i 12)
             (bitwise-ior (arithmetic-shift info-bits 12) parity)
-            ;; 【修正】: i番目のビットを見るために右シフト(- i)にする必要がある
             (let ((info-bit (bitwise-and 1 (arithmetic-shift info-bits (- i)))))
               (if (zero? info-bit)
                   (loop (+ i 1) parity)
@@ -60,11 +61,10 @@
 
   (define (calculate-syndrome codeword)
     (let ((recalculated-parity
-           (let ((info-prime (arithmetic-shift codeword -12))) ;; 12ビット右シフトで情報ビットを取り出し
+           (let ((info-prime (arithmetic-shift codeword -12)))
              (let loop ((i 0) (parity 0))
                (if (= i 12)
                    parity
-                   ;; 【修正】: ここも i番目のビットを見るために右シフト(- i)にする
                    (let ((info-bit (bitwise-and 1 (arithmetic-shift info-prime (- i)))))
                      (if (zero? info-bit)
                          (loop (+ i 1) parity)
@@ -82,43 +82,73 @@
        ((<= syndrome-weight 3)
         (values info-prime syndrome))
        (else
-        ;; 通常のGolay復号では3ビット訂正以上の場合の処理が必要だが、
-        ;; ここでは簡易的にシンドロームを返す実装のままとしておく
         (values info-prime syndrome)))))
 
   ;; ============================================================
   ;; Adaptive Strategy Logic
   ;; ============================================================
   
-  (define (decide-mode-from-tau tau)
+  (define (frontier-mode-from-golay tau)
     (let ((normalized (/ (min tau 24) 24.0)))
       (if (< normalized 0.5)
           'stack
           'queue)))
   
-  ;; 【修正】: 定義名をエクスポート名(frontier)に合わせる
   (define (make-adaptive-frontier #!optional (info-bits 0))
     (let* ((codeword (encode-golay24 info-bits))
            (tau (golay-weight codeword))
-           (mode (decide-mode-from-tau tau)))
-      ;; Vector structure: #(mode tau codeword normalized-tau)
+           (mode (frontier-mode-from-golay tau)))
+      ;; Vector structure: #(mode tau codeword normalized-tau data-structure)
       (vector mode
               tau
               codeword
-              (/ tau 24.0))))
+              (/ tau 24.0)
+              '()))) ;; データ格納用の空リスト (インデックス 4)
+              
   
-  ;; 【修正】: アクセサ名もエクスポート名(frontier)に合わせる
+  ;; --- Accessors ---
   (define (adaptive-frontier-mode config) (vector-ref config 0))
   (define (adaptive-frontier-tau config)  (vector-ref config 1))
   (define (adaptive-frontier-codeword config) (vector-ref config 2))
-  (define (adaptive-frontier-tau-norm config) (vector-ref config 3)) ; これはエクスポートされていないが内部で使用
+  (define (adaptive-frontier-tau-norm config) (vector-ref config 3))
+  (define (adaptive-frontier-data config) (vector-ref config 4))
+  (define (adaptive-frontier-set-data! config new-data) (vector-set! config 4 new-data)) ;; mutableなベクタ操作
+
+  ;; --- Core Frontier Operations ---
   
+  (define (adaptive-frontier-push config item)
+    "Adds an item to the frontier based on its mode ('stack' or 'queue'). Mutates the config vector."
+    (let* ((mode (adaptive-frontier-mode config))
+           (current-data (adaptive-frontier-data config))
+           (new-data
+            (cond
+             ((eq? mode 'stack) (cons item current-data))        ; Stack: LIFO (cons to front)
+             ((eq? mode 'queue) (append current-data (list item))) ; Queue: FIFO (append to back)
+             (else (error "Unknown frontier mode" mode)))))
+      
+      ;; ベクタの中身を更新する
+      (adaptive-frontier-set-data! config new-data)
+      config)) ; 修正された設定（ベクタ）を返す
+
+  (define (adaptive-frontier-pop config)
+    "Removes and returns an item from the frontier (LIFO or FIFO determined by mode). Mutates the config vector. Returns (values item config)."
+    (let* ((current-data (adaptive-frontier-data config)))
+      (if (null? current-data)
+          (error "Cannot pop from empty frontier" config)
+          (let ((item (car current-data))
+                (new-data (cdr current-data)))
+            
+            ;; ベクタの中身を更新する
+            (adaptive-frontier-set-data! config new-data)
+            
+            ;; itemと修正された設定を返す
+            (values item config)))))
+            
   ;; ============================================================
   ;; Display / Debug
   ;; ============================================================
   
   (define (print-golay-info config)
-    ;; 内部呼び出しも修正した名前に変更
     (let ((mode (adaptive-frontier-mode config))
           (tau (adaptive-frontier-tau config))
           (tau-norm (adaptive-frontier-tau-norm config))

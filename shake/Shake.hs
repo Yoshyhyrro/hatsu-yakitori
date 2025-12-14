@@ -116,6 +116,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
             
             result <- Salmonella.runIsolatedModuleTests config 
                                                          mName 
+                                                         (modSrc m)
                                                          (modTest m) 
                                                          (modDeps m)
             

@@ -35,8 +35,8 @@ mergeEnv :: [(String, String)] -> [(String, String)] -> [(String, String)]
 mergeEnv custom system = nubBy (\(k1, _) (k2, _) -> k1 == k2) (custom ++ system)
 
 -- | モジュールテストを独立して構築・実行する
-runIsolatedModuleTests :: TestConfig -> String -> FilePath -> [FilePath] -> Action TestResult
-runIsolatedModuleTests config modName testSource deps = do
+runIsolatedModuleTests :: TestConfig -> String -> FilePath -> FilePath -> [FilePath] -> Action TestResult
+runIsolatedModuleTests config modName moduleSource testSource deps = do
     putInfo $ "Building and running tests for: " ++ modName
     
     -- 必要なディレクトリを作成
@@ -61,11 +61,12 @@ runIsolatedModuleTests config modName testSource deps = do
     let testUnitName = takeBaseName testSource
     need depObjs
     cmd_ "csc" (["-c"] ++ tcCompileFlags config ++ 
-                ["-I", "core",           -- core ディレクトリを追加
-                "-I", ".",              -- カレントディレクトリも追加
-                "-unit", testUnitName, 
-                testSource, 
-                "-o", testObj])
+                ["-I", "core",
+                 "-I", takeDirectory moduleSource, -- ★ モジュール自身のパスを追加
+                 "-I", ".",
+                 "-unit", testUnitName, 
+                 testSource, 
+                 "-o", testObj])
     
     -- テストバイナリをリンク（テストソースを最初のソースファイルとして直接渡す）
     let testBin = testsDir </> "test_" ++ modName <.> exe

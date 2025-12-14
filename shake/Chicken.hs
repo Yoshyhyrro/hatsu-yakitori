@@ -34,6 +34,10 @@ toObjectPath (Artifact p) = Artifact $ "dist" </> replaceExtension (takeFileName
 toUnitPath :: Artifact 'Src -> Artifact 'Unit
 toUnitPath (Artifact p) = Artifact $ "dist" </> replaceExtension (takeFileName p) "o"
 
+-- 新しく追加: モジュールに対応する .import.scm のパスを計算する
+unitImportPath :: Artifact 'Src -> FilePath
+unitImportPath (Artifact p) = "dist" </> replaceExtension (takeFileName p) "import.scm"
+
 -- | 拡張子を強制的に付与するスマートコンストラクタ(安全性のため)
 source :: FilePath -> Artifact 'Src
 source p = Artifact p

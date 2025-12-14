@@ -1,18 +1,14 @@
 ;; ============================================================
 ;; tests/golay24_tests.scm
-;; Tests for Golay-controlled adaptive frontier
-;; ============================================================
-
-;; include-relative ではなく include を使用
-(include "core/machine_constants.scm")
-(include "core/golay_frontier.scm")
+;; ...
 
 (import scheme
         (chicken base)       
         (chicken format)     
-        (chicken process-context))
+        (chicken process-context)
+        (chicken bitwise))
 
-;; 以下のimportを追加
+;; 前回の修正で追加した import
 (import machine_constants)
 (import golay_frontier)
 

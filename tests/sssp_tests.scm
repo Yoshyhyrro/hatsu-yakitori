@@ -1,9 +1,6 @@
 ;; SSSP Module Tests
 ;; Shortest Single Source Paths implementation tests
 ;; tests/sssp_tests.scm
-(include-relative "../core/machine_constants.scm")
-(include-relative "../core/golay_frontier.scm")
-
 (module sssp_tests
   ;; 1. Export List (モジュールの2番目の引数)
   (test-count
