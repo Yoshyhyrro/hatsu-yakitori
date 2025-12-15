@@ -56,24 +56,14 @@ runIsolatedModuleTests config modName moduleSource testSource deps = do
         return objName
         ) deps
     
-    -- テストソースをコンパイル（テストファイル自体をオブジェクト化）
-    let testObj = testsDir </> takeBaseName testSource <.> "o"
-    let testUnitName = takeBaseName testSource
+    -- 依存オブジェクトをビルドしておく（キャッシュ用）
     need depObjs
-    cmd_ "csc" (["-c"] ++ tcCompileFlags config ++ 
-                ["-I", "core",
-                 "-I", takeDirectory moduleSource, -- ★ モジュール自身のパスを追加
-                 "-I", ".",
-                 "-unit", testUnitName, 
-                 testSource, 
-                 "-o", testObj])
-    
-    -- テストバイナリをリンク（テストソースを最初のソースファイルとして直接渡す）
+    -- include ディレクトリを用意（重複を除去）
+    let includeDirs = nubBy (\a b -> a == b) (["core", takeDirectory moduleSource, "."] ++ map takeDirectory deps)
+    let includeFlags = concatMap (\d -> ["-I", d]) includeDirs
+    -- テストバイナリを作成：テストソースと依存ソースを直接渡してコンパイラが全ての定義を見つけられるようにする
     let testBin = testsDir </> "test_" ++ modName <.> exe
-    let allObjs = depObjs ++ [testObj]
-    
-    -- 修正：テストソースファイルを最初の引数として直接渡す
-    cmd_ "csc" (tcCompileFlags config ++ ["-o", testBin, testSource] ++ allObjs)
+    cmd_ "csc" (tcCompileFlags config ++ includeFlags ++ ["-o", testBin, testSource] ++ deps)
     
     -- テスト実行
     runModuleTests config modName testBin

@@ -3,8 +3,9 @@
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, unless)
+import Control.Monad (forM_, unless, forM)
 import System.Process (readCreateProcessWithExitCode, proc)
+import System.Directory (listDirectory, doesDirectoryExist)
 import System.Exit (ExitCode(..))
 import Data.List (words)  -- words関数をインポート
 
@@ -130,8 +131,25 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "salmonella" $ do
         need ["test-" ++ modName m | m <- modules]
         liftIO $ do
-            -- ローカルディレクトリの .egg ファイルを自動検出して Salmonella を実行
-            (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" []) ""
+            -- 指定ディレクトリを再帰的に探索して .egg ファイルを収集
+            let roots = [".", "core", "modules", "tools"]
+            let findEggs :: FilePath -> IO [FilePath]
+                findEggs root = do
+                    exists <- System.Directory.doesDirectoryExist root
+                    if not exists then return [] else do
+                        entries <- listDirectory root
+                        paths <- forM entries $ \e -> do
+                            let p = root </> e
+                            isDir <- System.Directory.doesDirectoryExist p
+                            if isDir
+                                then findEggs p
+                                else return $ if takeExtension p == ".egg" then [p] else []
+                        return (concat paths)
+
+            eggLists <- mapM findEggs roots
+            let eggFiles = concat eggLists
+            let args = if null eggFiles then [] else concatMap (\f -> ["-l", f]) eggFiles
+            (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" args) ""
             case exitCode of
                 ExitSuccess -> putStrLn "✓ Salmonella tests passed"
                 _ -> do
