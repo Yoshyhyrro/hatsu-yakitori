@@ -1,8 +1,9 @@
 (name fmm)
 (version "0.0.1")
 (author "Yoshihiro Hasegawa")
-(license "BSD")
+(license "BSD-3-Clause")
 (category algorithm physics)
+(synopsis "Fast Multipole Method using KAK decomposition")
 (description "Fast Multipole Method using KAK decomposition")
 (documentation "doc/fmm.html")
 (depends kak-decomposition srfi-1 srfi-69)
@@ -10,6 +11,4 @@
 (components
  (extension fmm
    (source "modules/fmm/fmm_main.scm"
-           "core/kak_decomposition.scm"
-           "modules/fmm/fmm_on_goppa_grid.scm"
-           "core/machine_constants.scm")))
+           "modules/fmm/fmm_on_goppa_grid.scm")))

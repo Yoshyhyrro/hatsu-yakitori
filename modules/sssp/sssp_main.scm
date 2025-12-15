@@ -3,7 +3,7 @@
 ;;; ---------------------------------------------------------------------------
 
 ;; Fix: Import necessary Chicken 5 modules.
-(module sssp_geo_main *  
+(module sssp_geo_main *
   (import scheme)
   (import (chicken base)
           (chicken format)
@@ -11,14 +11,11 @@
           (chicken random)
           (chicken process-context)
           srfi-1
-          srfi-69)
+          srfi-69
+          kak_decomposition)
 
-  
-  (import machine_constants)
-  (import golay_frontier)
-        
   ;; ---------------------------------------------------------------------------
-  ;; CORE LIBRARY INCLUDES
+  ;; SSSP Module Implementation
   ;; ---------------------------------------------------------------------------
 
   (define (main args)
