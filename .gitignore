@@ -2,6 +2,7 @@
 build/
 dist/
 salmonella-logs/
+salmonella.log
 # Compiled Scheme files
 *.c
 *.o

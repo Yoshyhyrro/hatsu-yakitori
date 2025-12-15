@@ -60,13 +60,14 @@ runIsolatedModuleTests config modName moduleSource testSource deps = do
     let testObj = testsDir </> takeBaseName testSource <.> "o"
     let testUnitName = takeBaseName testSource
     need depObjs
+    -- 依存ソースを明示的に渡して import の未解決を防ぐ
     cmd_ "csc" (["-c"] ++ tcCompileFlags config ++ 
                 ["-I", "core",
                  "-I", takeDirectory moduleSource, -- ★ モジュール自身のパスを追加
                  "-I", ".",
                  "-unit", testUnitName, 
                  testSource, 
-                 "-o", testObj])
+                 "-o", testObj] ++ deps)
     
     -- テストバイナリをリンク（テストソースを最初のソースファイルとして直接渡す）
     let testBin = testsDir </> "test_" ++ modName <.> exe

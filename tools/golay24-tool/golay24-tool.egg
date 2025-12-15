@@ -7,6 +7,7 @@
 (tags "tool" "cli" "coding-theory")
 (synopsis "Command-line tool for Golay(24, 12) codes")
 (description "A standalone tool for testing and demonstrating the KAK decomposition and coding theory libraries.")
+(documentation "doc/golay24.html")
 (depends srfi-1 srfi-13)
 (test-depends)
 (components
