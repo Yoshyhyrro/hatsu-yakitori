@@ -45,8 +45,8 @@ hatsu-yakitori/
 
 The kernel of the framework is the **Adaptive Frontier**. Instead of hardcoded heuristics, the simulation strategy is dictated by the properties of the Golay code.
 
-- **Low Weight ($\tau$)**: Implies low entropy/noise → **DFS (Stack)** mode for deep, precise local corrections.
-- **High Weight ($\tau$)**: Implies high entropy → **BFS (Queue)** mode for global, multipole-based sweeps.
+- **Low Weight (τ < 12)**: Implies low entropy/noise → **DFS (Stack)** mode for deep, precise local corrections.
+- **High Weight (τ ≥ 12)**: Implies high entropy → **BFS (Queue)** mode for global, multipole-based sweeps.
 
 ### Code Excerpt (`modules/fmm/fmm_on_goppa_grid.scm`)
 
@@ -55,7 +55,7 @@ The interaction loop delegates flow control to the Golay frontier:
 ```scheme
 ;; Inside cartan-fmm-evaluate-golay
 (let loop ()
-  ;; Pop the next task based on Golay-determined strategy (Stack vs Queue)
+  ;; Pop next task based on Golay-determined strategy (Stack vs Queue)
   (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
     (when level-idx
       (set! frontier updated-frontier)
@@ -64,22 +64,45 @@ The interaction loop delegates flow control to the Golay frontier:
         (unless (null? cell-indices)
           (let* ((level-center (calculate-geometric-center grid cell-indices))
                  (dist (c-abs (c-sub target-pos level-center)))
-                 ;; Determine if we need direct calculation (Near) or expansion (Far)
-                 (is-near-field (< dist 0.5))) 
+                 (is-near-field (< dist 0.5))) ; Proximity threshold
             
             (cond
-             ;; [Near Field] Direct discrete summation (Residue evaluation)
+             ;; Near Field: Direct particle-particle interaction
+             ;; Corresponds to residue calculation at poles
              (is-near-field
-              (calculate-direct-interaction ...))
+              (for-each 
+               (lambda (src-idx)
+                 (unless (= src-idx target-idx)
+                   (let* ((src-pos (local-parameter grid src-idx))
+                          (diff (c-sub target-pos src-pos))
+                          (q (list-ref charges src-idx))
+                          (contribution (c-div (cons q 0.0) diff)))
+                     (set! total-potential (c-add total-potential contribution)))))
+               cell-indices))
              
-             ;; [Far Field] Algebraic Multipole Expansion (Laurent Series)
+             ;; Far Field: Algebraic multipole expansion
+             ;; P2M: Particle → Multipole (Laurent series coefficients)
+             ;; M2L: Multipole → Local (basis translation via binomial transform)
+             ;; L2P: Local → Potential (series evaluation)
              (else
-              ;; 1. P2M: Particle to Multipole
-              ;; 2. M2L: Basis translation via Binomial convolution
-              ;; 3. L2P: Local evaluation
-              (perform-algebraic-multipole ...))))))
+              (let ((M (p2m-kernel grid cell-indices 
+                                   (map (lambda (x) (list-ref charges x)) cell-indices)
+                                   level-center order)))
+                (let ((L (m2l-translation M level-center target-pos order)))
+                  (set! total-potential (c-add total-potential (vector-ref L 0))))))))))
+      
       (loop))))
 ```
+
+### Key Points
+
+1. **Frontier manages traversal order**: Stack (LIFO) for DFS, Queue (FIFO) for BFS
+2. **Geometry-driven cutoff**: `is-near-field` determines direct vs. multipole calculation
+3. **Algebraic interpretation**: 
+   - Near field = discrete sum (poles on curve)
+   - Far field = Laurent expansion (local parameter basis)
+4. **Automatic adaptation**: Golay weight τ controls the exploration/exploitation balance
+
 
 ## Quick Start
 
