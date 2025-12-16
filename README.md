@@ -90,8 +90,6 @@ The interaction loop delegates flow control to the Golay frontier:
 
 ### Building and Running
 
-The project uses a Shake-based build system. To run the Goppa-FMM demo:
-
 ```bash
 # Build and run the FMM module
 stack runhaskell shake/Shake.hs fmm
@@ -103,6 +101,72 @@ stack runhaskell shake/Shake.hs --module=fmm test
 stack runhaskell shake/Shake.hs clean
 ```
 
+### Using KAK Decomposition for Large Graph Search
+
+The core `KAK-apply` function provides an adaptive shortest-path algorithm suitable for large-scale graphs:
+
+```scheme
+(import kak_decomposition)
+(import srfi-69) ; hash-tables
+
+;; Example: City road network with 1000+ nodes
+(define city-graph (make-hash-table))
+
+;; Add edges: node -> list of (neighbor . weight)
+(hash-table-set! city-graph 'downtown 
+  '((station . 2.5) (park . 1.8) (mall . 3.2)))
+(hash-table-set! city-graph 'station 
+  '((airport . 15.0) (harbor . 8.5)))
+;; ... (add more nodes)
+
+;; Run adaptive search
+(define distances 
+  (KAK-apply 
+    city-graph          ; graph structure
+    '(downtown)         ; starting point(s)
+    100.0               ; upper bound B
+    'queue              ; frontier mode: 'stack or 'queue
+    8))                 ; decomposition steps
+
+;; Query results
+(hash-table-ref distances 'airport)  ; => 17.5
+```
+
+### Golay-Controlled Adaptive Strategy
+
+For automatic strategy selection based on problem entropy:
+
+```scheme
+;; Let Golay code decide: Stack (DFS) or Queue (BFS)
+(define-values (distances tau frontier-config)
+  (KAK-apply-golay 
+    city-graph 
+    '(downtown)
+    100.0
+    8                   ; decomposition steps
+    #b101010101010))    ; 12-bit info: encodes strategy
+
+;; Check which strategy was used
+(printf "Strategy: ~a (Hamming weight τ=~a/24)~%"
+        (adaptive-frontier-mode frontier-config)
+        tau)
+
+;; Low entropy (τ < 12) → Stack/DFS → Deep local search
+;; High entropy (τ ≥ 12) → Queue/BFS → Broad global sweep
+```
+
+### Why Use This?
+
+- **Automatic decomposition**: Logarithmic scaling handles long-range interactions efficiently
+- **Adaptive control**: Golay codes choose optimal traversal strategy
+- **Bounded precision**: Explicit ε-convergence guarantees from Cartan levels
+- **Flexible**: Works with hash-tables or association lists
+
+### Performance Notes
+
+- Best for graphs with **varying edge weights** and **hierarchical structure**
+- `B` parameter controls the range: set to `max_edge_weight × 10` as a rule of thumb
+- More `steps` = finer granularity but slower (typically 5-10 is sufficient)
 ## Future Direction
 
 The roadmap includes extending the `make-goppa-grid` generator from the unit circle (genus $g=0$) to **Elliptic Curves** (genus $g=1$). This will allow the framework to handle **Periodic Boundary Conditions (PBC)** naturally via Weierstrass $\wp$-functions, providing a unified algebraic alternative to Ewald summation.
