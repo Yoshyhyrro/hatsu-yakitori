@@ -75,7 +75,9 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
         , replaceDirectory exe "." <.> "scm"
         ]
   
-  srcFile <- liftIO $ findSourceForGC exe possibleSources
+  -- プロジェクトルートを取得して相対パスの探索を行う
+  projectRoot <- liftIO Dir.getCurrentDirectory
+  srcFile <- liftIO $ findSourceForGC projectRoot possibleSources
   
   case srcFile of
     Nothing -> do
@@ -84,7 +86,7 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
       return $ RunResult ChangedRecomputeDiff BS.empty ()
     
     Just src -> do
-      -- Need source to be available
+      -- Need source to be available (src はプロジェクトルート基準の絶対パスまたはプロジェクトルート配下のパス)
       need [src]
       
       -- Create output directory if needed
@@ -106,7 +108,8 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
             , "-no-warnings"
             ]
       
-      cmd_ ("csc" :: String) (gcFlags ++ [src])
+      -- 相対パスの解決を安定させるため、プロジェクトルートを作業ディレクトリとして実行
+      cmd_ (Cwd projectRoot) ("csc" :: String) (gcFlags ++ [src])
       
       -- FIXED: Use ChangedRecomputeDiff instead of ChangedRecompute
       return $ RunResult ChangedRecomputeDiff BS.empty ()
@@ -126,10 +129,16 @@ buildGCObj exe = do
 -- Helpers
 -- ============================================================
 
+-- projectRoot を受け取り、projectRoot 配下の候補を優先して返す（見つかれば projectRoot </> candidate を返す）
 findSourceForGC :: FilePath -> [FilePath] -> IO (Maybe FilePath)
-findSourceForGC _exe [] = return Nothing
-findSourceForGC exe (candidate:rest) = do
-  exists <- Dir.doesFileExist candidate
-  if exists
-    then return (Just candidate)
-    else findSourceForGC exe rest
+findSourceForGC _projectRoot [] = return Nothing
+findSourceForGC projectRoot (candidate:rest) = do
+  let candidateInRoot = projectRoot </> candidate
+  existsInRoot <- Dir.doesFileExist candidateInRoot
+  if existsInRoot
+    then return (Just candidateInRoot)
+    else do
+      exists <- Dir.doesFileExist candidate
+      if exists
+        then return (Just candidate)
+        else findSourceForGC projectRoot rest

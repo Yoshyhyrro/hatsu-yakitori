@@ -150,6 +150,9 @@ compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
   --getChickenEnv は IO なので liftIO で持ち上げる
   env <- liftIO getChickenEnv
+
+  -- 修正点1: 出力ディレクトリの作成を明示的に行う (Cwdを使用しないため)
+  liftIO $ Dir.createDirectoryIfMissing True dir
   
   let unitArgs = if isUnit
         then [ "-J", "-unit", baseName
@@ -161,9 +164,9 @@ compileSrc srcPath out dir baseName isUnit = do
   --環境変数リスト [(Key, Val)] を CmdOption のリスト [AddEnv Key Val] に変換
   let envOpts = map (uncurry AddEnv) env
   
-  -- csc -J -unit Name -c Source -o Output ...
-  -- cmd_ には [CmdOption] を渡すことができます。(Cwd dir) と結合して渡します。
-  let cmdOptions = Cwd dir : envOpts
+  -- 修正点2: Cwd dir を削除し、プロジェクトルートで実行する。
+  -- これにより srcPath ("core/..." 等) と out ("dist/..." 等) が正しく解釈される。
+  let cmdOptions = envOpts
 
   cmd_ cmdOptions ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 

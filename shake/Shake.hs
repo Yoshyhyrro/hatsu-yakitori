@@ -5,7 +5,7 @@ import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_, unless, forM)
 import System.Process (readCreateProcessWithExitCode, proc)
-import System.Directory (listDirectory, doesDirectoryExist)
+import System.Directory (listDirectory, doesDirectoryExist, getCurrentDirectory)
 import System.Exit (ExitCode(..))
 import Data.List (words)  -- words関数をインポート
 
@@ -92,69 +92,62 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- アプリケーションのビルド
         phony ("build-" ++ mName) $ do
             need (modDeps m)
-            
-            -- 依存関係(Core等)をユニットとしてコンパイル
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
-            
-            -- メインプログラムをユニットとしてコンパイル
-            mainUnit <- buildArtifact $ CompileUnit (source $ modSrc m) cflags
-            
+            projectRoot <- liftIO getCurrentDirectory
+            let absPath p = projectRoot </> p
+            -- 依存関係(Core等)をユニットとしてコンパイル（絶対パス）
+            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) cflags) (modDeps m)
+            -- メインプログラムをユニットとしてコンパイル（絶対パス）
+            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) cflags
             -- リンクして実行ファイルを生成
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
             let exePath = "dist" </> mName ++ "_app" <.> exe
-            
-            _ <- buildArtifact $ LinkExe objArtifacts 
-                                         (source $ modSrc m) 
-                                         cflags 
+            _ <- buildArtifact $ LinkExe objArtifacts
+                                         (source $ (projectRoot </> modSrc m))
+                                         cflags
                                          exePath
             return ()
 
         -- テストの実行
         phony ("test-" ++ mName) $ do
             -- need ["build-" ++ mName]  -- ← この行を削除！
-            
             -- Salmonellaを使って独立したテストを構築・実行
             env <- liftIO getChickenEnv
-            let config = Salmonella.defaultTestConfig 
+            projectRoot <- liftIO getCurrentDirectory
+            let config = Salmonella.defaultTestConfig
                     { Salmonella.tcEnv = env
                     , Salmonella.tcCompileFlags = words cflags  -- wordsで文字列をリストに変換
                     }
-            
-            result <- Salmonella.runIsolatedModuleTests config 
-                                                         mName 
-                                                         (modSrc m)
-                                                         (modTest m) 
-                                                         (modDeps m)
-            
+            -- テスト用パスも絶対パスで渡す
+            result <- Salmonella.runIsolatedModuleTests config
+                                                         mName
+                                                         (projectRoot </> modSrc m)
+                                                         (projectRoot </> modTest m)
+                                                         (map (projectRoot </>) (modDeps m))
             unless (Salmonella.trPassed result) $
                 fail $ "Tests failed for " ++ mName
 
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
-        
+
         -- GC コンパイル（ガベージコレクション最適化）
         phony ("gc-" ++ mName) $ do
             need (modDeps m)
-            
+            projectRoot <- liftIO getCurrentDirectory
+            let absPath p = projectRoot </> p
             -- GC 最適化フラグ付きで再コンパイル
             let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
-            
-            -- 依存関係(Core等)をユニットとしてコンパイル
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) gcFlags) (modDeps m)
-            
-            -- メインプログラムをユニットとしてコンパイル
-            mainUnit <- buildArtifact $ CompileUnit (source $ modSrc m) gcFlags
-            
+            -- 依存関係(Core等)をユニットとしてコンパイル（絶対パス）
+            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) gcFlags) (modDeps m)
+            -- メインプログラムをユニットとしてコンパイル（絶対パス）
+            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) gcFlags
             -- GC オブジェクトを構築
             let exePath = "dist" </> mName ++ "_app_gc" <.> exe
             gcObj <- GC.buildGCObj exePath
-            
             -- リンクして実行ファイルを生成
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit]) ++ [gcObj]
-            
-            _ <- buildArtifact $ LinkExe objArtifacts 
-                                         (source $ modSrc m) 
-                                         gcFlags 
+            _ <- buildArtifact $ LinkExe objArtifacts
+                                         (source $ (projectRoot </> modSrc m))
+                                         gcFlags
                                          exePath
             return ()
 
