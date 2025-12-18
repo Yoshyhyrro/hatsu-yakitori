@@ -12,6 +12,7 @@ import Data.List (words)  -- words関数をインポート
 -- 自作モジュール
 import Chicken
 import Rules
+import qualified Rules.GC as GC
 import qualified Salmonella
 import qualified Clean
 
@@ -33,6 +34,8 @@ coreFiles =
     , "core/cartan_utils.scm"
     , "core/machine_constants.scm"
     , "core/golay_frontier.scm"
+    , "modules/kak_quiver_safety.scm"
+    , "modules/topological-gc.scm"
     ]
 
 modules :: [Module]
@@ -62,6 +65,7 @@ modules =
          "tests/golay24_tests.scm" 
          (coreFiles ++ 
           [ "tools/golay24-tool/setup.scm"
+          , "tools/golay24-tool/topological-gc.scm"
           -- KAK統合テストを実行する場合は以下も追加
           , "modules/sssp_geometry/sssp_geo_main.scm"
           ])
@@ -76,6 +80,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     
     -- 1. ルールの初期化
     setupRules
+    GC.gcRule
 
     -- コンパイラフラグ
     let cflags = "-O3 -d0"
@@ -126,6 +131,32 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
+        
+        -- GC コンパイル（ガベージコレクション最適化）
+        phony ("gc-" ++ mName) $ do
+            need (modDeps m)
+            
+            -- GC 最適化フラグ付きで再コンパイル
+            let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
+            
+            -- 依存関係(Core等)をユニットとしてコンパイル
+            deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) gcFlags) (modDeps m)
+            
+            -- メインプログラムをユニットとしてコンパイル
+            mainUnit <- buildArtifact $ CompileUnit (source $ modSrc m) gcFlags
+            
+            -- GC オブジェクトを構築
+            let exePath = "dist" </> mName ++ "_app_gc" <.> exe
+            gcObj <- GC.buildGCObj exePath
+            
+            -- リンクして実行ファイルを生成
+            let objArtifacts = map toObjArtifact (deps ++ [mainUnit]) ++ [gcObj]
+            
+            _ <- buildArtifact $ LinkExe objArtifacts 
+                                         (source $ modSrc m) 
+                                         gcFlags 
+                                         exePath
+            return ()
 
     -- 3. Salmonella統合: .egg ファイルでテストを実行
     phony "salmonella" $ do
@@ -175,6 +206,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "build" $ need ["build-" ++ modName m | m <- modules]
     phony "test-all" $ need ["test-" ++ modName m | m <- modules]
     phony "test" $ need ["test-all"]
+    phony "gc-all" $ need ["gc-" ++ modName m | m <- modules]
 
 -- Helper
 toObjArtifact :: Artifact 'Unit -> Artifact 'Obj
