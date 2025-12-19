@@ -7,7 +7,7 @@ import Control.Monad (forM_, unless, forM)
 import System.Process (readCreateProcessWithExitCode, proc)
 import System.Directory (listDirectory, doesDirectoryExist, getCurrentDirectory)
 import System.Exit (ExitCode(..))
-import Data.List (words)  -- words関数をインポート
+import Data.List (words)
 
 -- 自作モジュール
 import Chicken
@@ -34,6 +34,7 @@ coreFiles =
     , "core/cartan_utils.scm"
     , "core/machine_constants.scm"
     , "core/golay_frontier.scm"
+    , "modules/kak_optimization.scm"    -- Added: Must be compiled before quiver_safety
     , "modules/kak_quiver_safety.scm"
     , "modules/topological-gc.scm"
     ]
@@ -66,7 +67,6 @@ modules =
          (coreFiles ++ 
           [ "tools/golay24-tool/setup.scm"
           , "tools/golay24-tool/topological-gc.scm"
-          -- KAK統合テストを実行する場合は以下も追加
           , "modules/sssp_geometry/sssp_geo_main.scm"
           ])
     ]
@@ -109,13 +109,12 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
         -- テストの実行
         phony ("test-" ++ mName) $ do
-            -- need ["build-" ++ mName]  -- ← この行を削除！
             -- Salmonellaを使って独立したテストを構築・実行
             env <- liftIO getChickenEnv
             projectRoot <- liftIO getCurrentDirectory
             let config = Salmonella.defaultTestConfig
                     { Salmonella.tcEnv = env
-                    , Salmonella.tcCompileFlags = words cflags  -- wordsで文字列をリストに変換
+                    , Salmonella.tcCompileFlags = words cflags
                     }
             -- テスト用パスも絶対パスで渡す
             result <- Salmonella.runIsolatedModuleTests config
@@ -155,7 +154,6 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "salmonella" $ do
         need ["test-" ++ modName m | m <- modules]
         liftIO $ do
-            -- 指定ディレクトリを再帰的に探索して .egg ファイルを収集
             let roots = [".", "core", "modules", "tools"]
             let findEggs :: FilePath -> IO [FilePath]
                 findEggs root = do
@@ -184,7 +182,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
                     putStrLn stderr
                     fail "Salmonella tests failed"
 
-    -- 4. クリーニングコマンド（Clean モジュールにて管理）
+    -- 4. クリーニングコマンド
     phony "clean" $ Clean.cleanAll
     phony "clean-build" $ Clean.cleanBuild
     phony "clean-tests" $ Clean.cleanTests

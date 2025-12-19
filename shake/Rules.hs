@@ -151,7 +151,7 @@ compileSrc srcPath out dir baseName isUnit = do
   --getChickenEnv は IO なので liftIO で持ち上げる
   env <- liftIO getChickenEnv
 
-  -- 修正点1: 出力ディレクトリの作成を明示的に行う (Cwdを使用しないため)
+  -- 修正: 出力ディレクトリの作成を明示的に行う
   liftIO $ Dir.createDirectoryIfMissing True dir
   
   let unitArgs = if isUnit
@@ -164,14 +164,14 @@ compileSrc srcPath out dir baseName isUnit = do
   --環境変数リスト [(Key, Val)] を CmdOption のリスト [AddEnv Key Val] に変換
   let envOpts = map (uncurry AddEnv) env
   
-  -- 修正点2: Cwd dir を削除し、プロジェクトルートで実行する。
-  -- これにより srcPath ("core/..." 等) と out ("dist/..." 等) が正しく解釈される。
+  -- 修正: Cwd dir を削除し、プロジェクトルートで実行する。
   let cmdOptions = envOpts
 
   cmd_ cmdOptions ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
   -- 生成された import ファイルの扱い
   when isUnit $ do
+    -- 1. ソースディレクトリに既存のimportファイルがある場合（手動管理）
     let importFile = baseName ++ ".import.scm"
     let srcImport = replaceFileName srcPath importFile
     
@@ -180,6 +180,28 @@ compileSrc srcPath out dir baseName isUnit = do
         if exists 
             then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
             else return ()
+
+    -- 2. ビルドによって生成された import ファイルを dist/ 直下にコピーして
+    --    後続のコンパイルが参照できるようにする (CHICKEN_REPOSITORY_PATH対応)
+    let generatedImport = replaceFileName out importFile
+    let commonImport = "dist" </> importFile
+    
+    liftIO $ do
+      -- dist/unit_xxx/ 内に生成されたかチェック
+      genExists <- Dir.doesFileExist generatedImport
+      if genExists
+        then do
+           Dir.createDirectoryIfMissing True "dist"
+           Dir.copyFile generatedImport commonImport
+        else do
+           -- カレントディレクトリ(ルート)に生成されたかチェック
+           rootExists <- Dir.doesFileExist importFile
+           if rootExists
+             then do
+               Dir.createDirectoryIfMissing True "dist"
+               Dir.copyFile importFile commonImport
+               Dir.removeFile importFile -- ルート汚染を防ぐため削除
+             else return ()
 
 -- | 指定リストから実在するファイルを探す
 findSourceFile :: [FilePath] -> IO (Maybe FilePath)
