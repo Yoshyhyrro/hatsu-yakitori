@@ -255,6 +255,7 @@ findAllFilesRecursive' targetNames currentDir = do
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
+  projectRoot <- Dir.getCurrentDirectory                      -- 追加: プロジェクトルート取得
   sysEnv <- getEnvironment
   let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
 
@@ -263,17 +264,19 @@ getChickenEnv = do
     fmap (filter (/= '\n')) $
       readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
 
+  let corePath = projectRoot </> "core"                          -- 追加: core の絶対パス
   let repoPath =
         intercalate
           ":"
-          [ "dist"                -- ビルド成果物
-          , home </> ".chicken"   -- ユーザーローカル
-          , systemRepo            -- システム
-          , sysEnvRepo            -- 環境変数
+          [ corePath                   -- 先頭に core を置く（優先）
+          , "dist"                    -- ビルド成果物
+          , home </> ".chicken"       -- ユーザーローカル
+          , systemRepo                -- システム
+          , sysEnvRepo                -- 環境変数
           ]
 
   return
-    [ ("CHICKEN_INCLUDE_PATH", "core:dist:.:_build")
+    [ ("CHICKEN_INCLUDE_PATH", corePath ++ ":dist:.:_build")      -- core を先頭に
     , ("CHICKEN_REPOSITORY_PATH", repoPath)
     , ("CHICKEN_INSTALL_REPOSITORY", "dist")
     ]
