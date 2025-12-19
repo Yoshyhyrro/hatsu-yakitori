@@ -1,0 +1,11 @@
+(name topological-gc)
+(version "0.0.1")
+(author "hatsu-yakitori project")
+(license "BSD-3-Clause")
+(category internal)
+(synopsis "Topological Garbage Collection")
+(description "Topological Garbage Collection based on Gomory-Hu Tree, Ultrametric Pruning, or Connes-Kreimer Hopf Algebra.")
+(depends srfi-1 srfi-69 srfi-95)
+(components
+ (extension topological-gc
+   (source "modules/topological-gc.scm")))

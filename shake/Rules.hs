@@ -69,7 +69,10 @@ buildArtifact (LinkExe objs mainSrc flags outPath) = do
   
   putInfo $ "[Link] " ++ outPath
   
-  cmd_ ("csc" :: String) args
+  -- Ensure CHICKEN_* environment (CHICKEN_REPOSITORY_PATH etc.) is provided
+  env <- liftIO getChickenEnv
+  let envOpts = map (uncurry AddEnv) env
+  cmd_ envOpts ("csc" :: String) args
   
   return (Artifact outPath)
 
@@ -158,6 +161,7 @@ compileSrc srcPath out dir baseName isUnit = do
         then [ "-J", "-unit", baseName
              , "-setup-mode"
              , "-regenerate-import-libraries"
+             , "-no-warnings"
              ]
         else []
   

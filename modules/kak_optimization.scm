@@ -24,6 +24,12 @@
    cartan-lazy-vector
    kak-optimize-config
    
+   ;; Frontier abstraction
+   frontier-create
+   frontier-push
+   frontier-pop
+   frontier-empty?
+
    ;; Context accessors
    kak-context?
    kak-context-mode
@@ -107,7 +113,7 @@
       result))
 
   ;;; ================================================================
-  ;;; 5. Frontier abstraction (Placed before usage)
+  ;;; 4. Frontier abstraction (Placed before usage)
   ;;; ================================================================
   
   (define +INF+ 1e99)
@@ -131,14 +137,13 @@
 
   (define (frontier-pop frontier)
     (let ((mode (car frontier)))
-      (case mode
-        ((stack)
+      (cond
+        ((eq? mode 'stack)
          (let ((data (cdr frontier)))
            (if (null? data)
              (values #f #f frontier)
              (values #t (car data) (cons 'stack (cdr data))))))
-          
-        ((queue)
+        ((eq? mode 'queue)
          (let* ((fb (cdr frontier))
                 (front (car fb))
                 (back (cdr fb)))
@@ -151,18 +156,21 @@
              (else
               (let ((new-front (reverse back)))
                 (values #t (car new-front)
-                        (cons 'queue (cons (cdr new-front) '())))))))))))
+                        (cons 'queue (cons (cdr new-front) '()))))))))
+        (else
+         (error "Unknown frontier mode" mode)))))
 
   (define (frontier-empty? frontier)
     (let ((mode (car frontier)))
-      (case mode
-        ((stack) (null? (cdr frontier)))
-        ((queue) 
+      (cond
+        ((eq? mode 'stack) (null? (cdr frontier)))
+        ((eq? mode 'queue) 
          (let ((fb (cdr frontier)))
-           (and (null? (car fb)) (null? (cdr fb))))))))
+           (and (null? (car fb)) (null? (cdr fb)))))
+        (else (error "Unknown frontier mode" mode)))))
 
   ;;; ================================================================
-  ;;; 6. Configuration helper
+  ;;; 5. Configuration helper
   ;;; ================================================================
 
   (define (relax-bound-default dist-table v new-dist)
@@ -177,7 +185,7 @@
         (else             (values 'queue 1.0)))))
 
   ;;; ================================================================
-  ;;; 4. メイン最適化版: KAK-apply-cached
+  ;;; 6. メイン最適化版: KAK-apply-cached
   ;;; ================================================================
 
   ;; 修正: #!key を使用し、内部defineをletにリファクタリング

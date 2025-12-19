@@ -10,7 +10,7 @@
 ;;; ============================================================
 
 (declare (unit topological_gc))
-(declare (uses srfi-1 srfi-69 srfi-95))
+(declare (uses srfi-1 srfi-69 chicken.sort chicken.format))
 
 (module topological-gc
   (;; Main API
@@ -28,11 +28,11 @@
    report-connectivity)
    
 
-  (import scheme chicken.base srfi-1 srfi-69 srfi-95)
+  (import scheme chicken.base srfi-1 srfi-69 chicken.sort chicken.format)
 
   ;;; ================================================================
   ;;; Constants
-  ================================================================
+  ;;; ================================================================
 
   (define +INF+ 1e99)
   (define default-bottleneck-threshold 0.5)
@@ -87,9 +87,7 @@
     ;; Find bottleneck edges (low capacity, high importance)
     
     (let* ((all-edges (collect-all-edges heap-graph))
-           (sorted-edges (sort all-edges 
-                              < 
-                              (lambda (e) (cdr e))))
+           (sorted-edges (sort all-edges (lambda (e1 e2) (< (cdr e1) (cdr e2)))))
            
            ;; Find cut point: edges below threshold
            (cut-edges (filter (lambda (e) (< (cdr e) threshold))
