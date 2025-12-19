@@ -11,11 +11,11 @@
           (chicken base)
           (chicken format)
           (chicken sort)
-          (chicken flonum) ;; For optimized float math if needed
+          (chicken flonum)
           srfi-1
           srfi-69
           srfi-133
-          golay_frontier)
+          (except golay_frontier adaptive-frontier-push adaptive-frontier-pop))
 
   ;; ------------------------------------------------------------------
   ;; Math Helpers

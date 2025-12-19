@@ -5,13 +5,14 @@ import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_, unless, forM)
 import System.Process (readCreateProcessWithExitCode, proc)
-import System.Directory (listDirectory, doesDirectoryExist)
+import System.Directory (listDirectory, doesDirectoryExist, getCurrentDirectory)
 import System.Exit (ExitCode(..))
-import Data.List (words)  -- words関数をインポート
+import Data.List (words)
 
 -- 自作モジュール
 import Chicken
 import Rules
+import qualified Rules.GC as GC
 import qualified Salmonella
 import qualified Clean
 
@@ -33,6 +34,9 @@ coreFiles =
     , "core/cartan_utils.scm"
     , "core/machine_constants.scm"
     , "core/golay_frontier.scm"
+    , "modules/kak_optimization.scm"    -- Added: Must be compiled before quiver_safety
+    , "modules/kak_quiver_safety.scm"
+    , "modules/topological-gc.scm"
     ]
 
 modules :: [Module]
@@ -62,7 +66,7 @@ modules =
          "tests/golay24_tests.scm" 
          (coreFiles ++ 
           [ "tools/golay24-tool/setup.scm"
-          -- KAK統合テストを実行する場合は以下も追加
+          , "tools/golay24-tool/topological-gc.scm"
           , "modules/sssp_geometry/sssp_geo_main.scm"
           ])
     ]
@@ -76,6 +80,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     
     -- 1. ルールの初期化
     setupRules
+    GC.gcRule
 
     -- コンパイラフラグ
     let cflags = "-O3 -d0"
@@ -87,51 +92,68 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- アプリケーションのビルド
         phony ("build-" ++ mName) $ do
             need (modDeps m)
-            
-            -- 依存関係(Core等)をユニットとしてコンパイル
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source src) cflags) (modDeps m)
-            
-            -- メインプログラムをユニットとしてコンパイル
-            mainUnit <- buildArtifact $ CompileUnit (source $ modSrc m) cflags
-            
+            projectRoot <- liftIO getCurrentDirectory
+            let absPath p = projectRoot </> p
+            -- 依存関係(Core等)をユニットとしてコンパイル（絶対パス）
+            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) cflags) (modDeps m)
+            -- メインプログラムをユニットとしてコンパイル（絶対パス）
+            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) cflags
             -- リンクして実行ファイルを生成
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
             let exePath = "dist" </> mName ++ "_app" <.> exe
-            
-            _ <- buildArtifact $ LinkExe objArtifacts 
-                                         (source $ modSrc m) 
-                                         cflags 
+            _ <- buildArtifact $ LinkExe objArtifacts
+                                         (source $ (projectRoot </> modSrc m))
+                                         cflags
                                          exePath
             return ()
 
         -- テストの実行
         phony ("test-" ++ mName) $ do
-            -- need ["build-" ++ mName]  -- ← この行を削除！
-            
             -- Salmonellaを使って独立したテストを構築・実行
             env <- liftIO getChickenEnv
-            let config = Salmonella.defaultTestConfig 
+            projectRoot <- liftIO getCurrentDirectory
+            let config = Salmonella.defaultTestConfig
                     { Salmonella.tcEnv = env
-                    , Salmonella.tcCompileFlags = words cflags  -- wordsで文字列をリストに変換
+                    , Salmonella.tcCompileFlags = words cflags
                     }
-            
-            result <- Salmonella.runIsolatedModuleTests config 
-                                                         mName 
-                                                         (modSrc m)
-                                                         (modTest m) 
-                                                         (modDeps m)
-            
+            -- テスト用パスも絶対パスで渡す
+            result <- Salmonella.runIsolatedModuleTests config
+                                                         mName
+                                                         (projectRoot </> modSrc m)
+                                                         (projectRoot </> modTest m)
+                                                         (map (projectRoot </>) (modDeps m))
             unless (Salmonella.trPassed result) $
                 fail $ "Tests failed for " ++ mName
 
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
 
+        -- GC コンパイル（ガベージコレクション最適化）
+        phony ("gc-" ++ mName) $ do
+            need (modDeps m)
+            projectRoot <- liftIO getCurrentDirectory
+            let absPath p = projectRoot </> p
+            -- GC 最適化フラグ付きで再コンパイル
+            let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
+            -- 依存関係(Core等)をユニットとしてコンパイル（絶対パス）
+            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) gcFlags) (modDeps m)
+            -- メインプログラムをユニットとしてコンパイル（絶対パス）
+            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) gcFlags
+            -- GC オブジェクトを構築
+            let exePath = "dist" </> mName ++ "_app_gc" <.> exe
+            gcObj <- GC.buildGCObj exePath
+            -- リンクして実行ファイルを生成
+            let objArtifacts = map toObjArtifact (deps ++ [mainUnit]) ++ [gcObj]
+            _ <- buildArtifact $ LinkExe objArtifacts
+                                         (source $ (projectRoot </> modSrc m))
+                                         gcFlags
+                                         exePath
+            return ()
+
     -- 3. Salmonella統合: .egg ファイルでテストを実行
     phony "salmonella" $ do
         need ["test-" ++ modName m | m <- modules]
         liftIO $ do
-            -- 指定ディレクトリを再帰的に探索して .egg ファイルを収集
             let roots = [".", "core", "modules", "tools"]
             let findEggs :: FilePath -> IO [FilePath]
                 findEggs root = do
@@ -160,7 +182,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
                     putStrLn stderr
                     fail "Salmonella tests failed"
 
-    -- 4. クリーニングコマンド（Clean モジュールにて管理）
+    -- 4. クリーニングコマンド
     phony "clean" $ Clean.cleanAll
     phony "clean-build" $ Clean.cleanBuild
     phony "clean-tests" $ Clean.cleanTests
@@ -175,6 +197,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "build" $ need ["build-" ++ modName m | m <- modules]
     phony "test-all" $ need ["test-" ++ modName m | m <- modules]
     phony "test" $ need ["test-all"]
+    phony "gc-all" $ need ["gc-" ++ modName m | m <- modules]
 
 -- Helper
 toObjArtifact :: Artifact 'Unit -> Artifact 'Obj

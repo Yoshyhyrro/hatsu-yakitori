@@ -69,7 +69,10 @@ buildArtifact (LinkExe objs mainSrc flags outPath) = do
   
   putInfo $ "[Link] " ++ outPath
   
-  cmd_ ("csc" :: String) args
+  -- Ensure CHICKEN_* environment (CHICKEN_REPOSITORY_PATH etc.) is provided
+  env <- liftIO getChickenEnv
+  let envOpts = map (uncurry AddEnv) env
+  cmd_ envOpts ("csc" :: String) args
   
   return (Artifact outPath)
 
@@ -150,25 +153,29 @@ compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
   --getChickenEnv は IO なので liftIO で持ち上げる
   env <- liftIO getChickenEnv
+
+  -- 修正: 出力ディレクトリの作成を明示的に行う
+  liftIO $ Dir.createDirectoryIfMissing True dir
   
   let unitArgs = if isUnit
         then [ "-J", "-unit", baseName
              , "-setup-mode"
              , "-regenerate-import-libraries"
+             , "-no-warnings"
              ]
         else []
   
   --環境変数リスト [(Key, Val)] を CmdOption のリスト [AddEnv Key Val] に変換
   let envOpts = map (uncurry AddEnv) env
   
-  -- csc -J -unit Name -c Source -o Output ...
-  -- cmd_ には [CmdOption] を渡すことができます。(Cwd dir) と結合して渡します。
-  let cmdOptions = Cwd dir : envOpts
+  -- 修正: Cwd dir を削除し、プロジェクトルートで実行する。
+  let cmdOptions = envOpts
 
   cmd_ cmdOptions ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
   -- 生成された import ファイルの扱い
   when isUnit $ do
+    -- 1. ソースディレクトリに既存のimportファイルがある場合（手動管理）
     let importFile = baseName ++ ".import.scm"
     let srcImport = replaceFileName srcPath importFile
     
@@ -177,6 +184,28 @@ compileSrc srcPath out dir baseName isUnit = do
         if exists 
             then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
             else return ()
+
+    -- 2. ビルドによって生成された import ファイルを dist/ 直下にコピーして
+    --    後続のコンパイルが参照できるようにする (CHICKEN_REPOSITORY_PATH対応)
+    let generatedImport = replaceFileName out importFile
+    let commonImport = "dist" </> importFile
+    
+    liftIO $ do
+      -- dist/unit_xxx/ 内に生成されたかチェック
+      genExists <- Dir.doesFileExist generatedImport
+      if genExists
+        then do
+           Dir.createDirectoryIfMissing True "dist"
+           Dir.copyFile generatedImport commonImport
+        else do
+           -- カレントディレクトリ(ルート)に生成されたかチェック
+           rootExists <- Dir.doesFileExist importFile
+           if rootExists
+             then do
+               Dir.createDirectoryIfMissing True "dist"
+               Dir.copyFile importFile commonImport
+               Dir.removeFile importFile -- ルート汚染を防ぐため削除
+             else return ()
 
 -- | 指定リストから実在するファイルを探す
 findSourceFile :: [FilePath] -> IO (Maybe FilePath)
@@ -226,6 +255,7 @@ findAllFilesRecursive' targetNames currentDir = do
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
+  projectRoot <- Dir.getCurrentDirectory                      -- 追加: プロジェクトルート取得
   sysEnv <- getEnvironment
   let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
 
@@ -234,17 +264,19 @@ getChickenEnv = do
     fmap (filter (/= '\n')) $
       readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
 
+  let corePath = projectRoot </> "core"                          -- 追加: core の絶対パス
   let repoPath =
         intercalate
           ":"
-          [ "dist"                -- ビルド成果物
-          , home </> ".chicken"   -- ユーザーローカル
-          , systemRepo            -- システム
-          , sysEnvRepo            -- 環境変数
+          [ corePath                   -- 先頭に core を置く（優先）
+          , "dist"                    -- ビルド成果物
+          , home </> ".chicken"       -- ユーザーローカル
+          , systemRepo                -- システム
+          , sysEnvRepo                -- 環境変数
           ]
 
   return
-    [ ("CHICKEN_INCLUDE_PATH", "core:dist:.:_build")
+    [ ("CHICKEN_INCLUDE_PATH", corePath ++ ":dist:.:_build")      -- core を先頭に
     , ("CHICKEN_REPOSITORY_PATH", repoPath)
     , ("CHICKEN_INSTALL_REPOSITORY", "dist")
     ]
