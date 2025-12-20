@@ -180,7 +180,7 @@
         (let ((elapsed (- (current-process-milliseconds) start-time)))
           (when verbose
             (printf "Simulation completed in ~a ms~n" elapsed)
-            (printf "Average time per step: ~f ms~n" 
+            (printf "Average time per step: ~a ms~n" 
                     (/ elapsed (max 1 max-steps))))
           
           result-grid)))))
