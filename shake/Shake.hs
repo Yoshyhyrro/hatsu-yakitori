@@ -66,7 +66,7 @@ modules =
          "tests/golay24_tests.scm" 
          (coreFiles ++ 
           [ "tools/golay24-tool/setup.scm"
-          , "tools/golay24-tool/topological-gc.scm"
+          , "modules/topological-gc.scm"
           , "modules/sssp_geometry/sssp_geo_main.scm"
           ])
     ]
