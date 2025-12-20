@@ -11,7 +11,10 @@
           kak_quiver_safety#analyze-frontier-as-quiver)
         (classify-quiver-type . kak_quiver_safety#classify-quiver-type)
         (kak-apply-quiver-safe . kak_quiver_safety#kak-apply-quiver-safe)
-        (estimate-quiver-speedup . kak_quiver_safety#estimate-quiver-speedup))
+        (estimate-quiver-speedup . kak_quiver_safety#estimate-quiver-speedup)
+        (make-kak-context . kak_quiver_safety#make-kak-context)
+        (kak-context-steps . kak_quiver_safety#kak-context-steps)
+        (kak-context-mode . kak_quiver_safety#kak-context-mode))
       (scheme#list)
       (scheme#list))))
 
