@@ -14,7 +14,9 @@
         (estimate-quiver-speedup . kak_quiver_safety#estimate-quiver-speedup)
         (make-kak-context . kak_quiver_safety#make-kak-context)
         (kak-context-steps . kak_quiver_safety#kak-context-steps)
-        (kak-context-mode . kak_quiver_safety#kak-context-mode))
+        (kak-context-mode . kak_quiver_safety#kak-context-mode)
+        (kak-context-info-bits . kak_quiver_safety#kak-context-info-bits)
+        (kak-context-base . kak_quiver_safety#kak-context-base))
       (scheme#list)
       (scheme#list))))
 

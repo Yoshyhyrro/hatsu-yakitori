@@ -15,6 +15,7 @@ import Rules
 import qualified Rules.GC as GC
 import qualified Salmonella
 import qualified Clean
+import qualified Rules.MEEP as MEEP  -- 修正: MEEP → Rules.MEEP
 
 -- ====================================================================
 --  設定・データ定義
@@ -24,10 +25,10 @@ data Module = Module
     { modName :: String
     , modSrc  :: FilePath -- メインソース
     , modTest :: FilePath -- テストソース
-    , modDeps :: [FilePath] -- 依存ファイル（フルパス）
+    , modDeps :: [FilePath] -- 依存ファイル(フルパス)
     } deriving (Show)
 
--- コア依存ファイル（全モジュールが使用）
+-- コア依存ファイル(全モジュールが使用)
 coreFiles :: [FilePath]
 coreFiles = 
     [ "core/kak_decomposition.scm"
@@ -81,6 +82,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     -- 1. ルールの初期化
     setupRules
     GC.gcRule
+    MEEP.meepRules  -- 修正: meepRules → MEEP.meepRules
 
     -- コンパイラフラグ
     let cflags = "-O3 -d0"
@@ -94,9 +96,9 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
             need (modDeps m)
             projectRoot <- liftIO getCurrentDirectory
             let absPath p = projectRoot </> p
-            -- 依存関係(Core等)をユニットとしてコンパイル（絶対パス）
+            -- 依存関係(Core等)をユニットとしてコンパイル(絶対パス)
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) cflags) (modDeps m)
-            -- メインプログラムをユニットとしてコンパイル（絶対パス）
+            -- メインプログラムをユニットとしてコンパイル(絶対パス)
             mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) cflags
             -- リンクして実行ファイルを生成
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
@@ -128,16 +130,16 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
 
-        -- GC コンパイル（ガベージコレクション最適化）
+        -- GC コンパイル(ガベージコレクション最適化)
         phony ("gc-" ++ mName) $ do
             need (modDeps m)
             projectRoot <- liftIO getCurrentDirectory
             let absPath p = projectRoot </> p
             -- GC 最適化フラグ付きで再コンパイル
             let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
-            -- 依存関係(Core等)をユニットとしてコンパイル（絶対パス）
+            -- 依存関係(Core等)をユニットとしてコンパイル(絶対パス)
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) gcFlags) (modDeps m)
-            -- メインプログラムをユニットとしてコンパイル（絶対パス）
+            -- メインプログラムをユニットとしてコンパイル(絶対パス)
             mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) gcFlags
             -- GC オブジェクトを構築
             let exePath = "dist" </> mName ++ "_app_gc" <.> exe
