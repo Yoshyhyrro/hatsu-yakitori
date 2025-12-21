@@ -152,60 +152,49 @@ compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
   env <- liftIO getChickenEnv
 
-  -- 出力ディレクトリの作成を明示的に行う
+  -- 出力ディレクトリの作成
   liftIO $ Dir.createDirectoryIfMissing True dir
   
   -- ファイルにモジュール定義があるかチェック
   srcContent <- liftIO $ readFile srcPath
   let hasModuleDecl = "(module" `isInfixOf` srcContent  
+  
+  -- 修正ポイント: -emit-import-library にはパスを含めず baseName だけを渡す
   let unitArgs = if isUnit && hasModuleDecl
         then [ "-unit", baseName
-             , "-emit-import-library", dir </> baseName
+             , "-emit-import-library", baseName  -- パスを排除
              , "-setup-mode"
              , "-regenerate-import-libraries"
              , "-no-warnings"
              ]
         else if isUnit
-             then [ "-no-warnings" ]  -- Unit compile without import library
+             then [ "-no-warnings" ]
              else []
   
   let envOpts = map (uncurry AddEnv) env
   
-  -- プロジェクトルートで実行
+  -- コンパイル実行
   cmd_ envOpts ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
-  -- 生成された import ファイルの処理
+  -- 生成された import ファイルの移動とコピー
   when (isUnit && hasModuleDecl) $ do
-    let importFile = baseName ++ ".import.scm"
-    let srcImport = replaceFileName srcPath importFile
+    let importFile = baseName <.> "import.scm"
+    -- カレントディレクトリを明示的に指定して探す
+    currentImportPath <- liftIO $ Dir.makeAbsolute importFile
     
     liftIO $ do
-        exists <- Dir.doesFileExist srcImport
-        if exists 
-            then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
-            else return ()
-
-    -- ビルドによって生成された import ファイルを dist/ 直下にコピーして
-    --    後続のコンパイルが参照できるようにする (CHICKEN_REPOSITORY_PATH対応)
-    let generatedImport = replaceFileName out importFile
-    let commonImport = "dist" </> importFile
-    
-    liftIO $ do
-      -- dist/unit_xxx/ 内に生成されたかチェック
+      -- 1. カレントディレクトリに生成された import ファイルを目的のディレクトリ (dist/unit_xxx/) へ移動
+      rootExists <- Dir.doesFileExist importFile
+      when rootExists $ do
+        Dir.copyFile importFile (dir </> importFile)
+        Dir.removeFile importFile
+      
+      -- 2. さらに後続のビルドが参照しやすいよう dist/ 直下にもコピー (既存ロジックの維持)
+      let generatedImport = dir </> importFile
       genExists <- Dir.doesFileExist generatedImport
-      if genExists
-        then do
-           Dir.createDirectoryIfMissing True "dist"
-           Dir.copyFile generatedImport commonImport
-        else do
-           -- カレントディレクトリ(ルート)に生成されたかチェック
-           rootExists <- Dir.doesFileExist importFile
-           if rootExists
-             then do
-               Dir.createDirectoryIfMissing True "dist"
-               Dir.copyFile importFile commonImport
-               Dir.removeFile importFile -- ルート汚濁を防ぐため削除
-             else return ()
+      when genExists $ do
+        Dir.createDirectoryIfMissing True "dist"
+        Dir.copyFile generatedImport ("dist" </> importFile)
 
 -- | 指定リストから実在する ファイルを探す
 findSourceFile :: [FilePath] -> IO (Maybe FilePath)
