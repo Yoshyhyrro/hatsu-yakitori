@@ -50,7 +50,7 @@
   ;; Context record
   (define (make-kak-context info-bits B max-steps af-config)
     "Create a computation context to avoid recomputation."
-    (let-values (((mode tau codeword) af-config))
+    (let-values (((mode tau codeword) (af-config)))
       ;; Precompute Cartan decomposition once
       (let ((decomp-vec (cartan-lazy-vector B max-steps)))
         (vector
@@ -180,9 +180,9 @@
   (define (kak-optimize-config graph-size avg-degree max-steps)
     (let ((density (/ avg-degree (sqrt graph-size))))
       (cond
-        ((> density 0.1)  (values 'queue 1.2))
-        ((< density 0.01) (values 'stack 1.5))
-        (else             (values 'queue 1.0)))))
+        ((> density 0.1)  (values 'queue 1.2 #f))
+        ((< density 0.01) (values 'stack 1.5 #f))
+        (else             (values 'queue 1.0 #f)))))
 
   ;;; ================================================================
   ;;; 6. メイン最適化版: KAK-apply-cached

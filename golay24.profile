@@ -1,0 +1,13 @@
+instrumented
+(golay-weight 15 0)
+(encode-golay24 7 0)
+(decode-golay24 1 0)
+(frontier-mode-from-golay 8 0)
+(make-adaptive-frontier 3 0)
+(adaptive-frontier-tau 2 0)
+(adaptive-frontier-mode 2 0)
+(adaptive-frontier-push 2 0)
+(adaptive-frontier-pop 1 0)
+(test-assert 19 1)
+(test-approx 0 0)
+(print-summary 1 0)

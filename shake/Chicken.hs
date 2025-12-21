@@ -1,46 +1,54 @@
-{- Chicken.hs -}
+{- shake/Chicken.hs -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies #-}
 
-module Chicken where
+module Chicken
+  ( -- * Artifact Types (Phantom-based)
+    ArtifactType(..)
+  , Artifact(..)
+  , source
+    -- * Type-safe constructors
+  , mkSource
+  , mkObject
+  , mkUnit
+  , mkExe
+  ) where
 
-import Development.Shake.Classes
-import GHC.Generics (Generic)
-import System.FilePath (takeFileName, replaceExtension, (</>))
-import Data.Hashable (Hashable)
-import Data.Binary (Binary)
-import Control.DeepSeq (NFData)
+-- | ArtifactType - Phantom type to track artifact kind
+data ArtifactType = Src | Obj | Unit | Exe
 
--- | ファイルの種別を表すデータカインド
-data ArtifactType
-    = Src   -- ^ Schemeソース (.scm)
-    | Obj   -- ^ コンパイル済みオブジェクト (.o)
-    | Unit  -- ^ ライブラリユニット (.o + .import.scm)
-    | Exe   -- ^ 実行ファイル
-    deriving (Show, Eq, Generic)
+-- | Artifact - Phantom type ensures type safety
+-- Example: Artifact 'Src is a source file, Artifact 'Obj is an object file
+newtype Artifact (a :: ArtifactType) = Artifact { getPath :: FilePath }
+  deriving (Show, Eq, Ord)
 
--- | ファイルパスをラップするPhantom Type
--- 't' パラメータにより、これが何のファイルかを型レベルで保持する
-newtype Artifact (t :: ArtifactType) = Artifact { getPath :: FilePath }
-    deriving (Show, Eq, Hashable, Binary, NFData, Generic)
+-- | Type-safe constructors (ensure callers use correct phantom type)
+mkSource :: FilePath -> Artifact 'Src
+mkSource = Artifact
 
--- | ヘルパー: パス操作
-toObjectPath :: Artifact 'Src -> Artifact 'Obj
-toObjectPath (Artifact p) = Artifact $ "dist" </> replaceExtension (takeFileName p) "o"
+mkObject :: FilePath -> Artifact 'Obj
+mkObject = Artifact
 
-toUnitPath :: Artifact 'Src -> Artifact 'Unit
-toUnitPath (Artifact p) = Artifact $ "dist" </> replaceExtension (takeFileName p) "o"
+mkUnit :: FilePath -> Artifact 'Unit
+mkUnit = Artifact
 
--- 新しく追加: モジュールに対応する .import.scm のパスを計算する
-unitImportPath :: Artifact 'Src -> FilePath
-unitImportPath (Artifact p) = "dist" </> replaceExtension (takeFileName p) "import.scm"
+mkExe :: FilePath -> Artifact 'Exe
+mkExe = Artifact
 
--- | 拡張子を強制的に付与するスマートコンストラクタ(安全性のため)
+-- | Helper: create source from FilePath
 source :: FilePath -> Artifact 'Src
-source p = Artifact p
+source = Artifact
 
-executable :: FilePath -> Artifact 'Exe
-executable p = Artifact p
+-- | Witness type for artifact kinds (useful for pattern matching)
+data ArtifactKind (a :: ArtifactType) where
+  KindSrc  :: ArtifactKind 'Src
+  KindObj  :: ArtifactKind 'Obj
+  KindUnit :: ArtifactKind 'Unit
+  KindExe  :: ArtifactKind 'Exe
+
+-- | Extract artifact kind from type-level info (runtime reflection)
+artifactKind :: (Artifact a) -> ArtifactKind a
+artifactKind _ = error "Phantom type cannot be determined at runtime"
+  -- This is expected — phantom types are compile-time only
