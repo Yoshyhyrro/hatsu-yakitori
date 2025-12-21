@@ -19,12 +19,18 @@
    grid-dt
    grid-dx
    grid-eps
-   grid-mu)
+   grid-mu
+   l2-norm
+   normalize-vector
+   r2->complex
+   cartan-decompose
+   tau-threshold
+   meep-simulate)
 
   (import scheme 
           (chicken base)
           (chicken format)
-          srfi-4) ; f64vector を使用
+          srfi-4)
 
   ;; Yee格子のデータ構造 (2D TMモードを想定: Ez, Hx, Hy)
   (define-record-type yee-grid
@@ -32,9 +38,9 @@
     yee-grid?
     (width  grid-width)
     (height grid-height)
-    (ez     grid-ez) ; f64vector
-    (hx     grid-hx) ; f64vector
-    (hy     grid-hy) ; f64vector
+    (ez     grid-ez)
+    (hx     grid-hx)
+    (hy     grid-hy)
     (dt     grid-dt)
     (dx     grid-dx)
     (eps    grid-eps)
@@ -60,8 +66,7 @@
            (ez (grid-ez grid))
            (hx (grid-hx grid))
            (hy (grid-hy grid))
-           (coeff (/ (grid-dt grid) (grid-eps grid) (grid-dx grid))))
-      ;; 簡略化のため、全格子更新のループ (本来は境界チェックが必要)
+           (coeff (/ (grid-dt grid) (* (grid-eps grid) (grid-dx grid)))))
       (do ((i 1 (+ i 1))) ((= i (- w 1)))
         (do ((j 1 (+ j 1))) ((= j (- h 1)))
           (let ((idx (+ (* j w) i))
@@ -69,8 +74,9 @@
                 (idx-m1-j (+ (* (- j 1) w) i)))
             (f64vector-set! ez idx
               (+ (f64vector-ref ez idx)
-                 (* coeff (- (- (f64vector-ref hy idx) (f64vector-ref hy idx-m1-i))
-                             (- (f64vector-ref hx idx) (f64vector-ref hx idx-m1-j)))))))))))
+                 (* coeff 
+                    (- (- (f64vector-ref hy idx) (f64vector-ref hy idx-m1-i))
+                       (- (f64vector-ref hx idx) (f64vector-ref hx idx-m1-j)))))))))))
 
   (define (update-h-fields! grid)
     "Hx, Hy の更新 (Eの回転を取る)"
@@ -79,7 +85,7 @@
            (ez (grid-ez grid))
            (hx (grid-hx grid))
            (hy (grid-hy grid))
-           (coeff (/ (grid-dt grid) (grid-mu grid) (grid-dx grid))))
+           (coeff (/ (grid-dt grid) (* (grid-mu grid) (grid-dx grid)))))
       (do ((i 0 (+ i 1))) ((= i (- w 1)))
         (do ((j 0 (+ j 1))) ((= j (- h 1)))
           (let ((idx (+ (* j w) i))
@@ -92,4 +98,34 @@
             ;; Hy update
             (f64vector-set! hy idx
               (+ (f64vector-ref hy idx)
-                 (* coeff (- (f64vector-ref ez idx-p1-i) (f64vector-ref ez idx)))))))))))
+                 (* coeff (- (f64vector-ref ez idx-p1-i) (f64vector-ref ez idx))))))))))
+
+  ;; ===========================================================
+  ;; プレースホルダ実装
+  ;; ===========================================================
+
+  ;; L2 ノルム（ベクトル）
+  (define (l2-norm v)
+    (sqrt (apply + (map (lambda (x) (* x x)) v))))
+
+  ;; ベクトルの正規化（ゼロ長はそのまま返す）
+  (define (normalize-vector v)
+    (let ((n (l2-norm v)))
+      (if (< n 1e-12) v (map (lambda (x) (/ x n)) v))))
+
+  ;; 2 要素から複素数を作るユーティリティ
+  (define (r2->complex x y)
+    (make-rectangular x y))
+
+  ;; Cartan 分解の簡易スタブ
+  (define (cartan-decompose _U)
+    (values (vector 1.0) 1.0))
+
+  ;; 閾値などを表すダミー定数
+  (define tau-threshold 1.0)
+
+  ;; meep シミュレーションのダミー
+  (define (meep-simulate . _)
+    '()))
+
+;; end module

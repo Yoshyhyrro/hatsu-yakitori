@@ -5,7 +5,7 @@ import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_, unless, forM)
 import System.Process (readCreateProcessWithExitCode, proc)
-import System.Directory (listDirectory, doesDirectoryExist, getCurrentDirectory)
+import qualified System.Directory as Dir
 import System.Exit (ExitCode(..))
 import Data.List (words)
 
@@ -15,7 +15,7 @@ import Rules
 import qualified Rules.GC as GC
 import qualified Salmonella
 import qualified Clean
-import qualified Rules.MEEP as MEEP  -- 修正: MEEP → Rules.MEEP
+import qualified Rules.MEEP as MEEP
 
 -- ====================================================================
 --  設定・データ定義
@@ -23,21 +23,26 @@ import qualified Rules.MEEP as MEEP  -- 修正: MEEP → Rules.MEEP
 
 data Module = Module
     { modName :: String
-    , modSrc  :: FilePath -- メインソース
-    , modTest :: FilePath -- テストソース
-    , modDeps :: [FilePath] -- 依存ファイル(フルパス)
+    , modSrc  :: FilePath
+    , modTest :: FilePath
+    , modDeps :: [FilePath]
     } deriving (Show)
 
--- コア依存ファイル(全モジュールが使用)
+-- コア依存ファイル(依存関係の順序が重要)
+-- 1. 基本ユーティリティ
+-- 2. 物理コア (他のモジュールに依存されない)
+-- 3. 最適化 (物理コアの後)
+-- 4. Quiver安全性 (最適化と物理コアに依存)
 coreFiles :: [FilePath]
 coreFiles = 
     [ "core/kak_decomposition.scm"
     , "core/cartan_utils.scm"
     , "core/machine_constants.scm"
     , "core/golay_frontier.scm"
-    , "modules/kak_optimization.scm"    -- Added: Must be compiled before quiver_safety
-    , "modules/kak_quiver_safety.scm"
-    , "modules/topological-gc.scm"
+    , "modules/kak_physics_core.scm"      -- 1st: 物理コア (独立)
+    , "modules/kak_optimization.scm"      -- 2nd: 最適化 (物理コア後)
+    , "modules/kak_quiver_safety.scm"     -- 3rd: Quiver (最適化と物理コア後)
+    , "modules/topological-gc.scm"        -- 4th: GC
     ]
 
 modules :: [Module]
@@ -82,7 +87,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     -- 1. ルールの初期化
     setupRules
     GC.gcRule
-    MEEP.meepRules  -- 修正: meepRules → MEEP.meepRules
+    MEEP.meepRules
 
     -- コンパイラフラグ
     let cflags = "-O3 -d0"
@@ -94,11 +99,12 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- アプリケーションのビルド
         phony ("build-" ++ mName) $ do
             need (modDeps m)
-            projectRoot <- liftIO getCurrentDirectory
+            projectRoot <- liftIO Dir.getCurrentDirectory
             let absPath p = projectRoot </> p
-            -- 依存関係(Core等)をユニットとしてコンパイル(絶対パス)
+            -- 依存関係(Core等)をユニットとしてコンパイル
+            -- 順序が重要: coreFiles の順序に従ってコンパイル
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) cflags) (modDeps m)
-            -- メインプログラムをユニットとしてコンパイル(絶対パス)
+            -- メインプログラムをユニットとしてコンパイル
             mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) cflags
             -- リンクして実行ファイルを生成
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
@@ -111,14 +117,12 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
         -- テストの実行
         phony ("test-" ++ mName) $ do
-            -- Salmonellaを使って独立したテストを構築・実行
             env <- liftIO getChickenEnv
-            projectRoot <- liftIO getCurrentDirectory
+            projectRoot <- liftIO Dir.getCurrentDirectory
             let config = Salmonella.defaultTestConfig
                     { Salmonella.tcEnv = env
                     , Salmonella.tcCompileFlags = words cflags
                     }
-            -- テスト用パスも絶対パスで渡す
             result <- Salmonella.runIsolatedModuleTests config
                                                          mName
                                                          (projectRoot </> modSrc m)
@@ -130,21 +134,16 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
 
-        -- GC コンパイル(ガベージコレクション最適化)
+        -- GC コンパイル
         phony ("gc-" ++ mName) $ do
             need (modDeps m)
-            projectRoot <- liftIO getCurrentDirectory
+            projectRoot <- liftIO Dir.getCurrentDirectory
             let absPath p = projectRoot </> p
-            -- GC 最適化フラグ付きで再コンパイル
             let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
-            -- 依存関係(Core等)をユニットとしてコンパイル(絶対パス)
             deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) gcFlags) (modDeps m)
-            -- メインプログラムをユニットとしてコンパイル(絶対パス)
             mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) gcFlags
-            -- GC オブジェクトを構築
             let exePath = "dist" </> mName ++ "_app_gc" <.> exe
             gcObj <- GC.buildGCObj exePath
-            -- リンクして実行ファイルを生成
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit]) ++ [gcObj]
             _ <- buildArtifact $ LinkExe objArtifacts
                                          (source $ (projectRoot </> modSrc m))
@@ -152,19 +151,19 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
                                          exePath
             return ()
 
-    -- 3. Salmonella統合: .egg ファイルでテストを実行
+    -- 3. Salmonella統合
     phony "salmonella" $ do
         need ["test-" ++ modName m | m <- modules]
         liftIO $ do
             let roots = [".", "core", "modules", "tools"]
             let findEggs :: FilePath -> IO [FilePath]
                 findEggs root = do
-                    exists <- System.Directory.doesDirectoryExist root
+                    exists <- Dir.doesDirectoryExist root
                     if not exists then return [] else do
-                        entries <- listDirectory root
+                        entries <- Dir.listDirectory root
                         paths <- forM entries $ \e -> do
                             let p = root </> e
-                            isDir <- System.Directory.doesDirectoryExist p
+                            isDir <- Dir.doesDirectoryExist p
                             if isDir
                                 then findEggs p
                                 else return $ if takeExtension p == ".egg" then [p] else []

@@ -154,34 +154,34 @@
                                #!key (verbose #t) (snapshot-interval 100))
   "Quiver analysis based adaptive time-stepping"
   
-  ;; 修正: values ではなく list を使用して警告を回避
+  ;; Create KAK optimization context
   (let* ((info-bits 24)
          (base 2.0)
-         (af-config (list 'queue 1.0 #x000000)) ;; mode, tau, codeword
-         ;; 修正: kak-context の引数を 4 つに統一
-         (kak-ctx (make-kak-context max-steps (car af-config) info-bits base))
+         (af-config (values 'queue 1.0 #x000000))  ;; mode, tau, codeword
+         (kak-ctx (make-kak-context info-bits base max-steps af-config))
          
-         ;; 修正: quiver-ctx も引数の数を合わせる (デフォルト値を指定)
-         (quiver-ctx (make-kak-context max-steps 'queue 0 0.0)))
-
+         ;; Create Quiver safety context (renamed to avoid conflict)
+         (quiver-ctx (make-quiver-context max-steps 'queue)))
+    
     (when verbose
       (printf "~a~n" "=== MEEP Adaptive Time-Stepping ===")
       (printf "Grid: ~ax~a, Steps: ~a~n" 
               (grid-width grid) (grid-height grid) max-steps)
       (printf "dt: ~a, dx: ~a~n" (grid-dt grid) (grid-dx grid)))
     
-    ;; 修正: current-milliseconds -> current-process-milliseconds
-    (let ((start-time (current-process-milliseconds)))
+    ;; Main time evolution loop
+    (let ((start-time (current-milliseconds)))
       
+      ;; Execute Quiver-safe adaptive updates
       (let ((result-grid 
-             (kak-apply-quiver-safe graph-fn grid sources kak-ctx
+             (kak-apply-quiver-safe graph-fn grid sources quiver-ctx
                                     #:aggressive #t)))
         
-        (let ((elapsed (- (current-process-milliseconds) start-time)))
+        (let ((elapsed (- (current-milliseconds) start-time)))
           (when verbose
             (printf "Simulation completed in ~a ms~n" elapsed)
             (printf "Average time per step: ~a ms~n" 
-                    (/ elapsed (max 1 max-steps))))
+                    (/ elapsed max-steps)))
           
           result-grid)))))
 
@@ -273,12 +273,12 @@
      (lambda (strat)
        (let* ((q-type (car strat))
               (mode (cdr strat))
-              ;; 修正: 引数を 4 つに合わせる
-              (ctx (make-kak-context 100 mode 0 0.0))
-              (start (current-process-milliseconds)))
+              (ctx (make-quiver-context 100 mode))
+              (start (current-milliseconds)))
          
+         ;; Dummy execution
          (let ((result (kak-apply-quiver-safe graph-fn grid sources ctx)))
-           (let ((elapsed (- (current-process-milliseconds) start)))
+           (let ((elapsed (- (current-milliseconds) start)))
              (printf "Strategy ~a (~a): ~a ms~n" q-type mode elapsed)))))
      strategies)))
 

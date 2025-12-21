@@ -23,7 +23,7 @@ import qualified System.Directory as Dir
 import System.Process (readProcess)
 import System.Environment (getEnvironment)
 import Data.Maybe (fromMaybe)
-import Data.List (intercalate, isSuffixOf, isPrefixOf)
+import Data.List (intercalate, isSuffixOf, isPrefixOf, isInfixOf)
 import qualified Data.ByteString.Char8 as BS8
 import Data.Binary (encode)
 import qualified Data.ByteString.Base16 as Base16
@@ -50,7 +50,7 @@ buildArtifact (CompileObj src flags) = do
 buildArtifact (CompileUnit src flags) = do
   let out = artifactPathForCompileUnit src flags
   need [out]
-  -- .import.scm が生成される可能性があるため、ソース側のimportファイルがあれば依存に追加
+  -- .import.scm が生成される可能性があるため、ソース側のimportファイルがあれば依存に追加 
   let importSrc = replaceExtension (getPath src) "import.scm"
   exists <- liftIO $ Dir.doesFileExist importSrc
   when exists $ need [importSrc]
@@ -102,7 +102,6 @@ setupRules = do
   "dist/unit_*/*.import.scm" %> \out -> do
     let dir = takeDirectory out
     let fileName = takeFileName out
-    -- let baseName = dropExtension fileName
     
     -- 標準的なパス + 再帰検索で見つける
     let searchDirs = ["core", "modules", "tools", "."]
@@ -129,7 +128,7 @@ compileAction out isUnit = do
   let standardPaths =
         [ "core" </> srcFileName
         , "modules" </> srcFileName
-        , "modules" </> baseName </> srcFileName -- modules/boids/boids_main.scm 対応
+        , "modules" </> baseName </> srcFileName
         , "tools" </> baseName ++ "-tool" </> srcFileName
         , "tests" </> srcFileName
         , srcFileName
@@ -146,36 +145,37 @@ compileAction out isUnit = do
         (path:_) -> return path
         []       -> error $ "Source file not found for: " ++ srcFileName ++ " (target: " ++ out ++ ")"
 
-  compileSrc finalSrc out dir baseName isUnit
+  compileSrc finalSrc out dir baseName actuallyUnit
 
 -- | 実際のコンパイル実行
 compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
-  --getChickenEnv は IO なので liftIO で持ち上げる
   env <- liftIO getChickenEnv
 
-  -- 修正: 出力ディレクトリの作成を明示的に行う
+  -- 出力ディレクトリの作成を明示的に行う
   liftIO $ Dir.createDirectoryIfMissing True dir
   
-  let unitArgs = if isUnit
-        then [ "-J", "-unit", baseName
+  -- ファイルにモジュール定義があるかチェック
+  srcContent <- liftIO $ readFile srcPath
+  let hasModuleDecl = "(module" `isInfixOf` srcContent  
+  let unitArgs = if isUnit && hasModuleDecl
+        then [ "-unit", baseName
+             , "-emit-import-library", dir </> baseName
              , "-setup-mode"
              , "-regenerate-import-libraries"
              , "-no-warnings"
              ]
-        else []
+        else if isUnit
+             then [ "-no-warnings" ]  -- Unit compile without import library
+             else []
   
-  --環境変数リスト [(Key, Val)] を CmdOption のリスト [AddEnv Key Val] に変換
   let envOpts = map (uncurry AddEnv) env
   
-  -- 修正: Cwd dir を削除し、プロジェクトルートで実行する。
-  let cmdOptions = envOpts
+  -- プロジェクトルートで実行
+  cmd_ envOpts ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
-  cmd_ cmdOptions ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
-
-  -- 生成された import ファイルの扱い
-  when isUnit $ do
-    -- 1. ソースディレクトリに既存のimportファイルがある場合（手動管理）
+  -- 生成された import ファイルの処理
+  when (isUnit && hasModuleDecl) $ do
     let importFile = baseName ++ ".import.scm"
     let srcImport = replaceFileName srcPath importFile
     
@@ -185,7 +185,7 @@ compileSrc srcPath out dir baseName isUnit = do
             then putStrLn $ "       (Using existing import: " ++ srcImport ++ ")"
             else return ()
 
-    -- 2. ビルドによって生成された import ファイルを dist/ 直下にコピーして
+    -- ビルドによって生成された import ファイルを dist/ 直下にコピーして
     --    後続のコンパイルが参照できるようにする (CHICKEN_REPOSITORY_PATH対応)
     let generatedImport = replaceFileName out importFile
     let commonImport = "dist" </> importFile
@@ -204,10 +204,10 @@ compileSrc srcPath out dir baseName isUnit = do
              then do
                Dir.createDirectoryIfMissing True "dist"
                Dir.copyFile importFile commonImport
-               Dir.removeFile importFile -- ルート汚染を防ぐため削除
+               Dir.removeFile importFile -- ルート汚濁を防ぐため削除
              else return ()
 
--- | 指定リストから実在するファイルを探す
+-- | 指定リストから実在する ファイルを探す
 findSourceFile :: [FilePath] -> IO (Maybe FilePath)
 findSourceFile [] = return Nothing
 findSourceFile (path:paths) = do
@@ -255,7 +255,7 @@ findAllFilesRecursive' targetNames currentDir = do
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
-  projectRoot <- Dir.getCurrentDirectory                      -- 追加: プロジェクトルート取得
+  projectRoot <- Dir.getCurrentDirectory
   sysEnv <- getEnvironment
   let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
 
@@ -264,19 +264,19 @@ getChickenEnv = do
     fmap (filter (/= '\n')) $
       readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
 
-  let corePath = projectRoot </> "core"                          -- 追加: core の絶対パス
+  let corePath = projectRoot </> "core"
   let repoPath =
         intercalate
           ":"
-          [ corePath                   -- 先頭に core を置く（優先）
-          , "dist"                    -- ビルド成果物
-          , home </> ".chicken"       -- ユーザーローカル
-          , systemRepo                -- システム
-          , sysEnvRepo                -- 環境変数
+          [ corePath
+          , "dist"
+          , home </> ".chicken"
+          , systemRepo
+          , sysEnvRepo
           ]
 
   return
-    [ ("CHICKEN_INCLUDE_PATH", corePath ++ ":dist:.:_build")      -- core を先頭に
+    [ ("CHICKEN_INCLUDE_PATH", corePath ++ ":dist:.:_build")
     , ("CHICKEN_REPOSITORY_PATH", repoPath)
     , ("CHICKEN_INSTALL_REPOSITORY", "dist")
     ]
