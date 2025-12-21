@@ -54,75 +54,71 @@ runIsolatedModuleTests :: TestConfig -> String -> FilePath -> FilePath -> [FileP
 runIsolatedModuleTests config modName moduleSource testSource deps = do
     putInfo $ "Building and running tests for: " ++ modName
     
-    -- 必要なディレクトリを作成
     let buildDir = tcBuildDir config
     let testsDir = buildDir </> "tests"
+    
+    -- 1. Move definitions to the top so they are in scope
+    let testBin = testsDir </> "test_" ++ modName <.> exe
+    let includeDirs = nubBy (\a b -> a == b) 
+                           (["core", takeDirectory moduleSource, "."] ++ map takeDirectory deps)
+    let includeFlags = concatMap (\d -> ["-I", d]) includeDirs
+
     liftIO $ do
         Dir.createDirectoryIfMissing True buildDir
         Dir.createDirectoryIfMissing True testsDir
     
-    -- 依存関係をコンパイル（モジュール検出をする）
+    -- 2. Compile dependencies and collect object file paths
     depObjs <- forM deps $ \src -> do
-        let objName = buildDir </> takeBaseName src <.> "o"
         let unitName = takeBaseName src
+        let objName = buildDir </> unitName <.> "o"
         liftIO $ Dir.createDirectoryIfMissing True (takeDirectory objName)
         
-        -- Check if file has module definition
         hasMod <- liftIO $ hasModuleDefinition src
-        
         putInfo $ "  Compiling " ++ src ++ if hasMod then " (module)" else " (regular)"
         
-        -- Only use -emit-import-library and -unit for files with module definitions
+        -- 修正ポイント: 依存関係は(moduleの有無に関わらず)常にユニットとして扱う
+        let unitFlags = [ "-unit", unitName ]
         let importLibFlags = if hasMod 
-                             then [ "-unit", unitName
-                                  , "-emit-import-library", unitName -- ここをパスなしにする
-                                  ]
+                             then [ "-emit-import-library", unitName ]
                              else []
 
-        -- 1. コンパイル実行（カレントディレクトリに .import.scm が出る可能性がある）
+        -- 依存ファイルをオブジェクトファイルとしてコンパイル
         cmd_ ("csc" :: String) 
-             ([ "-c", "-I", buildDir ] 
-              ++ importLibFlags 
-              ++ tcCompileFlags config 
-              ++ [ src, "-o", objName ])
+            (tcCompileFlags config 
+            ++ ["-I", buildDir] 
+            ++ includeFlags 
+            ++ ["-c", src, "-o", objName] 
+            ++ unitFlags        -- これを常に追加
+            ++ importLibFlags)
         
-        -- 2. もしモジュールなら、生成された .import.scm を buildDir へ手動で移動
         when hasMod $ do
             let genImport = unitName <.> "import.scm"
             importExists <- liftIO $ Dir.doesFileExist genImport
             if importExists 
                 then do
-                    -- _build/ に移動（すでにあったら上書き）
                     liftIO $ Dir.copyFile genImport (buildDir </> genImport)
                     liftIO $ Dir.removeFile genImport
                 else do
-                    -- すでに _build/ 内に生成されているか確認（cscのバージョンによる挙動差対策）
                     buildImportExists <- liftIO $ Dir.doesFileExist (buildDir </> genImport)
                     unless buildImportExists $
                         putInfo $ "Warning: Expected import library " ++ genImport ++ " was not found."
 
         return objName
     
-    -- 依存オブジェクトをビルド済みにマーク（キャッシュ用）
+    -- 3. Mark dependencies as needed
     need depObjs
     
-    -- include ディレクトリを用意（重複を除去）
-    let includeDirs = nubBy (\a b -> a == b) 
-                           (["core", takeDirectory moduleSource, "."] ++ map takeDirectory deps)
-    let includeFlags = concatMap (\d -> ["-I", d]) includeDirs
-    
-    -- テストバイナリを作成
-    let testBin = testsDir </> "test_" ++ modName <.> exe
-    
+    -- 4. Now that depObjs is fully built and in scope, link the final binary
     putInfo $ "Linking test binary: " ++ testBin
     cmd_ ("csc" :: String) 
          (tcCompileFlags config 
           ++ ["-I", buildDir] 
           ++ includeFlags 
-          ++ ["-o", testBin, testSource] 
-          ++ deps)
+          ++ ["-o", testBin]
+          ++ [testSource]    -- The test runner source
+          ++ depObjs)        -- The compiled objects
     
-    -- テスト実行
+    -- 5. Run the resulting binary
     runModuleTests config modName testBin
 
 -- | 既存のテスト実行（バイナリのみ）
