@@ -15,6 +15,8 @@
         (chicken base)
         (chicken format)
         (chicken time)
+        (chicken bitwise)
+        (chicken process-context)
         srfi-1
         srfi-4
         srfi-69
@@ -157,7 +159,7 @@
   ;; Create KAK optimization context
   (let* ((info-bits 24)
          (base 2.0)
-         (af-config (values 'queue 1.0 #x000000))  ;; mode, tau, codeword
+         (af-config (list 'queue 1.0 #x000000))  ;; mode, tau, codeword
          (kak-ctx (make-kak-context info-bits base max-steps af-config))
          
          ;; Create Quiver safety context (renamed to avoid conflict)
@@ -170,14 +172,14 @@
       (printf "dt: ~a, dx: ~a~n" (grid-dt grid) (grid-dx grid)))
     
     ;; Main time evolution loop
-    (let ((start-time (current-milliseconds)))
+    (let ((start-time (Dir.current-milliseconds)))
       
       ;; Execute Quiver-safe adaptive updates
       (let ((result-grid 
              (kak-apply-quiver-safe graph-fn grid sources quiver-ctx
                                     #:aggressive #t)))
         
-        (let ((elapsed (- (current-milliseconds) start-time)))
+        (let ((elapsed (- (Dir.current-milliseconds) start-time)))
           (when verbose
             (printf "Simulation completed in ~a ms~n" elapsed)
             (printf "Average time per step: ~a ms~n" 
@@ -274,11 +276,11 @@
        (let* ((q-type (car strat))
               (mode (cdr strat))
               (ctx (make-quiver-context 100 mode))
-              (start (current-milliseconds)))
+              (start (Dir.current-milliseconds)))
          
          ;; Dummy execution
          (let ((result (kak-apply-quiver-safe graph-fn grid sources ctx)))
-           (let ((elapsed (- (current-milliseconds) start)))
+           (let ((elapsed (- (Dir.current-milliseconds) start)))
              (printf "Strategy ~a (~a): ~a ms~n" q-type mode elapsed)))))
      strategies)))
 

@@ -11,7 +11,7 @@
 ;;; ============================================================
 
 (declare (unit kak_optimization))
-(declare (uses srfi-1 srfi-69 chicken.bitwise))
+(declare (uses srfi-1 srfi-69))
 
 (module kak_optimization
   (;; Main API
