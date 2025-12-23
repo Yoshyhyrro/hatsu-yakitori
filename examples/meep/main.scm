@@ -16,6 +16,7 @@
         (chicken format)
         (chicken time)
         (chicken bitwise)
+        (chicken process-context)
         srfi-1
         srfi-4
         srfi-69
