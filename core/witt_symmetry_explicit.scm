@@ -11,7 +11,7 @@
    tau-to-octad-size
    octad-level-from-tau
    
-   ;; --- Integration Points in Your Existing Code ---
+   ;; --- Integration Points in Modules Existing Code ---
    verify-frontier-preserves-witt
    verify-cartan-respects-octads
    verify-topological-gc-uses-witt
@@ -33,13 +33,13 @@
   ;; FACT: Golay[24,12] automorphism group = M_24
   ;;       M_24 acts transitively on the 759 octads
   ;;
-  ;; YOUR CODE EXPLOITS THIS:
+  ;; Tools CODE EXPLOITS THIS:
   ;;   encode-golay24(info) → codeword ∈ Octad lattice
   ;;   golay-weight(codeword) → determines Witt level
   ;; ============================================================
 
   (define (golay-encodes-witt-octad codeword)
-    "Reveal: Your Golay codeword IS a Witt octad representative.
+    "Reveal: Modules Golay codeword IS a Witt octad representative.
      
      CLAIM: Each nonzero codeword in Golay[24,12] corresponds to
             a unique element of the Witt design's orbit structure.
@@ -96,10 +96,10 @@
         (else      'intermediate))))
   
   ;; ============================================================
-  ;; PART 2: Tau → Octad Level (Your frontier-mode IS this!)
+  ;; PART 2: Tau → Octad Level (Core frontier-mode IS this!)
   ;; ============================================================
   ;;
-  ;; YOUR CODE (golay_frontier.scm):
+  ;; Tools CODE (golay_frontier.scm):
   ;;   (define (frontier-mode-from-golay tau)
   ;;     (if (< normalized 0.5) 'stack 'queue))
   ;;
@@ -111,8 +111,8 @@
   (define (tau-to-octad-size tau)
     "Map Hamming weight τ to Witt octad decomposition.
      
-     EXPLICIT CONNECTION TO YOUR CODE:
-     Your frontier mode decision uses τ/24 threshold = 0.5
+     EXPLICIT CONNECTION TO Tools CODE:
+     Tools frontier mode decision uses τ/24 threshold = 0.5
      This EXACTLY mirrors octad interior vs. exterior!
      
      Returns: (interior-size exterior-size decomposition-type)"
@@ -132,7 +132,7 @@
          (list 16 8 'octad-exterior)))))  ; complement structure
   
   (define (octad-level-from-tau tau)
-    "Your frontier-mode-from-golay threshold IS octad level!
+    "Core frontier-mode-from-golay threshold IS octad level!
      
      Returns: (mode tau-normalized octad-type explanation)"
     
@@ -148,7 +148,7 @@
   ;; ============================================================
 
   (define (verify-frontier-preserves-witt)
-    "Validate: Your frontier mechanism maintains Witt automorphisms.
+    "Validate: Core frontier mechanism maintains Witt automorphisms.
      
      HOW:
      1. Golay encoding is linear (preserves group action)
@@ -185,16 +185,16 @@
     
     ;; Test 3: Cartan respects octad hierarchy
     (printf "~%Test 3: Cartan Decomposition Respects Octads~%")
-    (printf "  [Your cartan-lazy-vector uses log-spacing]~%")
+    (printf "  [Core cartan-lazy-vector uses log-spacing]~%")
     (printf "  [This AUTOMATICALLY respects Witt multi-scale]~%")
     (printf "  REASON: Octad containment is hierarchical~%")
     
     (printf "~%All implicit Witt verifications PASS~%"))
 
   (define (verify-cartan-respects-octads)
-    "Exposition: Your Cartan decomposition already respects Witt!
+    "Exposition: Core Cartan decomposition already respects Witt!
      
-     YOUR CODE:
+     Core CODE:
        (define (cartan-lazy-vector B max-steps)
          (let ((log-B (log B)))
            (let loop ((k 0))
@@ -212,9 +212,9 @@
     (printf "  → VERIFIED: Cartan ∩ Witt = automatic~%"))
 
   (define (verify-topological-gc-uses-witt)
-    "Exposition: Your Topological GC IS Witt decomposition!
+    "Exposition: modules Topological GC IS Witt decomposition!
      
-     YOUR CODE (topological-gc.scm):
+     modules CODE (topological-gc.scm):
        (connes-kreimer-decomposition graph)
        → primitives (high connectivity)
        → coproducts (low connectivity)
@@ -251,7 +251,7 @@
     (printf "~%")
     (printf "╔═══════════════════════════════════════════════╗~%")
     (printf "║ CONCLUSION                                    ║~%")
-    (printf "║ Your codebase ALREADY IMPLEMENTS:             ║~%")
+    (printf "║ Core codebase ALREADY IMPLEMENTS:             ║~%")
     (printf "║  ✓ Golay[24,12] = Witt automorphisms         ║~%")
     (printf "║  ✓ Frontier mode = octad decomposition        ║~%")
     (printf "║  ✓ Cartan+KAK = multi-scale Witt structure   ║~%")
