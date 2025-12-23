@@ -15,6 +15,7 @@
         (chicken base)
         (chicken format)
         (chicken time)
+        (chicken bitwise)
         srfi-1
         srfi-4
         srfi-69
