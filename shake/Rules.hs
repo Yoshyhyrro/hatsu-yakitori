@@ -30,7 +30,6 @@ import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Lazy as BL
 
 import Chicken
-import qualified Link
 
 -- | ビルド操作を表す GADT
 data ChickenOp a where
@@ -58,7 +57,24 @@ buildArtifact (CompileUnit src flags) = do
   return (Artifact out)
 
 buildArtifact (LinkExe objs mainSrc flags outPath) = do
-  Link.linkExe objs mainSrc flags outPath
+  
+  -- 1. mainSrc も need に追加する
+  need (getPath mainSrc : map getPath objs)
+  
+  liftIO $ Dir.createDirectoryIfMissing True (takeDirectory outPath)
+  
+  -- 2. コマンドライン引数の最後に mainSrc を追加する
+  --    これにより Chicken がこのファイルをメインプログラムとしてコンパイル・リンクします
+  let args = words flags ++ ["-o", outPath] ++ map getPath objs ++ [getPath mainSrc]
+  
+  putInfo $ "[Link] " ++ outPath
+  
+  -- Ensure CHICKEN_* environment (CHICKEN_REPOSITORY_PATH etc.) is provided
+  env <- liftIO getChickenEnv
+  let envOpts = map (uncurry AddEnv) env
+  cmd_ envOpts ("csc" :: String) args
+  
+  return (Artifact outPath)
 
 -- | パス生成ヘルパー
 hashFlags :: String -> String
@@ -131,27 +147,22 @@ compileAction out isUnit = do
 
   compileSrc finalSrc out dir baseName actuallyUnit
 
--- コンパイル時に必要なライブラリを明示的にリンク
+-- | 実際のコンパイル実行
 compileSrc :: FilePath -> FilePath -> FilePath -> String -> Bool -> Action ()
 compileSrc srcPath out dir baseName isUnit = do
   env <- liftIO getChickenEnv
-  
+
+  -- 出力ディレクトリの作成
   liftIO $ Dir.createDirectoryIfMissing True dir
   
+  -- ファイルにモジュール定義があるかチェック
   srcContent <- liftIO $ readFile srcPath
-  let hasModuleDecl = "(module" `isInfixOf` srcContent
+  let hasModuleDecl = "(module" `isInfixOf` srcContent  
   
-  -- srfi-1とsrfi-69を常にリンク（chicken.bitwiseは標準ライブラリなので不要）
-  let baseArgs = 
-        [ "-uses", "srfi-1"
-        , "-uses", "srfi-69"
-        , "-c", srcPath
-        , "-o", out
-        ]
-  
+  -- 修正ポイント: -emit-import-library にはパスを含めず baseName だけを渡す
   let unitArgs = if isUnit && hasModuleDecl
         then [ "-unit", baseName
-             , "-emit-import-library", baseName
+             , "-emit-import-library", baseName  -- パスを排除
              , "-setup-mode"
              , "-regenerate-import-libraries"
              , "-no-warnings"
@@ -160,11 +171,10 @@ compileSrc srcPath out dir baseName isUnit = do
              then [ "-no-warnings" ]
              else []
   
-  let envOpts :: [CmdOption]
-      envOpts = map (uncurry AddEnv) env
+  let envOpts = map (uncurry AddEnv) env
   
-  -- すべての引数を結合して渡す
-  cmd_ envOpts ("csc" :: String) (baseArgs ++ unitArgs)
+  -- コンパイル実行
+  cmd_ envOpts ("csc" :: String) unitArgs ("-c" :: String) srcPath ("-o" :: String) out
 
   -- 生成された import ファイルの移動とコピー
   when (isUnit && hasModuleDecl) $ do
@@ -186,7 +196,7 @@ compileSrc srcPath out dir baseName isUnit = do
         Dir.createDirectoryIfMissing True "dist"
         Dir.copyFile generatedImport ("dist" </> importFile)
 
--- | 指定リストから実在するファイルを探す
+-- | 指定リストから実在する ファイルを探す
 findSourceFile :: [FilePath] -> IO (Maybe FilePath)
 findSourceFile [] = return Nothing
 findSourceFile (path:paths) = do
@@ -230,7 +240,7 @@ findAllFilesRecursive' targetNames currentDir = do
             then return False 
             else Dir.doesDirectoryExist (parent </> sub)
 
--- | 環境変数取得ヘルパー
+-- | 環境変数取得
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
@@ -244,23 +254,18 @@ getChickenEnv = do
       readProcess "csi" ["-R", "chicken.platform", "-e", "(display (car (repository-path)))"] ""
 
   let corePath = projectRoot </> "core"
-  let distPath = projectRoot </> "dist"
-  
-  -- 重要：dist/ を最初に追加して、ユニットの .import.so が見つかるようにする
   let repoPath =
         intercalate
           ":"
-          [ distPath              -- ← ここを最初に追加！
-          , corePath
+          [ corePath
+          , "dist"
           , home </> ".chicken"
           , systemRepo
           , sysEnvRepo
           ]
 
   return
-    [ ("CHICKEN_INCLUDE_PATH", intercalate ":" [corePath, "dist", ".", "_build", systemRepo])
+    [ ("CHICKEN_INCLUDE_PATH", corePath ++ ":dist:.:_build")
     , ("CHICKEN_REPOSITORY_PATH", repoPath)
-    , ("CHICKEN_INSTALL_REPOSITORY", distPath)
-    , ("LD_LIBRARY_PATH", "/usr/lib:" ++ systemRepo)
-    , ("CSC_OPTIONS", "-L/usr/lib")
+    , ("CHICKEN_INSTALL_REPOSITORY", "dist")
     ]

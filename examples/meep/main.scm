@@ -10,28 +10,17 @@
 ;;;  3. Computation reduction with KAK optimization
 ;;;  4. Memory management with Topological GC (optional)
 ;;; ============================================================
+
 (import scheme
         (chicken base)
         (chicken format)
         (chicken time)
-        (chicken bitwise)
         srfi-1
         srfi-4
         srfi-69
         kak_physics_core
         kak_quiver_safety
         kak_optimization)
-
-;; --- 静的リンクを解決するための魔法の呪文 ---
-(declare (uses kak_physics_core))
-(declare (uses kak_quiver_safety))
-(declare (uses kak_optimization))
-
-;; 依存しているSRFI等も明示的に uses する
-(declare (uses srfi-1))
-(declare (uses srfi-4))
-(declare (uses srfi-69))
-;; ------------------------------------
 
 ;; Topological GC is conditionally imported (optional feature)
 ;; Loaded only when available at compile time
@@ -168,7 +157,7 @@
   ;; Create KAK optimization context
   (let* ((info-bits 24)
          (base 2.0)
-         (af-config (list 'queue 1.0 #x000000))  ;; mode, tau, codeword
+         (af-config (values 'queue 1.0 #x000000))  ;; mode, tau, codeword
          (kak-ctx (make-kak-context info-bits base max-steps af-config))
          
          ;; Create Quiver safety context (renamed to avoid conflict)
@@ -181,14 +170,14 @@
       (printf "dt: ~a, dx: ~a~n" (grid-dt grid) (grid-dx grid)))
     
     ;; Main time evolution loop
-    (let ((start-time (current-process-milliseconds)))
+    (let ((start-time (current-milliseconds)))
       
       ;; Execute Quiver-safe adaptive updates
       (let ((result-grid 
              (kak-apply-quiver-safe graph-fn grid sources quiver-ctx
                                     #:aggressive #t)))
         
-        (let ((elapsed (- (current-process-milliseconds) start-time)))
+        (let ((elapsed (- (current-milliseconds) start-time)))
           (when verbose
             (printf "Simulation completed in ~a ms~n" elapsed)
             (printf "Average time per step: ~a ms~n" 
@@ -285,11 +274,11 @@
        (let* ((q-type (car strat))
               (mode (cdr strat))
               (ctx (make-quiver-context 100 mode))
-              (start (current-process-milliseconds)))
+              (start (current-milliseconds)))
          
          ;; Dummy execution
          (let ((result (kak-apply-quiver-safe graph-fn grid sources ctx)))
-           (let ((elapsed (- (current-process-milliseconds) start)))
+           (let ((elapsed (- (current-milliseconds) start)))
              (printf "Strategy ~a (~a): ~a ms~n" q-type mode elapsed)))))
      strategies)))
 
