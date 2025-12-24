@@ -35,14 +35,30 @@ data Module = Module
 -- 4. Quiver安全性 (最適化と物理コアに依存)
 coreFiles :: [FilePath]
 coreFiles = 
-    [ "core/kak_decomposition.scm"
-    , "core/cartan_utils.scm"
-    , "core/machine_constants.scm"
+    [ "core/machine_constants.scm"
     , "core/golay_frontier.scm"
-    , "modules/kak_physics_core.scm"      -- 1st: 物理コア (独立)
-    , "modules/kak_optimization.scm"      -- 2nd: 最適化 (物理コア後)
-    , "modules/kak_quiver_safety.scm"     -- 3rd: Quiver (最適化と物理コア後)
-    , "modules/topological-gc.scm"        -- 4th: GC
+    , "core/witt_foundation.scm"           -- FOUNDATION (必須)
+    , "core/witt_symmetry_explicit.scm"    -- Witt検証
+    , "core/kak_decomposition.scm"
+    , "core/cartan_utils.scm"
+    , "modules/kak_physics_core.scm"       -- 物理コア
+    , "modules/kak_optimization.scm"       -- 最適化
+    , "modules/kak_quiver_safety.scm"      -- Quiver安全性
+    , "modules/topological-gc.scm"         -- GC
+    ]
+
+-- Witt Foundation System (スタンドアロン検証用)
+wittSystem :: [Module]
+wittSystem =
+    [ Module "witt-validator"
+             "core/cross_validation.scm"   -- Main entry point
+             "tests/cross_validation_tests.scm"
+             [ "core/machine_constants.scm"
+             , "core/golay_frontier.scm"
+             , "core/witt_foundation.scm"
+             , "core/witt_symmetry_explicit.scm"
+             , "core/kak_decomposition.scm"
+             ]
     ]
 
 modules :: [Module]
@@ -74,11 +90,9 @@ modules =
           [ "tools/golay24-tool/setup.scm"
           , "modules/sssp_geometry/sssp_geo_main.scm"
           ])
-    ]
+    ] ++ wittSystem  -- Add Witt system to modules
 
--- ====================================================================
---  Main Loop
--- ====================================================================
+-- In the main :: IO () function, update the build rules:
 
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
@@ -90,27 +104,36 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
     -- コンパイラフラグ
     let cflags = "-O3 -d0"
+    let wittflags = "-O2 -d0"  -- Slightly less aggressive for Witt system
 
     -- 2. 各モジュールのビルドターゲット定義
     forM_ modules $ \m -> do
         let mName = modName m
+        let isWittSystem = mName == "witt-validator"
+        let flags = if isWittSystem then wittflags else cflags
         
         -- アプリケーションのビルド
         phony ("build-" ++ mName) $ do
             need (modDeps m)
             projectRoot <- liftIO Dir.getCurrentDirectory
             let absPath p = projectRoot </> p
-            -- 依存関係(Core等)をユニットとしてコンパイル
-            -- 順序が重要: coreFiles の順序に従ってコンパイル
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) cflags) (modDeps m)
-            -- メインプログラムをユニットとしてコンパイル
-            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) cflags
-            -- リンクして実行ファイルを生成
+            
+            -- 依存関係をコンパイル (順序が重要!)
+            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) flags) (modDeps m)
+            
+            -- メインプログラムをコンパイル
+            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) flags
+            
+            -- リンク
             let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
             let exePath = "dist" </> mName ++ "_app" <.> exe
+            
+            when isWittSystem $
+                liftIO $ putStrLn $ ">>> Building Witt Validation System: " ++ exePath
+            
             _ <- buildArtifact $ LinkExe objArtifacts
                                          (source $ (projectRoot </> modSrc m))
-                                         cflags
+                                         flags
                                          exePath
             return ()
 
@@ -120,7 +143,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
             projectRoot <- liftIO Dir.getCurrentDirectory
             let config = Salmonella.defaultTestConfig
                     { Salmonella.tcEnv = env
-                    , Salmonella.tcCompileFlags = words cflags
+                    , Salmonella.tcCompileFlags = words flags
                     }
             result <- Salmonella.runIsolatedModuleTests config
                                                          mName
@@ -133,26 +156,31 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
 
-        -- GC コンパイル
-        phony ("gc-" ++ mName) $ do
-            need (modDeps m)
-            projectRoot <- liftIO Dir.getCurrentDirectory
-            let absPath p = projectRoot </> p
-            let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) gcFlags) (modDeps m)
-            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) gcFlags
-            let exePath = "dist" </> mName ++ "_app_gc" <.> exe
-            gcObj <- GC.buildGCObj exePath
-            let objArtifacts = map toObjArtifact (deps ++ [mainUnit]) ++ [gcObj]
-            _ <- buildArtifact $ LinkExe objArtifacts
-                                         (source $ (projectRoot </> modSrc m))
-                                         gcFlags
-                                         exePath
-            return ()
+        -- GC コンパイル (Wittシステムは除外)
+        unless isWittSystem $
+            phony ("gc-" ++ mName) $ do
+                need (modDeps m)
+                projectRoot <- liftIO Dir.getCurrentDirectory
+                let absPath p = projectRoot </> p
+                let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
+                deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) gcFlags) (modDeps m)
+                mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) gcFlags
+                let exePath = "dist" </> mName ++ "_app_gc" <.> exe
+                gcObj <- GC.buildGCObj exePath
+                let objArtifacts = map toObjArtifact (deps ++ [mainUnit]) ++ [gcObj]
+                _ <- buildArtifact $ LinkExe objArtifacts
+                                             (source $ (projectRoot </> modSrc m))
+                                             gcFlags
+                                             exePath
+                return ()
 
-    -- 3. Salmonella統合
+    -- 3. Witt validation target
+    phony "witt" $ need ["build-witt-validator"]
+    phony "test-witt" $ need ["test-witt-validator"]
+
+    -- 4. Salmonella統合
     phony "salmonella" $ do
-        need ["test-" ++ modName m | m <- modules]
+        need ["test-" ++ modName m | m <- modules, modName m /= "witt-validator"]
         liftIO $ do
             let roots = [".", "core", "modules", "tools"]
             let findEggs :: FilePath -> IO [FilePath]
@@ -182,7 +210,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
                     putStrLn stderr
                     fail "Salmonella tests failed"
 
-    -- 4. クリーニングコマンド
+    -- 5. クリーニングコマンド
     phony "clean" $ Clean.cleanAll
     phony "clean-build" $ Clean.cleanBuild
     phony "clean-tests" $ Clean.cleanTests
@@ -193,11 +221,11 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         Clean.cleanAll
         putInfo "Removed all generated files and caches"
 
-    -- 5. 便利コマンド
+    -- 6. 便利コマンド
     phony "build" $ need ["build-" ++ modName m | m <- modules]
     phony "test-all" $ need ["test-" ++ modName m | m <- modules]
     phony "test" $ need ["test-all"]
-    phony "gc-all" $ need ["gc-" ++ modName m | m <- modules]
+    phony "gc-all" $ need ["gc-" ++ modName m | m <- modules, modName m /= "witt-validator"]
 
 -- Helper
 toObjArtifact :: Artifact 'Unit -> Artifact 'Obj

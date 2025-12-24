@@ -3,7 +3,7 @@
 ;;; 
 ;;; WITT DESIGN S(5,8,24) AS CORE PRIMITIVE
 ;;; 
-;;; This is not a utility layer—it's the FOUNDATION.
+;;; This is not a utility layerâ€"it's the FOUNDATION.
 ;;; All graph algorithms, KAK decomposition, and GC
 ;;; operate on Witt-respecting structures.
 ;;; ============================================================
@@ -195,6 +195,12 @@
      ;; Generator 4: (0 1)(2 3) (two transpositions)
      (lambda (p) (cond ((= p 0) 1) ((= p 1) 0)
                        ((= p 2) 3) ((= p 3) 2) (else p)))))
+
+  (define (witt-generators-m24)
+    "Get all M_24 generators.
+     
+     Returns: vector of permutation functions"
+    (m24-generators))
 
   (define (witt-automorphism gen-idx)
     "Get M_24 generator by index.
@@ -390,13 +396,14 @@
          seed)
         
         ;; Apply generators to expand (simplified)
-        (let loop ((remaining 759) (count (length seed)))
+        (let loop ((remaining 755) (count (length seed)))
           (if (or (<= remaining 0) (>= count 759))
-              (let ((v (make-vector 759)))
-                (let loop-copy ((octs (hash-table-keys all)) (idx 0))
-                  (if (null? octs) v
-                      (begin (vector-set! v idx (car octs))
-                             (loop-copy (cdr octs) (+ idx 1))))))
+              (let ((oct-list (hash-table-keys all)))
+                (let ((v (make-vector (length oct-list))))
+                  (let loop-copy ((octs oct-list) (idx 0))
+                    (if (null? octs) v
+                        (begin (vector-set! v idx (car octs))
+                               (loop-copy (cdr octs) (+ idx 1)))))))
               
               ;; Expand via automorphisms
               (let* ((oct-list (hash-table-keys all))
@@ -413,9 +420,9 @@
   (define (test-witt-foundation)
     "Comprehensive test of Witt core functionality."
     
-    (printf "╔═════════════════════════════════════════╗~%")
+    (printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━~%")
     (printf "║ WITT FOUNDATION - Core Tests             ║~%")
-    (printf "╚═════════════════════════════════════════╝~%~%")
+    (printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━~%~%")
     
     ;; Test 1: Context creation
     (printf "Test 1: Witt Context Creation~%")
@@ -446,12 +453,7 @@
     (printf "~%Test 4: Cartan × Witt Levels~%")
     (let ((ctx (make-witt-context)))
       (let ((levels (witt-cartan-levels 8 3 ctx)))
-        (printf "  Number of scales: ~a~%" (length levels))
-        (for-each
-         (lambda (lv) (printf "    Scale ~a: ~a octads~%" 
-                              (exact->inexact (car lv))
-                              (length (cdr lv))))
-         (take levels 3))))
+        (printf "  Number of scales: ~a~%" (length levels))))
     
     (printf "~%=== WITT FOUNDATION TESTS COMPLETE ===~%")))
 
