@@ -54,7 +54,6 @@
   (import (chicken base)
           (chicken bitwise)
           (chicken flonum)
-          (chicken list)
           srfi-1)
 
   ;;; ========================================================

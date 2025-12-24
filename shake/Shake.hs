@@ -3,11 +3,12 @@
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, unless, forM)
+import Control.Monad (forM_, unless, forM, when)
 import System.Process (readCreateProcessWithExitCode, proc)
 import qualified System.Directory as Dir
 import System.Exit (ExitCode(..))
 import Data.List (words)
+
 
 -- 自作モジュール
 import Chicken
@@ -52,12 +53,13 @@ wittSystem :: [Module]
 wittSystem =
     [ Module "witt-validator"
              "core/cross_validation.scm"   -- Main entry point
-             "tests/cross_validation_tests.scm"
+             "tests/test_system.scm"
              [ "core/machine_constants.scm"
              , "core/golay_frontier.scm"
              , "core/witt_foundation.scm"
              , "core/witt_symmetry_explicit.scm"
              , "core/kak_decomposition.scm"
+             , "core/cross_validation.scm"
              ]
     ]
 
