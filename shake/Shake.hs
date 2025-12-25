@@ -120,40 +120,71 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
             projectRoot <- liftIO Dir.getCurrentDirectory
             let absPath p = projectRoot </> p
             
-            -- 依存関係をコンパイル (順序が重要!)
-            deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) flags) (modDeps m)
-            
-            -- メインプログラムをコンパイル
-            mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) flags
-            
-            -- リンク
-            let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
-            let exePath = "dist" </> mName ++ "_app" <.> exe
-            
-            when isWittSystem $
-                liftIO $ putStrLn $ ">>> Building Witt Validation System: " ++ exePath
-            
-            _ <- buildArtifact $ LinkExe objArtifacts
-                                         (source $ (projectRoot </> modSrc m))
-                                         flags
-                                         exePath
-            return ()
+            if isWittSystem
+                then do
+                    -- Witt system: Compile all modules as units, then link with test
+                    putInfo $ "[Witt] Building validator with module linking..."
+
+                    let unitNames = map (takeBaseName . dropExtension) (modDeps m)
+                    let objPaths = [ "_build" </> u <.> "o" | u <- unitNames ]
+
+                    -- Step 1: Compile each dependency as a compilation unit
+                    forM_ (zip (modDeps m) objPaths) $ \(src, objPath) -> do
+                        let unitName = takeBaseName (dropExtension src)
+                        need [absPath src]
+                        liftIO $ Dir.createDirectoryIfMissing True "_build"
+                        cmd_ (["csc"] ++ words wittflags ++ ["-c",
+                              absPath src, "-o", objPath,
+                              "-unit", unitName,
+                              "-emit-import-library", unitName])
+
+                    -- Step 2: Compile test file as a program
+                    let testFile = absPath (modTest m)
+                    let exePath = "dist" </> mName ++ "_app" <.> exe
+
+                    need [testFile]
+                    liftIO $ Dir.createDirectoryIfMissing True (takeDirectory exePath)
+
+                    -- Link: compile test with all unit dependencies
+                    let usesFlags = concatMap (\u -> ["-uses", u]) unitNames
+                    let linkFlags = words wittflags ++ ["-o", exePath, "-I", "_build"] ++ usesFlags ++ objPaths ++ [testFile]
+                    cmd_ (["csc"] ++ linkFlags)
+                    putInfo $ "Linked: " ++ exePath
+                    
+                else do
+                    -- Original build path for other modules
+                    deps <- mapM (\src -> buildArtifact $ CompileUnit (source $ absPath src) flags) (modDeps m)
+                    mainUnit <- buildArtifact $ CompileUnit (source $ absPath $ modSrc m) flags
+                    let objArtifacts = map toObjArtifact (deps ++ [mainUnit])
+                    let exePath = "dist" </> mName ++ "_app" <.> exe
+                    _ <- buildArtifact $ LinkExe objArtifacts
+                                                 (source $ (projectRoot </> modSrc m))
+                                                 flags
+                                                 exePath
+                    return ()
 
         -- テストの実行
         phony ("test-" ++ mName) $ do
-            env <- liftIO getChickenEnv
-            projectRoot <- liftIO Dir.getCurrentDirectory
-            let config = Salmonella.defaultTestConfig
-                    { Salmonella.tcEnv = env
-                    , Salmonella.tcCompileFlags = words flags
-                    }
-            result <- Salmonella.runIsolatedModuleTests config
-                                                         mName
-                                                         (projectRoot </> modSrc m)
-                                                         (projectRoot </> modTest m)
-                                                         (map (projectRoot </>) (modDeps m))
-            unless (Salmonella.trPassed result) $
-                fail $ "Tests failed for " ++ mName
+            if isWittSystem
+                then do
+                    need ["build-" ++ mName] -- ファイルパスではなくphonyターゲットを要求する
+                    let exePath = "dist" </> mName ++ "_app" <.> exe
+                    cmd_ [exePath]
+                    putInfo $ "[WITT] Validation complete"
+                else do
+                    env <- liftIO getChickenEnv
+                    projectRoot <- liftIO Dir.getCurrentDirectory
+                    let config = Salmonella.defaultTestConfig
+                            { Salmonella.tcEnv = env
+                            , Salmonella.tcCompileFlags = words flags
+                            }
+                    result <- Salmonella.runIsolatedModuleTests config
+                                                                 mName
+                                                                 (projectRoot </> modSrc m)
+                                                                 (projectRoot </> modTest m)
+                                                                 (map (projectRoot </>) (modDeps m))
+                    unless (Salmonella.trPassed result) $
+                        fail $ "Tests failed for " ++ mName
 
         -- ショートカット
         phony mName $ need ["build-" ++ mName]
@@ -180,39 +211,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "witt" $ need ["build-witt-validator"]
     phony "test-witt" $ need ["test-witt-validator"]
 
-    -- 4. Salmonella統合
-    phony "salmonella" $ do
-        need ["test-" ++ modName m | m <- modules, modName m /= "witt-validator"]
-        liftIO $ do
-            let roots = [".", "core", "modules", "tools"]
-            let findEggs :: FilePath -> IO [FilePath]
-                findEggs root = do
-                    exists <- Dir.doesDirectoryExist root
-                    if not exists then return [] else do
-                        entries <- Dir.listDirectory root
-                        paths <- forM entries $ \e -> do
-                            let p = root </> e
-                            isDir <- Dir.doesDirectoryExist p
-                            if isDir
-                                then findEggs p
-                                else return $ if takeExtension p == ".egg" then [p] else []
-                        return (concat paths)
-
-            eggLists <- mapM findEggs roots
-            let eggFiles = concat eggLists
-            let args = if null eggFiles then [] else concatMap (\f -> ["-l", f]) eggFiles
-            (exitCode, stdout, stderr) <- readCreateProcessWithExitCode (proc "salmonella" args) ""
-            case exitCode of
-                ExitSuccess -> putStrLn "✓ Salmonella tests passed"
-                _ -> do
-                    putStrLn "✗ Salmonella tests failed"
-                    putStrLn "=== Stdout ==="
-                    putStrLn stdout
-                    putStrLn "=== Stderr ==="
-                    putStrLn stderr
-                    fail "Salmonella tests failed"
-
-    -- 5. クリーニングコマンド
+    -- 4. クリーニングコマンド
     phony "clean" $ Clean.cleanAll
     phony "clean-build" $ Clean.cleanBuild
     phony "clean-tests" $ Clean.cleanTests

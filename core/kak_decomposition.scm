@@ -199,6 +199,6 @@
         ;; 3. Return results along with the config for further analysis
         (values dist-table
                 config   ;; Caller can inspect Galois height/orbit class here
-                tau))))
+                tau)))))
 
-) ;; end module kak_decomposition
+ ;; end module kak_decomposition

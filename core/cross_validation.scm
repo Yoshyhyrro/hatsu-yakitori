@@ -1,6 +1,7 @@
 ;;; ============================================================
 ;;; core/cross_validation.scm
 ;;; Inter-Module Consistency Assurance System
+;;; FIXED: All required imports now available
 ;;; ============================================================
 
 (module cross_validation
@@ -26,9 +27,11 @@
   (import scheme)
   (import (chicken base)
           (chicken format)
-          (chicken sort))
+          (chicken bitwise)
+          srfi-1        ; iota, filter, map, for-each
+          srfi-69)      ; hash-table operations
   
-  ;; External Module Imports
+  ;; All modules now available
   (import golay_frontier)
   (import witt_symmetry_explicit)
   (import witt_foundation)
@@ -40,9 +43,9 @@
   
   (define (validate-golay-witt-consistency)
     "Verify mathematical consistency between Golay codes and Witt designs."
-    (printf "╔══════════════════════════════════════════╗~%")
+    (printf "╔════════════════════════════════════════════════╗~%")
     (printf "║ Golay <=> Witt Consistency Check         ║~%")
-    (printf "╚══════════════════════════════════════════╝~%~%")
+    (printf "╚════════════════════════════════════════════════╝~%~%")
     
     (let* ((test-infos '(#x000 #x001 #x555 #xFFF))
            (all-pass? #t))
@@ -61,7 +64,7 @@
                    info codeword weight)
            
            ;; Verification 1: Weight Consistency
-           (let ((hamming-w (hamming-weight codeword)))
+           (let ((hamming-w (golay-weight codeword)))
              (if (= weight hamming-w)
                  (printf "  [OK] Weight match: ~a~%" weight)
                  (begin
@@ -71,7 +74,7 @@
            
            ;; Verification 2: Mode and Witt-level Consistency
            (let* ((expected-mode (if (< weight 12) 'stack 'queue))
-                  (witt-mode (cadr witt-level)))
+                  (witt-mode (if witt-level (cadr witt-level) 'unknown)))
              (if (eq? mode expected-mode)
                  (printf "  [OK] Frontier mode match: ~a~%" mode)
                  (begin
@@ -97,41 +100,44 @@
   
   (define (validate-cartan-witt-alignment B steps)
     "Verify that Cartan decomposition respects Witt structures."
-    (printf "╔══════════════════════════════════════════╗~%")
+    (printf "╔════════════════════════════════════════════════╗~%")
     (printf "║ Cartan <=> Witt Alignment Check          ║~%")
-    (printf "╚══════════════════════════════════════════╝~%~%")
+    (printf "╚════════════════════════════════════════════════╝~%~%")
     
-    (let ((ctx (make-witt-context))
-          (levels (witt-cartan-levels B steps ctx))
-          (all-pass? #t))
+    (let* ((ctx (make-witt-context))
+           (levels (witt-cartan-levels B steps ctx))
+           (all-pass? #t))
       
       (printf "Configuration: B=~a, steps=~a~%~%" B steps)
       
-      (for-each
-       (lambda (level-pair idx)
-         (let ((scale (car level-pair))
-               (octads (cdr level-pair))
-               (tau-threshold (round (* 24.0 scale))))
-           
-           (printf "Level ~a: scale=~a, tau_threshold=~a~%" 
-                   idx scale tau-threshold)
-           
-           ;; Verify each octad weight does not exceed threshold
-           (for-each
-            (lambda (octad)
-              (let ((weight (octad-weight octad))
-                    (class (octad-class octad)))
-                (if (<= weight tau-threshold)
-                    (printf "  [OK] Octad 0x~X: weight=~a (~a)~%" 
-                            octad weight class)
-                    (begin
-                      (printf "  [FAIL] Octad 0x~X: weight=~a > threshold ~a~%" 
-                              octad weight tau-threshold)
-                      (set! all-pass? #f)))))
-            octads)
-           (printf "~%")))
-       levels
-       (iota (length levels)))
+      ;; FIX: Proper iteration with variable binding
+      (let loop ((remaining levels) (idx 0))
+        (if (not (null? remaining))
+            (let* ((level-pair (car remaining))
+                   (scale (car level-pair))        ; ← Properly bound
+                   (octads (cdr level-pair))
+                   (tau-threshold (round (* 24.0 scale))))
+              
+              (printf "Level ~a: scale=~a, tau_threshold=~a~%" 
+                      idx scale tau-threshold)
+              
+              ;; Verify each octad weight does not exceed threshold
+              (for-each
+               (lambda (octad)
+                 (let ((weight (octad-weight octad))
+                       (class (octad-class octad)))
+                   (if (<= weight tau-threshold)
+                       (printf "  [OK] Octad 0x~X: weight=~a (~a)~%" 
+                               octad weight class)
+                       (begin
+                         (printf "  [FAIL] Octad 0x~X: weight=~a > threshold ~a~%" 
+                                 octad weight tau-threshold)
+                         (set! all-pass? #f)))))
+               octads)
+              (printf "~%")
+              
+              ;; Recurse to next level
+              (loop (cdr remaining) (+ idx 1)))))
       
       all-pass?))
   
@@ -141,9 +147,9 @@
   
   (define (validate-gc-topology-witt)
     "Verify GC topology alignment with Witt geometry."
-    (printf "╔══════════════════════════════════════════╗~%")
+    (printf "╔════════════════════════════════════════════════╗~%")
     (printf "║ GC Topology <=> Witt Consistency Check   ║~%")
-    (printf "╚══════════════════════════════════════════╝~%~%")
+    (printf "╚════════════════════════════════════════════════╝~%~%")
     
     (let ((all-pass? #t))
       (printf "Connes-Kreimer Hopf Algebra Mapping:~%")
@@ -170,33 +176,33 @@
   
   (define (validate-machine-constants-witt)
     "Ensure machine precision constants do not conflict with Witt scales."
-    (printf "╔══════════════════════════════════════════╗~%")
+    (printf "╔════════════════════════════════════════════════╗~%")
     (printf "║ Machine Constants <=> Witt Validation    ║~%")
-    (printf "╚══════════════════════════════════════════╝~%~%")
+    (printf "╚════════════════════════════════════════════════╝~%~%")
     
     (let ((all-pass? #t))
       ;; 1. Precision vs Granularity
       (printf "1. Machine Epsilon vs Witt Granularity:~%")
-      (let ((witt-min-scale 1/24)
+      (let ((witt-min-scale (/ 1.0 24.0))
             (epsilon machine-epsilon))
         (if (< epsilon witt-min-scale)
             (printf "  [OK] Precision (~a) < Witt Min Step (~a)~%"
                     epsilon witt-min-scale)
             (begin
-                   (printf "  [FAIL] Insufficient precision: epsilon=~a, Witt_min=~a~%"
-                           epsilon witt-min-scale)
-                   (set! all-pass? #f))))
+              (printf "  [FAIL] Insufficient precision: epsilon=~a, Witt_min=~a~%"
+                      epsilon witt-min-scale)
+              (set! all-pass? #f))))
       
       ;; 2. Tolerance vs Octad Weight
       (printf "~%2. Tolerance vs Octad Weight Steps:~%")
       (let ((tolerance default-tolerance)
-            (octad-weight-step 4)) 
+            (octad-weight-step 4.0)) 
         (if (< tolerance (/ octad-weight-step 100.0))
             (printf "  [OK] Tolerance (~a) << Weight Step (~a)~%"
                     tolerance octad-weight-step)
             (begin
-                   (printf "  [FAIL] Tolerance too large for discrete octad steps.~%")
-                   (set! all-pass? #f))))
+              (printf "  [FAIL] Tolerance too large for discrete octad steps.~%")
+              (set! all-pass? #f))))
       
       ;; 3. Log-scaling behavior
       (printf "~%3. Log-scaling vs Cartan-Witt decomposition:~%")
@@ -218,9 +224,9 @@
   
   (define (full-system-validation)
     "Execute all cross-module consistency checks."
-    (printf "╔══════════════════════════════════════════╗~%")
+    (printf "╔════════════════════════════════════════════════╗~%")
     (printf "║ FULL SYSTEM CROSS-VALIDATION             ║~%")
-    (printf "╚══════════════════════════════════════════╝~%~%")
+    (printf "╚════════════════════════════════════════════════╝~%~%")
     
     (let ((results '()))
       (printf "--- Phase 1: Golay <=> Witt ---~%")
@@ -240,9 +246,9 @@
         (set! results (cons (validate-witt-structure ctx) results)))
       
       ;; Summary Table
-      (printf "~%╔══════════════════════════════════════════╗~%")
+      (printf "~%╔════════════════════════════════════════════════╗~%")
       (printf "║ VALIDATION SUMMARY                       ║~%")
-      (printf "╠══════════════════════════════════════════╣~%")
+      (printf "╠════════════════════════════════════════════════╣~%")
       
       (let ((pass-count (length (filter identity results)))
             (total-count (length results)))
@@ -252,7 +258,7 @@
             (printf "║ STATUS: [SUCCESS] System is consistent.  ║~%")
             (printf "║ STATUS: [WARNING] Inconsistency found.   ║~%")))
       
-      (printf "╚══════════════════════════════════════════╝~%")
+      (printf "╚════════════════════════════════════════════════╝~%")
       (= (length (filter identity results)) (length results))))
 
   ;; ============================================================
@@ -277,9 +283,9 @@
 
   (define (cross-module-consistency-contract)
     "Explicit declaration of inter-module mathematical contracts."
-    (printf "╔══════════════════════════════════════════╗~%")
+    (printf "╔════════════════════════════════════════════════╗~%")
     (printf "║ MODULE CONSISTENCY CONTRACTS             ║~%")
-    (printf "╚══════════════════════════════════════════╝~%~%")
+    (printf "╚════════════════════════════════════════════════╝~%~%")
     (printf "Contract 1: Golay Frontier -> Witt Foundation~%")
     (printf "  - golay-weight == octad-weight (Identity)~%")
     (printf "Contract 2: Witt Foundation -> Cartan Decomposition~%")
