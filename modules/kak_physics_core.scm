@@ -29,7 +29,7 @@
 
   (import scheme 
           (chicken base)
-          (chicken format)
+          
           srfi-4)
 
   ;; Yee格子のデータ構造 (2D TMモードを想定: Ez, Hx, Hy)

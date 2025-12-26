@@ -8,7 +8,7 @@
   (import scheme)
   (import (chicken base)
           (chicken process-context)
-          (chicken format)
+          
           kak_decomposition))
          
 

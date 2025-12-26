@@ -5,7 +5,7 @@
 
 (import scheme)
 (import (chicken base)
-        (chicken format)
+        
         srfi-1
         srfi-69  ;; hash-table用に追加 (もしcoreに含まれていなければ)
         core/kak_decomposition

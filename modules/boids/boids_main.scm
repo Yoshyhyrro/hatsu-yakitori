@@ -6,7 +6,7 @@
   (import scheme)
   (import (chicken base)
           (chicken process-context)
-          (chicken format)
+          
           machine_constants
           cartan_utils
           kak_decomposition)

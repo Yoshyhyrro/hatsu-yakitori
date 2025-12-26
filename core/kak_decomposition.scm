@@ -1,10 +1,13 @@
 ;;; ============================================================
 ;;; core/kak_decomposition.scm
-;;; KAK Decomposition & Frontier Logic
+;;; KAK Decomposition & Frontier Logic (Galois-Integrated)
 ;;; ============================================================
 (module kak_decomposition
-  (K-frontier K-push K-pop K-empty? K-size K-frontier-adaptive
-   relax-bound graph-neighbors KAK-apply KAK-apply-golay +INF+)
+  (K-frontier K-push K-pop K-empty? K-size
+   relax-bound graph-neighbors
+   KAK-apply
+   KAK-apply-golay ;; The primary interface connecting Physics & Math
+   +INF+)
 
   (import scheme)
   (import (chicken base)
@@ -12,9 +15,12 @@
           srfi-1
           srfi-69)
 
+  ;; Import the "Brain" (Golay/Galois logic)
+  (import golay_frontier)
+
   (declare (unit kak_decomposition))
-  (declare (uses srfi-1 srfi-69))
-  
+  (declare (uses srfi-1 srfi-69 golay_frontier))
+
   (define +INF+ 1e99)
 
   ;;; ============================================================
@@ -23,23 +29,23 @@
 
   (define (K-frontier mode)
     (cond ((eq? mode 'stack) (cons 'stack '()))
-          ((eq? mode 'queue) (cons 'queue (cons '() '()))) ; (queue . (front . back))
+          ((eq? mode 'queue) (cons 'queue (cons '() '())))
           (else (error "Unknown frontier mode" mode))))
 
   (define (K-push frontier val)
     (let ((mode (car frontier)))
       (case mode
         ((stack)
+         ;; Stack: LIFO (cons to front)
          (cons 'stack (cons val (cdr frontier))))
         ((queue)
+         ;; Queue: FIFO (amortized O(1) using two lists)
          (let* ((fb (cdr frontier))
                 (front (car fb))
                 (back (cdr fb)))
-           ;; push onto back (amortized O(1))
            (cons 'queue (cons front (cons val back)))))
         (else (error "Unknown frontier mode" mode)))))
 
-  ;; K-pop returns three values: (success? node frontier')
   (define (K-pop frontier)
     (let ((mode (car frontier)))
       (case mode
@@ -48,31 +54,30 @@
            (if (null? data)
                (values #f #f frontier)
                (values #t (car data) (cons 'stack (cdr data))))))
-        
         ((queue)
          (let* ((fb (cdr frontier))
                 (front (car fb))
                 (back (cdr fb)))
            (cond
-             ((not (null? front))  ; normal case: front has elements
+             ((not (null? front))
+              ;; Normal case: front has elements
               (values #t (car front)
                       (cons 'queue (cons (cdr front) back))))
-             
-             ((null? back)         ; both front and back empty -> empty queue
+             ((null? back)
+              ;; Both empty
               (values #f #f frontier))
-             
-             (else                 ; front empty but back has elements
+             (else
+              ;; Front empty, back has elements: reverse back to front
               (let ((new-front (reverse back)))
                 (values #t (car new-front)
                         (cons 'queue (cons (cdr new-front) '()))))))))
-        
         (else (error "Unknown frontier mode" mode)))))
 
   (define (K-empty? frontier)
     (let ((mode (car frontier)))
       (case mode
         ((stack) (null? (cdr frontier)))
-        ((queue) 
+        ((queue)
          (let ((fb (cdr frontier)))
            (and (null? (car fb)) (null? (cdr fb)))))
         (else (error "Unknown frontier mode" mode)))))
@@ -87,13 +92,8 @@
         (else (error "Unknown frontier mode" mode)))))
 
   ;;; ============================================================
-  ;;; Adaptive Frontier from Golay Control
+  ;;; Utility
   ;;; ============================================================
-
-  (define (K-frontier-adaptive info-bits)
-    ;; Create an adaptive frontier from Golay encoding
-    ;; For now, just create a basic frontier
-    (K-frontier 'queue))
 
   (define (relax-bound dist-table v new-dist)
     (let ((current-dist (hash-table-ref/default dist-table v +INF+)))
@@ -105,79 +105,100 @@
 
   (define (graph-neighbors graph node)
     (cond
-      ((hash-table? graph) 
+      ((hash-table? graph)
        (hash-table-ref/default graph node '()))
-      ((list? graph) 
+      ((list? graph)
        (let ((entry (assoc node graph)))
          (if entry (cdr entry) '())))
       (else '())))
 
   ;;; ============================================================
-  ;;; KAK-apply: Level-by-level processing (BFS-style)
+  ;;; KAK-apply: Core Algorithm
   ;;; ============================================================
 
   (define (KAK-apply graph sources B frontier-mode max-steps)
-    "Apply KAK decomposition algorithm with Cartan log-space levels.
+    "Apply KAK decomposition algorithm.
+
      Args:
-       graph: adjacency structure (hash-table or alist)
-       sources: list of source nodes
-       B: upper bound for decomposition (must be > 1)
-       frontier-mode: 'stack or 'queue
-       max-steps: number of decomposition steps
-     Returns: hash-table of shortest distances from sources"
-    
+       graph: Adjacency structure
+       sources: List of source nodes
+       B: Decomposition bound (not fully utilized in this simplified BFS/DFS)
+       frontier-mode: 'stack (DFS) or 'queue (BFS)
+       max-steps: Max iterations
+
+     Returns: Hash table of distances"
+
     (define dist-table (make-hash-table))
-    
-    ;; Initialize source distances to 0
     (for-each (lambda (s) (hash-table-set! dist-table s 0.0)) sources)
 
-    ;; Initialize frontier with all source nodes
-    (define init-front 
-      (fold (lambda (s acc) (K-push acc s)) 
-            (K-frontier frontier-mode) 
+    ;; Initialize frontier based on the requested mode (Stack or Queue)
+    (define init-front
+      (fold (lambda (s acc) (K-push acc s))
+            (K-frontier frontier-mode)
             sources))
 
-    ;; Simple BFS without Cartan decomposition for now
     (let loop ((frontier init-front)
                (step 0))
+      ;; Termination: Step limit or empty frontier
       (if (or (>= step max-steps) (K-empty? frontier))
           dist-table
-          
-          ;; Process all nodes at current level
-          (let loop-level ((f frontier) (next-f (K-frontier frontier-mode)))
-            (call-with-values
-                (lambda () (K-pop f))
-              (lambda (success node new-f)
-                (if (not success)
-                    ;; Finished current level: move to next level
-                    (loop next-f (+ step 1))
-                    
-                    ;; Process current node
-                    (let* ((current-dist (hash-table-ref dist-table node))
-                           (neighbors (graph-neighbors graph node)))
-                      
-                      ;; Relax all neighbors
-                      (for-each
-                       (lambda (edge)
-                         (let* ((nb (car edge)) 
-                                (edge-weight (cdr edge))
-                                (new-dist (+ current-dist edge-weight)))
-                           (when (relax-bound dist-table nb new-dist)
-                             ;; Distance improved: add neighbor to next frontier
-                             (set! next-f (K-push next-f nb)))))
-                       neighbors)
-                      
-                      ;; Continue processing current level
-                      (loop-level new-f next-f)))))))))
+
+          ;; Process one node (pop from frontier)
+          (call-with-values
+              (lambda () (K-pop frontier))
+            (lambda (success node new-frontier-base)
+              (if (not success)
+                  dist-table ;; Frontier empty
+
+                  (let* ((current-dist (hash-table-ref dist-table node))
+                         (neighbors (graph-neighbors graph node))
+                         ;; Calculate next frontier by relaxing neighbors
+                         (next-frontier
+                          (fold
+                           (lambda (edge acc-f)
+                             (let* ((nb (car edge))
+                                    (edge-weight (cdr edge))
+                                    (new-dist (+ current-dist edge-weight)))
+                               ;; Only push if relaxation succeeds
+                               (if (relax-bound dist-table nb new-dist)
+                                   (K-push acc-f nb)
+                                   acc-f)))
+                           new-frontier-base
+                           neighbors)))
+
+                    ;; Recursive step
+                    (loop next-frontier (+ step 1)))))))))
 
   ;;; ============================================================
-  ;;; Golay-Controlled Wrapper
+  ;;; Golay-Controlled Wrapper (The Link between Math & Physics)
   ;;; ============================================================
 
   (define (KAK-apply-golay graph sources B max-steps info-bits)
-    "Wrapper: apply KAK with Golay-encoded control."
-    ;; For now, just use default mode
-    (let ((dist (KAK-apply graph sources B 'queue max-steps)))
-      (values dist 1.0 #f))))
+    "Wrapper: apply KAK with Golay-encoded control.
+
+     Logic Flow:
+     info-bits (12-bit) -> Golay Code (24-bit) -> Galois Height -> Mode Decision -> KAK Strategy
+
+     The 'info-bits' represent the parametrization of the Galois action.
+     Low Hamming weight (low height) implies fundamental orbits -> DFS (Stack).
+     High Hamming weight (high height) implies ramified orbits -> BFS (Queue)."
+
+    ;; 1. Generate Golay/Galois configuration
+    (let* ((config (make-adaptive-frontier info-bits))
+           (mode   (adaptive-frontier-mode config))     ;; 'stack or 'queue
+           (tau    (adaptive-frontier-tau config))      ;; Hamming Weight / Galois Height proxy
+           (cw     (adaptive-frontier-codeword config)))
+
+      ;; Log the decision for verification
+      (printf "[KAK-Golay] Info:0x~X -> Codeword:0x~X (tau=~a) -> Strategy:~a~%"
+              info-bits cw tau mode)
+
+      ;; 2. Execute KAK search with the mathematically determined mode
+      (let ((dist-table (KAK-apply graph sources B mode max-steps)))
+
+        ;; 3. Return results along with the config for further analysis
+        (values dist-table
+                config   ;; Caller can inspect Galois height/orbit class here
+                tau)))))
 
  ;; end module kak_decomposition
