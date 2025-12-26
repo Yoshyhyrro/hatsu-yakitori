@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'topological-gc
-      'topological_gc
+      'topological-gc
       (scheme#list)
       '((make-topological-frontier . topological-gc#make-topological-frontier)
         (topological-gc-collect . topological-gc#topological-gc-collect)

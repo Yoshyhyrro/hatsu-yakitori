@@ -13,7 +13,7 @@ import Control.Monad.IO.Class (liftIO)
 import qualified System.Directory as Dir
 import System.Environment (getEnvironment)
 import Data.Maybe (fromMaybe)
-import Data.List (intercalate)
+import Data.List (intercalate, partition, isPrefixOf)
 
 import Chicken
 
@@ -31,7 +31,7 @@ linkExe objs outPath = do
   cmd_ ("csc" :: String) ("-o" : outPath : objPaths)
   return (Artifact outPath)
 
--- | Linking with dependencies (-uses flags)
+-- | Linking with dependencies (-uses flags) AND system libraries
 linkWithDeps :: [Artifact 'Obj] -> [String] -> FilePath -> Action (Artifact 'Exe)
 linkWithDeps objs deps outPath = do
   need (map getPath objs)
@@ -41,8 +41,17 @@ linkWithDeps objs deps outPath = do
   let envOpts = map (uncurry AddEnv) env
   
   let objPaths = map getPath objs
-  let usesFlags = concatMap (\d -> ["-uses", d]) deps
-  let args = ["-o", outPath] ++ usesFlags ++ objPaths
+  
+  -- 依存関係を分類
+  let (srfiDeps, otherDeps) = partition ("srfi-" `isPrefixOf`) deps
+  let (chickenDeps, customDeps) = partition ("chicken" `isPrefixOf`) otherDeps
+  
+  -- SRFIとChickenモジュールは特別なリンクが必要
+  let usesFlags = concatMap (\d -> ["-uses", d]) customDeps
+  let srfiFlags = concatMap (\d -> ["-require-extension", d]) srfiDeps
+  let chickenFlags = concatMap (\d -> ["-require-extension", d]) chickenDeps
+  
+  let args = ["-o", outPath] ++ usesFlags ++ srfiFlags ++ chickenFlags ++ objPaths
   
   cmd_ envOpts ("csc" :: String) args
   return (Artifact outPath)

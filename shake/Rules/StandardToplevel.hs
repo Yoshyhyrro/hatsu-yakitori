@@ -1,4 +1,3 @@
-{- shake/Rules/StandardToplevel.hs -}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Rules.StandardToplevel
@@ -9,67 +8,57 @@ module Rules.StandardToplevel
   ) where
 
 import Data.List (nub, isPrefixOf, isInfixOf)
-import Data.Maybe (catMaybes)
+import Data.Maybe (listToMaybe)
 
--- ============================================================
--- Extraction Functions
--- ============================================================
-
--- | Extract (declare (uses srfi-1 srfi-69 golay_frontier)) dependencies
+-- | Extract "(declare (uses ...))" dependencies from file content
 extractDeclareUses :: String -> [String]
-extractDeclareUses content = 
+extractDeclareUses content =
   nub $ concatMap extractFromLine (lines content)
   where
     extractFromLine line
       | "(declare (uses" `isInfixOf` line =
-          let cleaned = dropWhile (/= 's') $ dropWhile (/= '(') line
-              inside = takeWhile (/= ')') $ dropWhile (/= ' ') cleaned
-          in words inside
+          -- crude: take what's after "(declare (uses" until ')'
+          let rest = dropWhile (/= '(') $ dropWhile (/= 'd') line
+              inside = takeWhile (/= ')') $ dropWhile (/= '(') rest
+              tokens = words $ filter (`notElem` ("()," :: String)) inside
+          in tokens
       | otherwise = []
 
--- | Extract (import X Y Z) or (import (chicken base)) declarations
+-- | Extract "(import ...)" declarations (returns tokens after import)
 extractImports :: String -> [String]
-extractImports content = 
+extractImports content =
   nub $ concatMap parseImportLine (lines content)
   where
     parseImportLine line
-      | "(import" `isInfixOf` line =
-          let cleaned = filter (\c -> c `notElem` ("()" :: String)) line
+      | "import" `isInfixOf` line =
+          -- Replace (chicken format) with chicken.format to avoid splitting
+          let sanitized = replaceSub "(chicken " "chicken." $ 
+                          replaceSub "(srfi " "srfi." line
+              cleaned = filter (`notElem` ("()" :: String)) sanitized
               tokens = words cleaned
               afterImport = drop 1 $ dropWhile (/= "import") tokens
-          in filter isCustomModule afterImport
+          in afterImport
       | otherwise = []
 
--- | Extract (module name ...) declaration
+-- Simple helper to prevent splitting namespaces
+replaceSub :: String -> String -> String -> String
+replaceSub old new xs 
+    | null xs = ""
+    | old `isPrefixOf` xs = new ++ replaceSub old new (drop (length old) xs)
+    | otherwise = case xs of
+        (c:cs) -> c : replaceSub old new cs
+        []     -> ""
+
+-- | Extract "(module NAME ...)" declaration (first token after "module"), if any
 extractModuleDecl :: String -> Maybe String
 extractModuleDecl content =
-  case dropWhile (/= 'm') content of
-    [] -> Nothing
-    rest -> 
-      let modName = takeWhile (\c -> c /= ' ' && c /= ')') $ 
-                    dropWhile (== ' ') $ drop 7 rest
-      in if null modName then Nothing else Just modName
+  listToMaybe [tok | line <- lines content, "module" `isInfixOf` line,
+                     let toks = words line, tok <- drop 1 $ dropWhile (/= "module") toks]
 
--- ============================================================
--- Filtering
--- ============================================================
-
--- | Check if module is custom (not chicken.* or scheme.*)
-isCustomModule :: String -> Bool
-isCustomModule m =
-  not ("chicken" `isPrefixOf` m) &&
-  not ("scheme" `isPrefixOf` m) &&
-  not ("srfi" `isPrefixOf` m) &&
-  not (null m)
-
--- ============================================================
--- Main API
--- ============================================================
-
--- | Extract all dependencies from a source file
+-- | Read a source file and return all declared uses + imports
 extractAllDeps :: FilePath -> IO [String]
 extractAllDeps srcPath = do
   content <- readFile srcPath
   let uses = extractDeclareUses content
-  let imports = filter isCustomModule (extractImports content)
+      imports = extractImports content
   return $ nub (uses ++ imports)

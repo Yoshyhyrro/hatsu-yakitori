@@ -7,7 +7,7 @@
 (import (chicken base)
         (chicken bitwise)
         (chicken random)
-        (chicken format)
+        
         srfi-1
         srfi-69)
 

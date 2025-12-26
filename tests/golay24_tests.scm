@@ -4,7 +4,7 @@
 
 (import scheme
         (chicken base)       
-        (chicken format)     
+             
         (chicken process-context)
         (chicken bitwise))
 

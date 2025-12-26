@@ -9,7 +9,7 @@
 
   (import (scheme)
           (chicken base)
-          (chicken format)
+          
           (chicken sort)
           (chicken flonum)
           srfi-1

@@ -7,18 +7,20 @@
   (import scheme)
   (import (chicken base))
   (import (chicken format))
-
-  ;; Import all modules under test
-  (import machine_constants)
-  (import golay_frontier)
-  (import witt_foundation)
-  (import witt_symmetry_explicit)
-  (import kak_decomposition)
-  (import cross_validation)
+  ;; ADD THESE to ensure the linker pulls in the required libraries:
+  (import srfi-1)
+  (import srfi-4)
+  (import srfi-69)
+  (import (chicken sort))
+  (import (chicken bitwise))
 
   ;;; ============================================================
   ;;; Test Suite: Witt Foundation System
   ;;; ============================================================
+
+  (printf "╔════════════════════════════════════════════════╗~%")
+  (printf "║ WITT FOUNDATION - System Test Suite           ║~%")
+  (printf "╚════════════════════════════════════════════════╝~%~%")
 
   (printf "╔════════════════════════════════════════════════╗~%")
   (printf "║ WITT FOUNDATION - System Test Suite           ║~%")

@@ -1,11 +1,13 @@
-{- shake/Shake.hs -}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
+
+module Shake where
 
 import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM, forM_, unless, when)
 import qualified System.Directory as Dir
-import Data.List (nub, isPrefixOf)
+import Data.List (nub, isPrefixOf, isInfixOf, partition)
 
 import Chicken
 import Rules
@@ -14,7 +16,6 @@ import qualified Rules.StandardToplevel as TopLevel
 import qualified Rules.GC as GC
 import qualified Clean
 import qualified Salmonella
-
 -- ====================================================================
 -- Helper Functions
 -- ====================================================================
@@ -126,45 +127,78 @@ buildWittValidator m flags = do
     let mName = modName m
     projectRoot <- liftIO Dir.getCurrentDirectory
     let absPath p = projectRoot </> p
+    let actualDeps = modSrc m : modDeps m
     
-    -- StandardToplevel で依存を自動抽出
-    let allSrcs = map absPath (modDeps m ++ [modTest m])
+    -- Extract dependencies
+    let allSrcs = map absPath (actualDeps ++ [modTest m])
     allDepsPerFile <- liftIO $ mapM TopLevel.extractAllDeps allSrcs
     let allDeps = nub $ concat allDepsPerFile
+    
     putInfo $ "[Witt] Dependencies: " ++ show allDeps
     
-    let unitNames = map (takeBaseName . dropExtension) (modDeps m)
+    -- Compile custom units
+    let unitNames = map (takeBaseName . dropExtension) actualDeps
     let objPaths = ["_build" </> u <.> "o" | u <- unitNames]
+
+    -- FIXED: Filter out obsolete/invalid system libraries
+    let systemLibs = filter (\d -> d `notElem` unitNames && 
+                                    not ("chicken." `isPrefixOf` d) &&
+                                    not ("srfi-" `isPrefixOf` d) &&
+                                    d `notElem` ["chicken", "scheme", "base", "uses", "format", "bitwise"]) allDeps
     
-    -- コンパイル
-    forM_ (zip (modDeps m) objPaths) $ \(src, objPath) -> do
+    forM_ (zip actualDeps objPaths) $ \(src, objPath) -> do
         let unitName = takeBaseName (dropExtension src)
         need [absPath src]
         liftIO $ Dir.createDirectoryIfMissing True "_build"
-        putInfo $ "[Witt] Unit: " ++ unitName
+        
+        -- Extract this file's dependencies
+        fileDeps <- liftIO $ TopLevel.extractAllDeps (absPath src)
+        let customDeps = filter (\d -> not ("srfi-" `isPrefixOf` d) && 
+                                       not ("chicken" `isPrefixOf` d) &&
+                                       d `notElem` ["scheme", "base", "format", "bitwise", "uses", "chicken"] &&
+                                       d /= unitName) fileDeps
+        let usesFlags = if null customDeps then [] else concatMap (\d -> ["-uses", d]) customDeps
+        
+        putInfo $ "[Witt] Compiling " ++ unitName ++ " with deps: " ++ show customDeps
+        
         cmd_ (["csc"] ++ words flags ++ 
               ["-c", absPath src, "-o", objPath,
-               "-unit", unitName, "-emit-import-library", unitName])
+               "-unit", unitName] ++
+              usesFlags ++
+              ["-emit-import-library", unitName])
     
-    -- リンク
+    -- Link
     let testFile = absPath (modTest m)
-    let exePath = "dist" </> mName ++ "_app" <.> exe
+        exePath = "dist" </> mName ++ "_app" <.> exe
+    
     need [testFile]
     liftIO $ Dir.createDirectoryIfMissing True (takeDirectory exePath)
     
     let usesOwn = concatMap (\u -> ["-uses", u]) unitNames
-    let usesExt = concatMap (\d -> ["-uses", d]) allDeps
-    let linkArgs = words flags ++ ["-o", exePath, "-I", "_build"] ++ usesOwn ++ usesExt ++ objPaths ++ [testFile]
     
-    putInfo $ "[Witt] Linking..."
+    -- Only pass extensions that are actually external "Eggs"
+    let requireFlags = concatMap (\d -> ["-require-extension", d]) systemLibs
+    
+    let linkArgs = words flags ++ 
+                   ["-o", exePath, "-I", "_build"] ++ 
+                   usesOwn ++ 
+                   requireFlags ++
+                   objPaths ++ 
+                   [testFile]
+    
+    putInfo "[Witt] Linking..."
+    -- Note: This list should now be mostly empty unless you have external Eggs
+    putInfo $ "[Witt] External Eggs: " ++ show systemLibs
     cmd_ (["csc"] ++ linkArgs)
     putInfo $ "[Witt] Built: " ++ exePath
 
 buildRegularModule :: Module -> String -> (FilePath -> FilePath) -> Action ()
 buildRegularModule m flags absPath = do
+    let mName = modName m
+    
     let deps = modDeps m
     let src = modSrc m
-    let exePath = "dist" </> modName m ++ "_app" <.> exe
+    let exePath = "dist" </> mName ++ "_app" <.> exe
     
     need (map absPath deps ++ [absPath src])
     liftIO $ Dir.createDirectoryIfMissing True (takeDirectory exePath)
@@ -177,7 +211,7 @@ buildRegularModule m flags absPath = do
     srcUnit <- compileUnit (absPath src) flags
     let srcArtifact = unitToObj srcUnit
     
-    -- link all objects
+    -- GC object は別処理なので、通常のリンクだけで良い
     let allObjs = depObjs ++ [srcArtifact]
     _ <- linkWithDeps allObjs [] exePath
     return ()

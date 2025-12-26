@@ -12,7 +12,7 @@
   ;; 2. Import List (モジュールの3番目の引数)
   (import scheme
           (chicken base)
-          (chicken format)
+          
           (chicken process-context)
           (chicken string)  ; ->string を使うために必要
           machine_constants
