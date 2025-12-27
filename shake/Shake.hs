@@ -1,3 +1,4 @@
+{- shake/Shake.hs -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -5,35 +6,16 @@ module Shake where
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM, forM_, unless, when)
+import Control.Monad (forM_)
 import qualified System.Directory as Dir
-import Data.List (nub, isPrefixOf, isInfixOf, partition)
 
-import Chicken
-import Rules
-import qualified Rules.Link as Link
-import qualified Rules.StandardToplevel as TopLevel
+import Pipeline
 import qualified Rules.GC as GC
 import qualified Clean
-import qualified Salmonella
--- ====================================================================
--- Helper Functions
--- ====================================================================
 
--- | Convert Unit artifact to Obj artifact (phantom type cast)
-unitToObj :: Artifact 'Unit -> Artifact 'Obj
-unitToObj (Artifact path) = Artifact path
-
--- ====================================================================
--- Module Definition
--- ====================================================================
-
-data Module = Module
-    { modName :: String
-    , modSrc  :: FilePath
-    , modTest :: FilePath
-    , modDeps :: [FilePath]
-    } deriving (Show)
+-- ============================================================
+-- Module Definitions
+-- ============================================================
 
 coreFiles :: [FilePath]
 coreFiles = 
@@ -49,50 +31,136 @@ coreFiles =
     , "modules/topological-gc.scm"
     ]
 
-wittSystem :: [Module]
-wittSystem =
-    [ Module "witt-validator"
-             "core/cross_validation.scm"
-             "tests/test_system.scm"
-             coreFiles
+allModules :: [Module]
+allModules =
+    [ regularModule "boids" 
+                    "modules/boids/boids_main.scm" 
+                    "tests/boids_tests.scm" 
+                    coreFiles
+    
+    , regularModule "fmm" 
+                    "modules/fmm/fmm_on_goppa_grid.scm" 
+                    "tests/fmm_tests.scm" 
+                    coreFiles
+    
+    , regularModule "sssp" 
+                    "modules/sssp/sssp_main.scm" 
+                    "tests/sssp_tests.scm" 
+                    coreFiles
+    
+    , regularModule "sssp_geometry" 
+                    "modules/sssp_geometry/sssp_geo_main.scm" 
+                    "tests/sssp_geometry_tests.scm" 
+                    coreFiles
+    
+    , regularModule "golay24-tool" 
+                    "tools/golay24-tool/golay24_main.scm" 
+                    "tests/golay24_tests.scm" 
+                    (coreFiles ++ 
+                      [ "tools/golay24-tool/setup.scm"
+                      , "modules/sssp_geometry/sssp_geo_main.scm"
+                      ])
+    
+    , specialModule "witt-validator"
+                    "core/cross_validation.scm"
+                    "tests/test_system.scm"
+                    coreFiles
     ]
 
-modules :: [Module]
-modules =
-    [ Module "boids" "modules/boids/boids_main.scm" "tests/boids_tests.scm" coreFiles
-    , Module "fmm" "modules/fmm/fmm_on_goppa_grid.scm" "tests/fmm_tests.scm" coreFiles
-    , Module "sssp" "modules/sssp/sssp_main.scm" "tests/sssp_tests.scm" coreFiles
-    , Module "sssp_geometry" "modules/sssp_geometry/sssp_geo_main.scm" "tests/sssp_geometry_tests.scm" coreFiles
-    , Module "golay24-tool" "tools/golay24-tool/golay24_main.scm" "tests/golay24_tests.scm" 
-             (coreFiles ++ ["tools/golay24-tool/setup.scm", "modules/sssp_geometry/sssp_geo_main.scm"])
-    ] ++ wittSystem
+-- ============================================================
+-- Build Configurations
+-- ============================================================
 
--- ====================================================================
+defaultCfg :: BuildConfig
+defaultCfg = defaultBuildConfig
+    { bcCompileFlags = "-O3 -d0"
+    , bcBuildDir = "_build"
+    , bcDistDir = "dist"
+    , bcGCStrategy = Nothing
+    }
+
+wittCfg :: BuildConfig
+wittCfg = defaultCfg { bcCompileFlags = "-O2 -d0" }
+
+-- GC strategy variants
+gcGomoryHuCfg :: BuildConfig
+gcGomoryHuCfg = withGCStrategy GC.GomoryHu defaultCfg
+
+gcUltrametricCfg :: BuildConfig
+gcUltrametricCfg = withGCStrategy GC.Ultrametric defaultCfg
+
+gcConnesKreimer :: BuildConfig
+gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
+
+-- ============================================================
 -- Main
--- ====================================================================
+-- ============================================================
 
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
-    setupRules
+    Rules.setupRules
     GC.gcRule
-
-    let cflags = "-O3 -d0"
-    let wittflags = "-O2 -d0"
-
-    forM_ modules $ \m -> do
+    
+    forM_ allModules $ \m -> do
         let mName = modName m
-        let isWitt = mName == "witt-validator"
-        let flags = if isWitt then wittflags else cflags
-
-        phony ("build-" ++ mName) $ buildModule m flags isWitt
-        phony ("test-" ++ mName) $ testModule m flags isWitt
+        let cfg = if mName == "witt-validator" then wittCfg else defaultCfg
+        
+        -- Standard build
+        phony ("build-" ++ mName) $ 
+            buildModule m cfg >> return ()
+        
+        -- Test
+        phony ("test-" ++ mName) $ 
+            Pipeline.testModule m cfg
+        
+        -- Alias
         phony mName $ need ["build-" ++ mName]
         
-        unless isWitt $
-            phony ("gc-" ++ mName) $ buildGCModule m flags
-
+        -- GC variants (not for special modules)
+        unless (modIsSpecial m) $ do
+            
+            -- GC auto-select
+            phony ("gc-" ++ mName) $ 
+                gcOptimizedModule m cfg >> return ()
+            
+            -- GC with specific strategies
+            phony ("gc-gomory-" ++ mName) $ 
+                gcOptimizedModuleWith GC.GomoryHu m cfg >> return ()
+            
+            phony ("gc-ultrametric-" ++ mName) $ 
+                gcOptimizedModuleWith GC.Ultrametric m cfg >> return ()
+            
+            phony ("gc-connes-" ++ mName) $ 
+                gcOptimizedModuleWith GC.ConnesKreimer m cfg >> return ()
+    
+    -- ============================================================
+    -- Meta-targets
+    -- ============================================================
+    
     phony "witt" $ need ["build-witt-validator"]
     phony "test-witt" $ need ["test-witt-validator"]
+    
+    phony "build" $ need ["build-" ++ modName m | m <- allModules]
+    phony "test-all" $ need ["test-" ++ modName m | m <- allModules]
+    phony "test" $ need ["test-all"]
+    
+    -- All GC variants
+    phony "gc-all" $ 
+        need ["gc-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+    
+    phony "gc-gomory-all" $ 
+        need ["gc-gomory-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+    
+    phony "gc-ultrametric-all" $ 
+        need ["gc-ultrametric-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+    
+    phony "gc-connes-all" $ 
+        need ["gc-connes-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+    
+    -- ============================================================
+    -- Cleanup
+    -- ============================================================
+    
     phony "clean" $ Clean.cleanAll
     phony "clean-build" $ Clean.cleanBuild
     phony "clean-tests" $ Clean.cleanTests
@@ -101,167 +169,3 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "distclean" $ do
         Clean.cleanAll
         putInfo "Removed all generated files and caches"
-    phony "build" $ need ["build-" ++ modName m | m <- modules]
-    phony "test-all" $ need ["test-" ++ modName m | m <- modules]
-    phony "test" $ need ["test-all"]
-    phony "gc-all" $ need ["gc-" ++ modName m | m <- modules, modName m /= "witt-validator"]
-
--- ====================================================================
--- Build Functions
--- ====================================================================
-
-buildModule :: Module -> String -> Bool -> Action ()
-buildModule m flags isWitt = do
-    let mName = modName m
-    projectRoot <- liftIO Dir.getCurrentDirectory
-    let absPath p = projectRoot </> p
-    
-    if isWitt
-        then buildWittValidator m flags
-        else buildRegularModule m flags absPath
-
-buildWittValidator :: Module -> String -> Action ()
-buildWittValidator m flags = do
-    putInfo "[Witt] Building validator..."
-    
-    let mName = modName m
-    projectRoot <- liftIO Dir.getCurrentDirectory
-    let absPath p = projectRoot </> p
-    let actualDeps = modSrc m : modDeps m
-    
-    -- Extract dependencies
-    let allSrcs = map absPath (actualDeps ++ [modTest m])
-    allDepsPerFile <- liftIO $ mapM TopLevel.extractAllDeps allSrcs
-    let allDeps = nub $ concat allDepsPerFile
-    
-    putInfo $ "[Witt] Dependencies: " ++ show allDeps
-    
-    -- Compile custom units
-    let unitNames = map (takeBaseName . dropExtension) actualDeps
-    let objPaths = ["_build" </> u <.> "o" | u <- unitNames]
-
-    -- FIXED: Filter out obsolete/invalid system libraries
-    let systemLibs = filter (\d -> d `notElem` unitNames && 
-                                    not ("chicken." `isPrefixOf` d) &&
-                                    not ("srfi-" `isPrefixOf` d) &&
-                                    d `notElem` ["chicken", "scheme", "base", "uses", "format", "bitwise"]) allDeps
-    
-    forM_ (zip actualDeps objPaths) $ \(src, objPath) -> do
-        let unitName = takeBaseName (dropExtension src)
-        need [absPath src]
-        liftIO $ Dir.createDirectoryIfMissing True "_build"
-        
-        -- Extract this file's dependencies
-        fileDeps <- liftIO $ TopLevel.extractAllDeps (absPath src)
-        let customDeps = filter (\d -> not ("srfi-" `isPrefixOf` d) && 
-                                       not ("chicken" `isPrefixOf` d) &&
-                                       d `notElem` ["scheme", "base", "format", "bitwise", "uses", "chicken"] &&
-                                       d /= unitName) fileDeps
-        let usesFlags = if null customDeps then [] else concatMap (\d -> ["-uses", d]) customDeps
-        
-        putInfo $ "[Witt] Compiling " ++ unitName ++ " with deps: " ++ show customDeps
-        
-        cmd_ (["csc"] ++ words flags ++ 
-              ["-c", absPath src, "-o", objPath,
-               "-unit", unitName] ++
-              usesFlags ++
-              ["-emit-import-library", unitName])
-    
-    -- Link
-    let testFile = absPath (modTest m)
-        exePath = "dist" </> mName ++ "_app" <.> exe
-    
-    need [testFile]
-    liftIO $ Dir.createDirectoryIfMissing True (takeDirectory exePath)
-    
-    let usesOwn = concatMap (\u -> ["-uses", u]) unitNames
-    
-    -- Only pass extensions that are actually external "Eggs"
-    let requireFlags = concatMap (\d -> ["-require-extension", d]) systemLibs
-    
-    let linkArgs = words flags ++ 
-                   ["-o", exePath, "-I", "_build"] ++ 
-                   usesOwn ++ 
-                   requireFlags ++
-                   objPaths ++ 
-                   [testFile]
-    
-    putInfo "[Witt] Linking..."
-    -- Note: This list should now be mostly empty unless you have external Eggs
-    putInfo $ "[Witt] External Eggs: " ++ show systemLibs
-    cmd_ (["csc"] ++ linkArgs)
-    putInfo $ "[Witt] Built: " ++ exePath
-
-buildRegularModule :: Module -> String -> (FilePath -> FilePath) -> Action ()
-buildRegularModule m flags absPath = do
-    let mName = modName m
-    
-    let deps = modDeps m
-    let src = modSrc m
-    let exePath = "dist" </> mName ++ "_app" <.> exe
-    
-    need (map absPath deps ++ [absPath src])
-    liftIO $ Dir.createDirectoryIfMissing True (takeDirectory exePath)
-    
-    -- compile each dependency and main source
-    depObjs <- forM deps $ \dep -> do
-        let srcArtifact = Artifact (absPath dep)
-        unitToObj <$> compileUnit (getPath srcArtifact) flags
-    
-    srcUnit <- compileUnit (absPath src) flags
-    let srcArtifact = unitToObj srcUnit
-    
-    -- GC object は別処理なので、通常のリンクだけで良い
-    let allObjs = depObjs ++ [srcArtifact]
-    _ <- linkWithDeps allObjs [] exePath
-    return ()
-
-buildGCModule :: Module -> String -> Action ()
-buildGCModule m flags = do
-    let mName = modName m
-    let gcFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
-    projectRoot <- liftIO Dir.getCurrentDirectory
-    let absPath p = projectRoot </> p
-    
-    let deps = modDeps m
-    let src = modSrc m
-    let exePath = "dist" </> mName ++ "_app_gc" <.> exe
-    
-    need (map absPath deps ++ [absPath src])
-    liftIO $ Dir.createDirectoryIfMissing True (takeDirectory exePath)
-    
-    -- compile each dependency and main source
-    depObjs <- forM deps $ \dep -> do
-        let srcArtifact = Artifact (absPath dep)
-        unitToObj <$> compileUnit (getPath srcArtifact) gcFlags
-    
-    srcUnit <- compileUnit (absPath src) gcFlags
-    let srcArtifact = unitToObj srcUnit
-    
-    -- GC object は別処理なので、通常のリンクだけで良い
-    let allObjs = depObjs ++ [srcArtifact]
-    _ <- linkWithDeps allObjs [] exePath
-    return ()
-
-testModule :: Module -> String -> Bool -> Action ()
-testModule m flags isWitt = do
-    if isWitt
-        then do
-            need ["build-" ++ modName m]
-            let exePath = "dist" </> modName m ++ "_app" <.> exe
-            cmd_ [exePath]
-            putInfo "[Witt] Validation complete"
-        else do
-            env <- liftIO Link.getChickenEnv
-            projectRoot <- liftIO Dir.getCurrentDirectory
-            let config = Salmonella.defaultTestConfig
-                    { Salmonella.tcEnv = env
-                    , Salmonella.tcCompileFlags = words flags
-                    }
-            result <- Salmonella.runIsolatedModuleTests config
-                                                       (modName m)
-                                                       (projectRoot </> modSrc m)
-                                                       (projectRoot </> modTest m)
-                                                       (map (projectRoot </>) (modDeps m))
-            unless (Salmonella.trPassed result) $
-                fail $ "Tests failed for " ++ modName m

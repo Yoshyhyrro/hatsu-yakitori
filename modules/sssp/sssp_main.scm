@@ -6,7 +6,7 @@
 (module sssp_geo_main *
   (import scheme)
   (import (chicken base)
-          
+          (chicken format)
           (chicken bitwise)
           (chicken random)
           (chicken process-context)

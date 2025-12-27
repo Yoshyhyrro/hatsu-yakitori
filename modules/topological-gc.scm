@@ -9,7 +9,7 @@
 ;;;  3. Connes-Kreimer Hopf algebra の分解
 ;;; ============================================================
 
-(declare (uses srfi-1 srfi-69 chicken.sort chicken.format))
+(import srfi-1 srfi-69 chicken.sort chicken.format)
 
 (module topological-gc
   (;; Main API

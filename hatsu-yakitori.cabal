@@ -1,0 +1,52 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           hatsu-yakitori
+version:        0.0.2.0
+synopsis:       Shake-based build system for Chicken Scheme project
+description:    Polysemy + Shake + Chicken Scheme integration
+homepage:       https://github.com/Yoshyhyrro/hatsu-yakitori#readme
+bug-reports:    https://github.com/Yoshyhyrro/hatsu-yakitori/issues
+author:         Your Name
+maintainer:     je-suis-1oeuf-devautour@proton.me
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/Yoshyhyrro/hatsu-yakitori
+
+executable shake
+  main-is: Shake.hs
+  other-modules:
+      Chicken
+      Clean
+      Pipeline
+      Salmonella
+      Rules.Compile
+      Rules.GC
+      Rules.Link
+      Rules.MEEP
+      Rules.StandardToplevel
+  hs-source-dirs:
+      shake
+  ghc-options: -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      async
+    , base
+    , binary
+    , bytestring
+    , containers
+    , directory
+    , extra
+    , filepath
+    , hashable
+    , polysemy
+    , polysemy-plugin
+    , process
+    , shake
+  default-language: Haskell2010
