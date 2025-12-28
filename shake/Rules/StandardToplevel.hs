@@ -44,7 +44,7 @@ classifyDependency dep
         ("chicken":ext:_) -> ChickenExt ("chicken-" ++ ext)
         _ -> ChickenExt dep
   | otherwise = 
-      if '-' `elem` dep || "_" `elem` dep
+      if '-' `elem` dep || '_' `elem` dep
         then CustomMod dep
         else UnknownDep dep
 

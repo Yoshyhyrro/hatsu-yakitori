@@ -1,4 +1,4 @@
-{- shake/Rules/GC.hs (Polysemy Effect) -}
+{- shake/Rules/GC.hs -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -6,6 +6,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE KindSignatures #-}
 
 module Rules.GC
   ( -- * GC Effect (abstract interface)
@@ -46,7 +51,7 @@ import Polysemy
 import Polysemy.State
 import Polysemy.Error
 import Polysemy.Reader
-import Polysemy.Trace
+import Polysemy.Trace hiding (traceToStdout)
 
 import Chicken
 
@@ -55,7 +60,7 @@ import Chicken
 -- ============================================================
 
 -- | GC Strategy effect - abstracts the choice of GC algorithm
-data GCStrategy m a where
+data GCStrategy (m :: * -> *) a where
   -- Query: determine which strategy to use for this executable
   SelectGCStrategy :: FilePath -> GCStrategy m GCStrategyType
   

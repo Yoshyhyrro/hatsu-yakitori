@@ -10,7 +10,6 @@ import Control.Monad (forM_)
 import qualified System.Directory as Dir
 
 import Pipeline
-import qualified Rules.GC as GC
 import qualified Clean
 
 -- ============================================================
