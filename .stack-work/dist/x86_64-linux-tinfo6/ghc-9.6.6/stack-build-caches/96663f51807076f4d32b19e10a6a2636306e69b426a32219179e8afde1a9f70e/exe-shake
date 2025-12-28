@@ -1,3 +1,81 @@
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSarray-0.5.6.0-ghc9.6.6.so
+: hash: 37accaf0ca70fbbf7729adff9b7b928b17f242dd750e480b1a4b07744f034062
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSbase-4.18.2.1-ghc9.6.6.so
+: hash: 1d190e00638bd3f9a61f0722d1c792a9bb3ffb4a27b25f22d577cb0fe200e774
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSbinary-0.8.9.1-ghc9.6.6.so
+: hash: 4006ec3374abb64620c7d9b77ebbff38b3de890eb7eb3348d5fe3d142f9eacff
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSbytestring-0.11.5.3-ghc9.6.6.so
+: hash: 2d65cf56ef0d476b9bb54dfd819cd413317600d523fe5dee72d66d84fd1b0cb8
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHScontainers-0.6.7-ghc9.6.6.so
+: hash: 9cd650cd1f52f93662be646c7202a2064e9854e0b6b08505be217d20295335b6
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSdeepseq-1.4.8.1-ghc9.6.6.so
+: hash: 2fb034405fdec6253331c3fac569b8ad2c3ccde13b26ed96f5127306d5e164c1
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSdirectory-1.3.8.5-ghc9.6.6.so
+: hash: ba64994c94994d90c189fb8b255329e93c3e374d9867f5223860ac58634f3072
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSexceptions-0.10.7-ghc9.6.6.so
+: hash: 15a257116a3ef32fa1f012147353aedadf562683a62df1109003b029ac927d72
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSfilepath-1.4.300.1-ghc9.6.6.so
+: hash: f07f9cdec7e4f23eb3e8326878074716a87550a3c37df77983b53ab48bcf0d26
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghc-9.6.6-ghc9.6.6.so
+: hash: 6aaef127558d9129fcf446952249f4cbfacabe5931dc31e14e6cd24c55bd6a82
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghc-bignum-1.3-ghc9.6.6.so
+: hash: 0c951173059d55cfe00cf61f1c152583143efbdcbd7a76ff912f750ece7fc2ff
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghc-boot-9.6.6-ghc9.6.6.so
+: hash: 221834be551729f42967e83f40084408f9cbb3dcefe0e3a6b841c4cb75a7051d
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghc-boot-th-9.6.6-ghc9.6.6.so
+: hash: dd1187b7cb73cceb37ef45409b391f88aa047805fafb07486aa7f3a111800381
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghc-heap-9.6.6-ghc9.6.6.so
+: hash: e0cf23d576a8e1f8563ab02b8f35f2f4cc5e3e85575c845b4ffb492b9f00a36d
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghc-prim-0.10.0-ghc9.6.6.so
+: hash: 11e174fe02c40a10c8f07425967ec17e50345321057fafd2108cdbdf86780454
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghci-9.6.6-ghc9.6.6.so
+: hash: a0b4e2ce7df0c2b35fffcfd850a40d6339622a9d3a53a7e6b22706b1240046c9
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHShpc-0.6.2.0-ghc9.6.6.so
+: hash: 7319191e20cdde26f43d160b69bfb4eaaa5739ef2c087e6a53cdf89e3b4db053
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSmtl-2.3.1-ghc9.6.6.so
+: hash: 547d05cb35d1ddfbad57bc9c4b8d85ebf78b02a61c10093e88cb5c824f503ed2
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSpretty-1.1.3.6-ghc9.6.6.so
+: hash: 5336a8944d488a28e086ad8866d06903b8fb4fabd12b923e771e6e3656113d96
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSprocess-1.6.19.0-ghc9.6.6.so
+: hash: aad5d73fe97bc101e1b66402c5b6f246c270c60d8827a06c92965f97ca3f3794
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSstm-2.5.1.0-ghc9.6.6.so
+: hash: 8be90d67b8775c69311da509b9c7930b91fb86b7bba8b83331718d1dd60efc3c
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHStemplate-haskell-2.20.0.0-ghc9.6.6.so
+: hash: 0dda0d7c452e05ddbcc591bce44f52c92afe8e9384bf3e1e18b78fb0979d2acd
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHStext-2.0.2-ghc9.6.6.so
+: hash: fcd1da1bd11c5c3cd624c9a833cdca32e94ecacac7787deccbf873a37f675f35
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHStime-1.12.2-ghc9.6.6.so
+: hash: 3b283ce2350d4afe4dcefb40d4bd92cc2f196af511f69d9460014f56b9360a8d
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHStransformers-0.6.1.0-ghc9.6.6.so
+: hash: efe1a5ccd1ec743ef2d6531bc3cb6775a0ae991ba22275ec6c86f4f4c3ee90a2
+? /home/yoshyhyrro/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSunix-2.8.4.0-ghc9.6.6.so
+: hash: ff1e012b210a95737e2257c04509eada785120c5f58109436c5dd0e6af6970b5
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSasync-2.2.5-Jnlg8x3TS3aLheevOnFFr7-ghc9.6.6.so
+: hash: a77ebfd3399214a18ea7690d88974a952f8d418963369724130a166410125456
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSatomic-primops-0.8.8-HZX8MeWb5GW9wQoxlYYSJk-ghc9.6.6.so
+: hash: 5ca6a5688146fefdbf6e06bc6013aecf290a9773bb2abe7ca0be21cab213ed38
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSfirst-class-families-0.8.1.0-7nk8sVtYj7D22wXygDy92-ghc9.6.6.so
+: hash: c7f8d8160b829afde8e0cc03946aca679e902374de7a122349b29f901208ea18
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSghc-tcplugins-extra-0.4.6-BVMLcXhZJqEHzhzWQx6Qan-ghc9.6.6.so
+: hash: cace913a6f8b300b737129b9569d481c5e120f55b3200cdf50f8db0b5ceaf4f8
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHShashable-1.4.4.0-1jOpKawyX4k1n9a6vQlXXi-ghc9.6.6.so
+: hash: 034abbc20175c1fe8494019c4e33d0b88a79ca9392e70381d9fcdf1262e27a8b
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSos-string-2.0.6-IlBa2UQjH7mL18YjMu1jzE-ghc9.6.6.so
+: hash: 8b7ea4fb5def409767ebefdd0f713a995778e72ae7626bb9d2b772ef29e79d0c
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSpolysemy-1.9.1.0-9dtJqNLxYdABBVQi4UWk8h-ghc9.6.6.so
+: hash: 73cc6e87a4fa6b56d98c968b665fa6af52fd0152e57cf4d02248bee69e6557ce
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSpolysemy-plugin-0.4.5.0-BocmwqsdilDCN9vF5HbSYo-ghc9.6.6.so
+: hash: 75cb9535874c77a90245717af2d6aa66fc37d3eb10c6b4af75f7cd23d050be46
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSprimitive-0.8.0.0-G7z1XrhwN0bFkYsIqIr1QU-ghc9.6.6.so
+: hash: ec4ca34d2c2cc97a661d9f63f27c65f29a6cacc8a13f8a367090bd2da5590888
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSsyb-0.7.2.4-CGf6yzYBtNj1GaPOXC2hje-ghc9.6.6.so
+: hash: 77c2cda02151d227f1bd61503df364956d4bb06eb996867c9fcf8eff2ae396ed
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSth-abstraction-0.5.0.0-HAFjiAO2nGN58SdxVZCnLH-ghc9.6.6.so
+: hash: b1a9c14e8759583e096ca28ba0494efe6a8d78b011f9678990c95d73b734797d
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHStype-errors-0.2.0.2-DWyY17T2MOTDmS7XjJGTa1-ghc9.6.6.so
+: hash: 3b4dab9a2162546dc0a4fccb233326419bb4ab78ee8f9f590822c150b8729b51
+? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSunagi-chan-0.4.1.4-111HellrgJbBOa9k8suPeZ-ghc9.6.6.so
+: hash: 748ae6247ccdf90ecbd924b4366000567b9657393c2959dba93f6d33b9c729f5
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/hatsu-yakitori.cabal:
   hash: b5df106e4ac9c8fadf13fe9aa39fe7a15eff68d4b58978a71a202db756714388
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/package.yaml:
@@ -7,11 +85,11 @@
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Clean.hs:
   hash: 99b6872c04ec1ec038f282272331c64b534b6ed9c211e366d250ffc0be9c6b58
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Pipeline.hs:
-  hash: bdfe591f35ec1bc38b93312dd22862e2eed9ce9afaab5a6f08b9b5cd935faf05
+  hash: 3eb49b1cb739394133710d8aa0a61fca316892ea3bd2f4485e97e12378c1d172
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Rules/Compile.hs:
   hash: 18b26a771de9e61188933986a51792eada069eb8ea2b6cb89335b2d6bbf29952
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Rules/GC.hs:
-  hash: a194443979135dd6a0346fee119148297302fb942ab6b3acfe5d7afdae51fb32
+  hash: 1665dfca3d9674c3ef82b0dab6381ce2edb002f2bbe61258c66ab5a87e6a86a0
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Rules/Link.hs:
   hash: 921ed7335fe378aa7e335eee80fa772de1bd3d889b722bddb3d31a4f4375815e
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Rules/MEEP.hs:
@@ -21,4 +99,4 @@
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Salmonella.hs:
   hash: edc8223e1313e4c362927029e1966c5afdc127677781af01243d19b433788dab
 /mnt/c/Users/tyuuw/Documents/test_clone/hatsu-yakitori/shake/Shake.hs:
-  hash: 20c3bb1c0719163d0258741c3db1ac553da0a397de9c34fad5622916918559d9
+  hash: ee3b366d3c6b2a6d449352c87b3616e19a13853bd5fcde252b63e194c7815132

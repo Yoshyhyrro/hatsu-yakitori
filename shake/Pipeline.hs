@@ -13,6 +13,7 @@ module Pipeline
   , defaultBuildConfig
   , regularModule
   , specialModule
+  , withGCStrategy -- Added export
   ) where
 
 import Development.Shake
@@ -21,7 +22,6 @@ import Control.Monad (forM_, unless, when, forM)
 import qualified System.Directory as Dir
 
 import Chicken
-import qualified Rules as R
 import qualified Rules.Compile as Compile
 import qualified Rules.Link as Link
 import qualified Rules.StandardToplevel as TopLevel
@@ -179,7 +179,7 @@ compileAndLink srcs flags outPath = do
     Compile.compileObject src flags'
   
   -- Extract artifacts from CompileInfo (safe!)
-  let objs = map Compile.extractArtifact compileInfos
+  let objs = map Compile.ciArtifact compileInfos
   
   putInfo $ "[Pipeline] Linking " ++ show (length objs) ++ " objects"
   Link.linkWithDeps objs [] outPath
@@ -203,7 +203,7 @@ compileAndLinkWithGC strat srcs flags outPath = do
     let flags' = unwords flags
     Compile.compileObject src flags'
   
-  let objs = map Compile.extractArtifact compileInfos
+  let objs = map Compile.ciArtifact compileInfos
   
   putInfo $ "[Pipeline-GC] Building GC object with " ++ show strat
   gcObj <- GC.buildWithGCStrategy strat outPath
@@ -230,7 +230,8 @@ compileAndLinkSpecial srcs flags outPath = do
     let flags' = unwords flags
     Compile.compileUnit src flags'
   
-  let objs = map Compile.extractArtifact compileInfos
+  -- Convert Artifact Unit to Artifact Obj using getPath and mkObject
+  let objs = map (mkObject . getPath . Compile.ciArtifact) compileInfos
   
   putInfo $ "[Pipeline-Special] Linking filtered objects"
   Link.linkWithDeps objs [] outPath

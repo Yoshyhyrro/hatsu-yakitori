@@ -15,12 +15,14 @@
 module Rules.GC
   ( -- * GC Effect (abstract interface)
     GCStrategy(..)
+  , GCStrategyType(..)
+  , HeapStats(..)
   , gcRule
   
     -- * High-level API (pure delegation)
   , buildGCOptimized
   , buildWithGCStrategy
-  
+    
     -- * Artifact
   , PerExeGC(..)
   , gcObjPath
@@ -45,6 +47,7 @@ import Data.Typeable
 import GHC.Generics (Generic)
 import Data.Binary
 import Data.Hashable
+import Data.Kind (Type)
 
 -- Polysemy imports
 import Polysemy
@@ -60,7 +63,7 @@ import Chicken
 -- ============================================================
 
 -- | GC Strategy effect - abstracts the choice of GC algorithm
-data GCStrategy (m :: * -> *) a where
+data GCStrategy (m :: Type -> Type) a where
   -- Query: determine which strategy to use for this executable
   SelectGCStrategy :: FilePath -> GCStrategy m GCStrategyType
   
@@ -200,7 +203,7 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
       putInfo $ "[GC] Compiling: " ++ src ++ " -> " ++ gcObj
       
       -- Run Polysemy effect (using auto strategy selection)
-      let program :: Sem '[GCStrategy, Trace] () = do
+      let program :: Sem '[GCStrategy, Trace, Embed IO] () = do
             strat <- selectGCStrategy exe
             compileWithGCStrategy src strat Conservative
             stats <- analyzeTopology src
@@ -247,7 +250,7 @@ buildWithGCStrategy strategy exe = do
   putInfo $ "[GC] Building " ++ exe ++ " with " ++ show strategy
   
   -- Run strategy-specific effect interpreter
-  let program :: Sem '[GCStrategy, Trace] HeapStats = do
+  let program :: Sem '[GCStrategy, Trace, Embed IO] HeapStats = do
         compileWithGCStrategy exe strategy Conservative
         analyzeTopology exe
   
@@ -255,8 +258,8 @@ buildWithGCStrategy strategy exe = do
     $ traceToStdout 
     $ case strategy of
         GomoryHu       -> interpretGCStrategyGomoryHu program
-        Ultrametric    -> interpretGCStrategyAuto program      -- Not yet specialized
-        ConnesKreimer  -> interpretGCStrategyAuto program      -- Not yet specialized
+        Ultrametric    -> interpretGCStrategyAuto program
+        ConnesKreimer  -> interpretGCStrategyAuto program
         Conservative   -> interpretGCStrategyConservative program
   
   putInfo $ "[GC] Analysis: " ++ show stats
@@ -282,5 +285,6 @@ findSourceForGC projectRoot (candidate:rest) = do
         else findSourceForGC projectRoot rest
 
 -- | Convert effect trace to IO (for diagnostics)
-traceToStdout :: Sem '[Trace] a -> IO a
-traceToStdout = trace $ \msg -> liftIO (putStrLn msg)
+traceToStdout :: Member (Embed IO) r => Sem (Trace ': r) a -> Sem r a
+traceToStdout = interpret \case
+  Trace msg -> liftIO (putStrLn msg)

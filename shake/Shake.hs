@@ -2,15 +2,16 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Shake where
+module Main where
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_)
+import Control.Monad (forM_, unless)
 import qualified System.Directory as Dir
 
 import Pipeline
 import qualified Clean
+import qualified Rules.GC as GC
 
 -- ============================================================
 -- Module Definitions
@@ -97,7 +98,6 @@ gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
-    Rules.setupRules
     GC.gcRule
     
     forM_ allModules $ \m -> do
