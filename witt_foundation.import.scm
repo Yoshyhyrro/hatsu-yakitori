@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'witt_foundation
-      'witt_foundation
+      'witt-validator-main
       (scheme#list)
       '((make-witt-context . witt_foundation#make-witt-context)
         (witt-context? . witt_foundation#witt-context?)

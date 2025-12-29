@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'cross_validation
-      'cross_validation
+      'witt-validator-main
       (scheme#list)
       '((validate-golay-witt-consistency
           .

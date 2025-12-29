@@ -298,7 +298,7 @@
                    (partition
                     (filter (lambda (oct)
                               (<= (octad-weight oct) threshold))
-                            (generate-all-octads))))
+                            (vector->list (generate-all-octads)))))
               
               (loop (+ k 1)
                     (cons (cons scale partition) levels)))))))

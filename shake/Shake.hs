@@ -62,9 +62,9 @@ allModules =
                       ])
     
     , specialModule "witt-validator"
-                    "core/cross_validation.scm"
-                    "tests/test_system.scm"
-                    coreFiles
+                "tools/witt-validator/witt-validator-main.scm"
+                "tests/test_system.scm"
+                (coreFiles ++ ["core/cross_validation.scm"])
     ]
 
 -- ============================================================

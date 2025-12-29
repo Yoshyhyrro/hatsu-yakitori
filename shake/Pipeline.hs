@@ -228,13 +228,12 @@ compileAndLinkSpecial srcs flags outPath = do
   
   compileInfos <- forM srcs $ \src -> do
     let flags' = unwords flags
-    Compile.compileUnit src flags'
+    Compile.compileObject src flags'  
   
-  -- Convert Artifact Unit to Artifact Obj using getPath and mkObject
-  let objs = map (mkObject . getPath . Compile.ciArtifact) compileInfos
+  let objs = map Compile.ciArtifact compileInfos  -- ← 型安全
   
   putInfo $ "[Pipeline-Special] Linking filtered objects"
-  Link.linkWithDeps objs [] outPath
+  Link.linkWithDeps objs allDeps outPath  -- ← 型安全なリンク
 
 -- ============================================================
 -- Helper

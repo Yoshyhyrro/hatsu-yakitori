@@ -4,6 +4,11 @@
 ;;; FIXED: All required imports now available
 ;;; ============================================================
 
+(include-relative "machine_constants.scm")
+(include-relative "golay_frontier.scm")
+(include-relative "witt_foundation.scm")
+(include-relative "witt_symmetry_explicit.scm")
+
 (module cross_validation
   (
    ;; --- Cross-Validation Interfaces ---
@@ -21,7 +26,8 @@
    suggest-correction
    
    ;; --- Test Runner ---
-   run-cross-validation-tests)
+   run-cross-validation-tests) 
+   
    
   
   (import scheme)
@@ -297,7 +303,5 @@
   (define (run-cross-validation-tests)
     (printf "Initializing Cross-Module Validation...~%~%")
     (cross-module-consistency-contract)
-    (full-system-validation)))
-      
-
+    (full-system-validation)))     
  ;; end module cross_validation

@@ -47,6 +47,23 @@ setupCompileRules = do
 -- Compile Actions (return type-safe CompileInfo)
 -- ============================================================
 
+compileToUnit :: FilePath -> String -> FilePath -> Action ()
+compileToUnit src flags out = do
+  liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
+  content <- readFile' src
+  let usesDeps = extractDeclareUses content
+      moduleName = extractModuleDecl content
+  let unitName = case moduleName of
+        Just m  -> m
+        Nothing -> takeBaseName (dropExtension src)
+  let isMain = takeBaseName (dropExtension src) `elem` ["golay24_main", "main"]
+  if isMain
+    then cmd_ ("csc" :: String) ["-c", src, "-o", out]
+    else do
+      let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+      cmd_ ("csc" :: String) 
+           (["-c", "-unit", unitName] ++ usesFlags ++ ["-J"] ++ [src, "-o", out])
+
 -- | Compile source as unit artifact
 -- Returns CompileInfo to maintain src↔out relationship
 compileUnit :: FilePath -> String -> Action (CompileInfo 'Unit)
@@ -56,8 +73,8 @@ compileUnit src flags = do
   let out = outDir </> baseName <.> "o"
   
   need [src]
+  compileToUnit src flags out  -- ✅ Actually runs compilation!
   
-  -- ✅ Type carries src information through the system
   return $ CompileInfo
     { ciSourceFile = src
     , ciCompileFlags = flags
@@ -72,6 +89,13 @@ compileObject src flags = do
   let out = outDir </> baseName <.> "o"
   
   need [src]
+  liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
+
+  content <- readFile' src
+  let usesDeps = extractDeclareUses content
+  let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+  
+  cmd_ ("csc" :: String) (["-c"] ++ words flags ++ usesFlags ++ [src, "-o", out])
   
   -- ✅ Type carries src information through the system
   return $ CompileInfo

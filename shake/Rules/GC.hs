@@ -1,37 +1,44 @@
 {- shake/Rules/GC.hs -}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE KindSignatures #-}
 
 module Rules.GC
-  ( -- * GC Effect (abstract interface)
-    GCStrategy(..)
-  , GCStrategyType(..)
+  ( -- * GC Strategy Types
+    GCStrategyType(..)
+  , TopologyMetrics(..)
   , HeapStats(..)
-  , gcRule
   
-    -- * High-level API (pure delegation)
-  , buildGCOptimized
-  , buildWithGCStrategy
-    
-    -- * Artifact
+    -- * Shake Rule
+  , gcRule
   , PerExeGC(..)
   , gcObjPath
+  
+    -- * High-level API
+  , buildGCOptimized
+  , buildWithGCStrategy
+  
+    -- * Polysemy Effects
+  , GCStrategy(..)
+  , analyzeHeapTopology
+  , selectOptimalStrategy
+  , generateGCFlags
+  , executeSchemeGC
   ) where
 
 import Development.Shake
 import Development.Shake.Classes
 import Development.Shake.FilePath
-import Development.Shake.Rule 
+import Development.Shake.Rule
     ( addBuiltinRule
     , RunResult(..)
     , RunChanged(..)
@@ -42,49 +49,55 @@ import Development.Shake.Rule
 
 import Control.Monad.IO.Class (liftIO)
 import qualified System.Directory as Dir
+import qualified System.Process as Proc
 import qualified Data.ByteString as BS
 import Data.Typeable
 import GHC.Generics (Generic)
 import Data.Binary
 import Data.Hashable
+import Data.List (isInfixOf)
 import Data.Kind (Type)
 
--- Polysemy imports
+-- Polysemy
 import Polysemy
-import Polysemy.State
+import Polysemy.Embed
+import Polysemy.Trace (Trace)  -- Import only the type
+import qualified Polysemy.Trace as PT  -- Qualified import for trace function
 import Polysemy.Error
-import Polysemy.Reader
-import Polysemy.Trace hiding (traceToStdout)
+import Polysemy.State
 
 import Chicken
 
 -- ============================================================
--- GC Effect Definition (Polysemy)
+-- GC Strategy Types
 -- ============================================================
 
--- | GC Strategy effect - abstracts the choice of GC algorithm
-data GCStrategy (m :: Type -> Type) a where
-  -- Query: determine which strategy to use for this executable
-  SelectGCStrategy :: FilePath -> GCStrategy m GCStrategyType
-  
-  -- Action: compile with specific GC strategy
-  CompileWithGCStrategy :: FilePath -> GCStrategyType -> GCStrategyType -> GCStrategy m ()
-  
-  -- Diagnostic: analyze heap topology
-  AnalyzeTopology :: FilePath -> GCStrategy m HeapStats
-
--- | GC strategy enumeration
 data GCStrategyType
-  = GomoryHu              -- ^ Min-cut based: high connectivity → keep
-  | Ultrametric           -- ^ Distance-based: reachability pruning
-  | ConnesKreimer         -- ^ Hopf algebra: primitive vs coproduct
+  = GomoryHu              -- ^ Min-cut based (high connectivity)
+  | Ultrametric           -- ^ Distance-based (spatial locality)
+  | ConnesKreimer         -- ^ Hopf algebra (algebraic topology)
   | Conservative          -- ^ Minimal GC (default)
   deriving (Show, Eq, Generic)
 
 instance Binary GCStrategyType
 instance Hashable GCStrategyType
+instance NFData GCStrategyType
 
--- | Heap topology statistics
+-- ============================================================
+-- Topology Metrics (from Scheme analysis)
+-- ============================================================
+
+data TopologyMetrics = TopologyMetrics
+  { tmObjectCount :: Int
+  , tmEdgeCount :: Int
+  , tmAvgConnectivity :: Double
+  , tmBottleneckRatio :: Double
+  , tmMaxCutCapacity :: Double
+  , tmRecommendedStrategy :: Maybe GCStrategyType
+  } deriving (Show, Generic)
+
+instance Binary TopologyMetrics
+
 data HeapStats = HeapStats
   { hsObjectCount :: Int
   , hsEdgeCount :: Int
@@ -94,11 +107,265 @@ data HeapStats = HeapStats
 
 instance Binary HeapStats
 
--- Make it a Polysemy effect
+-- ============================================================
+-- GC Effect Definition (Polysemy)
+-- ============================================================
+
+data GCStrategy (m :: Type -> Type) a where
+  -- | Analyze heap topology by invoking Scheme analyzer
+  AnalyzeHeapTopology :: FilePath -> GCStrategy m TopologyMetrics
+  
+  -- | Select optimal strategy based on metrics
+  SelectOptimalStrategy :: TopologyMetrics -> GCStrategy m GCStrategyType
+  
+  -- | Generate CSC compilation flags for strategy
+  GenerateGCFlags :: GCStrategyType -> FilePath -> FilePath -> String -> GCStrategy m [String]
+  
+  -- | Execute Scheme-side GC (optional, for testing)
+  ExecuteSchemeGC :: FilePath -> GCStrategyType -> GCStrategy m HeapStats
+
 makeSem ''GCStrategy
 
 -- ============================================================
--- GC Rule Type Definition
+-- Polysemy Interpreters
+-- ============================================================
+
+-- | Main interpreter: uses Scheme FFI for topology analysis
+interpretGCStrategyWithScheme :: Members '[Embed IO, Trace] r
+                               => Sem (GCStrategy ': r) a -> Sem r a
+interpretGCStrategyWithScheme = interpret \case
+  AnalyzeHeapTopology srcPath -> do
+    PT.trace $ "[GC] Analyzing heap topology: " ++ srcPath
+    liftIO $ analyzeViaScheme srcPath
+  
+  SelectOptimalStrategy metrics -> do
+    let strat = selectStrategy metrics
+    PT.trace $ "[GC] Selected strategy: " ++ show strat ++ 
+            " (connectivity=" ++ show (tmAvgConnectivity metrics) ++
+            ", bottleneck=" ++ show (tmBottleneckRatio metrics) ++ ")"
+    return strat
+  
+  GenerateGCFlags strat srcPath gcObjPath unitName -> do
+    let flags = buildGCCompilerFlags strat srcPath gcObjPath unitName
+    PT.trace $ "[GC] Compiler flags: " ++ unwords flags
+    return flags
+  
+  ExecuteSchemeGC srcPath strat -> do
+    PT.trace $ "[GC] Executing Scheme GC with strategy: " ++ show strat
+    liftIO $ executeSchemeGCAnalysis srcPath strat
+
+-- | Heuristic-based interpreter (no Scheme calls)
+interpretGCStrategyHeuristic :: Members '[Embed IO, Trace] r
+                              => Sem (GCStrategy ': r) a -> Sem r a
+interpretGCStrategyHeuristic = interpret \case
+  AnalyzeHeapTopology srcPath -> do
+    PT.trace $ "[GC-Heuristic] Estimating topology from source"
+    liftIO $ estimateTopologyFromSource srcPath
+  
+  SelectOptimalStrategy metrics -> do
+    let strat = selectStrategy metrics
+    PT.trace $ "[GC-Heuristic] Strategy: " ++ show strat
+    return strat
+  
+  GenerateGCFlags strat srcPath gcObjPath unitName -> do
+    return $ buildGCCompilerFlags strat srcPath gcObjPath unitName
+  
+  ExecuteSchemeGC srcPath strat -> do
+    PT.trace $ "[GC-Heuristic] Skipping Scheme execution"
+    return $ HeapStats 0 0 0.0 0
+
+-- | Conservative interpreter (minimal GC)
+interpretGCStrategyConservative :: Members '[Embed IO, Trace] r
+                                 => Sem (GCStrategy ': r) a -> Sem r a
+interpretGCStrategyConservative = interpret \case
+  AnalyzeHeapTopology srcPath -> do
+    PT.trace $ "[GC-Conservative] Skipping analysis"
+    return $ TopologyMetrics 0 0 0.0 0.0 0.0 (Just Conservative)
+  
+  SelectOptimalStrategy _metrics -> do
+    PT.trace $ "[GC-Conservative] Using Conservative strategy"
+    return Conservative
+  
+  GenerateGCFlags _strat srcPath gcObjPath unitName -> do
+    return $ buildBaseCompilerFlags srcPath gcObjPath unitName
+  
+  ExecuteSchemeGC _srcPath _strat -> do
+    return $ HeapStats 0 0 0.0 0
+
+-- ============================================================
+-- Strategy Selection Logic
+-- ============================================================
+
+selectStrategy :: TopologyMetrics -> GCStrategyType
+selectStrategy metrics
+  -- High bottleneck ratio → use min-cut (Gomory-Hu)
+  | tmBottleneckRatio metrics > 0.5 = GomoryHu
+  
+  -- High connectivity → use algebraic decomposition (Connes-Kreimer)
+  | tmAvgConnectivity metrics > 0.8 = ConnesKreimer
+  
+  -- Medium connectivity → use distance pruning (Ultrametric)
+  | tmAvgConnectivity metrics > 0.4 = Ultrametric
+  
+  -- Low connectivity → conservative
+  | otherwise = Conservative
+
+-- ============================================================
+-- Scheme FFI Integration
+-- ============================================================
+
+analyzeViaScheme :: FilePath -> IO TopologyMetrics
+analyzeViaScheme srcPath = do
+  -- Call Scheme script to analyze heap topology
+  let analyzerScript = unlines
+        [ "(import topological-gc)"
+        , "(define graph (make-reachability-graph))"
+        , ";; TODO: Build graph from source analysis"
+        , "(let-values (((objs edges conn) (estimate-heap-topology graph)))"
+        , "  (printf \"OBJECTS:~a\\n\" objs)"
+        , "  (printf \"EDGES:~a\\n\" edges)"
+        , "  (printf \"CONNECTIVITY:~a\\n\" conn))"
+        ]
+  
+  let tmpScript = "/tmp/gc-analyze.scm"
+  writeFile tmpScript analyzerScript
+  
+  output <- Proc.readProcess "csi" ["-s", tmpScript] ""
+  parseTopologyOutput output
+
+parseTopologyOutput :: String -> IO TopologyMetrics
+parseTopologyOutput output = do
+  let lns = lines output
+  
+  -- Int フィールド用パーサー
+  let parseIntField :: String -> Int
+      parseIntField prefix = case filter (prefix `isInfixOf`) lns of
+        (l:_) -> read $ drop (length prefix + 1) $ dropWhile (/= ':') l
+        []    -> 0
+  
+  -- Double フィールド用パーサー
+  let parseDoubleField :: String -> Double
+      parseDoubleField prefix = case filter (prefix `isInfixOf`) lns of
+        (l:_) -> read $ drop (length prefix + 1) $ dropWhile (/= ':') l
+        []    -> 0.0
+  
+  let objCount = parseIntField "OBJECTS"
+  let edgeCount = parseIntField "EDGES"
+  let connectivity = parseDoubleField "CONNECTIVITY"
+  
+  let bottleneckRatio = if edgeCount > 0
+                        then fromIntegral objCount / fromIntegral edgeCount
+                        else 0.0
+  
+  return $ TopologyMetrics
+    { tmObjectCount = objCount
+    , tmEdgeCount = edgeCount
+    , tmAvgConnectivity = connectivity
+    , tmBottleneckRatio = bottleneckRatio
+    , tmMaxCutCapacity = 1.0
+    , tmRecommendedStrategy = Nothing
+    }
+
+executeSchemeGCAnalysis :: FilePath -> GCStrategyType -> IO HeapStats
+executeSchemeGCAnalysis srcPath strat = do
+  -- Execute actual GC with the chosen strategy
+  let gcScript = unlines
+        [ "(import topological-gc)"
+        , "(set-gc-strategy! '" ++ show strat ++ ")"
+        , "(define graph (make-reachability-graph))"
+        , "(define frontier (make-topological-frontier graph 'root))"
+        , "(let-values (((collected freed) (topological-gc-collect frontier)))"
+        , "  (printf \"COLLECTED:~a\\n\" (length collected))"
+        , "  (printf \"FREED:~a\\n\" freed))"
+        ]
+  
+  let tmpScript = "/tmp/gc-execute.scm"
+  writeFile tmpScript gcScript
+  
+  output <- Proc.readProcess "csi" ["-s", tmpScript] ""
+  
+  -- Parse results
+  let parseField prefix = case filter (prefix `isInfixOf`) (lines output) of
+        (l:_) -> read $ drop (length prefix + 1) $ dropWhile (/= ':') l
+        []    -> 0
+  
+  return $ HeapStats
+    { hsObjectCount = parseField "COLLECTED"
+    , hsEdgeCount = 0
+    , hsAvgConnectivity = 0.0
+    , hsBottleneckCount = 0
+    }
+
+-- ============================================================
+-- Heuristic Estimation (no Scheme calls)
+-- ============================================================
+
+estimateTopologyFromSource :: FilePath -> IO TopologyMetrics
+estimateTopologyFromSource srcPath = do
+  content <- readFile srcPath
+  let lineCount = length (lines content)
+  
+  -- Simple heuristics based on code structure
+  let estimatedObjs = lineCount * 5  -- ~5 objects per line of code
+  let estimatedEdges = estimatedObjs * 3  -- avg 3 edges per object
+  let connectivity = 0.6  -- default assumption
+  
+  return $ TopologyMetrics
+    { tmObjectCount = estimatedObjs
+    , tmEdgeCount = estimatedEdges
+    , tmAvgConnectivity = connectivity
+    , tmBottleneckRatio = 0.3
+    , tmMaxCutCapacity = 1.0
+    , tmRecommendedStrategy = Nothing
+    }
+
+-- ============================================================
+-- Compiler Flag Generation
+-- ============================================================
+
+buildGCCompilerFlags :: GCStrategyType -> FilePath -> FilePath -> String -> [String]
+buildGCCompilerFlags strat srcPath gcObjPath unitName =
+  baseFlags ++ strategySpecificFlags strat ++ [srcPath]
+  where
+    baseFlags = 
+      [ "-c"
+      , "-o", gcObjPath
+      , "-unit", unitName
+      , "-O3"
+      , "-d0"
+      , "-scrutinize"
+      , "-specialize"
+      , "-no-warnings"
+      ]
+    
+    strategySpecificFlags GomoryHu = 
+      [ "-optimize-leaf-routines"
+      , "-clustering"
+      , "-inline", "5"
+      ]
+    
+    strategySpecificFlags Ultrametric = 
+      [ "-local-optimizations"
+      , "-unroll-limit", "10"
+      , "-inline", "3"
+      ]
+    
+    strategySpecificFlags ConnesKreimer = 
+      [ "-inline-global"
+      , "-specialize"
+      , "-strict-types"
+      , "-inline", "4"
+      ]
+    
+    strategySpecificFlags Conservative = 
+      [ "-inline", "2"
+      ]
+
+buildBaseCompilerFlags :: FilePath -> FilePath -> String -> [String]
+buildBaseCompilerFlags = buildGCCompilerFlags Conservative
+
+-- ============================================================
+-- Shake Rule Setup
 -- ============================================================
 
 newtype PerExeGC = PerExeGC FilePath
@@ -110,86 +377,23 @@ instance NFData PerExeGC
 
 type instance RuleResult PerExeGC = ()
 
--- ============================================================
--- GC Path Helper
--- ============================================================
-
 gcObjPath :: FilePath -> FilePath
 gcObjPath exe = exe <.> "gc.o"
-
--- ============================================================
--- Polysemy Interpreters (Strategies)
--- ============================================================
-
--- | Interpret GC strategy selection using project heuristics
-interpretGCStrategyAuto :: Member Trace r => Sem (GCStrategy ': r) a -> Sem r a
-interpretGCStrategyAuto = interpret \case
-  SelectGCStrategy exe -> do
-    trace $ "[GC] Selecting strategy for: " ++ exe
-    -- Heuristic: choose based on module characteristics
-    -- (In real system, could analyze source file)
-    return GomoryHu
-  
-  CompileWithGCStrategy src strat oldStrat -> do
-    trace $ "[GC] Compiling " ++ src ++ " with " ++ show strat
-    -- Actual compilation happens here (delegated to Shake)
-    -- The strategy type ensures we're using the right flags
-    return ()
-  
-  AnalyzeTopology src -> do
-    trace $ "[GC] Analyzing topology of: " ++ src
-    return $ HeapStats 1000 5000 0.75 42
-
--- | Interpret GC strategy with explicit Conservative strategy
-interpretGCStrategyConservative :: Member Trace r => Sem (GCStrategy ': r) a -> Sem r a
-interpretGCStrategyConservative = interpret \case
-  SelectGCStrategy exe -> do
-    trace $ "[GC-Conservative] Using minimal GC for: " ++ exe
-    return Conservative
-  
-  CompileWithGCStrategy src _strat _oldStrat -> do
-    trace $ "[GC-Conservative] Minimal compile: " ++ src
-    return ()
-  
-  AnalyzeTopology src -> do
-    trace $ "[GC-Conservative] Skipping analysis for: " ++ src
-    return $ HeapStats 0 0 0.0 0
-
--- | Interpret GC strategy with Gomory-Hu specifics
-interpretGCStrategyGomoryHu :: Member Trace r => Sem (GCStrategy ': r) a -> Sem r a
-interpretGCStrategyGomoryHu = interpret \case
-  SelectGCStrategy exe -> do
-    trace $ "[GC-GomoryHu] Min-cut strategy for: " ++ exe
-    return GomoryHu
-  
-  CompileWithGCStrategy src GomoryHu _oldStrat -> do
-    trace $ "[GC-GomoryHu] Using Gomory-Hu flags"
-    return ()
-  
-  CompileWithGCStrategy src strat _oldStrat -> do
-    trace $ "[GC-GomoryHu] Fallback from " ++ show strat
-    return ()
-  
-  AnalyzeTopology src -> do
-    trace $ "[GC-GomoryHu] Analyzing min-cut topology"
-    return $ HeapStats 1200 6000 0.82 35
-
--- ============================================================
--- GC Rule Setup (using Polysemy)
--- ============================================================
 
 gcRule :: Rules ()
 gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
   let gcObj = gcObjPath exe
   let unitName = takeBaseName exe
   
+  -- Find source file
+  projectRoot <- liftIO Dir.getCurrentDirectory
   let possibleSources = 
         [ exe <.> "scm"
         , replaceDirectory exe "." <.> "scm"
+        , projectRoot </> takeFileName exe <.> "scm"
         ]
   
-  projectRoot <- liftIO Dir.getCurrentDirectory
-  srcFile <- liftIO $ findSourceForGC projectRoot possibleSources
+  srcFile <- liftIO $ findFirstExisting possibleSources
   
   case srcFile of
     Nothing -> do
@@ -198,93 +402,84 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
     
     Just src -> do
       need [src]
-      
       liftIO $ Dir.createDirectoryIfMissing True (takeDirectory gcObj)
-      putInfo $ "[GC] Compiling: " ++ src ++ " -> " ++ gcObj
       
-      -- Run Polysemy effect (using auto strategy selection)
+      -- Execute Polysemy effect pipeline
       let program :: Sem '[GCStrategy, Trace, Embed IO] () = do
-            strat <- selectGCStrategy exe
-            compileWithGCStrategy src strat Conservative
-            stats <- analyzeTopology src
-            trace $ "[GC] Stats: " ++ show stats
+            -- 1. Analyze heap topology
+            metrics <- analyzeHeapTopology src
+            
+            -- 2. Select optimal strategy
+            strat <- selectOptimalStrategy metrics
+            
+            -- 3. Generate compiler flags
+            flags <- generateGCFlags strat src gcObj unitName
+            
+            -- 4. Compile
+            liftIO $ do
+              putStrLn $ "[GC] Compiling with strategy: " ++ show strat
+              Proc.callProcess "csc" flags
       
-      -- Interpret effects and run
+      -- Run with Scheme integration (or fallback to heuristics)
       liftIO $ runM 
-        $ traceToStdout 
-        $ interpretGCStrategyAuto program
-      
-      -- Execute compilation with selected strategy flags
-      let gcFlags = 
-            [ "-c"
-            , "-o", gcObj
-            , "-unit", unitName
-            , "-O3"
-            , "-d0"
-            , "-scrutinize"
-            , "-specialize"
-            , "-inline", "3"
-            , "-no-warnings"
-            ]
-      
-      cmd_ (Cwd projectRoot) ("csc" :: String) (gcFlags ++ [src])
+        $ traceToIO
+        $ interpretGCStrategyWithScheme program
       
       return $ RunResult ChangedRecomputeDiff BS.empty ()
 
 -- ============================================================
--- High-level API (type-safe, strategy-aware)
+-- High-level API
 -- ============================================================
 
--- | Build GC-optimized object with automatic strategy selection
 buildGCOptimized :: FilePath -> Action (Artifact 'Obj)
 buildGCOptimized exe = do
   let gcObj = gcObjPath exe
   _ <- apply1 (PerExeGC exe)
   return (mkObject gcObj)
 
--- | Build GC-optimized object with explicit strategy choice
 buildWithGCStrategy :: GCStrategyType -> FilePath -> Action (Artifact 'Obj)
-buildWithGCStrategy strategy exe = do
+buildWithGCStrategy explicitStrat exe = do
   let gcObj = gcObjPath exe
   
-  putInfo $ "[GC] Building " ++ exe ++ " with " ++ show strategy
+  putInfo $ "[GC] Forcing explicit strategy: " ++ show explicitStrat
   
-  -- Run strategy-specific effect interpreter
-  let program :: Sem '[GCStrategy, Trace, Embed IO] HeapStats = do
-        compileWithGCStrategy exe strategy Conservative
-        analyzeTopology exe
+  -- Run Polysemy with strategy override
+  let program :: Sem '[GCStrategy, Trace, Embed IO] () = do
+        PT.trace $ "[GC] Overriding strategy to: " ++ show explicitStrat
+        
+        srcPath <- liftIO $ findSourceFor exe
+        let unitName = takeBaseName exe
+        
+        flags <- generateGCFlags explicitStrat srcPath gcObj unitName
+        
+        liftIO $ do
+          Dir.createDirectoryIfMissing True (takeDirectory gcObj)
+          Proc.callProcess "csc" flags
   
-  stats <- liftIO $ runM 
-    $ traceToStdout 
-    $ case strategy of
-        GomoryHu       -> interpretGCStrategyGomoryHu program
-        Ultrametric    -> interpretGCStrategyAuto program
-        ConnesKreimer  -> interpretGCStrategyAuto program
-        Conservative   -> interpretGCStrategyConservative program
+  liftIO $ runM 
+    $ traceToIO 
+    $ interpretGCStrategyWithScheme program
   
-  putInfo $ "[GC] Analysis: " ++ show stats
-  
-  _ <- apply1 (PerExeGC exe)
   return (mkObject gcObj)
 
 -- ============================================================
 -- Helpers
 -- ============================================================
 
-findSourceForGC :: FilePath -> [FilePath] -> IO (Maybe FilePath)
-findSourceForGC _projectRoot [] = return Nothing
-findSourceForGC projectRoot (candidate:rest) = do
-  let candidateInRoot = projectRoot </> candidate
-  existsInRoot <- Dir.doesFileExist candidateInRoot
-  if existsInRoot
-    then return (Just candidateInRoot)
-    else do
-      exists <- Dir.doesFileExist candidate
-      if exists
-        then return (Just candidate)
-        else findSourceForGC projectRoot rest
+findFirstExisting :: [FilePath] -> IO (Maybe FilePath)
+findFirstExisting [] = return Nothing
+findFirstExisting (p:ps) = do
+  exists <- Dir.doesFileExist p
+  if exists then return (Just p) else findFirstExisting ps
 
--- | Convert effect trace to IO (for diagnostics)
-traceToStdout :: Member (Embed IO) r => Sem (Trace ': r) a -> Sem r a
-traceToStdout = interpret \case
-  Trace msg -> liftIO (putStrLn msg)
+findSourceFor :: FilePath -> IO FilePath
+findSourceFor exe = do
+  let src = exe <.> "scm"
+  exists <- Dir.doesFileExist src
+  if exists
+    then return src
+    else fail $ "Source not found: " ++ src
+
+traceToIO :: Member (Embed IO) r => Sem (Trace ': r) a -> Sem r a
+traceToIO = interpret \case
+  PT.Trace msg -> liftIO (putStrLn msg)

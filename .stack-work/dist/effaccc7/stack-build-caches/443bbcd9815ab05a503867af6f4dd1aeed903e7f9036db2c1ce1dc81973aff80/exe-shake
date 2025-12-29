@@ -1,0 +1,102 @@
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\Win32-2.13.3.0\libHSWin32-2.13.3.0.a
+: hash: e656611838c840c23744ded743b5a819d7f81d492302e5812616fb3be555663c
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\array-0.5.6.0\libHSarray-0.5.6.0.a
+: hash: 0f17923431932973b4bbfc3019c48acaf2029bd6f1241eaa6ff9d8ea8e6698d4
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\base-4.18.2.1\libHSbase-4.18.2.1.a
+: hash: 520a80638a25d47f00b8b7305ca55427cc6ce6b6d0f97bd38016bf04789fb51b
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\binary-0.8.9.1\libHSbinary-0.8.9.1.a
+: hash: 89a90cacf09eb53d99d83c3154028358844b6df4a7d373f11b27cd7fcc8961ff
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\bytestring-0.11.5.3\libHSbytestring-0.11.5.3.a
+: hash: 0f2e13b546f7d094a66976e2ef475edf4381e884b8e56c7e889b8043511d8711
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\containers-0.6.7\libHScontainers-0.6.7.a
+: hash: ca743221aef400aabd80af2dd5d86461558624c0fccbda01034b791d34484688
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\deepseq-1.4.8.1\libHSdeepseq-1.4.8.1.a
+: hash: 6bb3ff44302cbd3bd835c9bf93e6f860f0d02a72270b0de4bf43238a30dfaaf0
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\directory-1.3.8.5\libHSdirectory-1.3.8.5.a
+: hash: ce30038ecbecf76254340c400398cd095f1702c21d9904a27081f051bec8cd51
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\exceptions-0.10.7\libHSexceptions-0.10.7.a
+: hash: c552da559f10cfb81d587ba04d1bb7609257d643050572f1cc3d80290e9a0072
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\filepath-1.4.300.1\libHSfilepath-1.4.300.1.a
+: hash: bf0f3f9272248d64ac9c6cf64a1e939f1631bcc97f6fb466a44bcd8dedaba2ee
+C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\ghc-9.6.6\libHSghc-9.6.6.a:
+  hash: 49a00931069f4cc978e21ec95806ff7609cce775bcda6c987ea48fb9f9994623
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\ghc-bignum-1.3\libHSghc-bignum-1.3.a
+: hash: 87094e95748cdf9c9bd39d8f4bc42ef07fdb88d3f469177b004cd068490d5075
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\ghc-boot-9.6.6\libHSghc-boot-9.6.6.a
+: hash: 2b8c80d134a75ab07b5432c023e32c9eeef883e879070a52a76f0e7b787755d9
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\ghc-boot-th-9.6.6\libHSghc-boot-th-9.6.6.a
+: hash: eaa58c066605d2f966ce686c5946f0f8e117e882ecdd64b8671b4bc07e30633a
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\ghc-heap-9.6.6\libHSghc-heap-9.6.6.a
+: hash: 2c58c66f77ea322d8e5e2f5ceea41aad7b28a893a706ad621c3037a84761cb64
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\ghc-prim-0.10.0\libHSghc-prim-0.10.0.a
+: hash: 88ef62de7a95d0e15a2d247d16de3b3848f8ad6614ce36efaab50d5bf8108621
+C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\ghci-9.6.6\libHSghci-9.6.6.a:
+  hash: d97eba7d1182d4df7fd01a15d45765408f8ee751da303d32322d7da3250df577
+C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\hpc-0.6.2.0\libHShpc-0.6.2.0.a:
+  hash: 2933326dee3f09c0be202a7d8e50f58991477921a0176d72fcfcf6a125859a3f
+C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\mtl-2.3.1\libHSmtl-2.3.1.a:
+  hash: f7d47ac5fdc6f3da3af9a85c41c05e8733891fbd9de5d6bc9b7a8b7bc6686354
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\pretty-1.1.3.6\libHSpretty-1.1.3.6.a
+: hash: 66ba47afdce99162576fda0d8c1e806236cb4553f8bbf2f83ed578ecac95f38e
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\process-1.6.19.0\libHSprocess-1.6.19.0.a
+: hash: d28b7c0060b729c2c3bfc714b10da3c5d47ad8b6e512e2b368a4adf770a208c1
+C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\stm-2.5.1.0\libHSstm-2.5.1.0.a:
+  hash: 5f160a41a94b092f1bc446ca95eb55e4c2558dc014875dda6ae8ff9f68345381
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\template-haskell-2.20.0.0\libHStemplate-haskell-2.20.0.0.a
+: hash: e38a6e4b6b7f90edf9c47865e049e88ef43aaefe7386fd1902271ea877be2089
+C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\text-2.0.2\libHStext-2.0.2.a:
+  hash: 67851406d689fe027cf236a7ce25e5cbc2cc50c1e58ff214ea513a2517914cf7
+C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\time-1.12.2\libHStime-1.12.2.a:
+  hash: 285f3196d8d048a34376ffc7f0a603c3bc86f8f8616d16e757c6859fd96e7192
+? C:\Users\tyuuw\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\lib\x86_64-windows-ghc-9.6.6\transformers-0.6.1.0\libHStransformers-0.6.1.0.a
+: hash: 6881f59f7f1c6aebc953ad01091f4ec5bd2527a0f5b3b4a3913d4cb68b952608
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\hatsu-yakitori.cabal:
+  hash: b5df106e4ac9c8fadf13fe9aa39fe7a15eff68d4b58978a71a202db756714388
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\package.yaml:
+  hash: f5c1a5c3ad0c790a851f736974e8f81acd3afa495208526e78f327f676a693ae
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Chicken.hs:
+  hash: da94258aaf0476c81e4cf9e191c9ec2f9d53900387dbe95c50c354c48ce15980
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Clean.hs:
+  hash: 99b6872c04ec1ec038f282272331c64b534b6ed9c211e366d250ffc0be9c6b58
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Pipeline.hs:
+  hash: e8d44f72555a4d6efd742984e2b83475dee07dc2dd3e4191a44051da3f92a9a2
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Rules\Compile.hs:
+  hash: ec150d38c39273997a61fde9bc19024a622294f5bdb26ac12c585720750dd336
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Rules\GC.hs:
+  hash: 2bff2976c52d77fdd5fa5f0460810b0d4a65014bc8ed14194118ffef1ba9e83a
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Rules\Link.hs:
+  hash: 921ed7335fe378aa7e335eee80fa772de1bd3d889b722bddb3d31a4f4375815e
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Rules\MEEP.hs:
+  hash: 361c8e1180646a2cd85a2bfce894da3434016ceb92d544d74b999bbe92e0649e
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Rules\StandardToplevel.hs:
+  hash: 0d39abb5f6e59df937948dea62a202e2969559028d3d97e488dc09108c95639c
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Salmonella.hs:
+  hash: edc8223e1313e4c362927029e1966c5afdc127677781af01243d19b433788dab
+C:\Users\tyuuw\Documents\test_clone\hatsu-yakitori\shake\Shake.hs:
+  hash: 262a2cc57de5fffde2e5634fbdd56ab55dc49b5fee51b116217b6f4a7b33d19e
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\async-2.2.5-Jnlg8x3TS3aLheevOnFFr7\libHSasync-2.2.5-Jnlg8x3TS3aLheevOnFFr7.a
+: hash: 4b63a04a32e830ff15ea33c3b50f26697b1ba618ab77a2a01bc379c00f5ea7e6
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\atomic-primops-0.8.8-HZX8MeWb5GW9wQoxlYYSJk\libHSatomic-primops-0.8.8-HZX8MeWb5GW9wQoxlYYSJk.a
+: hash: d0b2a160feeaf0e3a71ac820b24f9cc2d3a3f02e2323ad69f406c99b216278df
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\first-class-families-0.8.1.0-7nk8sVtYj7D22wXygDy92\libHSfirst-class-families-0.8.1.0-7nk8sVtYj7D22wXygDy92.a
+: hash: fbdbc5df356bbe9b7abea580b5ce276d4180fe628ae6c11c3638e23004576187
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\ghc-tcplugins-extra-0.4.6-BVMLcXhZJqEHzhzWQx6Qan\libHSghc-tcplugins-extra-0.4.6-BVMLcXhZJqEHzhzWQx6Qan.a
+: hash: 762903ccdf0cabd9659e6f77ae9686baacab6449173269c5becd08635b8b2436
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\hashable-1.4.4.0-1jOpKawyX4k1n9a6vQlXXi\libHShashable-1.4.4.0-1jOpKawyX4k1n9a6vQlXXi.a
+: hash: 7e80a946845122dd56413a770934a96176331b4c65d7e2a6bce211297043f1f0
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\os-string-2.0.6-IlBa2UQjH7mL18YjMu1jzE\libHSos-string-2.0.6-IlBa2UQjH7mL18YjMu1jzE.a
+: hash: f7cd3e77388ea56c720fe0eb120d6fcc61709b37902d7fd8578307bae51332d8
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\polysemy-1.9.1.0-9dtJqNLxYdABBVQi4UWk8h\libHSpolysemy-1.9.1.0-9dtJqNLxYdABBVQi4UWk8h.a
+: hash: 8f2df9e7f2640dd3e8df73d444d7edf516e47e29afd96cde84785039ce0bfbfd
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\polysemy-plugin-0.4.5.0-BocmwqsdilDCN9vF5HbSYo\libHSpolysemy-plugin-0.4.5.0-BocmwqsdilDCN9vF5HbSYo.a
+: hash: 3b6ffa92bee154b7ed12640ce4bb7749b98d83f079a7fd90b9c7f5ed2a885c5b
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\primitive-0.8.0.0-G7z1XrhwN0bFkYsIqIr1QU\libHSprimitive-0.8.0.0-G7z1XrhwN0bFkYsIqIr1QU.a
+: hash: 721dfb7a44d942e2f92edf4e62b07c53e63636dda53a9d57088cdfee28476a51
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\syb-0.7.2.4-CGf6yzYBtNj1GaPOXC2hje\libHSsyb-0.7.2.4-CGf6yzYBtNj1GaPOXC2hje.a
+: hash: 6cfcdcf63f9c4e7e6e0fa15f143c80a23043a6a516e0e2e209a07ecc55e8a819
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\th-abstraction-0.5.0.0-HAFjiAO2nGN58SdxVZCnLH\libHSth-abstraction-0.5.0.0-HAFjiAO2nGN58SdxVZCnLH.a
+: hash: d54cb273d37383a9e853ab0fa4300495e4462b400f2ca2f2a6a818fee1bb0097
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\type-errors-0.2.0.2-DWyY17T2MOTDmS7XjJGTa1\libHStype-errors-0.2.0.2-DWyY17T2MOTDmS7XjJGTa1.a
+: hash: d40100915cf56ac25ed23aac1c96c9e20ece73753c911a22fc2b4a6239d6ceb0
+? C:\sr\snapshots\07c67bd6\lib\x86_64-windows-ghc-9.6.6\unagi-chan-0.4.1.4-111HellrgJbBOa9k8suPeZ\libHSunagi-chan-0.4.1.4-111HellrgJbBOa9k8suPeZ.a
+: hash: 90679cfee0bbe0f66f12c164251c0bf1e83d787345377de04b66170669f0fba2
