@@ -1,10 +1,12 @@
 {- shake/Rules/Link.hs -}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
 
 module Rules.Link
   ( linkExe
   , linkWithDeps
   , getChickenEnv
+  , unsafeLinkExe
   ) where
 
 import Development.Shake
@@ -18,20 +20,29 @@ import Data.List (intercalate, partition, isPrefixOf)
 import Chicken
 
 -- ============================================================
--- Linking
+-- Safe Linking with Phantom Types
 -- ============================================================
 
--- | Simple linking without dependencies
+-- | Safe linking: Objects + Dependencies → Executable
+-- Note: All objects must be compiled as units except the main entry point
 linkExe :: [Artifact 'Obj] -> FilePath -> Action (Artifact 'Exe)
 linkExe objs outPath = do
   need (map getPath objs)
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory outPath)
   
+  env <- liftIO getChickenEnv
+  let envOpts = map (uncurry AddEnv) env
+  
   let objPaths = map getPath objs
-  cmd_ ("csc" :: String) ("-o" : outPath : objPaths)
-  return (Artifact outPath)
+  
+  -- Link with Chicken runtime (csc automatically links chicken runtime)
+  let args = ["-o", outPath] ++ objPaths
+  
+  cmd_ envOpts ("csc" :: String) args
+  
+  return $ mkExe outPath
 
--- | Linking with dependencies (-uses flags) AND system libraries
+-- | Safe linking with dependencies (full -uses flag support)
 linkWithDeps :: [Artifact 'Obj] -> [String] -> FilePath -> Action (Artifact 'Exe)
 linkWithDeps objs deps outPath = do
   need (map getPath objs)
@@ -42,25 +53,23 @@ linkWithDeps objs deps outPath = do
   
   let objPaths = map getPath objs
   
-  -- 依存関係を分類
-  let (srfiDeps, otherDeps) = partition ("srfi-" `isPrefixOf`) deps
-  let (chickenDeps, customDeps) = partition ("chicken" `isPrefixOf`) otherDeps
+  -- All dependencies as -uses flags
+  let usesFlags = concatMap (\d -> ["-uses", d]) deps
   
-  -- SRFIとChickenモジュールは特別なリンクが必要
-  let usesFlags = concatMap (\d -> ["-uses", d]) customDeps
-  let srfiFlags = concatMap (\d -> ["-require-extension", d]) srfiDeps
-  let chickenFlags = concatMap (\d -> ["-require-extension", d]) chickenDeps
-  
-  let args = ["-o", outPath] ++ usesFlags ++ srfiFlags ++ chickenFlags ++ objPaths
+  -- csc automatically links chicken runtime, no need for -lchicken
+  let args = ["-o", outPath] ++ usesFlags ++ objPaths
   
   cmd_ envOpts ("csc" :: String) args
-  return (Artifact outPath)
+  
+  return $ mkExe outPath
+
+unsafeLinkExe :: FilePath -> Artifact 'Exe
+unsafeLinkExe = mkExe
 
 -- ============================================================
 -- Environment Setup
 -- ============================================================
 
--- | Get Chicken Scheme environment variables
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
@@ -79,3 +88,19 @@ getChickenEnv = do
     , ("CHICKEN_INSTALL_REPOSITORY", distPath)
     , ("LD_LIBRARY_PATH", "/usr/lib")
     ]
+
+-- ============================================================
+-- Additional type-safe helpers
+-- ============================================================
+
+verifyLinkable :: Artifact 'Obj -> Either String ()
+verifyLinkable art =
+  if canBeLinked art
+    then Right ()
+    else Left $ "Cannot link: " ++ getPath art
+
+verifyLinkableObjects :: [Artifact 'Obj] -> Either String ()
+verifyLinkableObjects objs =
+  case filter (not . canBeLinked) objs of
+    [] -> Right ()
+    bad -> Left $ "Cannot link objects: " ++ show (map getPath bad)

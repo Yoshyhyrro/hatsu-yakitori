@@ -38,8 +38,7 @@
    gc-respects-witt-topology?
    
    ;; --- Validation & Testing ---
-   validate-witt-structure
-   test-witt-foundation)
+   validate-witt-structure)
   
   (import scheme)
   (import (chicken base)
@@ -298,7 +297,7 @@
                    (partition
                     (filter (lambda (oct)
                               (<= (octad-weight oct) threshold))
-                            (generate-all-octads))))
+                            (vector->list (generate-all-octads)))))
               
               (loop (+ k 1)
                     (cons (cons scale partition) levels)))))))
@@ -379,45 +378,55 @@
   ;; HELPER: Generate All 759 Octads
   ;; ============================================================
 
+  (define golay24-generator-matrix
+    (vector
+     #xC75 #x63B #xF68 #x7B4 #x3DA #xD99 #x6CD #x367
+     #xDC6 #xA97 #x93E #x8EB))
+
+  (define (encode-golay24-local info-bits)
+    "Encode 12-bit info into 24-bit Golay codeword."
+    (let ((p-matrix golay24-generator-matrix))
+      (let loop ((i 0) (parity 0))
+        (if (= i 12)
+            (bitwise-ior (arithmetic-shift info-bits 12) parity)
+            (let ((info-bit (bitwise-and 1 (arithmetic-shift info-bits (- i)))))
+              (if (zero? info-bit)
+                  (loop (+ i 1) parity)
+                  (loop (+ i 1)
+                        (bitwise-xor parity (vector-ref p-matrix i)))))))))
+
   (define (generate-all-octads)
     "Generate all 759 octads in S(5,8,24).
-     
-     STUB: In production, load precomputed table.
-     Here: demonstrate with seed octads + automorphism closure.
-     
+
+     Uses proper Golay encoding: encode all 2^12 = 4096 info words
+     and filter for weight-8 codewords.
+
      Returns: vector of 759 octads (24-bit integers)"
-    
-    ;; Simplified: seed octads + generators
-    (let ((seed '(#x000000FF #x0000FF00 #x00FF0000 #xFF000000)))
-      (let ((all (make-hash-table)))
-        (for-each
-         (lambda (s)
-           (hash-table-set! all s #t))
-         seed)
-        
-        ;; Apply generators to expand (simplified)
-        (let loop ((remaining 755) (count (length seed)))
-          (if (or (<= remaining 0) (>= count 759))
-              (let ((oct-list (hash-table-keys all)))
-                (let ((v (make-vector (length oct-list))))
-                  (let loop-copy ((octs oct-list) (idx 0))
-                    (if (null? octs) v
-                        (begin (vector-set! v idx (car octs))
-                               (loop-copy (cdr octs) (+ idx 1)))))))
-              
-              ;; Expand via automorphisms
-              (let* ((oct-list (hash-table-keys all))
-                     (next-oct (if (null? oct-list) 0
-                                   (let ((gen (witt-automorphism 0)))
-                                     (witt-apply-automorphism gen (car oct-list))))))
-                (hash-table-set! all next-oct #t)
-                (loop (- remaining 1) (+ count 1))))))))
+
+    ;; Generate all Golay codewords and filter for weight-8
+    (let ((octads '()))
+      (let loop ((info 0))
+        (if (< info 4096)
+            (let* ((codeword (encode-golay24-local info))
+                   (weight (hamming-weight codeword)))
+              (if (= weight 8)
+                  (begin
+                    (set! octads (cons codeword octads))
+                    (loop (+ info 1)))
+                  (loop (+ info 1))))
+            ;; Convert list to vector
+            (let ((v (make-vector (length octads))))
+              (let copy-loop ((octs octads) (idx 0))
+                (if (null? octs)
+                    v
+                    (begin
+                      (vector-set! v idx (car octs))
+                      (copy-loop (cdr octs) (+ idx 1)))))))))
 
   ;; ============================================================
   ;; Testing
   ;; ============================================================
 
-  (define (test-witt-foundation)
     "Comprehensive test of Witt core functionality."
     
     (printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━~%")
@@ -455,6 +464,5 @@
       (let ((levels (witt-cartan-levels 8 3 ctx)))
         (printf "  Number of scales: ~a~%" (length levels))))
     
-    (printf "~%=== WITT FOUNDATION TESTS COMPLETE ===~%")))
-
- ;; end module witt_foundation
+    (printf "~%=== WITT FOUNDATION TESTS COMPLETE ===~%"))
+) ;; end module witt_foundation

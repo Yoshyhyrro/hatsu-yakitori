@@ -1,0 +1,43 @@
+name: hatsu-yakitori
+version: 0.0.2.0
+synopsis: Shake-based build system for Chicken Scheme project
+description: Polysemy + Shake + Chicken Scheme integration
+author: Your Name
+maintainer: je-suis-1oeuf-devautour@proton.me
+license: BSD3
+
+executables:
+  shake:
+    main: Shake.hs
+    source-dirs: shake
+    dependencies:
+      - base
+      - polysemy
+      - polysemy-plugin
+      - shake
+      - extra  
+      - async
+      - process
+      - directory
+      - filepath
+      - containers
+      - bytestring
+      - binary
+      - hashable
+    ghc-options:
+      - -fplugin=Polysemy.Plugin
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    other-modules:
+      - Chicken
+      - Clean
+      - Pipeline
+      - Salmonella
+      - Rules.Compile
+      - Rules.GC
+      - Rules.Link
+      - Rules.MEEP
+      - Rules.StandardToplevel
+
+github: Yoshyhyrro/hatsu-yakitori

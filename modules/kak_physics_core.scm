@@ -4,7 +4,7 @@
 ;;; ============================================================
 
 (declare (unit kak_physics_core))
-(declare (uses srfi-4)) 
+(import srfi-4) 
 
 (module kak_physics_core
   (make-yee-grid

@@ -13,6 +13,12 @@
   (import srfi-69)
   (import (chicken sort))
   (import (chicken bitwise))
+  (import machine_constants)
+  (import golay_frontier)
+  (import witt_foundation)
+  (import witt_symmetry_explicit)
+  (import kak_decomposition)
+  (import cross_validation)
 
   ;;; ============================================================
   ;;; Test Suite: Witt Foundation System
@@ -21,11 +27,7 @@
   (printf "╔════════════════════════════════════════════════╗~%")
   (printf "║ WITT FOUNDATION - System Test Suite           ║~%")
   (printf "╚════════════════════════════════════════════════╝~%~%")
-
-  (printf "╔════════════════════════════════════════════════╗~%")
-  (printf "║ WITT FOUNDATION - System Test Suite           ║~%")
-  (printf "╚════════════════════════════════════════════════╝~%~%")
-
+  
   ;; Test 1: Machine Constants Module
   (printf "Test 1: Machine Constants~%")
   (printf "  Machine Epsilon: ~a~%" machine-epsilon)

@@ -1,48 +1,221 @@
 {- shake/Rules/Compile.hs -}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Rules.Compile
   ( setupCompileRules
   , compileUnit
   , compileObject
+  , CompileInfo(..)
   ) where
 
 import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad (when)
 import qualified System.Directory as Dir
-import Data.List (isInfixOf)
+import Data.List (isInfixOf, isSuffixOf)
 
 import Chicken
+import Rules.StandardToplevel (extractDeclareUses, extractModuleDecl)
 
--- | Setup compile rules for *.o files
+-- ============================================================
+-- Type-Safe Compilation Info
+-- ============================================================
+
+data CompileInfo (a :: ArtifactType) = CompileInfo
+  { ciSourceFile :: FilePath
+  , ciCompileFlags :: String
+  , ciArtifact :: Artifact a
+  } deriving (Show)
+
+-- ============================================================
+-- Setup Rules
+-- ============================================================
+
 setupCompileRules :: Rules ()
 setupCompileRules = do
-  "dist/unit_*/*.o" %> \out -> compileUnitAction out
+  "dist/unit_*/*.o" %> \out -> compileUnitRule out
+  "dist/obj_*/*.o" %> \out -> compileObjectRule out
 
--- | Compile as a unit with module support
-compileUnit :: FilePath -> String -> Action (Artifact 'Unit)
-compileUnit src flags = do
-  let outDir = "dist" </> "unit_default"
-  let out = outDir </> replaceExtension (takeFileName src) "o"
-  need [src]
-  return (Artifact out)
+-- ============================================================
+-- Main Detection Logic
+-- ============================================================
 
--- | Compile as object file
-compileObject :: FilePath -> String -> Action (Artifact 'Obj)
-compileObject src flags = do
-  let outDir = "dist" </> "obj_default"
-  let out = outDir </> replaceExtension (takeFileName src) "o"
-  need [src]
-  return (Artifact out)
+-- | Determine if a file is the main entry point
+isMainFile :: FilePath -> Bool
+isMainFile src = 
+  let baseName = takeBaseName (dropExtension src)
+  in baseName `elem` ["witt-validator-main", "main", "golay24_main"]
+     || "-main" `isSuffixOf` baseName
 
--- Internal
-compileUnitAction :: FilePath -> Action ()
-compileUnitAction out = do
-  let baseName = dropExtension (takeFileName out)
+-- | Check if file content contains a main procedure definition
+hasMainProcedure :: String -> Bool
+hasMainProcedure content =
+  "(define (main" `isInfixOf` content
+  || "(define main" `isInfixOf` content
+
+-- ============================================================
+-- Compile Actions
+-- ============================================================
+
+compileToUnit :: FilePath -> String -> FilePath -> Action ()
+compileToUnit src flags out = do
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
-  putInfo $ "Compiling unit: " ++ baseName
-  cmd_ ("csc" :: String) ["-c", baseName <.> "scm", "-o", out]
+  content <- readFile' src
+  
+  let usesDeps = extractDeclareUses content
+  let moduleName = extractModuleDecl content
+  let baseName = takeBaseName (dropExtension src)
+  
+  -- Determine unit name
+  let unitName = case moduleName of
+        Just m  -> m
+        Nothing -> baseName
+  
+  -- Check if this is the main entry point
+  let isMain = isMainFile src || hasMainProcedure content
+  
+  if isMain
+    then do
+      -- Compile as standalone with main()
+      putInfo $ "[Compile] Main entry point: " ++ baseName
+      let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+      cmd_ ("csc" :: String) (["-c"] ++ usesFlags ++ [src, "-o", out])
+    else do
+      -- Compile as unit (no main)
+      putInfo $ "[Compile] Unit module: " ++ unitName
+      let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+      cmd_ ("csc" :: String) 
+           (["-c", "-unit", unitName] ++ usesFlags ++ ["-J", src, "-o", out])
 
+compileUnit :: FilePath -> String -> Action (CompileInfo 'Unit)
+compileUnit src flags = do
+  let baseName = takeBaseName (dropExtension src)
+  let outDir = "dist" </> "unit_default"
+  let out = outDir </> baseName <.> "o"
+  
+  need [src]
+  compileToUnit src flags out
+  
+  return $ CompileInfo
+    { ciSourceFile = src
+    , ciCompileFlags = flags
+    , ciArtifact = mkUnit out
+    }
+
+compileObject :: FilePath -> String -> Action (CompileInfo 'Obj)
+compileObject src flags = do
+  let baseName = takeBaseName (dropExtension src)
+  let outDir = "dist" </> "obj_default"
+  let out = outDir </> baseName <.> "o"
+  
+  need [src]
+  liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
+
+  content <- readFile' src
+  let usesDeps = extractDeclareUses content
+  let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+  
+  -- Determine if this is main or a module
+  let isMain = isMainFile src || hasMainProcedure content
+  
+  if isMain
+    then do
+      putInfo $ "[Compile] Main object: " ++ baseName
+      cmd_ ("csc" :: String) (["-c"] ++ words flags ++ usesFlags ++ [src, "-o", out])
+    else do
+      putInfo $ "[Compile] Unit object: " ++ baseName
+      let moduleName = case extractModuleDecl content of
+            Just m  -> m
+            Nothing -> baseName
+      cmd_ ("csc" :: String) 
+           (["-c", "-unit", moduleName] ++ words flags ++ usesFlags ++ ["-J", src, "-o", out])
+  
+  return $ CompileInfo
+    { ciSourceFile = src
+    , ciCompileFlags = flags
+    , ciArtifact = mkObject out
+    }
+
+-- ============================================================
+-- Helpers
+-- ============================================================
+
+extractArtifact :: CompileInfo a -> Artifact a
+extractArtifact = ciArtifact
+
+getSourceFile :: CompileInfo a -> FilePath
+getSourceFile = ciSourceFile
+
+-- ============================================================
+-- Internal Rule Implementations
+-- ============================================================
+
+compileUnitRule :: FilePath -> Action ()
+compileUnitRule out = do
+  let baseName = takeBaseName (dropExtension out)
+  
+  srcCandidates <- getDirectoryFiles "." [baseName <.> "scm"]
+  
+  case srcCandidates of
+    [] -> fail $ "No source found for " ++ out
+    (src:_) -> do
+      need [src]
+      liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
+      
+      content <- readFile' src
+      let usesDeps = extractDeclareUses content
+      let moduleName = extractModuleDecl content
+      let unitName = case moduleName of
+            Just m  -> m
+            Nothing -> baseName
+      
+      let isMain = isMainFile src || hasMainProcedure content
+      
+      if isMain
+        then do
+          putInfo $ "[Compile] Main program: " ++ baseName
+          let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+          cmd_ ("csc" :: String) (["-c"] ++ usesFlags ++ [src, "-o", out])
+        else do
+          putInfo $ "[Compile] Unit: " ++ unitName ++ " from " ++ src
+          let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+          cmd_ ("csc" :: String) 
+               (["-c", "-unit", unitName] ++ usesFlags ++ ["-J", src, "-o", out])
+
+compileObjectRule :: FilePath -> Action ()
+compileObjectRule out = do
+  let baseName = takeBaseName (dropExtension out)
+  
+  srcCandidates <- getDirectoryFiles "." [baseName <.> "scm"]
+  
+  case srcCandidates of
+    [] -> fail $ "No source found for " ++ out
+    (src:_) -> do
+      need [src]
+      liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
+      
+      content <- readFile' src
+      let usesDeps = extractDeclareUses content
+      let isMain = isMainFile src || hasMainProcedure content
+      
+      if isMain
+        then do
+          putInfo $ "[Compile] Main object: " ++ baseName
+          let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+          cmd_ ("csc" :: String) (["-c"] ++ usesFlags ++ [src, "-o", out])
+        else do
+          let moduleName = case extractModuleDecl content of
+                Just m  -> m
+                Nothing -> baseName
+          putInfo $ "[Compile] Unit object: " ++ moduleName
+          let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
+          cmd_ ("csc" :: String) 
+               (["-c", "-unit", moduleName] ++ usesFlags ++ ["-J", src, "-o", out])
+
+mapArtifact :: (Artifact a -> Artifact b) -> CompileInfo a -> CompileInfo b
+mapArtifact f info = info { ciArtifact = f (ciArtifact info) }
+
+extractArtifacts :: [CompileInfo a] -> [Artifact a]
+extractArtifacts = map extractArtifact

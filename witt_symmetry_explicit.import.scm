@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'witt_symmetry_explicit
-      'witt_symmetry_explicit
+      'cross_validation
       (scheme#list)
       '((golay-encodes-witt-octad
           .
