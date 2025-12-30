@@ -6,7 +6,7 @@ module Rules.Link
   ( linkExe
   , linkWithDeps
   , getChickenEnv
-  , unsafeLinkExe  -- Only for when you're 100% sure
+  , unsafeLinkExe
   ) where
 
 import Development.Shake
@@ -24,20 +24,25 @@ import Chicken
 -- ============================================================
 
 -- | Safe linking: Objects + Dependencies → Executable
--- The phantom type 'Exe ensures this only produces executables
+-- Note: All objects must be compiled as units except the main entry point
 linkExe :: [Artifact 'Obj] -> FilePath -> Action (Artifact 'Exe)
 linkExe objs outPath = do
   need (map getPath objs)
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory outPath)
   
-  let objPaths = map getPath objs
-  cmd_ ("csc" :: String) ("-o" : outPath : objPaths)
+  env <- liftIO getChickenEnv
+  let envOpts = map (uncurry AddEnv) env
   
-  -- Return with CORRECT phantom type witness
+  let objPaths = map getPath objs
+  
+  -- Link with Chicken runtime (csc automatically links chicken runtime)
+  let args = ["-o", outPath] ++ objPaths
+  
+  cmd_ envOpts ("csc" :: String) args
+  
   return $ mkExe outPath
 
 -- | Safe linking with dependencies (full -uses flag support)
--- Phantom type 'Exe guarantees output is an executable
 linkWithDeps :: [Artifact 'Obj] -> [String] -> FilePath -> Action (Artifact 'Exe)
 linkWithDeps objs deps outPath = do
   need (map getPath objs)
@@ -48,18 +53,16 @@ linkWithDeps objs deps outPath = do
   
   let objPaths = map getPath objs
   
-  -- All dependencies as -uses flags (SRFI, chicken, custom all the same)
+  -- All dependencies as -uses flags
   let usesFlags = concatMap (\d -> ["-uses", d]) deps
   
+  -- csc automatically links chicken runtime, no need for -lchicken
   let args = ["-o", outPath] ++ usesFlags ++ objPaths
   
   cmd_ envOpts ("csc" :: String) args
   
-  -- Return with CORRECT phantom type witness
   return $ mkExe outPath
 
--- | Unsafe linking: only use when you KNOW the file is executable
--- This is a last resort - prefer linkExe or linkWithDeps
 unsafeLinkExe :: FilePath -> Artifact 'Exe
 unsafeLinkExe = mkExe
 
@@ -67,7 +70,6 @@ unsafeLinkExe = mkExe
 -- Environment Setup
 -- ============================================================
 
--- | Get Chicken Scheme environment variables
 getChickenEnv :: IO [(String, String)]
 getChickenEnv = do
   home <- Dir.getHomeDirectory
@@ -91,14 +93,12 @@ getChickenEnv = do
 -- Additional type-safe helpers
 -- ============================================================
 
--- | Verify object file can actually be linked before attempting
 verifyLinkable :: Artifact 'Obj -> Either String ()
 verifyLinkable art =
   if canBeLinked art
     then Right ()
     else Left $ "Cannot link: " ++ getPath art
 
--- | Batch verify multiple objects
 verifyLinkableObjects :: [Artifact 'Obj] -> Either String ()
 verifyLinkableObjects objs =
   case filter (not . canBeLinked) objs of

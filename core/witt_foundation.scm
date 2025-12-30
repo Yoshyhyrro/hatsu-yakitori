@@ -38,8 +38,7 @@
    gc-respects-witt-topology?
    
    ;; --- Validation & Testing ---
-   validate-witt-structure
-   test-witt-foundation)
+   validate-witt-structure)
   
   (import scheme)
   (import (chicken base)
@@ -405,19 +404,29 @@
      Returns: vector of 759 octads (24-bit integers)"
 
     ;; Generate all Golay codewords and filter for weight-8
-    (let loop ((info 0) (octads '()))
-      (if (>= info 4096)
-          (list->vector octads)
-          (let* ((codeword (encode-golay24-local info))
-                 (weight (hamming-weight codeword)))
-            (if (= weight 8)
-                (loop (+ info 1) (cons codeword octads))
-                (loop (+ info 1) octads))))))
+    (let ((octads '()))
+      (let loop ((info 0))
+        (if (< info 4096)
+            (let* ((codeword (encode-golay24-local info))
+                   (weight (hamming-weight codeword)))
+              (if (= weight 8)
+                  (begin
+                    (set! octads (cons codeword octads))
+                    (loop (+ info 1)))
+                  (loop (+ info 1))))
+            ;; Convert list to vector
+            (let ((v (make-vector (length octads))))
+              (let copy-loop ((octs octads) (idx 0))
+                (if (null? octs)
+                    v
+                    (begin
+                      (vector-set! v idx (car octs))
+                      (copy-loop (cdr octs) (+ idx 1)))))))))
+
   ;; ============================================================
   ;; Testing
   ;; ============================================================
 
-  (define (test-witt-foundation)
     "Comprehensive test of Witt core functionality."
     
     (printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━~%")
@@ -455,5 +464,5 @@
       (let ((levels (witt-cartan-levels 8 3 ctx)))
         (printf "  Number of scales: ~a~%" (length levels))))
     
-    (printf "~%=== WITT FOUNDATION TESTS COMPLETE ===~%")))
-
+    (printf "~%=== WITT FOUNDATION TESTS COMPLETE ===~%"))
+) ;; end module witt_foundation

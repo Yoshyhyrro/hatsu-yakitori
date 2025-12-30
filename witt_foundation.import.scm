@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'witt_foundation
-      'witt-validator-main
+      'cross_validation
       (scheme#list)
       '((make-witt-context . witt_foundation#make-witt-context)
         (witt-context? . witt_foundation#witt-context?)
@@ -28,8 +28,7 @@
         (gc-respects-witt-topology?
           .
           witt_foundation#gc-respects-witt-topology?)
-        (validate-witt-structure . witt_foundation#validate-witt-structure)
-        (test-witt-foundation . witt_foundation#test-witt-foundation))
+        (validate-witt-structure . witt_foundation#validate-witt-structure))
       (scheme#list)
       (scheme#list))))
 

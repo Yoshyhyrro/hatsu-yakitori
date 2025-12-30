@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'golay_frontier
-      'witt-validator-main
+      'cross_validation
       (scheme#list)
       '((golay24-generator . golay_frontier#golay24-generator)
         (golay24-parity-check . golay_frontier#golay24-parity-check)
