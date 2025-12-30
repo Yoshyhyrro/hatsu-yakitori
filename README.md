@@ -109,19 +109,42 @@ The interaction loop delegates flow control to the Golay frontier:
 ### Prerequisites
 
 - [Chicken Scheme 5.x](https://www.call-cc.org/)
-- [Stack](https://docs.haskellstack.org/) (for Shake build system)
+- [GHC + cabal-install](https://www.haskell.org/cabal/) (Shake build system)
 
 ### Building and Running
 
 ```bash
-# Build and run the FMM module
-stack runhaskell shake/Shake.hs fmm
+# Build everything (Haskell + Chicken)
+cabal build
 
-# Run extended tests
-stack runhaskell shake/Shake.hs --module=fmm test
+# Run the FMM module via Shake
+cabal run shake -- fmm
+
+# Run extended tests for FMM
+cabal run shake -- --module=fmm test
 
 # Clean build artifacts
-stack runhaskell shake/Shake.hs clean
+cabal run shake -- clean
+```
+
+### Chicken Scheme Quick Tutorial (cabal workflow)
+
+```bash
+# Build Chicken artifacts and tools (populates ./dist with eggs)
+cabal run shake -- witt
+
+# Launch a Chicken REPL with the repo path wired in
+CHICKEN_REPOSITORY_PATH="$(pwd)/dist:$(pwd)/core" csi -quiet
+```
+
+```scheme
+;; Inside the REPL
+(import witt_foundation)
+
+(define ctx (make-witt-context))
+(define oct (octad-from-points '(0 1 2 3 4 5 6 7)))
+
+(printf "octad weight=~a class=~a\n" (octad-weight oct) (octad-class oct))
 ```
 
 ### Using KAK Decomposition for Large Graph Search
