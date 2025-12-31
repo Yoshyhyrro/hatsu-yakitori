@@ -78,16 +78,23 @@ getChickenEnv = do
   let sysEnvRepo = fromMaybe "" (lookup "CHICKEN_REPOSITORY_PATH" sysEnv)
 
   let corePath = projectRoot </> "core"
+  let modulesPath = projectRoot </> "modules"
   let distPath = projectRoot </> "dist"
   
-  let repoPath = intercalate ":" [distPath, corePath, home </> ".chicken", sysEnvRepo]
+  let includePath = intercalate ":" [corePath, modulesPath, distPath, projectRoot, ".", "_build"]
 
-  return
-    [ ("CHICKEN_INCLUDE_PATH", intercalate ":" [corePath, distPath, ".", "_build"])
-    , ("CHICKEN_REPOSITORY_PATH", repoPath)
-    , ("CHICKEN_INSTALL_REPOSITORY", distPath)
+  -- IMPORTANT: Avoid overriding CHICKEN_REPOSITORY_PATH unless the user already set it.
+  -- Overriding it without the system repository path can break standard modules like (chicken bitwise).
+  let extraRepoPrefix = intercalate ":" [distPath, corePath, modulesPath, projectRoot, home </> ".chicken"]
+  let repoEnv =
+        if null sysEnvRepo
+          then []
+          else [("CHICKEN_REPOSITORY_PATH", intercalate ":" [extraRepoPrefix, sysEnvRepo])]
+
+  return $
+    [ ("CHICKEN_INCLUDE_PATH", includePath)
     , ("LD_LIBRARY_PATH", "/usr/lib")
-    ]
+    ] ++ repoEnv
 
 -- ============================================================
 -- Additional type-safe helpers

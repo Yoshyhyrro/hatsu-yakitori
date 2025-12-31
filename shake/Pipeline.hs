@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments #-}
 
 module Pipeline
   ( buildModule
@@ -14,12 +15,14 @@ module Pipeline
   , regularModule
   , specialModule
   , withGCStrategy -- Added export
+  , proofBuildConfig
   ) where
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, unless, when, forM)
+import Control.Monad (forM_, unless, when, forM, filterM)
 import qualified System.Directory as Dir
+import qualified System.Process as Proc
 
 import Chicken
 import qualified Rules.Compile as Compile
@@ -36,6 +39,8 @@ data BuildConfig = BuildConfig
   { bcCompileFlags :: String
   , bcBuildDir :: FilePath
   , bcDistDir :: FilePath
+  , bcProofBuildDir :: FilePath
+  , bcProofDistDir :: FilePath
   , bcGCStrategy :: Maybe GC.GCStrategyType
   } deriving (Show)
 
@@ -44,11 +49,20 @@ defaultBuildConfig = BuildConfig
   { bcCompileFlags = "-O3 -d0"
   , bcBuildDir = "_build"
   , bcDistDir = "dist"
+  , bcProofBuildDir = "_build_proof"
+  , bcProofDistDir = "dist-proof"
   , bcGCStrategy = Nothing
   }
 
 withGCStrategy :: GC.GCStrategyType -> BuildConfig -> BuildConfig
 withGCStrategy strat cfg = cfg { bcGCStrategy = Just strat }
+
+-- | Switch to proof-dedicated output directories while preserving flags.
+proofBuildConfig :: BuildConfig -> BuildConfig
+proofBuildConfig cfg = cfg
+  { bcBuildDir = bcProofBuildDir cfg
+  , bcDistDir = bcProofDistDir cfg
+  }
 
 -- | Module definition
 data Module = Module
@@ -165,6 +179,7 @@ buildSpecialModule m cfg = do
 
 compileAndLink :: [FilePath] -> [String] -> FilePath -> Action (Artifact 'Exe)
 compileAndLink srcs flags outPath = do
+  projectRoot <- liftIO Dir.getCurrentDirectory
   liftIO $ putStrLn $ "[Pipeline] Compiling: " ++ show srcs
   
   allDeps <- liftIO $ do
@@ -172,6 +187,9 @@ compileAndLink srcs flags outPath = do
     return $ nub (concat depsList)
   
   liftIO $ putStrLn $ "[Pipeline] Dependencies: " ++ show allDeps
+  
+  -- 依存するカスタムモジュールを先にコンパイル
+  _ <- compileCustomDeps projectRoot allDeps
   
   -- Compile using CompileInfo (src is now tracked!)
   compileInfos <- forM srcs $ \src -> do
@@ -190,6 +208,7 @@ compileAndLink srcs flags outPath = do
 
 compileAndLinkWithGC :: GC.GCStrategyType -> [FilePath] -> [String] -> FilePath -> Action (Artifact 'Exe)
 compileAndLinkWithGC strat srcs flags outPath = do
+  projectRoot <- liftIO Dir.getCurrentDirectory
   liftIO $ putStrLn $ "[Pipeline-GC] GC strategy: " ++ show strat
   
   allDeps <- liftIO $ do
@@ -197,6 +216,8 @@ compileAndLinkWithGC strat srcs flags outPath = do
     return $ nub (concat depsList)
   
   putInfo $ "[Pipeline-GC] Dependencies: " ++ show allDeps
+  
+  _ <- compileCustomDeps projectRoot allDeps
   
   -- Compile with GC optimization
   compileInfos <- forM srcs $ \src -> do
@@ -217,6 +238,7 @@ compileAndLinkWithGC strat srcs flags outPath = do
 
 compileAndLinkSpecial :: [FilePath] -> [String] -> FilePath -> Action (Artifact 'Exe)
 compileAndLinkSpecial srcs flags outPath = do
+  projectRoot <- liftIO Dir.getCurrentDirectory
   liftIO $ putStrLn $ "[Pipeline-Special] Compiling with filtered deps"
   
   allDeps <- liftIO $ do
@@ -225,6 +247,8 @@ compileAndLinkSpecial srcs flags outPath = do
     return $ filter (\d -> d `elem` map (takeBaseName . dropExtension) srcs) deps
   
   liftIO $ putStrLn $ "[Pipeline-Special] Filtered to: " ++ show allDeps
+  
+  _ <- compileCustomDeps projectRoot allDeps
   
   compileInfos <- forM srcs $ \src -> do
     let flags' = unwords flags
@@ -242,3 +266,24 @@ compileAndLinkSpecial srcs flags outPath = do
 nub :: Eq a => [a] -> [a]
 nub [] = []
 nub (x:xs) = x : nub (filter (/= x) xs)
+
+-- カスタムモジュールを事前コンパイル (-J) して import 可能にする
+compileCustomDeps :: FilePath -> [String] -> Action [FilePath]
+compileCustomDeps projectRoot deps = do
+  let modNames = nub [m | dep <- deps, TopLevel.CustomMod m <- [TopLevel.classifyDependency dep]]
+  modSrcs <- liftIO $ fmap concat $ forM modNames $ \m -> do
+    let candidates =
+          [ projectRoot </> "modules" </> m <.> "scm"
+          , projectRoot </> m <.> "scm"
+          ]
+    filterM Dir.doesFileExist candidates
+  let uniqueSrcs = nub modSrcs
+  unless (null uniqueSrcs) $
+    putInfo $ "[Pipeline] Pre-compiling custom modules: " ++ show uniqueSrcs
+  forM_ uniqueSrcs $ \modSrc -> do
+    let modObj = modSrc -<.> "o"
+    let modUnit = takeBaseName modSrc
+    liftIO $ Dir.createDirectoryIfMissing True (takeDirectory modObj)
+    liftIO $ Proc.callProcess "csc"
+      ["-c", "-o", modObj, "-unit", modUnit, "-J", modSrc]
+  return uniqueSrcs

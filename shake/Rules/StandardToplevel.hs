@@ -18,6 +18,7 @@ module Rules.StandardToplevel
 
 import Data.List (nub, isPrefixOf, isInfixOf)
 import Data.Maybe (listToMaybe)
+import Data.Char (isSpace)
 import Chicken
 
 -- ============================================================
@@ -34,19 +35,26 @@ data DependencyType
 
 -- | Classify a dependency string
 classifyDependency :: String -> DependencyType
-classifyDependency dep
-  | "srfi" `isPrefixOf` dep = 
-      case words dep of
-        ("srfi":num:_) -> SRFILib ("srfi-" ++ num)
-        _ -> SRFILib dep
-  | "chicken" `isPrefixOf` dep =
-      case words dep of
-        ("chicken":ext:_) -> ChickenExt ("chicken-" ++ ext)
-        _ -> ChickenExt dep
-  | otherwise = 
-      if '-' `elem` dep || '_' `elem` dep
-        then CustomMod dep
-        else UnknownDep dep
+classifyDependency dep0 =
+  let dep = stripParens dep0
+      toks = words dep
+  in case toks of
+      ("srfi":num:_) -> SRFILib ("srfi-" ++ num)
+      ("chicken":ext:_) -> ChickenExt ("chicken-" ++ ext)
+      _ | "srfi-" `isPrefixOf` dep -> SRFILib dep
+        | "chicken-" `isPrefixOf` dep -> ChickenExt dep
+        | otherwise ->
+            if '-' `elem` dep || '_' `elem` dep
+              then CustomMod dep
+              else UnknownDep dep
+
+stripParens :: String -> String
+stripParens s =
+  let s1 = dropWhile isSpace s
+      s2 = reverse (dropWhile isSpace (reverse s1))
+  in case (s2, reverse s2) of
+       ('(':_ , ')':_) -> init (tail s2)
+       _ -> s2
 
 -- ============================================================
 -- Artifact-aware Dependency Extraction
@@ -108,34 +116,53 @@ extractDeclareUses content =
       | otherwise = []
 
 -- | Extract "(import ...)" declarations (returns tokens after import)
+--   Keeps parenthesized groups like "(chicken base)" as a single dependency token.
 extractImports :: String -> [String]
 extractImports content =
   nub $ concatMap parseImportLine (lines content)
   where
     parseImportLine line
       | "import" `isInfixOf` line =
-          let sanitized = replaceSub "(chicken " "chicken." $ 
-                          replaceSub "(srfi " "srfi." line
-              cleaned = filter (`notElem` ("()" :: String)) sanitized
-              tokens = words cleaned
-              afterImport = drop 1 $ dropWhile (/= "import") tokens
-          in afterImport
+          case dropWhile (/= 'i') line of
+            xs | "import" `isPrefixOf` xs ->
+                  let after = drop (length ("import" :: String)) xs
+                  in filter (not . null) (tokenizeImportArgs after)
+               | otherwise -> []
       | otherwise = []
 
--- | Simple helper to prevent splitting namespaces
-replaceSub :: String -> String -> String -> String
-replaceSub old new xs 
-    | null xs = ""
-    | old `isPrefixOf` xs = new ++ replaceSub old new (drop (length old) xs)
-    | otherwise = case xs of
-        (c:cs) -> c : replaceSub old new cs
-        []     -> ""
+-- | Tokenize the arguments of an (import ...) form, preserving (...) groups.
+--   Example: " (chicken base) srfi-1 machine_constants)"
+--     -> ["(chicken base)","srfi-1","machine_constants"]
+tokenizeImportArgs :: String -> [String]
+tokenizeImportArgs = go . dropWhile isSpace
+  where
+    go s0 =
+      case dropWhile isSpace s0 of
+        "" -> []
+        (')':_) -> []  -- stop at end of surrounding form, if present
+        ('(':rest) ->
+          let (grp, rest') = takeBalanced 1 "(" rest
+          in grp : go rest'
+        s ->
+          let (sym, rest') = break isSpaceOrParen s
+          in sym : go rest'
 
--- | Extract "(module NAME ...)" declaration (first token after "module"), if any
-extractModuleDecl :: String -> Maybe String
-extractModuleDecl content =
-  listToMaybe [tok | line <- lines content, "module" `isInfixOf` line,
-                     let toks = words line, tok <- drop 1 $ dropWhile (/= "module") toks]
+    isSpaceOrParen c = isSpace c || c == '(' || c == ')'
+
+-- | Take a balanced parenthesized group content, returning the full "(...)" string.
+--   Input assumes we've already consumed the first '(' and started with depth=1.
+takeBalanced :: Int -> String -> String -> (String, String)
+takeBalanced depth acc s =
+  case s of
+    "" -> (acc, "")
+    (c:cs)
+      | c == '('  -> takeBalanced (depth + 1) (acc ++ [c]) cs
+      | c == ')'  ->
+          let acc' = acc ++ [c]
+          in if depth == 1
+                then (acc', cs)
+                else takeBalanced (depth - 1) acc' cs
+      | otherwise -> takeBalanced depth (acc ++ [c]) cs
 
 -- | Read a source file and return all declared uses + imports
 extractAllDeps :: FilePath -> IO [String]
@@ -144,3 +171,17 @@ extractAllDeps srcPath = do
   let uses = extractDeclareUses content
       imports = extractImports content
   return $ nub (uses ++ imports)
+
+-- | Extract "(module <name> ...)" declaration from file content
+extractModuleDecl :: String -> Maybe String
+extractModuleDecl content =
+  listToMaybe $ concatMap extractFromLine (lines content)
+  where
+    extractFromLine line
+      | "(module" `isInfixOf` line =
+          let rest = dropWhile (/= '(') line
+              -- Skip "(module " and get the module name
+              afterModule = dropWhile isSpace $ drop (length ("(module" :: String)) rest
+              moduleName = takeWhile (\c -> not (isSpace c) && c /= ')') afterModule
+          in if null moduleName then [] else [moduleName]
+      | otherwise = []

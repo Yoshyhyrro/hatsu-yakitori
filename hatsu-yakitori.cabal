@@ -32,6 +32,9 @@ executable shake
       Rules.Link
       Rules.MEEP
       Rules.StandardToplevel
+      Rules.Proof.LLVM_IR
+      Rules.Proof.Main
+      Rules.Proof.SBV_Bridge
   hs-source-dirs:
       shake
   ghc-options: -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N

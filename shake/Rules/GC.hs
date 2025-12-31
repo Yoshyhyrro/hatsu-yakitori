@@ -47,6 +47,7 @@ import Development.Shake.Rule
     , apply1
     )
 
+import Control.Monad (filterM, forM_, unless)
 import Control.Monad.IO.Class (liftIO)
 import qualified System.Directory as Dir
 import qualified System.Process as Proc
@@ -67,6 +68,7 @@ import Polysemy.Error
 import Polysemy.State
 
 import Chicken
+import Rules.StandardToplevel (extractAllDeps, classifyDependency, DependencyType(..))
 
 -- ============================================================
 -- GC Strategy Types
@@ -402,6 +404,28 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
     
     Just src -> do
       need [src]
+      
+      -- Extract dependencies and ensure custom modules are built first
+      deps <- liftIO $ extractAllDeps src
+      let customModules = [m | dep <- deps
+                             , let classified = classifyDependency dep
+                             , CustomMod m <- [classified]]
+      
+      -- Build dependent modules first
+      let moduleDir = takeDirectory src
+      let moduleSources = [moduleDir </> m <.> "scm" | m <- customModules]
+      existingModules <- liftIO $ filterM Dir.doesFileExist moduleSources
+      
+      unless (null existingModules) $ do
+        putInfo $ "[GC] Building dependencies first: " ++ show existingModules
+        need existingModules
+        -- Compile dependencies
+        forM_ existingModules $ \modSrc -> do
+          let modObj = modSrc -<.> "o"
+          let modUnit = takeBaseName modSrc
+          liftIO $ Proc.callProcess "csc" 
+            ["-c", "-o", modObj, "-unit", modUnit, "-J", modSrc]
+      
       liftIO $ Dir.createDirectoryIfMissing True (takeDirectory gcObj)
       
       -- Execute Polysemy effect pipeline
@@ -478,8 +502,8 @@ findSourceFor exe = do
   exists <- Dir.doesFileExist src
   if exists
     then return src
-    else fail $ "Source not found: " ++ src
 
+    else fail $ "Source not found: " ++ src
 traceToIO :: Member (Embed IO) r => Sem (Trace ': r) a -> Sem r a
 traceToIO = interpret \case
   PT.Trace msg -> liftIO (putStrLn msg)

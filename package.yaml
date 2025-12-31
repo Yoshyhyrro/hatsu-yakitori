@@ -39,5 +39,8 @@ executables:
       - Rules.Link
       - Rules.MEEP
       - Rules.StandardToplevel
+      - Rules.Proof.LLVM_IR
+      - Rules.Proof.Main
+      - Rules.Proof.SBV_Bridge
 
 github: Yoshyhyrro/hatsu-yakitori
