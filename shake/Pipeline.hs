@@ -14,6 +14,7 @@ module Pipeline
   , regularModule
   , specialModule
   , withGCStrategy -- Added export
+  , proofBuildConfig
   ) where
 
 import Development.Shake
@@ -36,6 +37,8 @@ data BuildConfig = BuildConfig
   { bcCompileFlags :: String
   , bcBuildDir :: FilePath
   , bcDistDir :: FilePath
+  , bcProofBuildDir :: FilePath
+  , bcProofDistDir :: FilePath
   , bcGCStrategy :: Maybe GC.GCStrategyType
   } deriving (Show)
 
@@ -44,11 +47,20 @@ defaultBuildConfig = BuildConfig
   { bcCompileFlags = "-O3 -d0"
   , bcBuildDir = "_build"
   , bcDistDir = "dist"
+  , bcProofBuildDir = "_build_proof"
+  , bcProofDistDir = "dist-proof"
   , bcGCStrategy = Nothing
   }
 
 withGCStrategy :: GC.GCStrategyType -> BuildConfig -> BuildConfig
 withGCStrategy strat cfg = cfg { bcGCStrategy = Just strat }
+
+-- | Switch to proof-dedicated output directories while preserving flags.
+proofBuildConfig :: BuildConfig -> BuildConfig
+proofBuildConfig cfg = cfg
+  { bcBuildDir = bcProofBuildDir cfg
+  , bcDistDir = bcProofDistDir cfg
+  }
 
 -- | Module definition
 data Module = Module

@@ -24,6 +24,8 @@ import System.FilePath ((</>))
 data CleanTarget
     = BuildDir        -- ^ _build ディレクトリ
     | DistDir         -- ^ dist ディレクトリ (コンパイル結果)
+    | ProofBuildDir   -- ^ _build_proof ディレクトリ (証明用ビルド)
+    | ProofDistDir    -- ^ dist-proof ディレクトリ (証明用成果物)
     | TestLogsDir     -- ^ test-logs ディレクトリ
     | CacheDir        -- ^ キャッシュディレクトリ
     deriving (Show, Eq)
@@ -32,6 +34,8 @@ data CleanTarget
 targetPath :: CleanTarget -> FilePath
 targetPath BuildDir    = "_build"
 targetPath DistDir     = "dist"
+targetPath ProofBuildDir = "_build_proof"
+targetPath ProofDistDir  = "dist-proof"
 targetPath TestLogsDir = "test-logs"
 targetPath CacheDir    = ".salmonella-cache"
 
@@ -44,7 +48,9 @@ cleanBuild :: Action ()
 cleanBuild = do
     putInfo "Cleaning build artifacts..."
     removeFilesAfter "_build" ["//*"]
+    removeFilesAfter "_build_proof" ["//*"]
     removeFilesAfter "dist" ["//*"]
+    removeFilesAfter "dist-proof" ["//*"]
     putInfo "✓ Build artifacts cleaned"
 
 -- | テスト関連をクリーニング (test-logs)
@@ -59,6 +65,7 @@ cleanArtifacts :: Action ()
 cleanArtifacts = do
     putInfo "Cleaning compiled artifacts..."
     removeFilesAfter "dist" ["//*"]
+    removeFilesAfter "dist-proof" ["//*"]
     putInfo "✓ Compiled artifacts cleaned"
 
 -- | キャッシュをクリーニング
@@ -94,10 +101,19 @@ cleanTargets targets = do
     cleanTarget BuildDir = do
         putInfo "Cleaning _build..."
         removeFilesAfter "_build" ["//*"]
+        removeFilesAfter "_build_proof" ["//*"]
 
     cleanTarget DistDir = do
         putInfo "Cleaning dist..."
         removeFilesAfter "dist" ["//*"]
+
+    cleanTarget ProofBuildDir = do
+        putInfo "Cleaning _build_proof..."
+        removeFilesAfter "_build_proof" ["//*"]
+
+    cleanTarget ProofDistDir = do
+        putInfo "Cleaning dist-proof..."
+        removeFilesAfter "dist-proof" ["//*"]
 
     cleanTarget TestLogsDir = do
         putInfo "Cleaning test-logs..."
