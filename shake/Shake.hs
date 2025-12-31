@@ -12,6 +12,7 @@ import qualified System.Directory as Dir
 import Pipeline
 import qualified Clean
 import qualified Rules.GC as GC
+import qualified Rules.Proof.Main as Proof
 
 -- ============================================================
 -- Module Definitions
@@ -99,7 +100,13 @@ gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     GC.gcRule
-    
+
+    -- Proof phony targets and rules
+    -- Registers commands like `verify-core-ir` and `find-broken-stage`
+    -- which focus verification on `core/` modules and their LLVM IR stages.
+    -- Implemented in shake/Rules/Proof
+    Proof.setupProofPhonies
+
     forM_ allModules $ \m -> do
         let mName = modName m
         let cfg = if mName == "witt-validator" then wittCfg else defaultCfg
