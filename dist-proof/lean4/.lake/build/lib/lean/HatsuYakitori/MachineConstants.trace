@@ -1,48 +1,45 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["8fc6b6dfce4951d5.olean"],
-  "i": "37587a91adee4b58.ilean",
+ {"o": ["cb8c425a34519c32.olean"],
+  "i": "5c7b9122f7a2291c.ilean",
   "c": "6a396664d5e7abb3.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Cli/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/batteries/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Qq/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/aesop/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/proofwidgets/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/importGraph/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/plausible/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean /home/yoshyhyrro/.elan/toolchains/leanprover--lean4---v4.27.0-rc1/bin/lean /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/MachineConstants.lean -o /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/MachineConstants.olean -i /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/MachineConstants.ilean -c /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/MachineConstants.c --setup /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/MachineConstants.setup.json --json",
    "level": "trace"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:230:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:256:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:250:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:355:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:349:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:390:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:384:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:401:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:395:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:462:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:456:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:496:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:490:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:529:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:523:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:558:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:552:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:589:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:583:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:608:8: declaration uses 'sorry'",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:602:8: declaration uses 'sorry'",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:615:8: declaration uses 'sorry'",
+   "HatsuYakitori/MachineConstants.lean:621:8: declaration uses 'sorry'",
    "level": "warning"}],
  "inputs":
  [["HatsuYakitori.MachineConstants:deps",
@@ -73,7 +70,7 @@
   ["Lean 4.27.0, commit 2fcce7258eeb6e324366bc25f9058293b04b7547",
    "6f43b597efea5d4c"],
   ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/MachineConstants.lean",
-   "cdfcb364b7a7e352"],
+   "7896c9baa77619b6"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "e612368c6cd6866f"}
+ "depHash": "7faffabbbb4f7af4"}

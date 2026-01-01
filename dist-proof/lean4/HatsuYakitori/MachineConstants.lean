@@ -227,10 +227,16 @@ theorem galoisHeight_monotone {a b : ℕ} (ha : 0 < a) (h : a ≤ b) :
     1. Use le_min to split into two goals
     2. Apply galoisHeight_monotone with gcd bounds
     3. Use Nat.gcd_le_left and Nat.gcd_le_right -/
-theorem yangBaxter_height_inequality (m n : ℕ) 
+theorem yangBaxter_height_inequality (m n : ℕ)
     (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n ∧ n ≤ 24) :
     galoisHeight (Nat.gcd m n) ≤ min (galoisHeight m) (galoisHeight n) := by
-  sorry
+  apply le_min
+  · have hpos : 0 < Nat.gcd m n := Nat.gcd_pos_of_pos_left n hm.1
+    have hle : Nat.gcd m n ≤ m := Nat.gcd_le_left n hm.1
+    exact galoisHeight_monotone hpos hle
+  · have hpos : 0 < Nat.gcd m n := Nat.gcd_pos_of_pos_right m hn.1
+    have hle : Nat.gcd m n ≤ n := Nat.gcd_le_right m hn.1
+    exact galoisHeight_monotone hpos hle
 
 /-- Sub-additivity of height function (representation dimension growth)
     
