@@ -184,7 +184,17 @@ theorem galoisHeight_nonneg (n : ℕ) : galoisHeight n ≥ 0 := by
     3. Use field_simp for division simplification -/
 theorem galoisHeight_bounded (n : ℕ) (hn : 0 < n ∧ n ≤ 24) : 
     galoisHeight n ≤ galoisHeightBound := by
-  sorry
+  unfold galoisHeight galoisHeightBound
+  simp only [if_neg (Nat.pos_iff_ne_zero.mp hn.1)]
+  have h24 : (24 : ℝ) > 1 := by norm_num
+  have hn24 : (n : ℝ) ≤ 24 := by exact_mod_cast hn.2
+  have hn_pos : (n : ℝ) > 0 := by exact_mod_cast hn.1
+  have hlog_le : Real.log n ≤ Real.log 24 := Real.log_le_log hn_pos hn24
+  have hlog24_pos : Real.log 24 > 0 := Real.log_pos h24
+  have hdiv_le : Real.log n / Real.log 24 ≤ 1 := by
+    rw [div_le_one hlog24_pos]
+    exact hlog_le
+  linarith [mul_le_of_le_one_right (by norm_num : (8 : ℝ) ≥ 0) hdiv_le]
 
 /-- Height function is monotone increasing
     
@@ -280,7 +290,7 @@ theorem heightDiscriminant_nonneg (h1 h2 : ℝ) :
 theorem heightDiscriminant_symm (h1 h2 : ℝ) :
     heightDiscriminant h1 h2 = heightDiscriminant h2 h1 := by
   unfold heightDiscriminant
-  simp [abs_sub_comm, max_comm, max_left_comm, max_assoc]
+  simp [abs_sub_comm, max_left_comm]
 
 /-! ## Part 4: ε-Neighborhood (Representation Equivalence) -/
 
