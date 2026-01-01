@@ -77,9 +77,9 @@
 ? /home/yoshyhyrro/.stack/snapshots/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/libHSunagi-chan-0.4.1.4-111HellrgJbBOa9k8suPeZ-ghc9.6.6.so
 : hash: 748ae6247ccdf90ecbd924b4366000567b9657393c2959dba93f6d33b9c729f5
 /mnt/c/Users/tyuuw/hatsu-yakitori/hatsu-yakitori.cabal:
-  hash: 6be47a4aa4051334e0355d3d8cfce10eb832a8e888b6ff34c73102efb89a0675
+  hash: 5768fea9d02979a6557ca1659cb507fe1accc8946f0df35b674d87b2785bdbf3
 /mnt/c/Users/tyuuw/hatsu-yakitori/package.yaml:
-  hash: 16d27f33a96d4e96ee60a7c227abe369d2e2ece2781b26692da396e239057172
+  hash: 40c6a88a1286b52e5cce45c4a0b8c72c748ab96e359f9cdf1848e02f44039f16
 /mnt/c/Users/tyuuw/hatsu-yakitori/shake/Chicken.hs:
   hash: da94258aaf0476c81e4cf9e191c9ec2f9d53900387dbe95c50c354c48ce15980
 /mnt/c/Users/tyuuw/hatsu-yakitori/shake/Clean.hs:
@@ -96,8 +96,10 @@
   hash: 361c8e1180646a2cd85a2bfce894da3434016ceb92d544d74b999bbe92e0649e
 /mnt/c/Users/tyuuw/hatsu-yakitori/shake/Rules/Proof/LLVM_IR.hs:
   hash: 1313621bb8155b33cc7b4413ecb0bfadf3243e7e4317ce6cddfb360326a18d9a
+/mnt/c/Users/tyuuw/hatsu-yakitori/shake/Rules/Proof/Lean4.hs:
+  hash: 4d293530b2c9700eb371ec4768c2082b00decac8d80a4d1c5c42814b570bac04
 /mnt/c/Users/tyuuw/hatsu-yakitori/shake/Rules/Proof/Main.hs:
-  hash: 5e58f49a6e1dd24c7202a6cc60cf0f19288b7f79cb0fe8f6390bdd4f18101eaf
+  hash: 0442590f1ad2cc238979d9e344abd2fd25200ad01914f762caccb43a9f704b12
 /mnt/c/Users/tyuuw/hatsu-yakitori/shake/Rules/Proof/SBV_Bridge.hs:
   hash: cf0c2a281ec2a0eb32ea722b326086798c909f116107ace1526d4ec7e9049cc1
 /mnt/c/Users/tyuuw/hatsu-yakitori/shake/Rules/StandardToplevel.hs:

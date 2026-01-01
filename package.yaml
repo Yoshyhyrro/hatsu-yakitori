@@ -40,6 +40,7 @@ executables:
       - Rules.MEEP
       - Rules.StandardToplevel
       - Rules.Proof.LLVM_IR
+      - Rules.Proof.Lean4
       - Rules.Proof.Main
       - Rules.Proof.SBV_Bridge
 

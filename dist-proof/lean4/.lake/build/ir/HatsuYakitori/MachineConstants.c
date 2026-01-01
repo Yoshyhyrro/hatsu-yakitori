@@ -1,0 +1,233 @@
+// Lean compiler output
+// Module: HatsuYakitori.MachineConstants
+// Imports: public import Init public import Mathlib.Analysis.SpecialFunctions.Log.Basic public import Mathlib.Data.Real.Basic public import Mathlib.Data.Fin.Basic
+#include <lean/lean.h>
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-label"
+#elif defined(__GNUC__) && !defined(__CLANG__)
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-label"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+LEAN_EXPORT double lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0_spec__0(lean_object*);
+lean_object* l_Rat_ofScientific(lean_object*, uint8_t, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0_spec__0___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0_spec__0(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0(lean_object*);
+static double lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance___closed__0;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0;
+static double lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0(lean_object*);
+double l_Float_ofScientific(lean_object*, uint8_t, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00Nat_cast___at___00Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0_spec__0_spec__0(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__1;
+lean_object* lp_mathlib_Nat_cast___at___00round___at___00Rat_evalRound_spec__0_spec__0(lean_object*);
+lean_object* lp_mathlib_CauSeq_const___at___00CauSeq_Completion_ofRat___at___00Real_definition_00___x40_Mathlib_Data_Real_Basic_1850581184____hygCtx___hyg_8__spec__3_spec__3___redArg___lam__0___boxed(lean_object*, lean_object*);
+LEAN_EXPORT double lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound;
+static double _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; lean_object* x_3; double x_4; 
+x_1 = lean_unsigned_to_nat(31u);
+x_2 = 1;
+x_3 = lean_cstr_to_nat("2220446049250313");
+x_4 = l_Float_ofScientific(x_3, x_2, x_1);
+return x_4;
+}
+}
+static double _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon() {
+_start:
+{
+double x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0;
+return x_1;
+}
+}
+static double _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance___closed__0() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; lean_object* x_3; double x_4; 
+x_1 = lean_unsigned_to_nat(10u);
+x_2 = 1;
+x_3 = lean_unsigned_to_nat(1u);
+x_4 = l_Float_ofScientific(x_3, x_2, x_1);
+return x_4;
+}
+}
+static double _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance() {
+_start:
+{
+double x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance___closed__0;
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00Nat_cast___at___00Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0_spec__0_spec__0(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; 
+x_2 = lp_mathlib_Nat_cast___at___00round___at___00Rat_evalRound_spec__0_spec__0(x_1);
+x_3 = lean_alloc_closure((void*)(lp_mathlib_CauSeq_const___at___00CauSeq_Completion_ofRat___at___00Real_definition_00___x40_Mathlib_Data_Real_Basic_1850581184____hygCtx___hyg_8__spec__3_spec__3___redArg___lam__0___boxed), 2, 1);
+lean_closure_set(x_3, 0, x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0_spec__0(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00Nat_cast___at___00Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0_spec__0_spec__0(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0_spec__0(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lean_unsigned_to_nat(8u);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_Nat_cast___at___00HatsuYakitori_MachineConstants_galoisHeightBound_spec__0(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0_spec__0(lean_object* x_1) {
+_start:
+{
+lean_inc_ref(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lean_alloc_closure((void*)(lp_mathlib_CauSeq_const___at___00CauSeq_Completion_ofRat___at___00Real_definition_00___x40_Mathlib_Data_Real_Basic_1850581184____hygCtx___hyg_8__spec__3_spec__3___redArg___lam__0___boxed), 2, 1);
+lean_closure_set(x_2, 0, x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; lean_object* x_3; lean_object* x_4; 
+x_1 = lean_unsigned_to_nat(31u);
+x_2 = 1;
+x_3 = lean_cstr_to_nat("2220446049250313");
+x_4 = l_Rat_ofScientific(x_3, x_2, x_1);
+return x_4;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0_spec__0___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0_spec__0(x_1);
+lean_dec_ref(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__0() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; lean_object* x_3; lean_object* x_4; 
+x_1 = lean_unsigned_to_nat(10u);
+x_2 = 1;
+x_3 = lean_unsigned_to_nat(1u);
+x_4 = l_Rat_ofScientific(x_3, x_2, x_1);
+return x_4;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__1() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__0;
+x_2 = lean_alloc_closure((void*)(lp_mathlib_CauSeq_const___at___00CauSeq_Completion_ofRat___at___00Real_definition_00___x40_Mathlib_Data_Real_Basic_1850581184____hygCtx___hyg_8__spec__3_spec__3___redArg___lam__0___boxed), 2, 1);
+lean_closure_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__1;
+return x_1;
+}
+}
+lean_object* initialize_Init(uint8_t builtin);
+lean_object* initialize_mathlib_Mathlib_Analysis_SpecialFunctions_Log_Basic(uint8_t builtin);
+lean_object* initialize_mathlib_Mathlib_Data_Real_Basic(uint8_t builtin);
+lean_object* initialize_mathlib_Mathlib_Data_Fin_Basic(uint8_t builtin);
+static bool _G_initialized = false;
+LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin) {
+lean_object * res;
+if (_G_initialized) return lean_io_result_mk_ok(lean_box(0));
+_G_initialized = true;
+res = initialize_Init(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_mathlib_Mathlib_Analysis_SpecialFunctions_Log_Basic(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_mathlib_Mathlib_Data_Real_Basic(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_mathlib_Mathlib_Data_Fin_Basic(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance___closed__0();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultTolerance();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__1();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__1);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal);
+return lean_io_result_mk_ok(lean_box(0));
+}
+#ifdef __cplusplus
+}
+#endif
