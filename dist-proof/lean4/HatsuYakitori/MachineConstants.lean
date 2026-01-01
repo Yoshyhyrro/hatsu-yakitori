@@ -204,7 +204,14 @@ theorem galoisHeight_bounded (n : ℕ) (hn : 0 < n ∧ n ≤ 24) :
     3. Apply div_le_div_right for division preservation -/
 theorem galoisHeight_monotone {a b : ℕ} (ha : 0 < a) (h : a ≤ b) :
     galoisHeight a ≤ galoisHeight b := by
-  sorry
+  unfold galoisHeight galoisHeightBound
+  have hb : 0 < b := Nat.lt_of_lt_of_le ha h
+  simp only [Nat.pos_iff_ne_zero.mp ha, Nat.pos_iff_ne_zero.mp hb, if_false]
+  apply mul_le_mul_of_nonneg_left
+  · apply div_le_div_of_nonneg_right
+    · exact Real.log_le_log (by exact_mod_cast ha) (by exact_mod_cast h)
+    · exact (Real.log_pos (by norm_num : (24 : ℝ) > 1)).le
+  · norm_num
 
 /-! ## Part 2.5: Yang-Baxter Relations (Braiding Structure) -/
 
