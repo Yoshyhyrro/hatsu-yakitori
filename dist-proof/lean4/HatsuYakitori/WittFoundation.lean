@@ -12,6 +12,7 @@
 
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Finset.Card
+import Mathlib.Data.Finset.Lattice
 
 namespace HatsuYakitori.WittFoundation
 
