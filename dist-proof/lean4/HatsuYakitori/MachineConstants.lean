@@ -432,13 +432,19 @@ theorem safeLog_nonpos (x : ℝ) (hx : x ≤ 0) : safeLog x = 0 := by
     weight = 16 → complement octad (dim ≈ 5376, h = 2K/3)
     weight = 24 → maximal representation (dim = |M₂₄|, h = K) -/
 noncomputable def octadHeight (weight : Fin 25) : ℝ :=
-  match weight.val with
-  | 0  => 0
-  | 8  => galoisHeightBound / 3
-  | 12 => galoisHeightBound / 2
-  | 16 => galoisHeightBound * 2 / 3
-  | 24 => galoisHeightBound
-  | w  => (w : ℝ) / 24 * galoisHeightBound
+  let k := weight.val
+  if h0 : k = 0 then
+    0
+  else if h8 : k = 8 then
+    galoisHeightBound / 3
+  else if h12 : k = 12 then
+    galoisHeightBound / 2
+  else if h16 : k = 16 then
+    galoisHeightBound * 2 / 3
+  else if h24 : k = 24 then
+    galoisHeightBound
+  else
+    (k : ℝ) / 24 * galoisHeightBound
 
 /-- Octad height is non-negative (dimension is always positive)
     
@@ -446,7 +452,37 @@ noncomputable def octadHeight (weight : Fin 25) : ℝ :=
     1. Case analysis on specific weights
     2. For general case, use positivity tactic -/
 theorem octadHeight_nonneg (w : Fin 25) : octadHeight w ≥ 0 := by
-  sorry
+  rcases w with ⟨k, hk⟩
+  -- Split by the same equalities used in the definition
+  by_cases h0 : k = 0
+  · subst h0
+    simp [octadHeight]
+  by_cases h8 : k = 8
+  · subst h8
+    -- reduces to 0 ≤ 8/3
+    simp [octadHeight, h0, galoisHeightBound]; norm_num
+  by_cases h12 : k = 12
+  · subst h12
+    simp [octadHeight, h0, h8, galoisHeightBound]; norm_num
+  by_cases h16 : k = 16
+  · subst h16
+    simp [octadHeight, h0, h8, h12, galoisHeightBound]; norm_num
+  by_cases h24 : k = 24
+  · subst h24
+    simp [octadHeight, h0, h8, h12, h16, galoisHeightBound]; norm_num
+  -- General case: (k/24)*K ≥ 0
+  have hk0 : (0 : ℝ) ≤ (k : ℝ) := by exact_mod_cast (Nat.zero_le k)
+  have hdiv0 : (0 : ℝ) ≤ (k : ℝ) / 24 := by
+    have : (0 : ℝ) < (24 : ℝ) := by norm_num
+    exact div_nonneg hk0 (le_of_lt this)
+  -- Finish after simplifying the definition to the general branch
+  -- (the simp call rewrites octadHeight to (k:ℝ)/24*galoisHeightBound)
+  
+  -- 【調査用コード】 simpa を以下の3行に置き換えてみてください
+  simp [octadHeight, h0, h8, h12, h16, h24]
+  apply mul_nonneg
+  · exact hdiv0
+  · exact galoisHeightBound_nonneg
 
 /-- Octad height is bounded by Frobenius-Perron bound
     
