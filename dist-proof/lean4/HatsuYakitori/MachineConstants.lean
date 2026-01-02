@@ -256,7 +256,36 @@ theorem yangBaxter_height_inequality (m n : ℕ)
 theorem galoisHeight_subadditive (m n : ℕ) 
     (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n ∧ n ≤ 24) :
     galoisHeight (min (m * n) 24) ≤ galoisHeight m + galoisHeight n := by
-  sorry
+  unfold galoisHeight galoisHeightBound
+  simp only [if_neg (Nat.pos_iff_ne_zero.mp hm.1), if_neg (Nat.pos_iff_ne_zero.mp hn.1)]
+  have h24_pos : (24 : ℝ) > 1 := by norm_num
+  have hlog24_pos : Real.log 24 > 0 := Real.log_pos h24_pos
+  have hm_cast : (m : ℝ) > 0 := by exact_mod_cast hm.1
+  have hn_cast : (n : ℝ) > 0 := by exact_mod_cast hn.1
+  have hm_le : (m : ℝ) ≤ 24 := by exact_mod_cast hm.2
+  have hn_le : (n : ℝ) ≤ 24 := by exact_mod_cast hn.2
+  
+  -- Case analysis on whether m*n ≤ 24
+  by_cases hmn : m * n ≤ 24
+  · -- Case 1: m*n ≤ 24, so min(m*n, 24) = m*n
+    rw [min_eq_left hmn]
+    simp only [if_neg (Nat.pos_iff_ne_zero.mp (Nat.mul_pos hm.1 hn.1))]
+    -- galoisHeight(m*n) = K * log(m*n)/log(24) = K * (log m + log n)/log(24) = galoisHeight m + galoisHeight n
+    rw [Real.log_mul hm_cast hn_cast]
+    ring
+    
+  · -- Case 2: m*n > 24, so min(m*n, 24) = 24
+    rw [min_eq_right (le_of_lt (Nat.lt_of_not_le hmn))]
+    simp only [if_neg (by norm_num : 24 ≠ 0)]
+    -- We need to show K ≤ K * log m / log 24 + K * log n / log 24
+    rw [Real.log_mul hm_cast hn_cast]
+    rw [← add_div, ← mul_add]
+    apply mul_le_mul_of_nonneg_left
+    · rw [div_le_div_right hlog24_pos]
+      rw [← Real.log_mul hm_cast hn_cast]
+      apply Real.log_le_log h24_pos
+      exact_mod_cast (le_of_lt (Nat.lt_of_not_le hmn))
+    · norm_num
 
 /-- Identity element has height 0 (trivial representation)
     
