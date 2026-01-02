@@ -260,33 +260,58 @@ theorem galoisHeight_subadditive (m n : ℕ)
   simp only [if_neg (Nat.pos_iff_ne_zero.mp hm.1), if_neg (Nat.pos_iff_ne_zero.mp hn.1)]
   have h24_pos : (24 : ℝ) > 1 := by norm_num
   have hlog24_pos : Real.log 24 > 0 := Real.log_pos h24_pos
+  have hlog24_ne : Real.log 24 ≠ 0 := ne_of_gt hlog24_pos
   have hm_cast : (m : ℝ) > 0 := by exact_mod_cast hm.1
   have hn_cast : (n : ℝ) > 0 := by exact_mod_cast hn.1
-  have hm_le : (m : ℝ) ≤ 24 := by exact_mod_cast hm.2
-  have hn_le : (n : ℝ) ≤ 24 := by exact_mod_cast hn.2
+  have hm_ne : (m : ℝ) ≠ 0 := ne_of_gt hm_cast
+  have hn_ne : (n : ℝ) ≠ 0 := ne_of_gt hn_cast
   
-  -- Case analysis on whether m*n ≤ 24
   by_cases hmn : m * n ≤ 24
-  · -- Case 1: m*n ≤ 24, so min(m*n, 24) = m*n
+  · -- Case 1: m * n ≤ 24
     rw [min_eq_left hmn]
     simp only [if_neg (Nat.pos_iff_ne_zero.mp (Nat.mul_pos hm.1 hn.1))]
-    -- galoisHeight(m*n) = K * log(m*n)/log(24) = K * (log m + log n)/log(24) = galoisHeight m + galoisHeight n
-    rw [Real.log_mul hm_cast hn_cast]
-    ring
-    
-  · -- Case 2: m*n > 24, so min(m*n, 24) = 24
+    have hmn_cast : ((m * n : ℕ) : ℝ) = (m : ℝ) * (n : ℝ) := Nat.cast_mul m n
+    rw [hmn_cast, Real.log_mul hm_ne hn_ne]
+    ring_nf
+    exact le_rfl
+  · -- Case 2: m * n > 24
     rw [min_eq_right (le_of_lt (Nat.lt_of_not_le hmn))]
-    simp only [if_neg (by norm_num : 24 ≠ 0)]
-    -- We need to show K ≤ K * log m / log 24 + K * log n / log 24
-    rw [Real.log_mul hm_cast hn_cast]
-    rw [← add_div, ← mul_add]
-    apply mul_le_mul_of_nonneg_left
-    · rw [div_le_div_right hlog24_pos]
-      rw [← Real.log_mul hm_cast hn_cast]
-      apply Real.log_le_log h24_pos
-      exact_mod_cast (le_of_lt (Nat.lt_of_not_le hmn))
-    · norm_num
+    simp only [if_neg (by norm_num : (24 : ℕ) ≠ 0)]
 
+    -- Simplify the LHS: log 24 / log 24 = 1
+    have hlog24_div : Real.log (24 : ℝ) / Real.log 24 = 1 := by
+      simpa using (div_self hlog24_ne)
+    simp [hlog24_div]
+
+    -- Rewrite RHS into a single fraction: 8*(log m / log24) + 8*(log n / log24)
+    -- = 8 * ((log m + log n) / log24)
+    rw [← mul_add]
+    have hadd : Real.log (m : ℝ) / Real.log 24 + Real.log (n : ℝ) / Real.log 24 =
+        (Real.log (m : ℝ) + Real.log (n : ℝ)) / Real.log 24 := by
+      simpa using (add_div (Real.log (m : ℝ)) (Real.log (n : ℝ)) (Real.log 24)).symm
+    rw [hadd]
+
+    -- Reduce to: 1 ≤ (log m + log n) / log24
+    have h8nonneg : (0 : ℝ) ≤ 8 := by norm_num
+    have h1le : (1 : ℝ) ≤ (Real.log (m : ℝ) + Real.log (n : ℝ)) / Real.log 24 := by
+      -- one_le_div: 1 ≤ A/B  ↔  B ≤ A  (for B>0)
+      rw [one_le_div hlog24_pos]
+      -- show log24 ≤ log m + log n via log monotonicity on 24 ≤ m*n
+      have h24_le_mn_nat : (24 : ℕ) ≤ m * n := le_of_lt (Nat.lt_of_not_le hmn)
+      have h24_le_mn_cast : (24 : ℝ) ≤ ((m * n : ℕ) : ℝ) := by
+        exact_mod_cast h24_le_mn_nat
+      have hmn_cast : ((m * n : ℕ) : ℝ) = (m : ℝ) * (n : ℝ) := Nat.cast_mul m n
+      have h24_le_mn : (24 : ℝ) ≤ (m : ℝ) * (n : ℝ) := by
+        simpa [hmn_cast] using h24_le_mn_cast
+      have hlog24_le_logmn : Real.log (24 : ℝ) ≤ Real.log ((m : ℝ) * (n : ℝ)) := by
+        apply Real.log_le_log (by norm_num : (0 : ℝ) < 24) h24_le_mn
+      simpa [Real.log_mul hm_ne hn_ne] using hlog24_le_logmn
+
+    -- Multiply 1 ≤ ... by 8
+    have : 8 * (1 : ℝ) ≤ 8 * ((Real.log (m : ℝ) + Real.log (n : ℝ)) / Real.log 24) :=
+      mul_le_mul_of_nonneg_left h1le h8nonneg
+    simpa using this
+  
 /-- Identity element has height 0 (trivial representation)
     
     The identity permutation corresponds to the trivial representation,
@@ -382,7 +407,11 @@ theorem safeLog_eq_log (x : ℝ) (hx : x > 0) : safeLog x = Real.log x := by
 
 /-- Safe log returns 0 for non-positive inputs (regularization) -/
 theorem safeLog_nonpos (x : ℝ) (hx : x ≤ 0) : safeLog x = 0 := by
-  sorry
+  unfold safeLog
+  have hx' : ¬ x > 0 := by
+    -- x > 0 is 0 < x
+    exact (not_lt.mpr hx)
+  simp [hx']
 
 /-! ## Part 6: Octad Height (Hook-Length Formula) -/
 
@@ -444,8 +473,8 @@ theorem octadHeight_bounded (w : Fin 25) : octadHeight w ≤ galoisHeightBound :
 def orbitSizeEstimate (weight : ℕ) : ℕ :=
   match weight with
   | 0  => 1
-  | 8  => 30     -- dim of fundamental representation
-  | 12 => 759    -- number of octads
+  | 8  => 30      -- dim of fundamental representation
+  | 12 => 759     -- number of octads
   | _  => weight * 30  -- linear approximation
 
 /-- Character classification by height (representation type)
@@ -479,7 +508,7 @@ noncomputable def classifyByHeight (h : ℝ) : GaloisClass :=
   character map of H_{8,3}(q):
   
     M₂₄ → Rep(H_{8,3}(q)) → ℝ≥0
-     σ  ↦      V_σ        ↦ log(dim V_σ) / log(24)
+      σ  ↦      V_σ         ↦ log(dim V_σ) / log(24)
   
   Proof strategy (TO BE COMPLETED):
   1. Establish bijection between conjugacy classes and irreps
@@ -510,9 +539,8 @@ theorem arikiKoike_galois_correspondence (w : Fin 25) (hw : w.val ≤ 24) :
   
   Dependencies needed:
   - Group theory library for M₂₄
-  Module theory for H_{8,3}(q)
-
-Character theory foundations -/
+  - Module theory for H_{8,3}(q)
+  - Character theory foundations -/
 axiom M24 : Type
 axiom ArikiKoike (n r : ℕ) (q : ℂ) : Type
 axiom Module : Type → Type → Type
@@ -520,148 +548,153 @@ axiom cycle_length : M24 → ℕ
 axiom dim : ∀ {G V}, Module G V → ℕ
 axiom is_indexed_by : ∀ {G V}, Module G V → M24 → Prop
 
-
-
-theorem dimension_height_isomorphism (σ : M24)
-(V : Module (ArikiKoike arikiKoikeN arikiKoikeR sorry) ℂ) :
-is_indexed_by V σ →
-galoisHeight (cycle_length σ) = Real.log (dim V) / Real.log 24 := by
-sorry
+theorem dimension_height_isomorphism (σ : M24) 
+    (V : Module (ArikiKoike arikiKoikeN arikiKoikeR sorry) ℂ) : 
+    is_indexed_by V σ → 
+    galoisHeight (cycle_length σ) = Real.log (dim V) / Real.log 24 := by
+  sorry
 /-
-Proof steps:
-
-Extract cycle type from σ
-Compute dim V using hook-length formula
-Show log(dim V) / log(24) = K · log(|σ|) / log(24)
-Use character table of M₂₄
+  Proof steps:
+  1. Extract cycle type from σ
+  2. Compute dim V using hook-length formula
+  3. Show log(dim V) / log(24) = K · log(|σ|) / log(24)
+  4. Use character table of M₂₄
 -/
 
-/-- SKELETON: Machine Epsilon as Minimal Height Resolution
-Theorem:
-Machine epsilon represents the minimal distinguishable
-height in the Galois group action. Any non-trivial
-element has height at least ε.
-Mathematical interpretation:
-This corresponds to the "quantum" nature of representation
-dimensions - there's a minimum distinguishable difference
-in logarithmic dimension space.
-Proof outline (TO BE COMPLETED):
+/-- **SKELETON: Machine Epsilon as Minimal Height Resolution**
 
-Define GalGroup and height function on it
-Show h(σ) = 0 ⟺ σ = identity
-For non-identity σ, show h(σ) ≥ log(2)/log(24)
-Verify log(2)/log(24) > machineEpsilonReal -/
+  Theorem:
+  Machine epsilon represents the minimal distinguishable 
+  height in the Galois group action. Any non-trivial 
+  element has height at least ε.
+
+  Mathematical interpretation:
+  This corresponds to the "quantum" nature of representation 
+  dimensions - there's a minimum distinguishable difference 
+  in logarithmic dimension space.
+
+  Proof outline (TO BE COMPLETED):
+  1. Define GalGroup and height function on it
+  2. Show h(σ) = 0 ⟺ σ = identity
+  3. For non-identity σ, show h(σ) ≥ log(2)/log(24)
+  4. Verify log(2)/log(24) > machineEpsilonReal -/
 axiom GalGroup : Type
 axiom gal_height : GalGroup → ℝ
 axiom gal_identity : GalGroup
 
 theorem epsilon_is_minimal_height :
-∀ σ : GalGroup, gal_height σ > 0 → gal_height σ ≥ machineEpsilonReal := by
-sorry
+    ∀ σ : GalGroup, gal_height σ > 0 → gal_height σ ≥ machineEpsilonReal := by
+  sorry
 /-
-Proof steps:
-
-Assume σ ≠ identity (contrapositive of h(σ) > 0)
-Show minimal non-trivial cycle has length ≥ 2
-Compute h(2-cycle) = K · log(2) / log(24)
-Numerical verification: log(2)/log(24) ≈ 0.218 > 2.22e-16
+  Proof steps:
+  1. Assume σ ≠ identity (contrapositive of h(σ) > 0)
+  2. Show minimal non-trivial cycle has length ≥ 2
+  3. Compute h(2-cycle) = K · log(2) / log(24)
+  4. Numerical verification: log(2)/log(24) ≈ 0.218 > 2.22e-16
 -/
 
-/-- SKELETON: q-Deformation Continuity
-Theorem:
-As q → 1, the q-dimension converges to the classical
-dimension, and the height function is continuous in q.
-Mathematical statement:
-lim_{q→1} [log(q-dim V) / log(24)] = h(V)
-Proof outline (TO BE COMPLETED):
+/-- **SKELETON: q-Deformation Continuity**
 
-Define q-dimension using quantum integers
-Apply L'Hôpital's rule to limit
-Use Taylor expansion of log around q=1
-Show error term is O((q-1)²) -/
+  Theorem:
+  As q → 1, the q-dimension converges to the classical 
+  dimension, and the height function is continuous in q.
+
+  Mathematical statement:
+  lim_{q→1} [log(q-dim V) / log(24)] = h(V)
+
+  Proof outline (TO BE COMPLETED):
+  1. Define q-dimension using quantum integers
+  2. Apply L'Hôpital's rule to limit
+  3. Use Taylor expansion of log around q=1
+  4. Show error term is O((q-1)²) -/
 noncomputable def qDimension (n : ℕ) (q : ℝ) : ℝ :=
-if q = 1 then n
-else if q > 0 then (q ^ n - q ^ (-(n : ℤ))) / (q - q⁻¹)
-else 0
+  if q = 1 then n
+  else if q > 0 then (q ^ n - q ^ (-(n : ℤ))) / (q - q⁻¹)
+  else 0
 
 theorem qDeformation_continuity :
-∀ ε > 0, ∃ δ > 0, ∀ q : ℝ, |q - 1| < δ →
-∀ n : ℕ, n ≤ 24 →
-|Real.log (qDimension n q) / Real.log 24 - galoisHeight n| < ε := by
-sorry
+    ∀ ε > 0, ∃ δ > 0, ∀ q : ℝ, |q - 1| < δ → 
+    ∀ n : ℕ, n ≤ 24 → 
+    |Real.log (qDimension n q) / Real.log 24 - galoisHeight n| < ε := by
+  sorry
 /-
-Proof steps:
-
-Expand qDimension using Taylor series
-Show [n]_q = n + O(q-1)
-Apply continuity of log
-Choose δ depending on ε and n
+  Proof steps:
+  1. Expand qDimension using Taylor series
+  2. Show [n]_q = n + O(q-1)
+  3. Apply continuity of log
+  4. Choose δ depending on ε and n
 -/
 
-/-- SKELETON: Frobenius-Perron Spectral Theorem
-Theorem:
-The Frobenius-Perron eigenvalue K equals the spectral
-radius of the Cartan matrix of H_{8,3}(q).
-Mathematical statement:
-K = max{ |λ| : λ eigenvalue of Cartan matrix }
-This bounds all representation dimensions exponentially.
-Proof outline (TO BE COMPLETED):
+/-- **SKELETON: Frobenius-Perron Spectral Theorem**
 
-Construct Cartan matrix from structure constants
-Compute characteristic polynomial
-Find largest real eigenvalue
-Verify it equals 8 -/
+  Theorem:
+  The Frobenius-Perron eigenvalue K equals the spectral 
+  radius of the Cartan matrix of H_{8,3}(q).
+
+  Mathematical statement:
+  K = max{ |λ| : λ eigenvalue of Cartan matrix }
+
+  This bounds all representation dimensions exponentially.
+
+  Proof outline (TO BE COMPLETED):
+  1. Construct Cartan matrix from structure constants
+  2. Compute characteristic polynomial
+  3. Find largest real eigenvalue
+  4. Verify it equals 8 -/
 axiom CartanMatrix : Type
 axiom spectral_radius : CartanMatrix → ℝ
 axiom cartan_of_arikikoike : CartanMatrix
 
 theorem frobenius_perron_spectral :
-spectral_radius cartan_of_arikikoike = galoisHeightBound := by
-sorry
+    spectral_radius cartan_of_arikikoike = galoisHeightBound := by
+  sorry
 /-
-Proof steps:
-
-Write out 3×3 Cartan matrix for H_{8,3}
-Compute det(C - λI) = 0
-Solve cubic equation
-Show max eigenvalue = 8
+  Proof steps:
+  1. Write out 3×3 Cartan matrix for H_{8,3}
+  2. Compute det(C - λI) = 0
+  3. Solve cubic equation
+  4. Show max eigenvalue = 8
 -/
 
 /-- Height bound preservation (Frobenius reciprocity)
-Theorem: For any w ≤ 24, octad height is bounded by galois height at 24.
-
-This is a discrete version of Frobenius reciprocity:
-Restriction and induction preserve character norms.
-
-Proof: Direct comparison using galoisHeight(24) = K -/
+  
+    Theorem: For any w ≤ 24, octad height is bounded by galois height at 24.
+    This is a discrete version of Frobenius reciprocity:
+    Restriction and induction preserve character norms.
+    
+    Proof: Direct comparison using galoisHeight(24) = K -/
 theorem height_bound_preservation (w : Fin 25) (hw : w.val ≤ 24) :
-octadHeight w ≤ galoisHeight 24 := by
+    octadHeight w ≤ galoisHeight 24 := by
   sorry
 
 /-! ## Part 9: Iwasawa Theory Connection (Skeleton) -/
-/-- Iwasawa logarithm approximation
-The height function behaves like the Iwasawa logarithm
-in p-adic representation theory.
 
-Proof strategy:
-1. Bound |h(mn) - (h(m) + h(n))| using subadditivity
-2. Show error is at most 2K
-3. This mimics log_p(xy) = log_p(x) + log_p(y) + error -/
+/-- Iwasawa logarithm approximation
+    
+    The height function behaves like the Iwasawa logarithm
+    in p-adic representation theory.
+    
+    Proof strategy:
+    1. Bound |h(mn) - (h(m) + h(n))| using subadditivity
+    2. Show error is at most 2K
+    3. This mimics log_p(xy) = log_p(x) + log_p(y) + error -/
 theorem iwasawa_approximation (m n : ℕ) (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n ∧ n ≤ 24) :
-|galoisHeight (m * n) - (galoisHeight m + galoisHeight n)| ≤ 2 * galoisHeightBound := by
+    |galoisHeight (m * n) - (galoisHeight m + galoisHeight n)| ≤ 2 * galoisHeightBound := by
   sorry
 
-/-- SKELETON: p-adic Mellin Transform Analogy
-Theorem:
-The height function h satisfies properties analogous
-to the p-adic Mellin transform:
-∫_{ℤₚˣ} xˢ dμ(x) ↔ ∑_{σ ∈ M₂₄} h(σ) · χ(σ)
-Proof outline (TO BE COMPLETED):
+/-- **SKELETON: p-adic Mellin Transform Analogy**
 
-Define p-adic measure on M₂₄
-Express integral as discrete sum
-Show h(σ) plays role of xˢ
-Verify character orthogonality relations -/
+  Theorem:
+  The height function h satisfies properties analogous 
+  to the p-adic Mellin transform:
+  
+    ∫_{ℤₚˣ} xˢ dμ(x) ↔ ∑_{σ ∈ M₂₄} h(σ) · χ(σ)
+
+  Proof outline (TO BE COMPLETED):
+  1. Define p-adic measure on M₂₄
+  2. Express integral as discrete sum
+  3. Show h(σ) plays role of xˢ
+  4. Verify character orthogonality relations -/
 theorem padic_mellin_analogy : True := by
   trivial
 
