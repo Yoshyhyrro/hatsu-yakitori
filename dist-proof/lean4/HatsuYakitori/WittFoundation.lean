@@ -11,8 +11,9 @@
 -/
 
 import Mathlib.Data.Fin.Basic
+import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finset.Card
-import Mathlib.Data.Finset.Lattice
+import Mathlib.Data.Finset.Lattice.Basic
 
 namespace HatsuYakitori.WittFoundation
 
@@ -36,7 +37,7 @@ def IsOctad (o : Octad) : Prop := weight o = 8
 abbrev inter (a b : Octad) : Octad := a ∩ b
 
 /-- Complement inside the 24-point universe. -/
-abbrev compl (o : Octad) : Octad := oᶜ
+abbrev compl (o : Octad) : Octad := Finset.univ \ o
 
 /-- A Witt context bundles the set of all octads and basic invariants.
 

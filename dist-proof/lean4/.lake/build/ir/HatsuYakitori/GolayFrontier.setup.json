@@ -1,7 +1,7 @@
 {"plugins": [],
  "package": "hatsu-yakitori-proof",
  "options": {},
- "name": "HatsuYakitori.WittFoundation",
+ "name": "HatsuYakitori.GolayFrontier",
  "isModule": false,
  "importArts":
  {"Qq.Typ":
@@ -1874,6 +1874,8 @@
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/importGraph/.lake/build/lib/lean/ImportGraph/Imports.ir",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/importGraph/.lake/build/lib/lean/ImportGraph/Imports.olean.server",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/importGraph/.lake/build/lib/lean/ImportGraph/Imports.olean.private"],
+  "HatsuYakitori.WittFoundation":
+  ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/WittFoundation.olean"],
   "Batteries.Util.ProofWanted":
   ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/batteries/.lake/build/lib/lean/Batteries/Util/ProofWanted.olean",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/batteries/.lake/build/lib/lean/Batteries/Util/ProofWanted.ir",
