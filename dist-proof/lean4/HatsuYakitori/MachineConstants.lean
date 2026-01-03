@@ -452,29 +452,18 @@ noncomputable def octadHeight (weight : Fin 25) : ℝ :=
     1. Case analysis on specific weights
     2. For general case, use positivity tactic -/
 theorem octadHeight_nonneg (w : Fin 25) : octadHeight w ≥ 0 := by
-  unfold octadHeight
-  split_ifs
-  · exact le_rfl
-  · unfold galoisHeightBound; norm_num
-  · unfold galoisHeightBound; norm_num
-  · unfold galoisHeightBound; norm_num
-  · unfold galoisHeightBound; norm_num
-  · apply mul_nonneg
-    · apply div_nonneg
-      · exact_mod_cast (Nat.zero_le w.val)
-      · norm_num
-    · unfold galoisHeightBound; norm_num
+  simp only [octadHeight, galoisHeightBound]
+  split_ifs <;> positivity
 
-/-- Octad height is bounded by Frobenius-Perron bound
-    
-    Theorem: All irreducible representations have dimension bounded
-    by the Frobenius-Perron eigenvalue of the Cartan matrix.
-    
-    Proof strategy:
-    1. Case analysis on special weights
-    2. For general weights, show (w/24)*8 ≤ 8 using w ≤ 24 -/
+/-- Octad height is bounded by Frobenius-Perron bound -/
 theorem octadHeight_bounded (w : Fin 25) : octadHeight w ≤ galoisHeightBound := by
-  sorry
+  simp only [octadHeight, galoisHeightBound]
+  split_ifs <;> try norm_num
+  -- General case: it suffices to bound w.val by 24.
+  have hk_le : (w.val : ℝ) ≤ 24 := Nat.cast_le.mpr (Nat.le_of_lt_succ w.isLt)
+  have hdiv : (w.val : ℝ) / 24 ≤ 1 :=
+    (div_le_one (by norm_num : (0 : ℝ) < 24)).mpr hk_le
+  nlinarith [hdiv]
 
 /-! ## Part 7: Ariki-Koike Character Formulas -/
 
@@ -680,9 +669,14 @@ theorem frobenius_perron_spectral :
     Restriction and induction preserve character norms.
     
     Proof: Direct comparison using galoisHeight(24) = K -/
-theorem height_bound_preservation (w : Fin 25) (hw : w.val ≤ 24) :
+theorem height_bound_preservation (w : Fin 25) (_hw : w.val ≤ 24) :
     octadHeight w ≤ galoisHeight 24 := by
-  sorry
+  have h24 : galoisHeight 24 = galoisHeightBound := by
+    unfold galoisHeight galoisHeightBound
+    simp only [Nat.cast_ofNat, if_neg (by norm_num : (24 : ℕ) ≠ 0)]
+    field_simp [Real.log_pos (by norm_num : (1 : ℝ) < 24)]
+  rw [h24]
+  exact octadHeight_bounded w
 
 /-! ## Part 9: Iwasawa Theory Connection (Skeleton) -/
 

@@ -57,6 +57,8 @@ defaultImports =
   [ "Mathlib.Analysis.SpecialFunctions.Log.Basic"
   , "Mathlib.Data.Real.Basic"
   , "Mathlib.Data.Fin.Basic"
+  , "Mathlib.Data.Finset.Card"
+  , "Mathlib.Data.Finset.Lattice.Basic"
   ]
 
 -- | Extract Scheme export names from LLVM IR string constants
