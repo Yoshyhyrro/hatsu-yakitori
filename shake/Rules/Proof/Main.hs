@@ -9,13 +9,39 @@ import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_)
 import Control.Monad.IO.Class (liftIO)
+import qualified System.Directory as Dir
 
 import Rules.Proof.LLVM_IR as IR
 import Rules.Proof.SBV_Bridge as SBV
+import qualified Rules.Proof.Lean4 as Lean4
 
 -- | Register phony targets for proof verification
 setupProofPhonies :: Rules ()
 setupProofPhonies = do
+  -- Lean4 proof targets
+  phony "lean4" $ do
+    let leanDir = proofDistRoot IR.defaultProofBuildPaths </> "lean4"
+    putInfo $ "[lean4] Building proofs in " ++ leanDir
+    ok <- Lean4.verifyLeanSpec leanDir
+    if ok
+      then putNormal "[lean4] All proofs verified"
+      else fail "[lean4] Proof verification failed"
+
+  phony "lean4-stub" $ do
+    let paths = IR.defaultProofBuildPaths
+    let leanDir = proofDistRoot paths </> "lean4" </> "HatsuYakitori"
+    putInfo "[lean4-stub] Generating Lean4 specification stubs..."
+    forM_ Lean4.coreModuleLeanSpecs $ \modName -> do
+      let llPath = proofLLVMIRDir paths </> modName ++ ".opt2.ll"
+      let outPath = leanDir </> Lean4.toPascalCase modName <.> "lean"
+      llExists <- liftIO $ Dir.doesFileExist llPath
+      if llExists
+        then do
+          spec <- liftIO $ Lean4.generateLeanSpec llPath
+          liftIO $ Lean4.writeLeanSpec spec outPath
+          putInfo $ "[lean4-stub] Generated: " ++ outPath
+        else putInfo $ "[lean4-stub] SKIP (no IR): " ++ modName
+
   phony "verify-core-ir" $ do
     let paths = defaultProofBuildPaths
     putInfo "Verifying all core modules IR stages..."
@@ -44,4 +70,7 @@ setupProofPhonies = do
       case IR.findBrokenStage rs of
         Nothing -> putNormal $ "[llvm] " ++ m ++ " PASS"
         Just (st, err) -> fail $ "[llvm] " ++ m ++ " failed at " ++ show st ++ ": " ++ err
+
+  -- Alias "lean" -> "lean4"
+  phony "lean" $ need ["lean4"]
 
