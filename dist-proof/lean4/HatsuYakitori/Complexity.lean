@@ -24,8 +24,8 @@ open HatsuYakitori.MachineConstants
   Heuristic mapping from Octad Weight to Cycle Length.
   (Matches the logic used in `arikiKoike_galois_correspondence`)
 -/
-def weightToCycleLength (w : ℕ) : ℕ :=
-  match w with
+def weightToCycleLength (w : Fin 25) : ℕ :=
+  match w.val with
   | 0  => 1
   | 8  => 3
   | 12 => 5
