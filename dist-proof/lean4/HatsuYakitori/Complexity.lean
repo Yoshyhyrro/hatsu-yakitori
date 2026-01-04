@@ -46,7 +46,7 @@ noncomputable def branchingFactor (w : Fin 25) : ℝ :=
 structure SearchCost where
   time : ℝ
   space : ℝ
-  deriving Repr, BEq
+  -- Do not derive Repr/BEq to avoid relying on executable instances for ℝ.
 
 /-- 
   DFS (Depth-First Search) cost estimate.
