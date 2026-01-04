@@ -19,6 +19,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineCons
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_valuationDepth;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_ctorIdx___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_arikiKoikeN;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_weightToCycleLength___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGaloisClass_repr___closed__9;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound___closed__0;
 uint8_t lean_nat_dec_le(lean_object*, lean_object*);
@@ -84,6 +85,7 @@ LEAN_EXPORT double lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_ctorIdx(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_weightToCycleLength(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_fundamental_elim___redArg(lean_object*);
 static double _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0() {
 _start:
@@ -858,6 +860,84 @@ x_4 = lean_unbox(x_2);
 x_5 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instDecidableEqGaloisClass(x_3, x_4);
 x_6 = lean_box(x_5);
 return x_6;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_weightToCycleLength(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; uint8_t x_3; 
+x_2 = lean_unsigned_to_nat(0u);
+x_3 = lean_nat_dec_eq(x_1, x_2);
+if (x_3 == 0)
+{
+lean_object* x_4; uint8_t x_5; 
+x_4 = lean_unsigned_to_nat(8u);
+x_5 = lean_nat_dec_eq(x_1, x_4);
+if (x_5 == 0)
+{
+lean_object* x_6; uint8_t x_7; 
+x_6 = lean_unsigned_to_nat(12u);
+x_7 = lean_nat_dec_eq(x_1, x_6);
+if (x_7 == 0)
+{
+lean_object* x_8; uint8_t x_9; 
+x_8 = lean_unsigned_to_nat(16u);
+x_9 = lean_nat_dec_eq(x_1, x_8);
+if (x_9 == 0)
+{
+lean_object* x_10; uint8_t x_11; 
+x_10 = lean_unsigned_to_nat(24u);
+x_11 = lean_nat_dec_eq(x_1, x_10);
+if (x_11 == 0)
+{
+lean_object* x_12; uint8_t x_13; 
+x_12 = lean_unsigned_to_nat(1u);
+x_13 = lean_nat_dec_le(x_12, x_1);
+if (x_13 == 0)
+{
+return x_12;
+}
+else
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+else
+{
+return x_10;
+}
+}
+else
+{
+return x_4;
+}
+}
+else
+{
+return x_6;
+}
+}
+else
+{
+return x_4;
+}
+}
+else
+{
+lean_object* x_14; 
+x_14 = lean_unsigned_to_nat(1u);
+return x_14;
+}
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_weightToCycleLength___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_weightToCycleLength(x_1);
+lean_dec(x_1);
+return x_2;
 }
 }
 lean_object* initialize_Init(uint8_t builtin);
