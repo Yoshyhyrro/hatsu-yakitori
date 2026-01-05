@@ -4,9 +4,9 @@
 
 
 
-(include-relative "../../core/machine_constants.scm")
-(include-relative "../../core/golay_frontier.scm")
-(include-relative "../../core/cartan_utils.scm")
+(include "machine_constants.scm")
+(include "golay_frontier.scm")
+(include "cartan_utils.scm")
 
 
 (module sssp_geo_main *

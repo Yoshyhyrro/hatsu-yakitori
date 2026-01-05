@@ -31,16 +31,16 @@ setupProofPhonies = do
     let paths = IR.defaultProofBuildPaths
     let leanDir = proofDistRoot paths </> "lean4" </> "HatsuYakitori"
     putInfo "[lean4-stub] Generating Lean4 specification stubs..."
-    forM_ Lean4.coreModuleLeanSpecs $ \modName -> do
-      let llPath = proofLLVMIRDir paths </> modName ++ ".opt2.ll"
-      let outPath = leanDir </> Lean4.toPascalCase modName <.> "lean"
-      llExists <- liftIO $ Dir.doesFileExist llPath
-      if llExists
-        then do
+    mods <- liftIO Lean4.moduleLeanSpecsIO
+    forM_ mods $ \modName -> do
+      mbLLPath <- liftIO $ Lean4.findModuleIRFile modName
+      case mbLLPath of
+        Just llPath -> do
+          let outPath = leanDir </> Lean4.toPascalCase modName <.> "lean"
           spec <- liftIO $ Lean4.generateLeanSpec llPath
           liftIO $ Lean4.writeLeanSpec spec outPath
           putInfo $ "[lean4-stub] Generated: " ++ outPath
-        else putInfo $ "[lean4-stub] SKIP (no IR): " ++ modName
+        Nothing -> putInfo $ "[lean4-stub] SKIP (no IR): " ++ modName
 
   phony "verify-core-ir" $ do
     let paths = defaultProofBuildPaths

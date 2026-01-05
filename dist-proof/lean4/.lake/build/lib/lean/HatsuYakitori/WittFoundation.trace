@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["bc595260c62af139.olean"],
-  "i": "084bb9c411ec5bac.ilean",
-  "c": "100a17192b69bbbb.c"},
+ {"o": ["e1ed82bc3937a23a.olean"],
+  "i": "f60be39083143021.ilean",
+  "c": "8dba4dfcf439532f.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Cli/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/batteries/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Qq/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/aesop/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/proofwidgets/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/importGraph/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/plausible/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean /home/yoshyhyrro/.elan/toolchains/leanprover--lean4---v4.27.0-rc1/bin/lean /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/WittFoundation.lean -o /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/WittFoundation.olean -i /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/WittFoundation.ilean -c /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/WittFoundation.c --setup /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/WittFoundation.setup.json --json",
@@ -14,12 +14,16 @@
      [["«hatsu-yakitori-proof»/HatsuYakitori:extraDep",
        [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
       ["imports",
-       [["Mathlib.Data.Fin.Basic transitive imports (legacy)",
+       [["Mathlib.Analysis.SpecialFunctions.Log.Basic transitive imports (legacy)",
+         "0923fe7488eb3538"],
+        ["Mathlib.Analysis.SpecialFunctions.Log.Basic:importAllArts",
+         "b498129a629cd891"],
+        ["Mathlib.Data.Real.Basic transitive imports (legacy)",
+         "d6c509e7655161b0"],
+        ["Mathlib.Data.Real.Basic:importAllArts", "40a6f42633f8ecc8"],
+        ["Mathlib.Data.Fin.Basic transitive imports (legacy)",
          "23e6eaf9c8f408f4"],
         ["Mathlib.Data.Fin.Basic:importAllArts", "60d9c93df3ff85e9"],
-        ["Mathlib.Data.Fintype.Basic transitive imports (legacy)",
-         "bc2a41ca52b80aac"],
-        ["Mathlib.Data.Fintype.Basic:importAllArts", "3914bfd1273639e4"],
         ["Mathlib.Data.Finset.Card transitive imports (legacy)",
          "a47f6ccbe2b92d9b"],
         ["Mathlib.Data.Finset.Card:importAllArts", "ec53a7b88106b8b6"],
@@ -35,7 +39,7 @@
   ["Lean 4.27.0, commit 2fcce7258eeb6e324366bc25f9058293b04b7547",
    "6f43b597efea5d4c"],
   ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/WittFoundation.lean",
-   "0ea36f78cb105aa7"],
+   "fe0692d6a899ca36"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "7c500706682e554d"}
+ "depHash": "2a24f4827e51c2e7"}
