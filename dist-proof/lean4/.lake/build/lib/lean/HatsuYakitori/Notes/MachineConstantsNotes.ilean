@@ -1,1 +1,1 @@
-{"decls":{},"directImports":[],"module":"HatsuYakitori.Notes.MachineConstantsNotes","references":{},"version":5}
+{"decls":{},"directImports":[["Mathlib.Data.Real.Basic",false,false,false]],"module":"HatsuYakitori.Notes.MachineConstantsNotes","references":{},"version":5}
