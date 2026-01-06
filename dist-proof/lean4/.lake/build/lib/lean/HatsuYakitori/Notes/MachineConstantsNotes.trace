@@ -1,0 +1,31 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["365b1c134ecd2ea8.olean"],
+  "i": "c43dc121a18cc7d9.ilean",
+  "c": "960723cb8b11cb00.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Cli/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/batteries/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Qq/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/aesop/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/proofwidgets/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/importGraph/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/plausible/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean /home/yoshyhyrro/.elan/toolchains/leanprover--lean4---v4.27.0-rc1/bin/lean /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/Notes/MachineConstantsNotes.lean -o /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/Notes/MachineConstantsNotes.olean -i /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/Notes/MachineConstantsNotes.ilean -c /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/Notes/MachineConstantsNotes.c --setup /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/Notes/MachineConstantsNotes.setup.json --json",
+   "level": "trace"}],
+ "inputs":
+ [["HatsuYakitori.Notes.MachineConstantsNotes:deps",
+   [["deps",
+     [["«hatsu-yakitori-proof»/HatsuYakitori:extraDep",
+       [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib.Data.Real.Basic transitive imports (legacy)",
+         "996c7ee6b07f52b7"],
+        ["Mathlib.Data.Real.Basic:importAllArts", "4b354b2586cf52f2"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.27.0, commit 2fcce7258eeb6e324366bc25f9058293b04b7547",
+   "6f43b597efea5d4c"],
+  ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/Notes/MachineConstantsNotes.lean",
+   "d711c2e5f801df9d"],
+  ["options", "00000000000006bb"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "1cdb2f129d80528b"}

@@ -11624,11 +11624,6 @@
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/FieldDivision.ir",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/FieldDivision.olean.server",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/FieldDivision.olean.private"],
-  "Mathlib.Algebra.Polynomial.Factors":
-  ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/Factors.olean",
-   "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/Factors.ir",
-   "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/Factors.olean.server",
-   "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/Factors.olean.private"],
   "Mathlib.Algebra.Polynomial.Expand":
   ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/Expand.olean",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Polynomial/Expand.ir",

@@ -12,6 +12,7 @@
           (chicken process-context)
           srfi-1
           srfi-69
+          machine_constants
           kak_decomposition)
 
   ;; ---------------------------------------------------------------------------

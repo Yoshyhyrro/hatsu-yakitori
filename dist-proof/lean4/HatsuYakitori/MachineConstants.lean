@@ -649,13 +649,30 @@ theorem epsilon_resolves_octads (w1 w2 : Fin 25) (hw : w1 ≠ w2) :
     The height function behaves like the Iwasawa logarithm
     in p-adic representation theory.
     
-    Proof strategy:
-    1. Bound |h(mn) - (h(m) + h(n))| using subadditivity
-    2. Show error is at most 2K
-    3. This mimics log_p(xy) = log_p(x) + log_p(y) + error -/
+    Proof strategy (from Notes):
+    - galoisHeight (m * n) = galoisHeight m + galoisHeight n 
+      follows from log additivity: log(mn) = log(m) + log(n)
+    - Therefore the error term is 0, which is trivially ≤ 2K -/
 theorem iwasawa_approximation (m n : ℕ) (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n ∧ n ≤ 24) :
     |galoisHeight (m * n) - (galoisHeight m + galoisHeight n)| ≤ 2 * galoisHeightBound := by
-  sorry
+  unfold galoisHeight galoisHeightBound
+  -- Both m and n are positive, so m * n is also positive
+  have hm_pos : m ≠ 0 := Nat.pos_iff_ne_zero.mp hm.1
+  have hn_pos : n ≠ 0 := Nat.pos_iff_ne_zero.mp hn.1
+  have hmn_pos : m * n ≠ 0 := Nat.mul_ne_zero hm_pos hn_pos
+  simp only [if_neg hm_pos, if_neg hn_pos, if_neg hmn_pos]
+  -- Use log additivity: log(m * n) = log(m) + log(n)
+  have hm_real_pos : (m : ℝ) > 0 := Nat.cast_pos.mpr hm.1
+  have hn_real_pos : (n : ℝ) > 0 := Nat.cast_pos.mpr hn.1
+  have hlog_add : Real.log ((m : ℝ) * (n : ℝ)) = Real.log m + Real.log n := by
+    simpa using Real.log_mul (ne_of_gt hm_real_pos) (ne_of_gt hn_real_pos)
+  -- Rewrite and simplify
+  -- First normalize `Real.log (↑(m*n))` into `Real.log (↑m * ↑n)`.
+  simp [Nat.cast_mul, hlog_add]
+  ring_nf
+  -- The difference is 0, which is ≤ 16
+  simp only [sub_self, abs_zero]
+  norm_num
 
 /-- **SKELETON: p-adic Mellin Transform Analogy**
 

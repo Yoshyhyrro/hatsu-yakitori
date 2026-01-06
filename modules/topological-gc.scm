@@ -427,4 +427,4 @@
           
           (printf "~a~n" "=== Connectivity Analysis ===")
           (printf "Total edges:   ~a~n" (length capacities))
-          (printf "Min capacity:  ~a~n" min-))))))
+          (printf "Min capacity:  ~a~n" min-cap))))))
