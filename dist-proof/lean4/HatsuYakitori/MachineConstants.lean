@@ -671,7 +671,6 @@ theorem iwasawa_approximation (m n : ℕ) (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n 
   simp [Nat.cast_mul, hlog_add]
   ring_nf
   -- The difference is 0, which is ≤ 16
-  simp only [sub_self, abs_zero]
   norm_num
 
 /-- **SKELETON: p-adic Mellin Transform Analogy**
