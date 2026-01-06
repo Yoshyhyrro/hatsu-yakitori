@@ -1,194 +1,222 @@
 /-
   HatsuYakitori.CartanUtils
   
-  Auto-generated specification stub for: cartan_utils
+  Cartan Decomposition Utilities
   
-  TODO: Fill in definitions and complete proofs
+  This module provides utility functions for Cartan decomposition,
+  combining Hausdorff distance considerations with logarithmic scaling.
+  
+  Mathematical Background:
+  The Cartan decomposition generates log-spaced levels from B^0 to B^1,
+  useful for multi-scale analysis and Hausdorff distance approximations.
+  
+  For B > 1 and n steps, we generate levels:
+    a_k = exp(k * ln(B) / n)  for k = 0, 1, ..., n
+  
+  This gives a geometric progression from 1 to B.
 -/
 
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
-import Mathlib.Data.Finset.Card
-import Mathlib.Data.Finset.Lattice.Basic
+import Mathlib.Data.List.Range
+import Mathlib.Tactic
+import HatsuYakitori.MachineConstants
 
 namespace HatsuYakitori.CartanUtils
 
-/-- TODO (from: machine_constants#) -/
-theorem export_machine_constants_ : True := by
-  trivial
+/-! ## Part 1: Constants and Parameters -/
 
-/-- TODO (from: machine_constants#machine-epsilon) -/
-theorem export_machine_constants_machine_epsilon : True := by
-  trivial
+/-- Machine epsilon for numerical comparisons.
 
-/-- TODO (from: machine_constants#default-tolerance) -/
-theorem export_machine_constants_default_tolerance : True := by
-  trivial
+  Sourced from `HatsuYakitori.MachineConstants`. -/
+def machineEpsilon : ℝ := HatsuYakitori.MachineConstants.machineEpsilonReal
 
-/-- TODO (from: machine_constants#galois-height-bound) -/
-theorem export_machine_constants_galois_height_bound : True := by
-  trivial
+/-- Default tolerance for decomposition lookups.
 
-/-- TODO (from: machine_constants#e) -/
-theorem export_machine_constants_e : True := by
-  trivial
+  Sourced from `HatsuYakitori.MachineConstants`. -/
+def defaultTolerance : ℝ := HatsuYakitori.MachineConstants.defaultToleranceReal
 
-/-- TODO (from: machine_constants#pi) -/
-theorem export_machine_constants_pi : True := by
-  trivial
+/-! ## Part 2: Validation -/
 
-/-- TODO (from: machine_constants#galois-height) -/
-theorem export_machine_constants_galois_height : True := by
-  trivial
+/-- Predicate for valid Cartan decomposition parameters.
+    B must be > 1 (for meaningful log scaling) and steps must be positive. -/
+def ValidDecompositionParams (B : ℝ) (steps : ℕ) : Prop :=
+  B > 1 ∧ steps > 0
 
-/-- TODO (from: machine_constants#safe-log) -/
-theorem export_machine_constants_safe_log : True := by
-  trivial
+/-- Decidable validation for decomposition parameters (specification only) -/
+noncomputable def validateDecomposition (B : ℝ) (steps : ℕ) : Bool :=
+  decide (B > 1) && decide (steps > 0)
 
-/-- TODO (from: srfi-1#member) -/
-theorem export_srfi_1_member : True := by
-  trivial
+/-- Validation implies the parameter predicate -/
+theorem validateDecomposition_correct {B : ℝ} {steps : ℕ} 
+    (h : validateDecomposition B steps = true) : ValidDecompositionParams B steps := by
+  simp [validateDecomposition, ValidDecompositionParams] at *
+  exact h
 
-/-- TODO (from: machine_constants#height-discriminant) -/
-theorem export_machine_constants_height_discriminant : True := by
-  trivial
+/-! ## Part 3: Core Cartan Decomposition -/
 
-/-- TODO (from: scheme#max) -/
-theorem export_scheme_max : True := by
-  trivial
+/-- Safe logarithm that handles edge cases.
+    Returns 0 for non-positive inputs. -/
+noncomputable def safeLog (x : ℝ) : ℝ :=
+  if x > 0 then Real.log x else 0
 
-/-- TODO (from: scheme#abs) -/
-theorem export_scheme_abs : True := by
-  trivial
+/-- Compute a single level of the Cartan decomposition.
+    
+    For level k out of n steps with base B:
+      a_k = exp(k * ln(B) / n) = B^(k/n)
+    
+    This generates a geometric progression from 1 to B. -/
+noncomputable def cartanLevel (B : ℝ) (steps : ℕ) (k : ℕ) : ℝ :=
+  if steps = 0 then 1
+  else Real.exp ((k : ℝ) * safeLog B / (steps : ℝ))
 
-/-- TODO (from: machine_constants#height-comparison) -/
-theorem export_machine_constants_height_comparison : True := by
-  trivial
+/-- Compute the full Cartan log-decomposition as a list of levels.
+    
+    Generates (steps + 1) levels from B^0 = 1 to B^1 = B.
+    Used for multi-scale analysis and Hausdorff distance approximations. -/
+noncomputable def cartanLogDecompose (B : ℝ) (steps : ℕ) : List ℝ :=
+  (List.range (steps + 1)).map (cartanLevel B steps)
 
-/-- TODO (from: machine_constants#octad-height) -/
-theorem export_machine_constants_octad_height : True := by
-  trivial
+/-- The first level is always 1 (= B^0) -/
+theorem cartanLevel_zero (B : ℝ) (steps : ℕ) (hsteps : steps > 0) : 
+    cartanLevel B steps 0 = 1 := by
+  simp only [cartanLevel]
+  have hne : steps ≠ 0 := Nat.pos_iff_ne_zero.mp hsteps
+  simp only [hne, ↑if_false, Nat.cast_zero, zero_mul, zero_div, Real.exp_zero]
 
-/-- TODO (from: machine_constants#hamming-weight) -/
-theorem export_machine_constants_hamming_weight : True := by
-  trivial
+/-- The last level equals B (= B^1) when B > 0 -/
+theorem cartanLevel_last (B : ℝ) (steps : ℕ) (hB : B > 0) (hsteps : steps > 0) :
+    cartanLevel B steps steps = B := by
+  have hne : steps ≠ 0 := Nat.pos_iff_ne_zero.mp hsteps
+  have hstepsR : (steps : ℝ) ≠ 0 := by
+    -- cast が 0 にならないこと
+    exact_mod_cast hne
 
-/-- TODO (from: machine_constants#witt-galois-correspondence) -/
-theorem export_machine_constants_witt_galois_correspondence : True := by
-  trivial
+  -- 定義展開：steps≠0 なので if の else 側、safeLog は B>0 なので log
+  simp [cartanLevel, safeLog, hne, hB]
 
-/-- TODO (from: chicken.base#error) -/
-theorem export_chicken_base_error : True := by
-  trivial
+  -- (steps * log B) / steps = log B
+  have hdiv : ((steps : ℝ) * Real.log B) / (steps : ℝ) = Real.log B := by
+    -- a*b/a = b
+    simpa [mul_assoc] using (mul_div_cancel_left₀ (Real.log B) hstepsR)
 
-/-- TODO (from: scheme#log) -/
-theorem export_scheme_log : True := by
-  trivial
+  -- exp (log B) = B
+  simpa [hdiv] using (Real.exp_log hB)
 
-/-- TODO (from: machine_constants#trim-leading-zeros) -/
-theorem export_machine_constants_trim_leading_zeros : True := by
-  trivial
+/-- Length of decomposition is steps + 1 -/
+theorem cartanLogDecompose_length (B : ℝ) (steps : ℕ) :
+    (cartanLogDecompose B steps).length = steps + 1 := by
+  simp [cartanLogDecompose]
 
-/-- TODO (from: scheme#reverse) -/
-theorem export_scheme_reverse : True := by
-  trivial
+/-! ## Part 4: Hausdorff-Related Utilities -/
 
-/-- TODO (from: srfi-1#drop-while) -/
-theorem export_srfi_1_drop_while : True := by
-  trivial
+/-- Find the decomposition level closest to a target value.
+    Returns the index and value if found within tolerance.
+    
+    Useful for Hausdorff distance lookups in multi-scale analysis. -/
+noncomputable def cartanInverseLookup (decomp : List ℝ) (target : ℝ) (tolerance : ℝ) : 
+    Option (ℕ × ℝ) :=
+  let indexed := (List.range decomp.length).zip decomp
+  List.find? (fun (_, v) => decide (|v - target| < tolerance)) indexed
 
-/-- TODO (from: machine_constants#degree) -/
-theorem export_machine_constants_degree : True := by
-  trivial
+/-- Compute ratios between consecutive decomposition levels.
+    
+    For a perfect logarithmic decomposition, all ratios should be equal to B^(1/n).
+    Deviations indicate numerical error or non-logarithmic scaling. -/
+noncomputable def cartanStepRatio (decomp : List ℝ) : List ℝ :=
+  match decomp with
+  | [] => []
+  | [_] => []
+  | x :: xs => 
+    let rec go (prev : ℝ) (rest : List ℝ) : List ℝ :=
+      match rest with
+      | [] => []
+      | y :: ys => (y / prev) :: go y ys
+    go x xs
 
-/-- TODO (from: machine_constants#poly-xor) -/
-theorem export_machine_constants_poly_xor : True := by
-  trivial
+/-- For valid decomposition, all step ratios are equal -/
+theorem cartanStepRatio_constant (B : ℝ) (steps : ℕ) (hB : B > 1) (hsteps : steps > 0) :
+    ∀ r ∈ cartanStepRatio (cartanLogDecompose B steps), 
+      |r - Real.rpow B (1 / steps)| < defaultTolerance := by
+  sorry -- Requires detailed analysis of exp/log properties
 
-/-- TODO (from: scheme#append) -/
-theorem export_scheme_append : True := by
-  trivial
+/-! ## Part 5: Properties and Correctness -/
 
-/-- TODO (from: srfi-1#make-list) -/
-theorem export_srfi_1_make_list : True := by
-  trivial
+/-- Decomposition levels are monotonically increasing for B > 1 -/
+theorem cartanLogDecompose_monotone (B : ℝ) (steps : ℕ) (hB : B > 1) :
+    (cartanLogDecompose B steps).Pairwise (· < ·) := by
+  sorry -- Follows from exp being strictly increasing
 
-/-- TODO (from: machine_constants#poly-shift) -/
-theorem export_machine_constants_poly_shift : True := by
-  trivial
+/-- All decomposition levels are positive -/
+theorem cartanLogDecompose_positive (B : ℝ) (steps : ℕ) (hB : B > 0) :
+    ∀ x ∈ cartanLogDecompose B steps, x > 0 := by
+  intro x hx
+  simp [cartanLogDecompose] at hx
+  obtain ⟨k, _, hk⟩ := hx
+  rw [← hk]
+  simp only [cartanLevel]
+  split_ifs with h
+  · exact one_pos
+  · exact Real.exp_pos _
 
-/-- TODO (from: machine_constants#poly-mul) -/
-theorem export_machine_constants_poly_mul : True := by
-  trivial
+/-- Head of decomposition is 1 -/
+theorem cartanLogDecompose_head (B : ℝ) (steps : ℕ) (hsteps : steps > 0) :
+    (cartanLogDecompose B steps).head? = some 1 := by
+  simp only [cartanLogDecompose, List.head?_map]
+  have h : (List.range (steps + 1)).head? = some 0 := by
+    simp only [List.range_succ_eq_map]
+    rfl
+  rw [h]
+  simp only [Option.map_some]
+  exact congrArg some (cartanLevel_zero B steps hsteps)
 
-/-- TODO (from: machine_constants#poly-mod) -/
-theorem export_machine_constants_poly_mod : True := by
-  trivial
+/-- Last element of decomposition is B -/
+theorem cartanLogDecompose_last (B : ℝ) (steps : ℕ) (hB : B > 0) (hsteps : steps > 0) :
+    (cartanLogDecompose B steps).getLast? = some B := by
+  sorry -- Follows from cartanLevel_last
 
-/-- TODO (from: cartan_utils#) -/
-theorem export_cartan_utils_ : True := by
-  trivial
+/-! ## Part 6: Hausdorff Scaling Properties -/
 
-/-- TODO (from: scheme#substring) -/
-theorem export_scheme_substring : True := by
-  trivial
+/-- The Cartan decomposition respects Hausdorff measure scaling.
+    
+    For a set S with Hausdorff dimension d, the multi-scale covering
+    at level a_k has measure proportional to a_k^d. -/
+axiom hausdorff_scaling_principle :
+  ∀ (B : ℝ) (steps : ℕ) (d : ℝ),
+    B > 1 → steps > 0 → d ≥ 0 →
+    ∀ k : ℕ, k ≤ steps →
+      ∃ C : ℝ, C > 0 ∧ 
+        -- measure at level k is C * (level_k)^d
+        True  -- Placeholder for actual measure statement
 
-/-- TODO (from: cartan_utils#validate-decomposition) -/
-theorem export_cartan_utils_validate_decomposition : True := by
-  trivial
+/-! ## Part 7: Integration with Machine Constants -/
 
-/-- TODO (from: cartan_utils#cartan-log-decompose) -/
-theorem export_cartan_utils_cartan_log_decompose : True := by
-  trivial
+/-- Standard decomposition using Galois height bound -/
+noncomputable def standardCartanDecompose (steps : ℕ) : List ℝ :=
+  cartanLogDecompose HatsuYakitori.MachineConstants.galoisHeightBound steps
 
-/-- TODO (from: scheme#exp) -/
-theorem export_scheme_exp : True := by
-  trivial
+/-- The standard decomposition has correct bounds -/
+theorem standardCartanDecompose_bounds (steps : ℕ) (hsteps : steps > 0) :
+    ∀ x ∈ standardCartanDecompose steps, 1 ≤ x ∧ x ≤ HatsuYakitori.MachineConstants.galoisHeightBound := by
+  sorry -- Follows from monotonicity and boundary values
 
-/-- TODO (from: srfi-1#iota) -/
-theorem export_srfi_1_iota : True := by
-  trivial
+/-! ## Part 8: Computational Helpers -/
 
-/-- TODO (from: cartan_utils#pretty-print-decomposition) -/
-theorem export_cartan_utils_pretty_print_decomposition : True := by
-  trivial
+/-- Check if a value lies within a decomposition level interval -/
+noncomputable def inDecompositionInterval (decomp : List ℝ) (x : ℝ) : Option ℕ :=
+  match decomp with
+  | [] => none
+  | [a] => if x ≥ a then some 0 else none
+  | a :: b :: rest =>
+    if a ≤ x ∧ x < b then some 0
+    else (inDecompositionInterval (b :: rest) x).map (· + 1)
 
-/-- TODO (from: scheme#string-append) -/
-theorem export_scheme_string_append : True := by
-  trivial
+/-- Format a real number to string (specification) -/
+axiom formatFloat : ℝ → ℕ → String
 
-/-- TODO (from: scheme#make-string) -/
-theorem export_scheme_make_string : True := by
-  trivial
-
-/-- TODO (from: srfi-1#last) -/
-theorem export_srfi_1_last : True := by
-  trivial
-
-/-- TODO (from: cartan_utils#cartan-inverse-lookup) -/
-theorem export_cartan_utils_cartan_inverse_lookup : True := by
-  trivial
-
-/-- TODO (from: cartan_utils#cartan-step-ratio) -/
-theorem export_cartan_utils_cartan_step_ratio : True := by
-  trivial
-
-/-- TODO (from: cartan_utils#test-cartan-decomposition) -/
-theorem export_cartan_utils_test_cartan_decomposition : True := by
-  trivial
-
-/-- TODO (from: chicken.base#implicit-exit-handler) -/
-theorem export_chicken_base_implicit_exit_handler : True := by
-  trivial
-
-/-- TODO (from: chicken.load#load-extension) -/
-theorem export_chicken_load_load_extension : True := by
-  trivial
-
-/-- TODO (from: cartan_utils#format-float) -/
-theorem export_cartan_utils_format_float : True := by
-  trivial
-
+/-- Pretty print specification (computational aspect handled in Scheme) -/
+axiom prettyPrintDecomposition : ℝ → ℕ → String
 
 end HatsuYakitori.CartanUtils
