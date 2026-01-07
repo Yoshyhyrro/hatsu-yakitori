@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: HatsuYakitori.CartanUtils
-// Imports: public import Init public import Mathlib.Analysis.SpecialFunctions.Log.Basic public import Mathlib.Analysis.SpecialFunctions.Pow.Real public import Mathlib.Data.Real.Basic public import Mathlib.Data.Fin.Basic public import Mathlib.Data.List.Range public import Mathlib.Tactic public import HatsuYakitori.MachineConstants
+// Imports: public import Init public import Mathlib.Analysis.SpecialFunctions.Log.Basic public import Mathlib.Analysis.SpecialFunctions.Pow.Real public import Mathlib.Data.Real.Basic public import Mathlib.Data.Fin.Basic public import Mathlib.Data.List.Range public import Mathlib.Algebra.Order.Field.Basic public import Mathlib.Tactic public import HatsuYakitori.MachineConstants
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -39,6 +39,7 @@ lean_object* initialize_mathlib_Mathlib_Analysis_SpecialFunctions_Pow_Real(uint8
 lean_object* initialize_mathlib_Mathlib_Data_Real_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_Fin_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_List_Range(uint8_t builtin);
+lean_object* initialize_mathlib_Mathlib_Algebra_Order_Field_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Tactic(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin);
 static bool _G_initialized = false;
@@ -62,6 +63,9 @@ res = initialize_mathlib_Mathlib_Data_Fin_Basic(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_mathlib_Mathlib_Data_List_Range(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_mathlib_Mathlib_Algebra_Order_Field_Basic(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_mathlib_Mathlib_Tactic(builtin);

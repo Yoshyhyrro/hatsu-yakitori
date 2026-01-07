@@ -140,10 +140,19 @@ def decodeGolay24 (c : Codeword) : InfoWord :=
 theorem decode_encode (info : InfoWord) : decodeGolay24 (encodeGolay24 info) = info := by
   simp only [decodeGolay24, encodeGolay24]
   apply Fin.ext
-  simp only [Fin.val_mk]
-  have h1 : info.val < 2^12 := info.isLt
-  have h2 : computeParity info.val < 2^12 := computeParity_lt info.val
-  omega
+  -- parity part vanishes because it is below 2^12
+  have hpar_lt : computeParity info.val < 2^12 := computeParity_lt info.val
+  have hpar_div : computeParity info.val / 2^12 = 0 := Nat.div_eq_of_lt hpar_lt
+  have hdiv_pos : (0 : ℕ) < 2^12 := by norm_num
+  have hadd_div : (computeParity info.val + info.val * 2^12) / 2^12
+      = computeParity info.val / 2^12 + info.val := by
+        -- division distributes over addition when one term is a multiple of the divisor
+        simpa [Nat.mul_comm] using Nat.add_mul_div_left (computeParity info.val) info.val hdiv_pos
+  calc
+    (info.val * 2^12 + computeParity info.val) / 2^12
+        = (computeParity info.val + info.val * 2^12) / 2^12 := by ac_rfl
+    _ = computeParity info.val / 2^12 + info.val := hadd_div
+    _ = info.val := by simpa [hpar_div]
 
 /-! ## Part 5: Galois Height Functions -/
 

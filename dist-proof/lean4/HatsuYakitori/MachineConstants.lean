@@ -61,6 +61,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Tactic
+import Mathlib.GroupTheory.Perm.Basic
 
 namespace HatsuYakitori.MachineConstants
 
@@ -671,7 +672,6 @@ theorem iwasawa_approximation (m n : ℕ) (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n 
   simp [Nat.cast_mul, hlog_add]
   ring_nf
   -- The difference is 0, which is ≤ 16
-  simp only [sub_self, abs_zero]
   norm_num
 
 /-- **SKELETON: p-adic Mellin Transform Analogy**
@@ -689,5 +689,8 @@ theorem iwasawa_approximation (m n : ℕ) (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n 
   4. Verify character orthogonality relations -/
 theorem padic_mellin_analogy : True := by
   trivial
+
+/-- Placeholder for cycle length calculation (needed for integration layer) -/
+def cycleLength_placeholder {n : Type*} [Fintype n] [DecidableEq n] (_σ : Equiv.Perm n) : ℕ := 1
 
 end HatsuYakitori.MachineConstants

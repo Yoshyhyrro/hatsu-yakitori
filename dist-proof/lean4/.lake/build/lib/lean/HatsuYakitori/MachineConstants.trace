@@ -1,16 +1,13 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["2bcb5505a75a6feb.olean"],
-  "i": "8385912d73a16898.ilean",
-  "c": "33392028d15e976a.c"},
+ {"o": ["4655c2684a1c7a52.olean"],
+  "i": "80b3be3689659d05.ilean",
+  "c": "e86c8a9a428f3a9c.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Cli/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/batteries/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/Qq/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/aesop/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/proofwidgets/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/importGraph/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/plausible/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean:/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean /home/yoshyhyrro/.elan/toolchains/leanprover--lean4---v4.27.0-rc1/bin/lean /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/MachineConstants.lean -o /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/MachineConstants.olean -i /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/lib/lean/HatsuYakitori/MachineConstants.ilean -c /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/MachineConstants.c --setup /mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/build/ir/HatsuYakitori/MachineConstants.setup.json --json",
-   "level": "trace"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:674:13: This simp argument is unused:\n  sub_self\n\nHint: Omit it from the simp argument list.\n  simp only [s̵u̵b̵_̵s̵e̵l̵f̵,̵ ̵abs_zero]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
-   "level": "warning"}],
+   "level": "trace"}],
  "inputs":
  [["HatsuYakitori.MachineConstants:deps",
    [["deps",
@@ -31,7 +28,11 @@
          "ad94f4102e0128fb"],
         ["Mathlib.Algebra.Order.Field.Basic:importAllArts", "afc2e9f9b83449f2"],
         ["Mathlib.Tactic transitive imports (legacy)", "37628907589afaf5"],
-        ["Mathlib.Tactic:importAllArts", "396d263b6f422b32"]]]]],
+        ["Mathlib.Tactic:importAllArts", "396d263b6f422b32"],
+        ["Mathlib.GroupTheory.Perm.Basic transitive imports (legacy)",
+         "030acb4ed0d37b22"],
+        ["Mathlib.GroupTheory.Perm.Basic:importAllArts",
+         "44e7862aa1e2fc6e"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -40,7 +41,7 @@
   ["Lean 4.27.0, commit 2fcce7258eeb6e324366bc25f9058293b04b7547",
    "6f43b597efea5d4c"],
   ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/HatsuYakitori/MachineConstants.lean",
-   "e8d89c6606c79062"],
+   "58b7830461fd08c3"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "17c8544aebee1dad"}
+ "depHash": "4458149279ad1173"}

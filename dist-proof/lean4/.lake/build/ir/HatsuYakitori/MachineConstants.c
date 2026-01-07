@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: HatsuYakitori.MachineConstants
-// Imports: public import Init public import Mathlib.Analysis.SpecialFunctions.Log.Basic public import Mathlib.Data.Real.Basic public import Mathlib.Data.Fin.Basic public import Mathlib.Algebra.Order.Field.Basic public import Mathlib.Tactic
+// Imports: public import Init public import Mathlib.Analysis.SpecialFunctions.Log.Basic public import Mathlib.Data.Real.Basic public import Mathlib.Data.Fin.Basic public import Mathlib.Algebra.Order.Field.Basic public import Mathlib.Tactic public import Mathlib.GroupTheory.Perm.Basic
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -64,6 +64,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 uint8_t lean_nat_dec_eq(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_ramifiedHigh_elim___redArg(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_cycleLength__placeholder___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_ramifiedHigh_elim___redArg___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGaloisClass_repr(uint8_t, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_ramifiedHigh_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
@@ -73,6 +74,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GaloisClass_fundamental_elim___redArg___boxed(lean_object*);
 lean_object* lean_nat_mul(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGaloisClass_repr___boxed(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_cycleLength__placeholder(lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGaloisClass_repr___closed__7;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGaloisClass;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGaloisClass_repr___closed__4;
@@ -940,12 +942,32 @@ lean_dec(x_1);
 return x_2;
 }
 }
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_cycleLength__placeholder(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
+_start:
+{
+lean_object* x_5; 
+x_5 = lean_unsigned_to_nat(1u);
+return x_5;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_cycleLength__placeholder___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
+_start:
+{
+lean_object* x_5; 
+x_5 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_cycleLength__placeholder(x_1, x_2, x_3, x_4);
+lean_dec_ref(x_4);
+lean_dec_ref(x_3);
+lean_dec(x_2);
+return x_5;
+}
+}
 lean_object* initialize_Init(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Analysis_SpecialFunctions_Log_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_Real_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_Fin_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Algebra_Order_Field_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Tactic(uint8_t builtin);
+lean_object* initialize_mathlib_Mathlib_GroupTheory_Perm_Basic(uint8_t builtin);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin) {
 lean_object * res;
@@ -967,6 +989,9 @@ res = initialize_mathlib_Mathlib_Algebra_Order_Field_Basic(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_mathlib_Mathlib_Tactic(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_mathlib_Mathlib_GroupTheory_Perm_Basic(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilon___closed__0();
