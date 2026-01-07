@@ -42,9 +42,9 @@
         ["Mathlib.Tactic transitive imports (legacy)", "37628907589afaf5"],
         ["Mathlib.Tactic:importAllArts", "396d263b6f422b32"],
         ["HatsuYakitori.MachineConstants transitive imports (legacy)",
-         "276fefe65ea44ff5"],
+         "ee45964937a2c152"],
         ["HatsuYakitori.MachineConstants:importAllArts",
-         "a5e16fa37ac3e293"]]]]],
+         "b1100199b11661f6"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -56,4 +56,4 @@
    "4c9d4ddd70e026e1"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "0d762c11bb16c2d8"}
+ "depHash": "1d1f94923412fa11"}

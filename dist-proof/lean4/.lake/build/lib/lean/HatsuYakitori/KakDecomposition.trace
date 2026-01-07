@@ -24,12 +24,12 @@
          "c8873c6f89a9d56c"],
         ["Mathlib.Data.List.Basic:importAllArts", "a851a10e0e95008e"],
         ["HatsuYakitori.GolayFrontier transitive imports (legacy)",
-         "7d6815eb9facca8f"],
-        ["HatsuYakitori.GolayFrontier:importAllArts", "d432ad6c45b137a6"],
+         "0186ad59686362b6"],
+        ["HatsuYakitori.GolayFrontier:importAllArts", "7f9f55ef2bf9afc5"],
         ["HatsuYakitori.MachineConstants transitive imports (legacy)",
-         "276fefe65ea44ff5"],
+         "ee45964937a2c152"],
         ["HatsuYakitori.MachineConstants:importAllArts",
-         "bede56383886ce12"]]]]],
+         "b1100199b11661f6"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -41,4 +41,4 @@
    "4794cb692839c560"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "f57598ff94c679af"}
+ "depHash": "91617d53cb5ed6cb"}
