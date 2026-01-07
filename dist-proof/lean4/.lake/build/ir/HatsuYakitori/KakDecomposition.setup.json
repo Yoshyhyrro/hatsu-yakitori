@@ -13979,6 +13979,11 @@
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/ZMod.ir",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/ZMod.olean.server",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/ZMod.olean.private"],
+  "Mathlib.Algebra.Algebra.TransferInstance":
+  ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/TransferInstance.olean",
+   "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/TransferInstance.ir",
+   "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/TransferInstance.olean.server",
+   "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/TransferInstance.olean.private"],
   "Mathlib.Algebra.Algebra.Tower":
   ["/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/Tower.olean",
    "/mnt/c/Users/tyuuw/hatsu-yakitori/dist-proof/lean4/.lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Algebra/Algebra/Tower.ir",
