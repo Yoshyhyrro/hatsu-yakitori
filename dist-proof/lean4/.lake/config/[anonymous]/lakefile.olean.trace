@@ -1,4 +1,4 @@
-{"platform": "x86_64-unknown-linux-gnu",
+{"platform": "x86_64-w64-windows-gnu",
  "options": {},
  "name": "[anonymous]",
  "leanHash": "2fcce7258eeb6e324366bc25f9058293b04b7547",
