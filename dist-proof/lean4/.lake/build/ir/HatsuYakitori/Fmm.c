@@ -1,5 +1,5 @@
 // Lean compiler output
-// Module: HatsuYakitori.Fmm
+// Module: HatsuYakitori.FMM
 // Imports: public import Init public import Mathlib.Analysis.SpecialFunctions.Log.Basic public import Mathlib.Data.Real.Basic public import Mathlib.Data.Fin.Basic public import Mathlib.Data.Finset.Card public import Mathlib.Data.Finset.Lattice.Basic
 #include <lean/lean.h>
 #if defined(__clang__)
@@ -20,7 +20,7 @@ lean_object* initialize_mathlib_Mathlib_Data_Fin_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_Finset_Card(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_Finset_Lattice_Basic(uint8_t builtin);
 static bool _G_initialized = false;
-LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm(uint8_t builtin) {
+LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_FMM(uint8_t builtin) {
 lean_object * res;
 if (_G_initialized) return lean_io_result_mk_ok(lean_box(0));
 _G_initialized = true;
