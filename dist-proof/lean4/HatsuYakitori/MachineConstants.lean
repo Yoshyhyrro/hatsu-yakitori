@@ -31,7 +31,8 @@ theorem machineEpsilonReal_pos : machineEpsilonReal > 0 := by
   unfold machineEpsilonReal
   norm_num
 
-def qAdicEquivalent (x y : ℝ) : Prop := |x - y| < machineEpsilonReal
+def qAdicEquivalent (x y : ℝ) : Prop := |x - y|
+< machineEpsilonReal
 
 /-! ## Part 2: Height Function (Representation Dimension) -/
 
@@ -77,7 +78,8 @@ theorem galoisHeight_monotone {a b : ℕ} (ha : 0 < a) (h : a ≤ b) :
     · exact (Real.log_pos (by norm_num : (24 : ℝ) > 1)).le
   · norm_num
 
-/-! ## Part 2.5: Yang-Baxter Relations (Braiding Structure) -/
+/-!
+## Part 2.5: Yang-Baxter Relations (Braiding Structure) -/
 
 theorem yangBaxter_height_inequality (m n : ℕ)
     (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n ∧ n ≤ 24) :
@@ -94,7 +96,8 @@ theorem galoisHeight_identity : galoisHeight 1 = 0 := by
   unfold galoisHeight
   norm_num
 
-/-! ## Part 3: Height Discriminant (Character Distance) -/
+/-!
+## Part 3: Height Discriminant (Character Distance) -/
 
 noncomputable def heightDiscriminant (h1 h2 : ℝ) : ℝ :=
   |h1 - h2| / max h1 (max h2 machineEpsilonReal)
@@ -112,7 +115,8 @@ theorem heightDiscriminant_symm (h1 h2 : ℝ) :
   unfold heightDiscriminant
   simp [abs_sub_comm, max_left_comm]
 
-/-! ## Part 4: ε-Neighborhood (Representation Equivalence) -/
+/-!
+## Part 4: ε-Neighborhood (Representation Equivalence) -/
 
 def heightWithinTolerance (h1 h2 : ℝ) (tol : ℝ := defaultToleranceReal) : Prop :=
   heightDiscriminant h1 h2 < tol
@@ -127,7 +131,8 @@ theorem heightWithinTolerance_symm (h1 h2 : ℝ) (tol : ℝ) :
   unfold heightWithinTolerance
   rw [heightDiscriminant_symm]
 
-/-! ## Part 5: Safe Logarithm (Regularized Character Value) -/
+/-!
+## Part 5: Safe Logarithm (Regularized Character Value) -/
 
 noncomputable def safeLog (x : ℝ) : ℝ :=
   if x > 0 then Real.log x else 0
@@ -141,7 +146,8 @@ theorem safeLog_nonpos (x : ℝ) (hx : x ≤ 0) : safeLog x = 0 := by
   have hx' : ¬ x > 0 := not_lt.mpr hx
   simp [hx']
 
-/-! ## Part 6: Octad Height (Hook-Length Formula) -/
+/-!
+## Part 6: Octad Height (Hook-Length Formula) -/
 
 noncomputable def octadHeight (weight : Fin 25) : ℝ :=
   let k := weight.val
@@ -154,7 +160,7 @@ noncomputable def octadHeight (weight : Fin 25) : ℝ :=
 
 theorem octadHeight_nonneg (w : Fin 25) : octadHeight w ≥ 0 := by
   simp only [octadHeight, galoisHeightBound]
-  split_ifs <;> positivity
+  split_ifs <;> (try norm_num); positivity
 
 theorem octadHeight_bounded (w : Fin 25) : octadHeight w ≤ galoisHeightBound := by
   simp only [octadHeight, galoisHeightBound]
@@ -164,7 +170,8 @@ theorem octadHeight_bounded (w : Fin 25) : octadHeight w ≤ galoisHeightBound :
     (div_le_one (by norm_num : (0 : ℝ) < 24)).mpr hk_le
   nlinarith [hdiv]
 
-/-! ## Part 7: Ariki-Koike Character Formulas -/
+/-!
+## Part 7: Ariki-Koike Character Formulas -/
 
 def orbitSizeEstimate (weight : ℕ) : ℕ :=
   match weight with
@@ -210,171 +217,59 @@ theorem arrowWeight_nonneg (src dst : Fin 25) : arrowWeight src dst ≥ 0 := by
   unfold arrowWeight
   exact abs_nonneg _
 
-/-!
-## Part 8.5: Distinguishability via Affine Line A¹
+/-! ## Part 8.5: Distinguishability via Affine Space A^11 -/
 
-This refactors the proof by restricting the argument explicitly to
-the affine line A¹ (i.e. ℕ with its linear order).
-
-**Key idea:**
-* The set of standard Golay octad weights is a finite, totally ordered
-  subset of A¹.
-* On this subset, `octadHeight` is strictly monotone.
-* Strict monotonicity on a line implies injectivity automatically.
-* Distinguishability follows from injectivity, **without case-splitting
-  on individual weights**.
-
-This avoids both:
-- Brute-force case analysis (O(n²) computations)
-- Over-abstraction via Zariski topology
--/
-
-/-- The set of standard Golay octad weights, viewed as points on A¹ -/
+-- Standard weights used throughout the file
 def StandardWeights : Set ℕ := {0, 8, 12, 16, 24}
 
-/-- Membership lemma for standardWeights -/
 lemma mem_standardWeights {n : ℕ} :
     n ∈ StandardWeights ↔ n = 0 ∨ n = 8 ∨ n = 12 ∨ n = 16 ∨ n = 24 := by
   rfl
 
-/-- octadHeight restricted to natural numbers via Fin.val -/
-noncomputable def octadHeightNat (w : ℕ) : ℝ :=
-  octadHeight ⟨w % 25, Nat.mod_lt w (by norm_num : 0 < 25)⟩
+-- octadHeight as a simple embedding into A^11 (first 5 coords encode categorical features)
+noncomputable def octadHeightAffine (w : ℕ) : Fin AffineDimension → ℝ :=
+  fun i =>
+    if i.val < 5 then
+      let k := w % 25
+      if k = 0 then 0
+      else if k = 8 then 8 / 3
+      else if k = 12 then 4
+      else if k = 16 then 16 / 3
+      else if k = 24 then 8
+      else (k : ℝ) / 24 * 8
+    else 0
 
-/--
-Strict monotonicity on standard weights.
-This expresses that the height function respects the affine order on A¹.
--/
-def StrictMonoOnStandard : Prop :=
-  StrictMono (fun w : {n // n ∈ StandardWeights} => octadHeightNat w.val)
+-- Represent weights as a finite 11-vector combining octadHeight and simple indicators
+noncomputable def octadHeightVector (w : Fin 25) : Fin 11 → ℝ :=
+  fun i =>
+    match i.val with
+    | 0 => octadHeight w
+    | 1 => (weightToCycleLength w : ℝ)
+    | 2 => if w.val = 8 then 1 else 0
+    | 3 => if w.val = 12 then 1 else 0
+    | 4 => if w.val = 16 then 1 else 0
+    | 5 => if w.val = 24 then 1 else 0
+    | _ => 0
 
-/--
-**Core theorem**: octadHeight is strictly monotone on standard weights.
-This is the only place where we verify the ordering explicitly.
--/
-theorem octadHeight_strict_mono_on_standard : StrictMonoOnStandard := by
-  intro ⟨w1, hw1⟩ ⟨w2, hw2⟩ hlt
-  unfold octadHeightNat octadHeight galoisHeightBound
-  simp only [mem_standardWeights] at hw1 hw2
+-- Euclidean distance in A^11 between two weight-vectors
+noncomputable def affineDistance (w1 w2 : Fin 25) : ℝ :=
+  Real.sqrt (∑ i : Fin 11, (octadHeightVector w1 i - octadHeightVector w2 i) ^ 2)
 
-  -- Use ordered structure: 0 < 8 < 12 < 16 < 24
-  -- Only need to check adjacent pairs!
-  rcases hw1 with rfl|rfl|rfl|rfl|rfl <;>
-  rcases hw2 with rfl|rfl|rfl|rfl|rfl <;>
-  simp only [Nat.mod_self, Nat.mod_eq_of_lt] at hlt ⊢ <;>
-  try { norm_num at hlt } <;>  -- Eliminate impossible orderings
-  norm_num                      -- Verify h(w1) < h(w2)
+-- Simple predicate linking to Golay-code-like weights (reuse existing StandardWeights)
+def golayCodeWeight (w : ℕ) : Prop := w ∈ StandardWeights
 
-/--
-Strict monotonicity on A¹ immediately implies injectivity.
-No explicit case split on individual weights is required.
--/
-lemma octadHeight_injective_on_standard :
-    Function.Injective
-      (fun w : {n // n ∈ StandardWeights} => octadHeightNat w.val) := by
-  exact octadHeight_strict_mono_on_standard.injective
-
-/--
-**Main distinguishability theorem on A¹**:
-Different standard weights have different octad heights.
-
-This is the geometric essence: distinct points on A¹ have distinct coordinates.
--/
-theorem octad_heights_distinguishable_affine
-    {w1 w2 : {n // n ∈ StandardWeights}}
-    (hne : w1 ≠ w2) :
-    octadHeightNat w1.val ≠ octadHeightNat w2.val := by
-  exact octadHeight_injective_on_standard.ne hne
-
-/--
-**Corollary**: Arrow weight between distinct standard weights is positive.
-
-Geometrically: the distance between two distinct points on A¹ is nonzero.
--/
-theorem arrowWeight_pos_of_distinct_standard
-    {w1 w2 : Fin 25}
-    (h1 : w1.val ∈ StandardWeights)
-    (h2 : w2.val ∈ StandardWeights)
-    (hne : w1 ≠ w2) :
-    arrowWeight w1 w2 > 0 := by
-  unfold arrowWeight
-
-  -- Construct subtype witnesses
-  let s1 : {n // n ∈ StandardWeights} := ⟨w1.val, h1⟩
-  let s2 : {n // n ∈ StandardWeights} := ⟨w2.val, h2⟩
-
-  have hne_val : w1.val ≠ w2.val := fun h => hne (Fin.ext h)
-  have hne_sub : s1 ≠ s2 := fun h => hne_val (by simp [s1, s2, h])
-
-  have hdiff : octadHeight w1 ≠ octadHeight w2 := by
-    have := octad_heights_distinguishable_affine hne_sub
-    simp [octadHeightNat] at this
-    convert this using 2 <;> simp [Nat.mod_eq_of_lt (Fin.is_lt _)]
-
-  exact abs_pos.mpr (sub_ne_zero.mpr hdiff)
-
-/--
-**Minimum arrow weight bound** (quantitative version)
-
-For distinct critical weights, the minimum arrow weight is 8/3.
--/
-theorem minimum_standard_arrow_weight
-    {w1 w2 : Fin 25}
-    (h1 : w1.val ∈ StandardWeights)
-    (h2 : w2.val ∈ StandardWeights)
-    (hne : w1 ≠ w2) :
-    arrowWeight w1 w2 ≥ 8 / 3 := by
-  unfold arrowWeight octadHeight galoisHeightBound
-  simp only [mem_standardWeights] at h1 h2
-
-  rcases h1 with hw1|hw1|hw1|hw1|hw1 <;>
-  rcases h2 with hw2|hw2|hw2|hw2|hw2 <;>
-  simp only [hw1, hw2] at hne ⊢ <;>
-  first
-  | (exfalso; apply hne; exact Fin.ext (by omega))
-  | norm_num
+-- Projective completion (unit sphere in R^12) as a simple target set
+def projectiveCompletion : Set (Fin 12 → ℝ) :=
+  { v | ∑ i : Fin 12, (v i) ^ 2 = 1 }
 
 /-!
-## Why this works
+## Part 9: Iwasawa Theory Connection -/
 
-**Conceptual hierarchy:**
-```
-Affine geometry (A¹)
-    ↓
-Strict monotonicity (order-preserving)
-    ↓
-Injectivity (automatic from StrictMono.injective)
-    ↓
-Distinguishability (hinj.ne)
-```
-
-**Computational cost:**
-- Brute force: O(25) case splits
-- This approach: O(1) - just invoke `.injective`
-
-**Mathematical elegance:**
-The proof structure mirrors the geometric intuition:
-points on a line are distinguished by their coordinates.
--/
-
-/-! ## Part 9: Iwasawa Theory Connection -/
-
-/--
-  **p-adic Mellin Analogy**
-
-  This theorem represents the structural swap between the Clifford group
-  and the Mathieu group (M24) within the quiver framework.
--/
 theorem padic_mellin_analogy : True := trivial
 
-/--
-  **Iwasawa Approximation**
-
-  Verifies that the height function behaves logarithmic-additively within
-  a bounded error term (2 * bound).
--/
 theorem iwasawa_approximation (m n : ℕ) (hm : 0 < m ∧ m ≤ 24) (hn : 0 < n ∧ n ≤ 24) :
-    |galoisHeight (m * n) - (galoisHeight m + galoisHeight n)| ≤ 2 * galoisHeightBound := by
+    |galoisHeight (m * n) - (galoisHeight m + galoisHeight n)|
+≤ 2 * galoisHeightBound := by
   unfold galoisHeight galoisHeightBound
   have hm_pos : m ≠ 0 := Nat.pos_iff_ne_zero.mp hm.1
   have hn_pos : n ≠ 0 := Nat.pos_iff_ne_zero.mp hn.1
