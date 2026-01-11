@@ -43,3 +43,15 @@ The core innovation is the adaptive switching between traversal modes based on t
 - **Accelerator Physics:** Space-charge effect simulations with non-Maxwellian distributions.
 - **Algebraic Cryptography:** Analyzing the lattice structure of code-based cryptosystems.
 - **Complex Plasma Dynamics:** Simulating long-range interactions in magnetically confined systems with high symmetry.
+
+## Build & Verification Stack
+
+This project utilizes a high-assurance compilation pipeline to ensure the mathematical integrity of the FMM kernels.
+
+*   **Build System:** [Haskell Shake](https://shakebuild.com/) is used for robust, parallelized build orchestration, managing the complex dependencies between Scheme source, generated C, and LLVM bitcode.
+*   **Formal Verification:** [SBV (SMT Based Verification)](https://leventerkok.github.io/sbv/) is integrated into the build process to formally verify the correctness of the **Cartan kernels** and **Goppa grid generation**. This ensures that the algebraic transformations are free from overflow, underflow, and logical inconsistencies before they reach the LLVM stage.
+*   **Compiler:** [CHICKEN Scheme](http://call-cc.org/) acts as the high-level logic layer, which is transpiled to C and then lowered to LLVM IR for target-specific optimizations.
+
+### Core Artifact
+The resulting highly-optimized and verified LLVM IR can be found here:
+- [**fmm-fmm_on_goppa_grid.raw.ll**](./fmm-fmm_on_goppa_grid.raw.ll) — *The verified bitcode containing the Cartan-FMM logic.*
