@@ -17,6 +17,7 @@ executables:
       - shake
       - extra  
       - async
+      - sbv
       - process
       - directory
       - filepath

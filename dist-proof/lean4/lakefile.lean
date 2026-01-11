@@ -10,3 +10,7 @@ require mathlib from git
 @[default_target]
 lean_lib «HatsuYakitori» where
   globs := #[.submodules `HatsuYakitori]
+
+-- ここを追加：単一モジュールをビルドするためのターゲット
+lean_exe MachineConstants where
+  root := `HatsuYakitori.MachineConstants

@@ -1,6 +1,7 @@
 # Build artifacts
 build/
 dist/
+dest/
 salmonella-logs/
 salmonella.log
 # Compiled Scheme files

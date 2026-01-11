@@ -334,10 +334,10 @@ buildGCCompilerFlags strat srcPath gcObjPath unitName =
       , "-o", gcObjPath
       , "-unit", unitName
       , "-O3"
-      , "-d0"
       , "-scrutinize"
       , "-specialize"
       , "-no-warnings"
+      , "-v"  -- Verbose output to debug linking
       ]
     
     strategySpecificFlags GomoryHu = 
@@ -419,10 +419,12 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
       unless (null existingModules) $ do
         putInfo $ "[GC] Building dependencies first: " ++ show existingModules
         need existingModules
-        -- Compile dependencies
+        -- Compile dependencies into canonical dest modules obj dir
         forM_ existingModules $ \modSrc -> do
-          let modObj = modSrc -<.> "o"
-          let modUnit = takeBaseName modSrc
+          let objDir = projectRoot </> "dest" </> "modules" </> "obj_default"
+              modObj = objDir </> takeBaseName modSrc <.> "o"
+              modUnit = takeBaseName modSrc
+          liftIO $ Dir.createDirectoryIfMissing True objDir
           liftIO $ Proc.callProcess "csc" 
             ["-c", "-o", modObj, "-unit", modUnit, "-J", modSrc]
       
@@ -507,3 +509,9 @@ findSourceFor exe = do
 traceToIO :: Member (Embed IO) r => Sem (Trace ': r) a -> Sem r a
 traceToIO = interpret \case
   PT.Trace msg -> liftIO (putStrLn msg)
+
+-- NOTE:
+-- This module is still referenced from shake/Shake.hs and other rule modules.
+-- Do NOT delete or remove it without first updating imports and build rules
+-- that depend on GCStrategyType, gcRule, buildWithGCStrategy, etc.
+-- If you intend to deprecate it, first migrate call sites and add tests.

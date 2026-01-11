@@ -19,7 +19,6 @@
   (import golay_frontier)
 
   (declare (unit kak_decomposition))
-  (import srfi-1 srfi-69 golay_frontier)
 
   (define +INF+ 1e99)
 

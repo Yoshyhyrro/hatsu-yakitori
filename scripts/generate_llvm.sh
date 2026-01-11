@@ -36,8 +36,8 @@ fi
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CORE_DIR="$ROOT_DIR/core"
 MODULES_DIR="$ROOT_DIR/modules"
-DIST_DIR="$ROOT_DIR/dist"
-DIST_PROOF_DIR="$ROOT_DIR/dist-proof"
+DEST_DIR="$ROOT_DIR/dest"
+DEST_PROOF_DIR="$ROOT_DIR/dest/proofs"
 
 # Ensure CHICKEN can locate project-local *.import.scm and include files.
 # Also allow repository lookup so module.*.import.scm at repo root are found.
@@ -56,9 +56,9 @@ for prefix in /usr/local /usr /opt/chicken ~/.local; do
 done
 
 if [ -n "$CHICKEN_LIB_PATH" ]; then
-  export CHICKEN_REPOSITORY_PATH="${ROOT_DIR}:${CORE_DIR}:${MODULES_DIR}:${CHICKEN_LIB_PATH}:${CHICKEN_REPOSITORY_PATH:-}"
+  export CHICKEN_REPOSITORY_PATH="${ROOT_DIR}:${CORE_DIR}:${DEST_DIR}:${MODULES_DIR}:${CHICKEN_LIB_PATH}:${CHICKEN_REPOSITORY_PATH:-}"
 else
-  export CHICKEN_REPOSITORY_PATH="${ROOT_DIR}:${CORE_DIR}:${MODULES_DIR}:${CHICKEN_REPOSITORY_PATH:-}"
+  export CHICKEN_REPOSITORY_PATH="${ROOT_DIR}:${CORE_DIR}:${DEST_DIR}:${MODULES_DIR}:${CHICKEN_REPOSITORY_PATH:-}"
 fi
 
 WORKDIR="${TMPDIR:-/tmp}/hatsu-llvm-$(basename "$SRC" .scm)-$$"

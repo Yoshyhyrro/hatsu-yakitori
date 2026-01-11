@@ -1,0 +1,42 @@
+name: Verify CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  check_dest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run dest layout checker
+        run: |
+          chmod +x ./scripts/check_dest_layout.sh
+          ./scripts/check_dest_layout.sh
+
+  sbv_verify:
+    name: SBV verification (manual or on main)
+    needs: check_dest
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Stack
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y haskell-stack
+      - name: Setup Stack
+        run: stack setup
+      - name: Install dependencies
+        run: stack build --only-dependencies
+      - name: Run SBV verification
+        run: |
+          stack exec -- runhaskell shake/Shake.hs verify-sbv
+      - name: Upload SBV logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbv-logs
+          path: dest/proofs/*.log

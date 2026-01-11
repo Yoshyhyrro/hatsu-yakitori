@@ -52,5 +52,6 @@ executable shake
     , polysemy
     , polysemy-plugin
     , process
+    , sbv
     , shake
   default-language: Haskell2010

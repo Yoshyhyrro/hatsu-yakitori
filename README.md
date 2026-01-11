@@ -134,7 +134,20 @@ cabal run shake -- clean
 cabal run shake -- witt
 
 # Launch a Chicken REPL with the repo path wired in
-CHICKEN_REPOSITORY_PATH="$(pwd)/dist:$(pwd)/core" csi -quiet
+CHICKEN_REPOSITORY_PATH="$(pwd)/dest/modules:$(pwd)/core" csi -quiet
+
+# CI
+
+This repository runs a lightweight verification workflow that ensures build artifacts follow the new `dest/` layout and that SBV-based proofs can be executed.
+
+- A PR-triggered check (`scripts/check_dest_layout.sh`) runs automatically.
+- Full SBV verification is executed on `main` pushes and can be run manually via the GitHub Actions "Verify CI" workflow (workflow_dispatch).
+
+Locally you can run the checker with:
+
+```bash
+./scripts/check_dest_layout.sh
+```
 ```
 
 ```scheme

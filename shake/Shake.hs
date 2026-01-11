@@ -6,13 +6,15 @@ module Main where
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, unless)
+import Control.Monad (forM_, unless, when)
 import qualified System.Directory as Dir
 
 import Pipeline
 import qualified Clean
 import qualified Rules.GC as GC
 import qualified Rules.Proof.Main as Proof
+import qualified Rules.SBVModules as SBV
+import qualified Rules.ModuleLinking as ModuleLinking
 
 -- ============================================================
 -- Module Definitions
@@ -37,7 +39,7 @@ allModules =
     [ regularModule "boids" 
                     "modules/boids/boids_main.scm" 
                     "tests/boids_tests.scm" 
-                    coreFiles
+                    (coreFiles ++ ["modules/fmm/fmm_on_goppa_grid.scm"])
     
     , regularModule "fmm" 
                     "modules/fmm/fmm_on_goppa_grid.scm" 
@@ -76,7 +78,7 @@ defaultCfg :: BuildConfig
 defaultCfg = defaultBuildConfig
     { bcCompileFlags = "-O3 -d0"
     , bcBuildDir = "_build"
-    , bcDistDir = "dist"
+    , bcDistDir = "dest"
     , bcGCStrategy = Nothing
     }
 
@@ -100,12 +102,33 @@ gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     GC.gcRule
-
+ 
+    -- SBV module rules
+    SBV.sbvRules
+ 
     -- Proof phony targets and rules
-    -- Registers commands like `verify-core-ir` and `find-broken-stage`
-    -- which focus verification on `core/` modules and their LLVM IR stages.
-    -- Implemented in shake/Rules/Proof
     Proof.setupProofPhonies
+    
+    -- ============================================================
+    -- Verification-first build pipeline
+    -- ============================================================
+    
+    phony "build-verified-gc" $ do
+      putInfo "[Build] Running formal verification first..."
+      result <- SBV.verifyTopologicalGC
+      case result of
+        SBV.Verified{} -> 
+          putInfo "[Build] ✓ Verification passed, proceeding with build"
+        SBV.VerificationFailed{} -> 
+          fail "[Build] ✗ Verification failed - aborting build"
+        SBV.VerificationError{} -> 
+          fail "[Build] ✗ Verification error - aborting build"
+      -- Example: build modules known to depend on topological-gc
+      need ["gc-gomory-fmm", "gc-gomory-boids"]
+    
+    phony "watch-verify" $ do
+      putInfo "[Watch] Monitoring topological-gc.scm for changes..."
+      need ["verify-topological-gc"]
 
     forM_ allModules $ \m -> do
         let mName = modName m
@@ -124,6 +147,16 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         
         -- GC variants (not for special modules)
         unless (modIsSpecial m) $ do
+            
+            -- Verified build: verify GC before building (if relevant)
+            phony ("build-verified-" ++ mName) $ do
+              when (usesTopologicalGC m) $ do
+                putInfo $ "[Build] Verifying GC before building " ++ mName
+                res <- SBV.verifyTopologicalGC
+                case res of
+                  SBV.Verified{} -> putInfo "[Build] ✓ Verified"
+                  _ -> fail "[Build] ✗ Verification required"
+              buildModule m cfg >> return ()
             
             -- GC auto-select
             phony ("gc-" ++ mName) $ 
@@ -150,7 +183,16 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "test-all" $ need ["test-" ++ modName m | m <- allModules]
     phony "test" $ need ["test-all"]
     
-    -- All GC variants
+    -- NEW: Verified builds
+    phony "build-all-verified" $ 
+        need ["build-verified-" ++ modName m 
+             | m <- allModules, not (modIsSpecial m)]
+    
+    phony "verify-then-build" $ do
+        need ["verify-all-sbv"]
+        need ["build"]
+    
+    -- GC variants
     phony "gc-all" $ 
         need ["gc-" ++ modName m | m <- allModules, not (modIsSpecial m)]
     
@@ -175,3 +217,15 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "distclean" $ do
         Clean.cleanAll
         putInfo "Removed all generated files and caches"
+    
+    -- Utility: list Scheme modules for manual reference checks
+    phony "find-unused-scm" $ do
+      putInfo "[Check] Listing all .scm files (manually inspect references)"
+      files <- getDirectoryFiles "" ["**/*.scm"]
+      forM_ files $ \f -> putInfo $ "  " ++ f ++ "  (run: grep -R \"" ++ f ++ "\" .)"
+    
+    -- Helper for build-time checks
+    where
+      -- Check if module uses topological-gc
+      usesTopologicalGC :: Module -> Bool
+      usesTopologicalGC m = "modules/topological-gc.scm" `elem` modDeps m

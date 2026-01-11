@@ -130,6 +130,16 @@
   (major1) == 1 && (major2) <  6 || \
   (major1) == 1 && (major2) == 6 && (minor) <= 19)
 #endif /* MIN_VERSION_process */
+/* package sbv-10.2 */
+#ifndef VERSION_sbv
+#define VERSION_sbv "10.2"
+#endif /* VERSION_sbv */
+#ifndef MIN_VERSION_sbv
+#define MIN_VERSION_sbv(major1,major2,minor) (\
+  (major1) <  10 || \
+  (major1) == 10 && (major2) <  2 || \
+  (major1) == 10 && (major2) == 2 && (minor) <= 0)
+#endif /* MIN_VERSION_sbv */
 /* package shake-0.19.8 */
 #ifndef VERSION_shake
 #define VERSION_shake "0.19.8"
@@ -233,7 +243,7 @@
 #endif /* MIN_TOOL_VERSION_strip */
 
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "hatsu-yakitori-0.0.2.0-1qRL4J1Vy8ADmmtofo5WUF-shake"
+#define CURRENT_COMPONENT_ID "hatsu-yakitori-0.0.2.0-F9RBqPsBbpRCNlwcI6vNj5-shake"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.0.2.0"

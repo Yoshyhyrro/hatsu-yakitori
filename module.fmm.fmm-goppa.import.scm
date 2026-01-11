@@ -4,7 +4,7 @@
   (lambda ()
     (##sys#register-compiled-module
       'module.fmm.fmm-goppa
-      'fmm_on_goppa_grid
+      'module.fmm.fmm-goppa
       (scheme#list)
       '((demo-cartan-golay . module.fmm.fmm-goppa#demo-cartan-golay)
         (cartan-fmm-evaluate-golay

@@ -1,7 +1,7 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["9ea5fac8299a0c5a.olean"],
+ {"o": ["7634c4e81bde2ee2.olean"],
   "i": "051929a4e5fccf66.ilean",
   "c": "e3aabb0c8c34e9b1.c"},
  "log":
@@ -15,14 +15,14 @@
        [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
       ["imports",
        [["Mathlib.Combinatorics.Quiver.Basic transitive imports (legacy)",
-         "97e9eab706e57dbe"],
+         "ce83d7651626c26d"],
         ["Mathlib.Combinatorics.Quiver.Basic:importAllArts",
-         "321dfccee3b94bd7"],
+         "09ca843ee67bf204"],
         ["Mathlib.Data.Real.Basic transitive imports (legacy)",
-         "452a88e756ee39e7"],
-        ["Mathlib.Data.Real.Basic:importAllArts", "1a037f013dbdba23"],
-        ["Mathlib.Tactic transitive imports (legacy)", "9d0f911098441afa"],
-        ["Mathlib.Tactic:importAllArts", "3c6dda4c2dee66db"]]]]],
+         "6c006540553640c9"],
+        ["Mathlib.Data.Real.Basic:importAllArts", "47af0dba8722ca85"],
+        ["Mathlib.Tactic transitive imports (legacy)", "3b0fb6d4c2edaacb"],
+        ["Mathlib.Tactic:importAllArts", "2304414f31867082"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -34,4 +34,4 @@
    "01a721f431abeaa2"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "46594ba10b257981"}
+ "depHash": "7f7f43d153e92d77"}

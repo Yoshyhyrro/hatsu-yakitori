@@ -46,12 +46,12 @@ getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: 
 
 
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
-bindir     = "/mnt/c/Users/tyuuw/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/bin"
-libdir     = "/mnt/c/Users/tyuuw/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/hatsu-yakitori-0.0.2.0-1qRL4J1Vy8ADmmtofo5WUF-shake"
-dynlibdir  = "/mnt/c/Users/tyuuw/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6"
-datadir    = "/mnt/c/Users/tyuuw/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/share/x86_64-linux-ghc-9.6.6/hatsu-yakitori-0.0.2.0"
-libexecdir = "/mnt/c/Users/tyuuw/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/libexec/x86_64-linux-ghc-9.6.6/hatsu-yakitori-0.0.2.0"
-sysconfdir = "/mnt/c/Users/tyuuw/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/etc"
+bindir     = "/mnt/c/Users/tyuuw/Document/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/bin"
+libdir     = "/mnt/c/Users/tyuuw/Document/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6/hatsu-yakitori-0.0.2.0-F9RBqPsBbpRCNlwcI6vNj5-shake"
+dynlibdir  = "/mnt/c/Users/tyuuw/Document/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/lib/x86_64-linux-ghc-9.6.6"
+datadir    = "/mnt/c/Users/tyuuw/Document/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/share/x86_64-linux-ghc-9.6.6/hatsu-yakitori-0.0.2.0"
+libexecdir = "/mnt/c/Users/tyuuw/Document/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/libexec/x86_64-linux-ghc-9.6.6/hatsu-yakitori-0.0.2.0"
+sysconfdir = "/mnt/c/Users/tyuuw/Document/hatsu-yakitori/.stack-work/install/x86_64-linux-tinfo6/96663f51807076f4d32b19e10a6a2636306e69b426a32219179e8afde1a9f70e/9.6.6/etc"
 
 getBinDir     = catchIO (getEnv "hatsu_yakitori_bindir")     (\_ -> return bindir)
 getLibDir     = catchIO (getEnv "hatsu_yakitori_libdir")     (\_ -> return libdir)

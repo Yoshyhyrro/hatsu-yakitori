@@ -264,11 +264,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Util\\AddRelatedDecl.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Util\\AddRelatedDecl.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Util\\AddRelatedDecl.olean.private"],
-  "Mathlib.Tactic.WithoutCDot":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\WithoutCDot.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\WithoutCDot.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\WithoutCDot.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\WithoutCDot.olean.private"],
   "Mathlib.Tactic.Widget.SelectPanelUtils":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\Widget\\SelectPanelUtils.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\Widget\\SelectPanelUtils.ir",
@@ -1429,11 +1424,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\GoalsLocation.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\GoalsLocation.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\GoalsLocation.olean.private"],
-  "Mathlib.Lean.Expr.ReplaceRec":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Expr\\ReplaceRec.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Expr\\ReplaceRec.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Expr\\ReplaceRec.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Expr\\ReplaceRec.olean.private"],
   "Mathlib.Lean.Expr.Rat":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Expr\\Rat.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Expr\\Rat.ir",
@@ -1459,11 +1449,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\Tactic\\Meta.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\Tactic\\Meta.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\Tactic\\Meta.olean.private"],
-  "Mathlib.Lean.Elab.Tactic.Basic":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\Tactic\\Basic.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\Tactic\\Basic.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\Tactic\\Basic.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\Tactic\\Basic.olean.private"],
   "Mathlib.Lean.Elab.InfoTree":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\InfoTree.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Lean\\Elab\\InfoTree.ir",
@@ -2649,11 +2634,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\OpenPrivate.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\OpenPrivate.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\OpenPrivate.olean.private"],
-  "Batteries.Tactic.Lint.TypeClass":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\TypeClass.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\TypeClass.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\TypeClass.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\TypeClass.olean.private"],
   "Batteries.Tactic.Lint.Simp":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Simp.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Simp.ir",
@@ -2664,21 +2644,11 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Misc.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Misc.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Misc.olean.private"],
-  "Batteries.Tactic.Lint.Frontend":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Frontend.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Frontend.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Frontend.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Frontend.olean.private"],
   "Batteries.Tactic.Lint.Basic":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Basic.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Basic.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Basic.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint\\Basic.olean.private"],
-  "Batteries.Tactic.Lint":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Lint.olean.private"],
   "Batteries.Tactic.Init":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Init.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Tactic\\Init.ir",
@@ -2749,11 +2719,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Syntax.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Syntax.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Syntax.olean.private"],
-  "Batteries.Lean.Position":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Position.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Position.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Position.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Position.olean.private"],
   "Batteries.Lean.PersistentHashSet":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\PersistentHashSet.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\PersistentHashSet.ir",
@@ -2824,11 +2789,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Except.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Except.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\Except.olean.private"],
-  "Batteries.Lean.EStateM":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\EStateM.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\EStateM.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\EStateM.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\EStateM.olean.private"],
   "Batteries.Lean.AttributeExtra":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\AttributeExtra.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Lean\\AttributeExtra.ir",
@@ -2849,61 +2809,11 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\MLList\\Basic.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\MLList\\Basic.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\MLList\\Basic.olean.private"],
-  "Batteries.Data.List.Scan":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Scan.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Scan.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Scan.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Scan.olean.private"],
-  "Batteries.Data.List.Perm":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Perm.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Perm.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Perm.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Perm.olean.private"],
-  "Batteries.Data.List.Pairwise":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Pairwise.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Pairwise.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Pairwise.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Pairwise.olean.private"],
-  "Batteries.Data.List.Monadic":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Monadic.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Monadic.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Monadic.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Monadic.olean.private"],
-  "Batteries.Data.List.Matcher":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Matcher.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Matcher.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Matcher.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Matcher.olean.private"],
-  "Batteries.Data.List.Lemmas":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Lemmas.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Lemmas.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Lemmas.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Lemmas.olean.private"],
-  "Batteries.Data.List.Init.Lemmas":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Init\\Lemmas.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Init\\Lemmas.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Init\\Lemmas.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Init\\Lemmas.olean.private"],
-  "Batteries.Data.List.Count":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Count.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Count.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Count.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Count.olean.private"],
   "Batteries.Data.List.Basic":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Basic.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Basic.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Basic.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\Basic.olean.private"],
-  "Batteries.Data.List.ArrayMap":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\ArrayMap.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\ArrayMap.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\ArrayMap.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List\\ArrayMap.olean.private"],
-  "Batteries.Data.List":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\List.olean.private"],
   "Batteries.Data.BinomialHeap.Basic":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\BinomialHeap\\Basic.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\BinomialHeap\\Basic.ir",
@@ -2914,11 +2824,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Merge.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Merge.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Merge.olean.private"],
-  "Batteries.Data.Array.Match":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Match.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Match.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Match.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Match.olean.private"],
   "Batteries.Data.Array.Basic":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Basic.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Data\\Array\\Basic.ir",
@@ -2944,11 +2849,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\LawfulMonadState.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\LawfulMonadState.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\LawfulMonadState.olean.private"],
-  "Batteries.Control.ForInStep.Lemmas":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\ForInStep\\Lemmas.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\ForInStep\\Lemmas.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\ForInStep\\Lemmas.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\ForInStep\\Lemmas.olean.private"],
   "Batteries.Control.ForInStep.Basic":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\ForInStep\\Basic.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\ForInStep\\Basic.ir",
@@ -2959,41 +2859,16 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\AlternativeMonad.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\AlternativeMonad.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Control\\AlternativeMonad.olean.private"],
-  "Batteries.CodeAction.Misc":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Misc.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Misc.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Misc.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Misc.olean.private"],
-  "Batteries.CodeAction.Match":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Match.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Match.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Match.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Match.olean.private"],
   "Batteries.CodeAction.Deprecated":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Deprecated.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Deprecated.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Deprecated.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Deprecated.olean.private"],
-  "Batteries.CodeAction.Basic":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Basic.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Basic.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Basic.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Basic.olean.private"],
   "Batteries.CodeAction.Attr":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Attr.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Attr.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Attr.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction\\Attr.olean.private"],
-  "Batteries.CodeAction":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\CodeAction.olean.private"],
-  "Batteries.Classes.SatisfiesM":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Classes\\SatisfiesM.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Classes\\SatisfiesM.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Classes\\SatisfiesM.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Classes\\SatisfiesM.olean.private"],
   "Batteries.Classes.RatCast":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Classes\\RatCast.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Classes\\RatCast.ir",

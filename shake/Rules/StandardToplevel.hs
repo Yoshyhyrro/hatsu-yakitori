@@ -22,6 +22,105 @@ import Data.Char (isSpace)
 import Chicken
 
 -- ============================================================
+-- Minimal S-expression parsing (for import normalization)
+-- ============================================================
+
+data Tok
+  = TLParen
+  | TRParen
+  | TAtom String
+  deriving (Show, Eq)
+
+data Sexp
+  = Atom String
+  | List [Sexp]
+  deriving (Show, Eq)
+
+lexSexp :: String -> [Tok]
+lexSexp = go . dropWhile isSpace
+  where
+    go s =
+      case dropWhile isSpace s of
+        "" -> []
+        (';':cs) -> go (dropWhile (/= '\n') cs)
+        ('(':cs) -> TLParen : go cs
+        (')':cs) -> TRParen : go cs
+        ('\"':cs) ->
+          let (_str, rest) = span (/= '\"') cs
+          in go (drop 1 rest)
+        cs ->
+          let (a, rest) = span (\c -> not (isSpace c) && c /= '(' && c /= ')') cs
+          in if null a then go rest else TAtom a : go rest
+
+parseOne :: [Tok] -> Maybe (Sexp, [Tok])
+parseOne toks =
+  case toks of
+    [] -> Nothing
+    (TAtom a : rest) -> Just (Atom a, rest)
+    (TLParen : rest) -> do
+      (xs, rest') <- parseList [] rest
+      Just (List (reverse xs), rest')
+    (TRParen : _) -> Nothing
+
+parseList :: [Sexp] -> [Tok] -> Maybe ([Sexp], [Tok])
+parseList acc toks =
+  case toks of
+    [] -> Nothing
+    (TRParen : rest) -> Just (acc, rest)
+    _ -> do
+      (x, rest') <- parseOne toks
+      parseList (x : acc) rest'
+
+parseSexp :: String -> Maybe Sexp
+parseSexp s = do
+  (sexp, rest) <- parseOne (lexSexp s)
+  case dropWhile (== TAtom "") rest of
+    [] -> Just sexp
+    _  -> Just sexp
+
+-- | Convert an import-set sexp into one or more csc -uses unit names.
+-- We intentionally strip wrappers like (only ...), (except ...), etc.
+-- and map common library specs to Chicken unit names.
+importSetToUnits :: Sexp -> [String]
+importSetToUnits sx =
+  case sx of
+    Atom a -> [normalizeAtom a]
+    List (Atom "scheme" : _) -> ["scheme"]
+    List (Atom "srfi" : Atom n : _) -> ["srfi-" ++ n]
+    List (Atom "chicken" : Atom n : _) -> ["chicken." ++ n]
+    List (Atom wrapper : rest)
+      | wrapper `elem` ["only", "except", "prefix", "rename"]
+      , (x:_) <- rest
+      -> importSetToUnits x
+    List (Atom "and" : rest) -> concatMap importSetToUnits rest
+    List xs
+      | all isAtom xs
+      , let parts = [a | Atom a <- xs]
+      , not (null parts)
+      -> [normalizeListAsUnit parts]
+    _ -> []
+  where
+    isAtom (Atom _) = True
+    isAtom _ = False
+
+normalizeAtom :: String -> String
+normalizeAtom a
+  | a == "(scheme)" = "scheme"
+  | otherwise = a
+
+normalizeListAsUnit :: [String] -> String
+normalizeListAsUnit parts =
+  case parts of
+    ["srfi", n] -> "srfi-" ++ n
+    ["chicken", n] -> "chicken." ++ n
+    ("scheme" : _) -> "scheme"
+    _ -> joinWith '.' parts
+
+joinWith :: Char -> [String] -> String
+joinWith _ [] = ""
+joinWith c (x:xs) = x ++ concatMap (\p -> c : p) xs
+
+-- ============================================================
 -- Dependency Type Classification
 -- ============================================================
 
@@ -40,9 +139,9 @@ classifyDependency dep0 =
       toks = words dep
   in case toks of
       ("srfi":num:_) -> SRFILib ("srfi-" ++ num)
-      ("chicken":ext:_) -> ChickenExt ("chicken-" ++ ext)
+      ("chicken":ext:_) -> ChickenExt ("chicken." ++ ext)
       _ | "srfi-" `isPrefixOf` dep -> SRFILib dep
-        | "chicken-" `isPrefixOf` dep -> ChickenExt dep
+        | "chicken." `isPrefixOf` dep -> ChickenExt dep
         | otherwise ->
             if '-' `elem` dep || '_' `elem` dep
               then CustomMod dep
@@ -115,39 +214,44 @@ extractDeclareUses content =
           in tokens
       | otherwise = []
 
--- | Extract "(import ...)" declarations (returns tokens after import)
---   Keeps parenthesized groups like "(chicken base)" as a single dependency token.
+-- | Extract "(import ...)" declarations (returns tokens after import).
+-- Handles multi-line import forms and keeps parenthesized groups like
+-- "(chicken base)" as a single dependency token.
 extractImports :: String -> [String]
 extractImports content =
-  nub $ concatMap parseImportLine (lines content)
+  nub $ concatMap extractFromForm (findImportForms content)
   where
-    parseImportLine line
-      | "import" `isInfixOf` line =
-          case dropWhile (/= 'i') line of
-            xs | "import" `isPrefixOf` xs ->
-                  let after = drop (length ("import" :: String)) xs
-                  in filter (not . null) (tokenizeImportArgs after)
-               | otherwise -> []
-      | otherwise = []
+    extractFromForm form =
+      case parseSexp form of
+        Just (List (Atom "import" : args)) ->
+          filter (not . null) (concatMap importSetToUnits args)
+        _ -> []
 
--- | Tokenize the arguments of an (import ...) form, preserving (...) groups.
---   Example: " (chicken base) srfi-1 machine_constants)"
---     -> ["(chicken base)","srfi-1","machine_constants"]
-tokenizeImportArgs :: String -> [String]
-tokenizeImportArgs = go . dropWhile isSpace
+-- | Find all complete "(import ... )" forms in the file content.
+-- This is a lightweight scanner (not a full Scheme parser) but is enough
+-- to correctly capture multi-line imports in this repo.
+findImportForms :: String -> [String]
+findImportForms = go
   where
-    go s0 =
-      case dropWhile isSpace s0 of
-        "" -> []
-        (')':_) -> []  -- stop at end of surrounding form, if present
-        ('(':rest) ->
-          let (grp, rest') = takeBalanced 1 "(" rest
-          in grp : go rest'
-        s ->
-          let (sym, rest') = break isSpaceOrParen s
-          in sym : go rest'
+    needle = "(import"
 
-    isSpaceOrParen c = isSpace c || c == '(' || c == ')'
+    go s =
+      case breakOn needle s of
+        (_, "") -> []
+        (_, rest@( '(' : more)) ->
+          let (form, after) = takeBalanced 1 "(" more
+          in form : go after
+        (_, rest) -> go (drop 1 rest)
+
+-- | Break a string on the first occurrence of a substring.
+-- Returns (prefix, suffixStartingAtNeedle) or (s, "") if not found.
+breakOn :: String -> String -> (String, String)
+breakOn needle = go ""
+  where
+    go acc s
+      | needle `isPrefixOf` s = (reverse acc, s)
+      | null s = (reverse acc, "")
+      | otherwise = go (head s : acc) (tail s)
 
 -- | Take a balanced parenthesized group content, returning the full "(...)" string.
 --   Input assumes we've already consumed the first '(' and started with depth=1.

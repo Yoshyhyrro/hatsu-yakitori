@@ -24,7 +24,7 @@ meepRules = do
     putInfo $ "MEEP: " ++ out
     return ()
   
-  "dist/meep_app" <.> exe %> \out -> do
+  "dest/meep_app" <.> exe %> \out -> do
     let meepMain = "examples/meep/main.scm"
     need [meepMain]
     
