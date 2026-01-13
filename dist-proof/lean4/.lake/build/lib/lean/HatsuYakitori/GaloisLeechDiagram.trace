@@ -1,0 +1,73 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["8e62ed8208a9031a.olean"],
+  "i": "c4e2dee5e1c55989.ilean",
+  "c": "0819de1c86eb9b32.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.27.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\GaloisLeechDiagram.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\GaloisLeechDiagram.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\GaloisLeechDiagram.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\GaloisLeechDiagram.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\GaloisLeechDiagram.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:48:23: unused variable `m`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:48:33: unused variable `p`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:63:0: automatically included section variable(s) unused in theorem `HatsuYakitori.GaloisLeechDiagram.height_equals_global_sum`:\n  [Group M24]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [Group M24] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:74:18: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:83:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:88:35: unused variable `c`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:90:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:103:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/GaloisLeechDiagram.lean:113:45: unused variable `g`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "inputs":
+ [["HatsuYakitori.GaloisLeechDiagram:deps",
+   [["deps",
+     [["«hatsu-yakitori-proof»/HatsuYakitori:extraDep",
+       [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib.GroupTheory.GroupAction.Basic transitive imports (legacy)",
+         "d25bb822b80018b2"],
+        ["Mathlib.GroupTheory.GroupAction.Basic:importAllArts",
+         "6ef48ece29fdd501"],
+        ["Mathlib.Data.Real.Basic transitive imports (legacy)",
+         "6c006540553640c9"],
+        ["Mathlib.Data.Real.Basic:importAllArts", "47af0dba8722ca85"],
+        ["Mathlib.Algebra.Group.Defs transitive imports (legacy)",
+         "6e805781a4b47ef7"],
+        ["Mathlib.Algebra.Group.Defs:importAllArts", "d3eaa18f874976cf"],
+        ["Mathlib.Data.ZMod.Basic transitive imports (legacy)",
+         "900fa6eb9ef2fb3d"],
+        ["Mathlib.Data.ZMod.Basic:importAllArts", "367b6fa014737515"],
+        ["Mathlib.Data.Fin.Basic transitive imports (legacy)",
+         "9934ec29630dc0bf"],
+        ["Mathlib.Data.Fin.Basic:importAllArts", "9cd8d484cc88ea30"],
+        ["Mathlib.Tactic transitive imports (legacy)", "856a334f63c95ab3"],
+        ["Mathlib.Tactic:importAllArts", "2304414f31867082"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.27.0, commit 2fcce7258eeb6e324366bc25f9058293b04b7547",
+   "6f43b597efea5d4c"],
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\GaloisLeechDiagram.lean",
+   "d6d1f486c3020e4f"],
+  ["options", "00000000000006bb"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "558d587ed54df84b"}

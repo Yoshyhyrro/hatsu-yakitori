@@ -8,6 +8,7 @@
   KAK: permutation decomposition with height-controlled frontier mode
 -/
 
+import HatsuYakitori.AbstractFrontier
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Nat.Basic
 import Mathlib.Data.Fintype.Basic
@@ -18,23 +19,21 @@ import Mathlib.Tactic
 
 namespace HatsuYakitori
 
--- ============================================================================
--- Part 0: Core Constants
--- ============================================================================
+open AbstractFrontier
 
-def galoisHeightBound : ℝ := 8
-def machineEpsilonReal : ℝ := 2.220446049250313e-16
-def StandardWeights : Set ℕ := {0, 8, 12, 16, 24}
-
-lemma mem_standardWeights {n : ℕ} :
-    n ∈ StandardWeights ↔ n = 0 ∨ n = 8 ∨ n = 12 ∨ n = 16 ∨ n = 24 := by
-  rfl
+-- ============================================================================
+-- Part 0: Core Constants (moved to AbstractFrontier)
+-- ============================================================================
+-- Core constants and `StandardWeights` are defined in `AbstractFrontier`.
+-- See `HatsuYakitori.AbstractFrontier` for authoritative definitions.
 
 -- ============================================================================
 -- Part 1: A¹ - Octad Height Distinguishability
 -- ============================================================================
 
-noncomputable def octadHeight (weight : Fin 25) : ℝ :=
+-- `octadHeight` is defined in `AbstractFrontier`. Provide a compatible local
+-- definition and prove equality for convenience.
+noncomputable def octadHeight' (weight : Fin 25) : ℝ :=
   let k := weight.val
   if k = 0 then 0
   else if k = 8 then galoisHeightBound / 3
@@ -45,6 +44,11 @@ noncomputable def octadHeight (weight : Fin 25) : ℝ :=
 
 noncomputable def octadHeightNat (w : ℕ) : ℝ :=
   octadHeight ⟨w % 25, Nat.mod_lt w (by norm_num : 0 < 25)⟩
+
+theorem octadHeight_eq : octadHeight' = octadHeight := by
+  ext w
+  unfold octadHeight' octadHeight
+  rfl
 
 /-- Strict monotonicity on affine line A¹ (standard weights) -/
 def StrictMonoOnStandard : Prop :=
@@ -189,19 +193,14 @@ noncomputable def galoisHeight_of_perm (σ : Equiv.Perm (Fin 24)) : ℝ :=
   if cyc = 0 then 0 else galoisHeightBound * (Real.log cyc / Real.log 24)
 
 -- ============================================================================
--- Part 6: KAK-Style Frontier Mode
+-- Part 6: KAK-Style Frontier Mode (delegated to AbstractFrontier)
 -- ============================================================================
-
-inductive FrontierMode where
-  | stack : FrontierMode  -- DFS: height < bound/2
-  | queue : FrontierMode  -- BFS: height ≥ bound/2
-deriving Repr, DecidableEq
-
-noncomputable def frontierModeFromHeight (h : ℝ) : FrontierMode :=
-  if h < galoisHeightBound / 2 then FrontierMode.stack else FrontierMode.queue
+-- Use `FrontierMode` and `decideModeFromHeight` from `AbstractFrontier`.
+noncomputable def frontierModeFromHeight' (h : ℝ) : FrontierMode :=
+  decideModeFromHeight h
 
 theorem frontierMode_from_height_consistent (h1 h2 : ℝ)
-    (heq : frontierModeFromHeight h1 = frontierModeFromHeight h2)
+    (heq : frontierModeFromHeight' h1 = frontierModeFromHeight' h2)
     (hlt_bound : h1 < galoisHeightBound / 2 ↔ h2 < galoisHeightBound / 2) :
     h1 < galoisHeightBound / 2 ↔ h2 < galoisHeightBound / 2 := by
   exact hlt_bound
@@ -214,8 +213,8 @@ theorem frontierMode_from_height_consistent (h1 h2 : ℝ)
 theorem height_controls_frontier_mode (h : ℝ)
     (hbound : 0 ≤ h ∧ h ≤ galoisHeightBound) :
     (h < galoisHeightBound / 2 ↔
-      frontierModeFromHeight h = FrontierMode.stack) := by
-  unfold frontierModeFromHeight
+      frontierModeFromHeight' h = FrontierMode.stack) := by
+  unfold frontierModeFromHeight'
   constructor
   · intro hlt
     simp [hlt]
@@ -238,21 +237,21 @@ theorem distinct_weights_distinct_modes
     (h_gap : arrowWeight w1 w2 ≥ galoisHeightBound / 6) :
     (octadHeight w1 < galoisHeightBound / 2) ≠
     (octadHeight w2 < galoisHeightBound / 2) ∨
-    frontierModeFromHeight (octadHeight w1) ≠
-    frontierModeFromHeight (octadHeight w2) := by
+    frontierModeFromHeight' (octadHeight w1) ≠
+    frontierModeFromHeight' (octadHeight w2) := by
   by_cases h_comp : octadHeight w1 < galoisHeightBound / 2
   · by_cases h_comp' : octadHeight w2 < galoisHeightBound / 2
     · -- Both stack mode; but they differ by h_gap, so one must be near boundary
       right
-      simp [frontierModeFromHeight, h_comp, h_comp']
+      simp [frontierModeFromHeight', h_comp, h_comp']
     · -- w1 stack, w2 queue: modes differ
       right
-      unfold frontierModeFromHeight
+      unfold frontierModeFromHeight'
       simp [h_comp, h_comp']
   · by_cases h_comp' : octadHeight w2 < galoisHeightBound / 2
     · -- w1 queue, w2 stack: modes differ
       right
-      unfold frontierModeFromHeight
+      unfold frontierModeFromHeight'
       simp [h_comp, h_comp']
     · -- Both queue mode
       left

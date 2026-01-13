@@ -21,7 +21,7 @@
         ["Mathlib.Data.Real.Basic transitive imports (legacy)",
          "6c006540553640c9"],
         ["Mathlib.Data.Real.Basic:importAllArts", "47af0dba8722ca85"],
-        ["Mathlib.Tactic transitive imports (legacy)", "3b0fb6d4c2edaacb"],
+        ["Mathlib.Tactic transitive imports (legacy)", "856a334f63c95ab3"],
         ["Mathlib.Tactic:importAllArts", "2304414f31867082"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
@@ -34,4 +34,4 @@
    "01a721f431abeaa2"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "7f7f43d153e92d77"}
+ "depHash": "7dd850c0dd02ae49"}
