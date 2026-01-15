@@ -1,7 +1,7 @@
 {"plugins": [],
  "package": "hatsu-yakitori-proof",
  "options": {},
- "name": "HatsuYakitori.AbstractFrontier",
+ "name": "HatsuYakitori.Downstream.KakIntegration",
  "isModule": false,
  "importArts":
  {"Qq.Typ":
@@ -11064,6 +11064,16 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Analysis\\Analytic\\Basic.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Analysis\\Analytic\\Basic.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Analysis\\Analytic\\Basic.olean.private"],
+  "Mathlib.Algebra.Tropical.Lattice":
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Lattice.olean",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Lattice.ir",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Lattice.olean.server",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Lattice.olean.private"],
+  "Mathlib.Algebra.Tropical.Basic":
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Basic.olean",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Basic.ir",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Basic.olean.server",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Tropical\\Basic.olean.private"],
   "Mathlib.Algebra.Star.Unitary":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Star\\Unitary.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Algebra\\Star\\Unitary.ir",
@@ -14084,6 +14094,10 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.olean.private"],
+  "HatsuYakitori.Upstream.MachineConstants":
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\Upstream\\MachineConstants.olean"],
+  "HatsuYakitori.Upstream.AbstractFrontier":
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\Upstream\\AbstractFrontier.olean"],
   "Batteries.Util.ProofWanted":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Util\\ProofWanted.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Util\\ProofWanted.ir",

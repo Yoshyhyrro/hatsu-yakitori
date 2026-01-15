@@ -1,0 +1,69 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["bbe54dbdfa0d2a94.olean"],
+  "i": "ffc644501b5814dc.ilean",
+  "c": "4608531d278ee093.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.27.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\Upstream\\MachineConstants.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\Upstream\\MachineConstants.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\Upstream\\MachineConstants.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\Upstream\\MachineConstants.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\Upstream\\MachineConstants.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:29:18: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:32:18: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:42:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:47:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:52:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:59:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:140:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:144:8: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:201:6: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/Upstream/MachineConstants.lean:235:8: declaration uses 'sorry'",
+   "level": "warning"}],
+ "inputs":
+ [["HatsuYakitori.Upstream.MachineConstants:deps",
+   [["deps",
+     [["«hatsu-yakitori-proof»/HatsuYakitori:extraDep",
+       [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib.Data.Real.Basic transitive imports (legacy)",
+         "6c006540553640c9"],
+        ["Mathlib.Data.Real.Basic:importAllArts", "47af0dba8722ca85"],
+        ["Mathlib.Data.Fin.Basic transitive imports (legacy)",
+         "9934ec29630dc0bf"],
+        ["Mathlib.Data.Fin.Basic:importAllArts", "9cd8d484cc88ea30"],
+        ["Mathlib.Tactic transitive imports (legacy)", "856a334f63c95ab3"],
+        ["Mathlib.Tactic:importAllArts", "2304414f31867082"],
+        ["Mathlib.Data.Fintype.Basic transitive imports (legacy)",
+         "ab27565db76686a2"],
+        ["Mathlib.Data.Fintype.Basic:importAllArts", "fe2fb6eb16480b44"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.27.0, commit 2fcce7258eeb6e324366bc25f9058293b04b7547",
+   "6f43b597efea5d4c"],
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\Upstream\\MachineConstants.lean",
+   "4ed6662205e38b57"],
+  ["options", "00000000000006bb"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "0ce3c46dd80649d9"}

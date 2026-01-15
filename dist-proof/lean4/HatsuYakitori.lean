@@ -7,16 +7,16 @@
 --   ↓
 --   GaloisLeechDiagram (abstract: general framework)
 
-import HatsuYakitori.MachineConstants
-import HatsuYakitori.GaloisDiagram
-import HatsuYakitori.GaloisLeechDiagram
+import HatsuYakitori.Upstream.MachineConstants
+import HatsuYakitori.Upstream.GaloisDiagram
+import HatsuYakitori.Upstream.GaloisLeechDiagram
 
 namespace HatsuYakitori
 
 -- Re-export key components for easier access
-open MachineConstants (PrunedCone octadHeight galoisHeight)
-open GaloisDiagram (ψ_global null_cone)
-open GaloisLeechDiagram (quotient_iso)
+open Upstream.MachineConstants (PrunedCone octadHeight galoisHeight)
+open Upstream.GaloisDiagram (ψ_global null_cone)
+open Upstream.GaloisLeechDiagram (quotient_iso)
 
 /--
 Main theorem: The Galois-to-Leech height diagram commutes.

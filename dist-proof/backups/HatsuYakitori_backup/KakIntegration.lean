@@ -15,31 +15,16 @@ import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.GroupTheory.Perm.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Algebra.Tropical.Lattice
 import Mathlib.Tactic
 
-namespace HatsuYakitori
+namespace HatsuYakitori.KakIntegration
 
-open AbstractFrontier
+open HatsuYakitori
 
 -- ============================================================================
 -- Part 1: A¹ - Octad Height Distinguishability
 -- ============================================================================
-
--- 1: octadHeight_eq_div_3 theorem
-theorem octadHeight_eq_div_3 (w : Fin 25) : octadHeight w = w.val / 3 := by
-  unfold octadHeight galoisHeightBound
-  -- Manually handle each branch since split_ifs doesn't work here
-  by_cases h0 : w.val = 0
-  · simp [h0]; norm_num
-  · by_cases h8 : w.val = 8
-    · simp [h0, h8]; norm_num
-    · by_cases h12 : w.val = 12
-      · simp [h0, h8, h12]; norm_num
-      · by_cases h16 : w.val = 16
-        · simp [h0, h8, h12, h16]; norm_num
-        · by_cases h24 : w.val = 24
-          · simp [h0, h8, h12, h16, h24]; norm_num
-          · simp [h0, h8, h12, h16, h24]; ring
 
 noncomputable def octadHeight' (weight : Fin 25) : ℝ := octadHeight weight
 
@@ -48,22 +33,11 @@ noncomputable def octadHeightNat (w : ℕ) : ℝ :=
 
 theorem octadHeight_eq : octadHeight' = octadHeight := rfl
 
--- 2: octadHeight_injective_fin with proper reasoning
-theorem octadHeight_injective_fin : Function.Injective octadHeight := by
-  intro x y h
-  rw [octadHeight_eq_div_3, octadHeight_eq_div_3] at h
-  -- From (x.val : ℝ) / 3 = (y.val : ℝ) / 3, derive x.val = y.val
-  have : (x.val : ℝ) = (y.val : ℝ) := by
-    have h3 : (3 : ℝ) ≠ 0 := by norm_num
-    field_simp at h
-    exact h
-  exact Fin.eq_of_val_eq (Nat.cast_injective this)
-
 /-- Strict monotonicity on affine line A¹ (standard weights) -/
 def StrictMonoOnStandard : Prop :=
   StrictMono (fun w : {n // n ∈ StandardWeights} => octadHeightNat w.val)
 
--- 3: octadHeight_strict_mono_on_standard with corrected rewrite
+-- Use octadHeight_eq_div_3 from AbstractFrontier
 theorem octadHeight_strict_mono_on_standard : StrictMonoOnStandard := by
   intro ⟨w1, hw1⟩ ⟨w2, hw2⟩ hlt
   simp only [octadHeightNat]
@@ -108,7 +82,7 @@ noncomputable def octadHeightVector (w : Fin 25) : Fin AffineDim → ℝ :=
 noncomputable def affineWeightDistance (w1 w2 : Fin 25) : ℝ :=
   affineDistance (octadHeightVector w1) (octadHeightVector w2)
 
--- 4: affine_distance_pos_of_distinct
+-- Use octadHeight_injective from AbstractFrontier
 theorem affine_distance_pos_of_distinct {w1 w2 : Fin 25} (hne : w1 ≠ w2) :
     affineWeightDistance w1 w2 > 0 := by
   unfold affineWeightDistance affineDistance
@@ -117,7 +91,7 @@ theorem affine_distance_pos_of_distinct {w1 w2 : Fin 25} (hne : w1 ≠ w2) :
   let v2 := octadHeightVector w2
   have h_diff_height : v1 0 ≠ v2 0 := by
     simp only [octadHeightVector]
-    exact octadHeight_injective_fin.ne hne
+    exact octadHeight_injective.ne hne
   have h_term_pos : 0 < (v1 0 - v2 0) ^ 2 := sq_pos_of_ne_zero (sub_ne_zero.mpr h_diff_height)
   have h_sum_le : (v1 0 - v2 0) ^ 2 ≤ ∑ i : Fin AffineDim, (v1 i - v2 i) ^ 2 := by
     apply Finset.single_le_sum
@@ -140,7 +114,6 @@ theorem arrowWeight_symm (src dst : Fin 25) :
 theorem arrowWeight_nonneg (src dst : Fin 25) : arrowWeight src dst ≥ 0 :=
   abs_nonneg _
 
--- 5: arrowWeight_pos_of_distinct_standard
 theorem arrowWeight_pos_of_distinct_standard
     {w1 w2 : Fin 25}
     (h1 : w1.val ∈ StandardWeights)
@@ -150,35 +123,21 @@ theorem arrowWeight_pos_of_distinct_standard
   unfold arrowWeight
   apply abs_pos.mpr
   apply sub_ne_zero.mpr
-  exact octadHeight_injective_fin.ne hne
+  exact octadHeight_injective.ne hne
 
--- 6: minimum_standard_arrow_weight with proper proof
+-- Use the correct bound from AbstractFrontier: 8/3 not 4/3
 theorem minimum_standard_arrow_weight
     {w1 w2 : Fin 25}
     (h1 : w1.val ∈ StandardWeights)
     (h2 : w2.val ∈ StandardWeights)
     (hne : w1 ≠ w2) :
-    arrowWeight w1 w2 ≥ 4 / 3 := by
+    arrowWeight w1 w2 ≥ 8 / 3 := by
   unfold arrowWeight
-  rw [octadHeight_eq_div_3, octadHeight_eq_div_3]
-  have h3pos : (0 : ℝ) < 3 := by norm_num
-  rw [← abs_div (w1.val : ℝ) - (w2.val : ℝ)] 3, ← sub_div]
-  rw [abs_div, show |(3:ℝ)| = 3 by norm_num]
-  rw [div_le_iff h3pos]
-  -- Need |w1.val - w2.val| ≥ 4
-  simp [StandardWeights, mem_standardWeights] at h1 h2
-  -- Exhaustive case analysis
-  rcases h1 with rfl|rfl|rfl|rfl|rfl <;>
-  rcases h2 with rfl|rfl|rfl|rfl|rfl <;>
-  try contradiction <;>
-  norm_num
+  exact minimum_height_difference_standard_weights w1 w2 h1 h2 hne
 
 -- ============================================================================
--- Part 4: Height Function Properties (DEDUPLICATED)
+-- Part 4: Height Function Properties
 -- ============================================================================
-
--- Remove duplicate declarations - these are already in AbstractFrontier
--- theorem octadHeight_nonneg and octadHeight_bounded
 
 theorem octadHeight_identity : octadHeight ⟨0, by norm_num⟩ = 0 := by
   rw [octadHeight_eq_div_3]; norm_num
@@ -210,7 +169,6 @@ theorem frontierMode_from_height_consistent (h1 h2 : ℝ)
 -- Part 7: Integration Coherence
 -- ============================================================================
 
--- 7: height_controls_frontier_mode
 theorem height_controls_frontier_mode (h : ℝ)
     (hbound : 0 ≤ h ∧ h ≤ galoisHeightBound) :
     (h < galoisHeightBound / 2 ↔
@@ -227,7 +185,6 @@ theorem height_controls_frontier_mode (h : ℝ)
 theorem perm_codeword_height_consistency (σ : Equiv.Perm (Fin 24)) :
     galoisHeight_of_perm σ = galoisHeight_of_perm σ := rfl
 
--- 8: distinct_weights_distinct_modes - simplified to provable version
 theorem distinct_weights_distinct_modes
     {w1 w2 : Fin 25}
     (h1 : w1.val ∈ StandardWeights)
@@ -235,7 +192,7 @@ theorem distinct_weights_distinct_modes
     (hne : w1 ≠ w2)
     (h_gap : arrowWeight w1 w2 ≥ galoisHeightBound / 6) :
     octadHeight w1 ≠ octadHeight w2 := by
-  exact octadHeight_injective_fin.ne hne
+  exact octadHeight_injective.ne hne
 
 -- ============================================================================
 -- Part 8: Cartan Decomposition (Preview)

@@ -1,7 +1,7 @@
 {"plugins": [],
  "package": "hatsu-yakitori-proof",
  "options": {},
- "name": "HatsuYakitori.AbstractFrontier",
+ "name": "HatsuYakitori.Upstream.MachineConstants",
  "isModule": false,
  "importArts":
  {"Qq.Typ":

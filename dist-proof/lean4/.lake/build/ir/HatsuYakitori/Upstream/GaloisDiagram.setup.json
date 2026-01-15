@@ -1,7 +1,7 @@
 {"plugins": [],
  "package": "hatsu-yakitori-proof",
  "options": {},
- "name": "HatsuYakitori.AbstractFrontier",
+ "name": "HatsuYakitori.Upstream.GaloisDiagram",
  "isModule": false,
  "importArts":
  {"Qq.Typ":
@@ -14084,6 +14084,8 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.olean.private"],
+  "HatsuYakitori.Upstream.MachineConstants":
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\Upstream\\MachineConstants.olean"],
   "Batteries.Util.ProofWanted":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Util\\ProofWanted.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean\\Batteries\\Util\\ProofWanted.ir",

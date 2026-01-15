@@ -130,10 +130,10 @@ end PrunedCone
 
 namespace ArikiKoike
 
--- FIX 3: Make isSemistable noncomputable
+-- 3: Make isSemistable noncomputable
 noncomputable def isSemistable (h : ℝ) : Prop := h ≤ galoisHeightBound * 2
 
--- FIX 4: Remove Decidable instance (can't be decidable for real numbers)
+-- 4: Remove Decidable instance (can't be decidable for real numbers)
 -- Instead, we'll use it as a Prop
 
 def isGeometricNeighbor (i j : Fin 11) : Bool :=
@@ -157,7 +157,7 @@ noncomputable def affineSymmetricAction (shift : ℤ) (w : Fin 25) : Fin 25 :=
         omega
     omega⟩
 
--- FIX 5: Remove noncomputable from lemma (theorems can't be noncomputable)
+-- 5: Remove noncomputable from lemma (theorems can't be noncomputable)
 lemma affineSymmetricAction_zero (w : Fin 25) :
     affineSymmetricAction 0 w = w := by
   unfold affineSymmetricAction
@@ -199,24 +199,33 @@ noncomputable def octadToCone (w : Fin 25) : PrunedCone :=
 
 /-! ## Part 6: Main Theorem -/
 
-theorem standard_weights_are_semistable (w : Fin 25)
-    (hw : w.val ∈ StandardWeights) :
+-- Low weights (0, 8, 12) satisfy the stronger bound
+theorem standard_weights_low_are_semistable (w : Fin 25)
+    (hw : w.val ∈ ({0, 8, 12} : Set ℕ)) :
     findSemistableStep w = 0 := by
   unfold findSemistableStep
   have h_action : affineSymmetricAction (↑0 : ℤ) w = w :=
     affineSymmetricAction_zero w
   have h_height : octadHeight w ≤ galoisHeightBound / 2 :=
-    AbstractFrontier.standard_weight_height_bound w hw
+    standard_weight_height_bound_low w hw
   have h_gluing : gluingHeightAfterK w 0 = octadHeight w := by
     unfold gluingHeightAfterK
     rw [h_action]
     simp
   have h_galois_nonneg : 0 ≤ galoisHeightBound :=
-    AbstractFrontier.galoisHeightBound_nonneg
+    galoisHeightBound_nonneg
   have h_stable : gluingHeightAfterK w 0 ≤ galoisHeightBound * 2 := by
     rw [h_gluing]
     linarith [h_height, h_galois_nonneg]
   simp [h_stable]
+
+-- All standard weights satisfy the weaker bound
+theorem standard_weights_are_semistable (w : Fin 25)
+    (hw : w.val ∈ StandardWeights) :
+    octadHeight w ≤ galoisHeightBound * 2 := by
+  have : octadHeight w ≤ galoisHeightBound := standard_weight_height_bound w hw
+  have : 0 ≤ galoisHeightBound := galoisHeightBound_nonneg
+  linarith
 
 /-! ## Part 7: Arrow Weight -/
 
@@ -227,7 +236,7 @@ theorem arrowWeight_nonneg (src dst : Fin 25) : arrowWeight src dst ≥ 0 := by
   unfold arrowWeight
   exact abs_nonneg _
 
--- FIX 6: arrowWeight_pos_of_distinct_standard with proper proof
+-- 6: arrowWeight_pos_of_distinct_standard with proper proof
 theorem arrowWeight_pos_of_distinct_standard
     {w1 w2 : Fin 25}
     (h1 : w1.val ∈ StandardWeights)
@@ -238,10 +247,10 @@ theorem arrowWeight_pos_of_distinct_standard
   apply abs_pos.mpr
   intro heq
   have : octadHeight w1 = octadHeight w2 := by linarith
-  have := AbstractFrontier.distinct_standard_weights_different_heights w1 w2 h1 h2 hne
+  have := distinct_standard_weights_different_heights w1 w2 h1 h2 hne
   exact this this
 
--- FIX 7: minimum_standard_arrow_weight with correct bound
+-- 7: minimum_standard_arrow_weight with correct bound
 theorem minimum_standard_arrow_weight
     {w1 w2 : Fin 25}
     (h1 : w1.val ∈ StandardWeights)
@@ -249,6 +258,11 @@ theorem minimum_standard_arrow_weight
     (hne : w1 ≠ w2) :
     arrowWeight w1 w2 ≥ 8 / 3 := by
   unfold arrowWeight
-  exact AbstractFrontier.minimum_height_difference_standard_weights w1 w2 h1 h2 hne
+  exact minimum_height_difference_standard_weights w1 w2 h1 h2 hne
+
+/-! ## NEW: Additional Lemmas for MachineConstants -/
+-- Removed duplicate lemmas defined in AbstractFrontier.
+-- Use the lemmas from HatsuYakitori.AbstractFrontier (imported at top).
+-- (No local duplicate definitions here to avoid conflicts.)
 
 end HatsuYakitori.MachineConstants

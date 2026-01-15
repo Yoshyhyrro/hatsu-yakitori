@@ -2,13 +2,14 @@
 import glob,re,sys,os
 repo_root = os.path.dirname(os.path.dirname(__file__))
 files = sorted(glob.glob(os.path.join(repo_root, '**/*.lean'), recursive=True))
-# map module names from paths under lean4/
+# map module names from repository-relative paths
+# produce module names by taking the path relative to repo_root,
+# stripping the '.lean' extension and replacing '/' with '.'.
 mod_to_file = {}
 for f in files:
-    p = f.replace('\\', '/')
-    if 'lean4/' in p:
-        idx = p.rfind('lean4/')
-        name = p[idx+6:-5]  # after 'lean4/' remove '.lean'
+    rel = os.path.relpath(f, repo_root).replace('\\', '/')
+    if rel.endswith('.lean'):
+        name = rel[:-5]  # remove '.lean'
         name = name.replace('/', '.')
         mod_to_file[name] = f
 # parse imports
