@@ -376,7 +376,6 @@
   (printf "║  a different turbulence scale.             ║~%")
   (printf "╚════════════════════════════════════════════╝~%~%"))
 
-(define (main)
-  (demo-comparison))
+;; legacy top-level wrapper — redirects to new quadcopter example location
+(load "quadcopter/main.scm")
 
-(main)

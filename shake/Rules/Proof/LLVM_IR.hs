@@ -8,6 +8,7 @@ module Rules.Proof.LLVM_IR
   , llvmIrOutputPath
   , ensureProofDirs
   , verifyAllCoreModules
+  , verifyExampleModules
   , findBrokenStage
   , VerifyStage(..)
   ) where
@@ -62,6 +63,11 @@ coreModules =
   , "witt_foundation"
   , "witt_symmetry_explicit"
   ]
+
+-- | Example-only modules (kept separate from core verification)
+exampleModules :: [String]
+exampleModules =
+  [ "quadcopter" ]
 
 -- | IR verification stages
 data VerifyStage = StageRaw | StageOpt1 | StageOpt2 | StageSBV
@@ -201,13 +207,13 @@ verifyModuleStages paths modName = do
             liftIO $ Dir.createDirectoryIfMissing True (takeDirectory specPath)
             SBV.generateSBVSpec (SBV.SBVSpec modName 64 []) specPath
             writeFile' (verifyResultPath paths modName stage) "SBV spec auto-generated"
-            ok <- SBV.verifySBVSpec (SBV.SBVSpec modName 64 [])
+            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
             if ok
               then do writeFile' (verifyResultPath paths modName stage) "SBV PASS"; return (stage, Right (verifyResultPath paths modName stage))
               else do writeFile' (verifyResultPath paths modName stage) "SBV FAIL"; return (stage, Left "SBV verification failed")
           else do
             -- Call SBV verify (placeholder)
-            ok <- SBV.verifySBVSpec (SBV.SBVSpec modName 64 [])
+            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
             if ok
               then do writeFile' (verifyResultPath paths modName stage) "SBV PASS"; return (stage, Right (verifyResultPath paths modName stage))
               else do writeFile' (verifyResultPath paths modName stage) "SBV FAIL"; return (stage, Left "SBV verification failed")
@@ -221,6 +227,15 @@ verifyAllCoreModules :: ProofBuildPaths -> Action [(String, [(VerifyStage, Eithe
 verifyAllCoreModules paths = do
   ensureProofDirs paths
   forM coreModules $ \m -> do
+    rs <- verifyModuleStages paths m
+    return (m, rs)
+
+
+-- | Verify example-only modules (separate from core pipeline)
+verifyExampleModules :: ProofBuildPaths -> Action [(String, [(VerifyStage, Either String FilePath)])]
+verifyExampleModules paths = do
+  ensureProofDirs paths
+  forM exampleModules $ \m -> do
     rs <- verifyModuleStages paths m
     return (m, rs)
 
