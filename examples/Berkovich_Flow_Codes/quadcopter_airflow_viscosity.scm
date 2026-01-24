@@ -160,7 +160,7 @@
   (let* ((info-bits (quadcopter-info-bits quad))
          (config (make-adaptive-frontier info-bits))
          (tau (adaptive-frontier-tau config))
-         (viscosity-table (make-hash-table)))
+         (viscosity-table (make-hash-table = hash-number)))
     
     (printf "  Galois height τ = ~a~%" tau)
     (printf "  Quadcopter at (~a, ~a), RPM = ~a~%"
