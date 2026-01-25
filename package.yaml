@@ -2,7 +2,7 @@ name: hatsu-yakitori
 version: 0.0.2.0
 synopsis: Shake-based build system for Chicken Scheme project
 description: Polysemy + Shake + Chicken Scheme integration
-author: Your Name
+author: Yoshihiro Hasegawa
 maintainer: je-suis-1oeuf-devautour@proton.me
 license: BSD3
 
@@ -43,5 +43,6 @@ executables:
       - Rules.Proof.Lean4
       - Rules.Proof.Main
       - Rules.Proof.SBV_Bridge
+
 
 github: Yoshyhyrro/hatsu-yakitori
