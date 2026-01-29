@@ -15,7 +15,7 @@
        [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
       ["imports",
        [["Mathlib.Data.Real.Basic transitive imports (legacy)",
-         "853f342c2832530c"],
+         "9bc2cedb78877d72"],
         ["Mathlib.Data.Real.Basic:importAllArts", "b3dd7b70be63905a"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
@@ -28,4 +28,4 @@
    "d711c2e5f801df9d"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "c4af768e4513e0d4"}
+ "depHash": "5bffcab6ee0762ab"}
