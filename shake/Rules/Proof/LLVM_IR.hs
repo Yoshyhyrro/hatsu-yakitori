@@ -8,6 +8,7 @@ module Rules.Proof.LLVM_IR
   , llvmIrOutputPath
   , ensureProofDirs
   , verifyAllCoreModules
+  , verifyExampleModules
   , findBrokenStage
   , VerifyStage(..)
   ) where
@@ -36,10 +37,22 @@ defaultProofBuildPaths = ProofBuildPaths
   , proofLLVMIRDir = "dist-proof/llvm-ir"
   }
 
+-- | Directory to place LLVM IR for a given module. Example modules go under
+-- `dist-proof/llvm-ir/examples/` to keep them separate from core artifacts.
+moduleLLVMDir :: ProofBuildPaths -> String -> FilePath
+moduleLLVMDir paths modName =
+  if modName `elem` exampleModules
+    then proofLLVMIRDir paths </> "examples"
+    else proofLLVMIRDir paths
+
 -- | Derive the LLVM IR path for a named component.
 llvmIrOutputPath :: ProofBuildPaths -> String -> FilePath
 llvmIrOutputPath paths componentName =
-  proofLLVMIRDir paths </> componentName <.> "ll"
+  moduleLLVMDir paths componentName </> componentName <.> "ll"
+
+-- | Path of IR for a module at a given stage
+stageIRPath :: ProofBuildPaths -> String -> VerifyStage -> FilePath
+stageIRPath paths modName stage = moduleLLVMDir paths modName </> (modName ++ stageSuffix stage) <.> "ll"
 
 -- | Ensure all proof-specific directories exist.
 ensureProofDirs :: ProofBuildPaths -> Action ()
@@ -47,6 +60,7 @@ ensureProofDirs paths = liftIO $ mapM_ (Dir.createDirectoryIfMissing True)
   [ proofBuildRoot paths
   , proofDistRoot paths
   , proofLLVMIRDir paths
+  , proofLLVMIRDir paths </> "examples"
   ]
 
 -- ============================================================
@@ -63,6 +77,13 @@ coreModules =
   , "witt_symmetry_explicit"
   ]
 
+-- | Example-only modules (kept separate from core verification)
+exampleModules :: [String]
+exampleModules =
+  [ "quadcopter"
+  , "sssp_geo_main"
+  ]
+
 -- | IR verification stages
 data VerifyStage = StageRaw | StageOpt1 | StageOpt2 | StageSBV
   deriving (Show, Eq, Ord, Enum, Bounded)
@@ -74,8 +95,7 @@ stageSuffix StageOpt2 = ".opt2"
 stageSuffix StageSBV  = ".sbv"
 
 -- | Path of IR for a module at a given stage
-stageIRPath :: ProofBuildPaths -> String -> VerifyStage -> FilePath
-stageIRPath paths modName stage = proofLLVMIRDir paths </> modName ++ stageSuffix stage <.> "ll"
+-- (stageIRPath is defined above with example-aware directory)
 
 -- | Path to record verification result
 verifyResultPath :: ProofBuildPaths -> String -> VerifyStage -> FilePath
@@ -91,46 +111,50 @@ ensureStageBuilt paths modName stage = do
     else case stage of
       StageRaw -> do
         -- Try to generate raw IR via user script, otherwise fail with hint
-        let src = "core" </> modName <.> "scm"
-        srcExists <- liftIO $ Dir.doesFileExist src
-        if not srcExists
-          then return $ Left $ "Source not found: " ++ src
+        let genScript = "scripts/generate_llvm.sh"
+        scriptExists <- liftIO $ Dir.doesFileExist genScript
+        if not scriptExists
+          then return $ Left $ "Raw IR missing and generator not found. Place " ++ out ++ " or add " ++ genScript
           else do
-            let genScript = "scripts/generate_llvm.sh"
-            scriptExists <- liftIO $ Dir.doesFileExist genScript
-            if scriptExists
-              then do
-                clangFound <- liftIO $ Dir.findExecutable "clang"
-                case clangFound of
-                  Nothing -> return $ Left "clang not found in PATH; install clang to run generate_llvm.sh"
-                  Just _ -> do
-                    -- Try to detect Chicken include path
-                    (Stdout cflags) <- liftIO $ cmd ("csc" :: String) ["-cflags" :: String]
-                    let includes = [ drop 2 w | w <- words cflags, "-I" `isPrefixOf` w ]
-                    let cIncludeEnv =
-                          if null includes then [] else [AddEnv "C_INCLUDE_PATH" (intercalate ":" includes)]
+            clangFound <- liftIO $ Dir.findExecutable "clang"
+            case clangFound of
+              Nothing -> return $ Left "clang not found in PATH; install clang to run generate_llvm.sh"
+              Just _ -> do
+                -- Try to detect Chicken include path
+                (Stdout cflags) <- liftIO $ cmd ("csc" :: String) ["-cflags" :: String]
+                let includes = [ drop 2 w | w <- words cflags, "-I" `isPrefixOf` w ]
+                let cIncludeEnv = if null includes then [] else [AddEnv "C_INCLUDE_PATH" (intercalate ":" includes)]
 
-                    liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
+                liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
 
-                    -- Get absolute paths before changing directory context
-                    cwd <- liftIO Dir.getCurrentDirectory
-                    let absGenScript = cwd </> genScript
-                    let absOut = cwd </> out
-                    let absCore = cwd </> "core"
-                    let absModules = cwd </> "modules"
-                    let srcFile = modName <.> "scm"
+                -- Get absolute paths before changing directory context
+                cwd <- liftIO Dir.getCurrentDirectory
+                let absGenScript = cwd </> genScript
+                let absOut = cwd </> out
+                let absCore = cwd </> "core"
+                let absModules = cwd </> "modules"
 
+                -- Candidate source locations (try common places for examples and core)
+                let candidates = [ "core" </> (modName <.> "scm")
+                                 , "modules" </> modName </> (modName <.> "scm")
+                                 , "modules" </> (modName <.> "scm")
+                                 , "examples" </> modName </> (modName <.> "scm")
+                                 , "examples" </> (modName <.> "scm")
+                                 ]
+                existsList <- liftIO $ mapM Dir.doesFileExist candidates
+                let found = [ p | (p,True) <- zip candidates existsList ]
+                case found of
+                  [] -> return $ Left $ "Source not found; tried: " ++ intercalate ", " candidates
+                  (srcRel:_) -> do
+                    let srcAbs = cwd </> srcRel
                     -- IMPORTANT: script likely builds in /tmp, so CHICKEN_INCLUDE_PATH must be absolute
-                    let chickenIncludeEnv =
-                          [ AddEnv "CHICKEN_INCLUDE_PATH" (intercalate ":" [absCore, absModules, cwd])
-                          ]
+                    let chickenIncludeEnv = [ AddEnv "CHICKEN_INCLUDE_PATH" (intercalate ":" [absCore, absModules, cwd]) ]
 
                     (r :: Either SomeException ()) <-
-                      liftIO $ try (cmd_ (Cwd "core") absGenScript (cIncludeEnv ++ chickenIncludeEnv) [srcFile, absOut])
+                      liftIO $ try (cmd_ (Cwd "core") absGenScript (cIncludeEnv ++ chickenIncludeEnv) [srcAbs, absOut])
                     case r of
                       Right () -> return $ Right out
                       Left (e :: SomeException) -> return $ Left $ "Generation failed: " ++ show e
-              else return $ Left $ "Raw IR missing and generator not found. Place " ++ out ++ " or add " ++ genScript
       StageOpt1 -> do
         -- Build from raw
         eRaw <- ensureStageBuilt paths modName StageRaw
@@ -201,13 +225,12 @@ verifyModuleStages paths modName = do
             liftIO $ Dir.createDirectoryIfMissing True (takeDirectory specPath)
             SBV.generateSBVSpec (SBV.SBVSpec modName 64 []) specPath
             writeFile' (verifyResultPath paths modName stage) "SBV spec auto-generated"
-            ok <- SBV.verifySBVSpec (SBV.SBVSpec modName 64 [])
+            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
             if ok
               then do writeFile' (verifyResultPath paths modName stage) "SBV PASS"; return (stage, Right (verifyResultPath paths modName stage))
               else do writeFile' (verifyResultPath paths modName stage) "SBV FAIL"; return (stage, Left "SBV verification failed")
           else do
-            -- Call SBV verify (placeholder)
-            ok <- SBV.verifySBVSpec (SBV.SBVSpec modName 64 [])
+            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
             if ok
               then do writeFile' (verifyResultPath paths modName stage) "SBV PASS"; return (stage, Right (verifyResultPath paths modName stage))
               else do writeFile' (verifyResultPath paths modName stage) "SBV FAIL"; return (stage, Left "SBV verification failed")
@@ -215,6 +238,15 @@ verifyModuleStages paths modName = do
         r <- verifyIRStage paths modName stage
         return (stage, r)
     return res
+
+
+-- | Verify example-only modules (separate from core pipeline)
+verifyExampleModules :: ProofBuildPaths -> Action [(String, [(VerifyStage, Either String FilePath)])]
+verifyExampleModules paths = do
+  ensureProofDirs paths
+  forM exampleModules $ \m -> do
+    rs <- verifyModuleStages paths m
+    return (m, rs)
 
 -- | Verify all core modules
 verifyAllCoreModules :: ProofBuildPaths -> Action [(String, [(VerifyStage, Either String FilePath)])]

@@ -13,6 +13,9 @@ import Pipeline
 import qualified Clean
 import qualified Rules.GC as GC
 import qualified Rules.Proof.Main as Proof
+import qualified Rules.Proof.LLVM_IR as ProofLLVM
+import qualified Rules.Proof.SBV_Bridge as SBV
+import qualified Rules.Quadcopter as Quadcopter
 
 -- ============================================================
 -- Module Definitions
@@ -61,6 +64,11 @@ allModules =
                       [ "tools/golay24-tool/setup.scm"
                       , "modules/sssp_geometry/sssp_geo_main.scm"
                       ])
+
+    , regularModule "quadcopter"
+                    "examples/Berkovich_Flow_Codes/quadcopter/main.scm"
+                    "tests/quadcopter_tests.scm"
+                    coreFiles
     
     , specialModule "witt-validator"
                 "tools/witt-validator/witt-validator-main.scm"
@@ -106,6 +114,21 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     -- which focus verification on `core/` modules and their LLVM IR stages.
     -- Implemented in shake/Rules/Proof
     Proof.setupProofPhonies
+
+    -- Verify example-only modules (separate from core verification)
+    phony "verify-examples" $ do
+        let paths = ProofLLVM.defaultProofBuildPaths
+        res <- ProofLLVM.verifyExampleModules paths
+        putNormal $ "verify-examples completed: " ++ show (map fst res)
+
+    -- Check SBV runtime environment (runghc/stack + z3/cvc5)
+    phony "sbv-check-env" $ do
+        env <- SBV.checkSBVEnvironment
+        putNormal "SBV Environment:"
+        forM_ env $ \(n,ok) -> putNormal $ "  " ++ n ++ ": " ++ (if ok then "found" else "missing")
+
+    -- Example-specific rules (quadcopter example)
+    Quadcopter.quadcopterRules defaultCfg
 
     forM_ allModules $ \m -> do
         let mName = modName m

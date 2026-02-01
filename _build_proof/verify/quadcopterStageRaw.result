@@ -1,0 +1,1 @@
+ERROR: Source not found; tried: core/quadcopter.scm, modules/quadcopter/quadcopter.scm, modules/quadcopter.scm, examples/quadcopter/quadcopter.scm, examples/quadcopter.scm
