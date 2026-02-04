@@ -314,6 +314,15 @@ return x_10;
 }
 }
 }
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
+_start:
+{
+lean_object* x_4; 
+x_4 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter___redArg(x_1, x_2, x_3);
+lean_dec(x_1);
+return x_4;
+}
+}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
 _start:
 {
@@ -329,15 +338,6 @@ lean_object* x_5;
 x_5 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter(x_1, x_2, x_3, x_4);
 lean_dec(x_2);
 return x_5;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
-_start:
-{
-lean_object* x_4; 
-x_4 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter___redArg(x_1, x_2, x_3);
-lean_dec(x_1);
-return x_4;
 }
 }
 static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__0() {
@@ -698,25 +698,6 @@ x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheck
 return x_1;
 }
 }
-static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__0() {
-_start:
-{
-lean_object* x_1; lean_object* x_2; 
-x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows__length___nativeDecide__1__1___closed__0;
-x_2 = l_List_range(x_1);
-return x_2;
-}
-}
-static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__1() {
-_start:
-{
-lean_object* x_1; lean_object* x_2; lean_object* x_3; 
-x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows;
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__0;
-x_3 = l_List_zipWith___at___00List_zip_spec__0___redArg(x_2, x_1);
-return x_3;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_GolayFrontier_computeParity_spec__0(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
 _start:
 {
@@ -755,6 +736,35 @@ goto _start;
 }
 }
 }
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_GolayFrontier_computeParity_spec__0___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
+_start:
+{
+lean_object* x_4; 
+x_4 = lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_GolayFrontier_computeParity_spec__0(x_1, x_2, x_3);
+lean_dec(x_3);
+lean_dec(x_1);
+return x_4;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows__length___nativeDecide__1__1___closed__0;
+x_2 = l_List_range(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__1() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__0;
+x_3 = l_List_zipWith___at___00List_zip_spec__0___redArg(x_2, x_1);
+return x_3;
+}
+}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity(lean_object* x_1) {
 _start:
 {
@@ -772,16 +782,6 @@ lean_object* x_2;
 x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity(x_1);
 lean_dec(x_1);
 return x_2;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_GolayFrontier_computeParity_spec__0___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
-_start:
-{
-lean_object* x_4; 
-x_4 = lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_GolayFrontier_computeParity_spec__0(x_1, x_2, x_3);
-lean_dec(x_3);
-lean_dec(x_1);
-return x_4;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_decodeGolay24(lean_object* x_1) {
@@ -859,18 +859,27 @@ x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClas
 return x_3;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim(lean_object* x_1, lean_object* x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5) {
-_start:
-{
-lean_inc(x_5);
-return x_5;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___redArg(lean_object* x_1) {
 _start:
 {
 lean_inc(x_1);
 return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___redArg___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___redArg(x_1);
+lean_dec(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim(lean_object* x_1, lean_object* x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+lean_inc(x_5);
+return x_5;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
@@ -884,11 +893,18 @@ lean_dec(x_2);
 return x_7;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -898,13 +914,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -917,11 +926,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -931,13 +947,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -950,11 +959,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -964,13 +980,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -983,11 +992,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -999,13 +1015,6 @@ lean_inc(x_4);
 return x_4;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
 _start:
 {
@@ -1014,15 +1023,6 @@ x_5 = lean_unbox(x_2);
 x_6 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim(x_1, x_5, x_3, x_4);
 lean_dec(x_4);
 return x_6;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg___boxed(lean_object* x_1) {
-_start:
-{
-lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg(x_1);
-lean_dec(x_1);
-return x_2;
 }
 }
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ofNat(lean_object* x_1) {
@@ -1431,18 +1431,27 @@ x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_toCtorI
 return x_3;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim(lean_object* x_1, lean_object* x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5) {
-_start:
-{
-lean_inc(x_5);
-return x_5;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___redArg(lean_object* x_1) {
 _start:
 {
 lean_inc(x_1);
 return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___redArg___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___redArg(x_1);
+lean_dec(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim(lean_object* x_1, lean_object* x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+lean_inc(x_5);
+return x_5;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
@@ -1456,11 +1465,18 @@ lean_dec(x_2);
 return x_7;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -1470,13 +1486,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -1489,11 +1498,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -1503,13 +1519,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -1522,11 +1531,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -1536,13 +1552,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -1555,11 +1564,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -1569,13 +1585,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -1588,11 +1597,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -1602,13 +1618,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -1621,11 +1630,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -1637,13 +1653,6 @@ lean_inc(x_4);
 return x_4;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
 _start:
 {
@@ -1652,15 +1661,6 @@ x_5 = lean_unbox(x_2);
 x_6 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim(x_1, x_5, x_3, x_4);
 lean_dec(x_4);
 return x_6;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg___boxed(lean_object* x_1) {
-_start:
-{
-lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg(x_1);
-lean_dec(x_1);
-return x_2;
 }
 }
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ofNat(lean_object* x_1) {
@@ -2323,18 +2323,27 @@ x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_toC
 return x_3;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim(lean_object* x_1, lean_object* x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5) {
-_start:
-{
-lean_inc(x_5);
-return x_5;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___redArg(lean_object* x_1) {
 _start:
 {
 lean_inc(x_1);
 return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___redArg___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___redArg(x_1);
+lean_dec(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim(lean_object* x_1, lean_object* x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+lean_inc(x_5);
+return x_5;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
@@ -2348,11 +2357,18 @@ lean_dec(x_2);
 return x_7;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -2362,13 +2378,6 @@ _start:
 {
 lean_inc(x_4);
 return x_4;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
@@ -2381,11 +2390,18 @@ lean_dec(x_4);
 return x_6;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___redArg___boxed(lean_object* x_1) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___redArg(lean_object* x_1) {
+_start:
+{
+lean_inc(x_1);
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___redArg___boxed(lean_object* x_1) {
 _start:
 {
 lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___redArg(x_1);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___redArg(x_1);
 lean_dec(x_1);
 return x_2;
 }
@@ -2397,13 +2413,6 @@ lean_inc(x_4);
 return x_4;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___redArg(lean_object* x_1) {
-_start:
-{
-lean_inc(x_1);
-return x_1;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
 _start:
 {
@@ -2412,15 +2421,6 @@ x_5 = lean_unbox(x_2);
 x_6 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim(x_1, x_5, x_3, x_4);
 lean_dec(x_4);
 return x_6;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___redArg___boxed(lean_object* x_1) {
-_start:
-{
-lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___redArg(x_1);
-lean_dec(x_1);
-return x_2;
 }
 }
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ofNat(lean_object* x_1) {
