@@ -118,7 +118,7 @@ theorem node_distinguishability (n1 n2 : CyclicNode) :
   intro h
   cases n1 <;> cases n2 <;> simp [schematicHeight] at *
   -- The proof is now a trivial computation rather than a deep search.
-  all_goals (try contradiction; try norm_num)
+  all_goals decide
 
 /-! ### Section 4: Future Work - Hida Deformation
 

@@ -44,16 +44,9 @@
         ["HatsuYakitori.MachineConstants transitive imports (legacy)",
          "c00f68357c384aa8"],
         ["HatsuYakitori.MachineConstants:importAllArts", "ebe742f9c37d68a7"],
-        ["HatsuYakitori.CartanUtils transitive imports (legacy)",
-         "13ebbca7caa5c2b1"],
-        ["HatsuYakitori.CartanUtils:importAllArts", "7ba418923efc69ec"],
         ["HatsuYakitori.GolayFrontier transitive imports (legacy)",
          "d47293be5d6dc7b3"],
-        ["HatsuYakitori.GolayFrontier:importAllArts", "7a78992349b8f743"],
-        ["HatsuYakitori.KakDecomposition transitive imports (legacy)",
-         "fc9b03bd12f76c27"],
-        ["HatsuYakitori.KakDecomposition:importAllArts",
-         "6f9ac85e1ee97ec0"]]]]],
+        ["HatsuYakitori.GolayFrontier:importAllArts", "7a78992349b8f743"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -65,4 +58,4 @@
    "389c860cd1df67a3"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "db7d0ac44da3cb31"}
+ "depHash": "3898487052f64fed"}
