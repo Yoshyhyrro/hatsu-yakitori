@@ -43,10 +43,10 @@
         ["Mathlib.GroupTheory.Perm.Basic:importAllArts", "50867db620cbde1f"],
         ["HatsuYakitori.MachineConstants transitive imports (legacy)",
          "c00f68357c384aa8"],
-        ["HatsuYakitori.MachineConstants:importAllArts", "ebe742f9c37d68a7"],
+        ["HatsuYakitori.MachineConstants:importAllArts", "06f41084e37b2356"],
         ["HatsuYakitori.GolayFrontier transitive imports (legacy)",
-         "d47293be5d6dc7b3"],
-        ["HatsuYakitori.GolayFrontier:importAllArts", "7a78992349b8f743"]]]]],
+         "92a905c34770f86b"],
+        ["HatsuYakitori.GolayFrontier:importAllArts", "d6f880cc3da0f937"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -58,4 +58,4 @@
    "389c860cd1df67a3"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "3898487052f64fed"}
+ "depHash": "cdf2f35c693991eb"}
