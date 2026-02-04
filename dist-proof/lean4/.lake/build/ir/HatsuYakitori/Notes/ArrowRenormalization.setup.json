@@ -3159,31 +3159,6 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CancelDenoms.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CancelDenoms.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CancelDenoms.olean.private"],
-  "Mathlib.Tactic.CC.MkProof":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\MkProof.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\MkProof.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\MkProof.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\MkProof.olean.private"],
-  "Mathlib.Tactic.CC.Lemmas":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Lemmas.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Lemmas.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Lemmas.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Lemmas.olean.private"],
-  "Mathlib.Tactic.CC.Datatypes":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Datatypes.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Datatypes.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Datatypes.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Datatypes.olean.private"],
-  "Mathlib.Tactic.CC.Addition":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Addition.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Addition.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Addition.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC\\Addition.olean.private"],
-  "Mathlib.Tactic.CC":
-  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC.olean",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC.ir",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC.olean.server",
-   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\CC.olean.private"],
   "Mathlib.Tactic.ByContra":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\ByContra.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean\\Mathlib\\Tactic\\ByContra.ir",
@@ -14159,6 +14134,11 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean\\LeanSearchClient.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean\\LeanSearchClient.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean\\LeanSearchClient.olean.private"],
+  "ImportGraph.Util.FindSorry":
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Util\\FindSorry.olean",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Util\\FindSorry.ir",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Util\\FindSorry.olean.server",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Util\\FindSorry.olean.private"],
   "ImportGraph.RequiredModules":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\RequiredModules.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\RequiredModules.ir",
@@ -14169,6 +14149,11 @@
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Meta.ir",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Meta.olean.server",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Meta.olean.private"],
+  "ImportGraph.Lean.Environment":
+  ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Lean\\Environment.olean",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Lean\\Environment.ir",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Lean\\Environment.olean.server",
+   "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Lean\\Environment.olean.private"],
   "ImportGraph.Imports":
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.olean",
    "C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean\\ImportGraph\\Imports.ir",

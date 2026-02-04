@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: HatsuYakitori.MachineConstants
-// Imports: public import Init public import Mathlib
+// Imports: public import Init public import Mathlib public import Mathlib.GroupTheory.GroupAction.Iwasawa
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -13,9 +13,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+lean_object* lp_mathlib_LieRing_ofAssociativeRing___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_valuationDepth;
+lean_object* lp_mathlib_ZMod_commRing(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_arikiKoikeN;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3;
 lean_object* l_Rat_ofScientific(lean_object*, uint8_t, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal;
@@ -28,11 +31,13 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00Hatsu
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_defaultToleranceReal___closed__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0_spec__1(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__1;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_AffineDimension;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_arikiKoikeR;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_i0;
 lean_object* lp_mathlib_Nat_cast___at___00Nat_cast___at___00Nat_cast___at___00Nat_cast___at___00__private_Mathlib_NumberTheory_ModularForms_EisensteinSeries_E2_Transform_0__EisensteinSeries_00_u03b4_spec__0_spec__0_spec__2_spec__3(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_NNRat_cast___at___00NNRat_cast___at___00HatsuYakitori_MachineConstants_machineEpsilonReal_spec__0_spec__0(lean_object* x_1) {
 _start:
 {
@@ -182,8 +187,37 @@ x_1 = lean_unsigned_to_nat(0u);
 return x_1;
 }
 }
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lean_unsigned_to_nat(3u);
+x_2 = lp_mathlib_ZMod_commRing(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__1() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__0;
+x_2 = lp_mathlib_LieRing_ofAssociativeRing___redArg(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__1;
+x_2 = lean_ctor_get(x_1, 0);
+lean_inc_ref(x_2);
+return x_2;
+}
+}
 lean_object* initialize_Init(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib(uint8_t builtin);
+lean_object* initialize_mathlib_Mathlib_GroupTheory_GroupAction_Iwasawa(uint8_t builtin);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin) {
 lean_object * res;
@@ -193,6 +227,9 @@ res = initialize_Init(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_mathlib_Mathlib(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_mathlib_Mathlib_GroupTheory_GroupAction_Iwasawa(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__0();
@@ -221,6 +258,12 @@ lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_arikiKoikeR = _init
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_arikiKoikeR);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_i0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_i0();
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_i0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__1();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3___closed__1);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instAddCommGroupCyclicGroup3);
 return lean_io_result_mk_ok(lean_box(0));
 }
 #ifdef __cplusplus

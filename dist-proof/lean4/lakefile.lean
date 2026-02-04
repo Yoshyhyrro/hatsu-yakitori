@@ -9,4 +9,4 @@ require mathlib from git
 
 @[default_target]
 lean_lib «HatsuYakitori» where
-  globs := #[.submodules `HatsuYakitori]
+  globs := #[`HatsuYakitori.MachineConstants, `HatsuYakitori.KakIntegration, `HatsuYakitori.GolayFrontier]
