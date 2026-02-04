@@ -1,7 +1,7 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["4e4605dc735af571.olean"],
+ {"o": ["801c1c511ba13cdd.olean"],
   "i": "c99159c999241c45.ilean",
   "c": "7bf389e94426319f.c"},
  "log":
@@ -44,7 +44,7 @@
         ["HatsuYakitori.MachineConstants transitive imports (legacy)",
          "c00f68357c384aa8"],
         ["HatsuYakitori.MachineConstants:importAllArts",
-         "ebe742f9c37d68a7"]]]]],
+         "06f41084e37b2356"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -56,4 +56,4 @@
    "4c9d4ddd70e026e1"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "52e2cff8f3871724"}
+ "depHash": "ebfe5db15e433868"}
