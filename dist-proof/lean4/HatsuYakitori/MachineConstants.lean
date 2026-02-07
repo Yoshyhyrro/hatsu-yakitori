@@ -1184,23 +1184,23 @@ structure SignatureComplexComplete where
 
 /-- Extract the bosonic (real) signature component. -/
 noncomputable def SignatureComplexComplete.bosonicSignature
-    (Σ : SignatureComplexComplete) (z : Fin AffineDimension → ℝ) (h : ℝ) : ℝ :=
-  let ((r, _), op) := Σ.signature_eval z h
+    (Sigma : SignatureComplexComplete) (z : Fin AffineDimension → ℝ) (h : ℝ) : ℝ :=
+  let ((r, _), op) := Sigma.signature_eval z h
   r + op
 
 /-- Extract the fermionic (imaginary) signature component. -/
 noncomputable def SignatureComplexComplete.fermionicSignature
-    (Σ : SignatureComplexComplete) (z : Fin AffineDimension → ℝ) (h : ℝ) : ℝ :=
-  let ((_, im), _) := Σ.signature_eval z h
+    (Sigma : SignatureComplexComplete) (z : Fin AffineDimension → ℝ) (h : ℝ) : ℝ :=
+  let ((_, im), _) := Sigma.signature_eval z h
   im
 
 /-- For pure real spin lifts, the fermionic signature vanishes. -/
 theorem SignatureComplexComplete.fermionic_vanishes_real
-    (Σ : SignatureComplexComplete)
-    (h_real : Σ.spin_lift.imag_part = fun _ => 0)
+    (Sigma : SignatureComplexComplete)
+    (h_real : Sigma.spin_lift.imag_part = fun _ => 0)
     (z : Fin AffineDimension → ℝ) (h : ℝ) :
-    Σ.fermionicSignature z h = 0 := by
-  simp [fermionicSignature, Σ.decomp_axiom, shriekQuotient, h_real]
+    Sigma.fermionicSignature z h = 0 := by
+  simp [fermionicSignature, Sigma.decomp_axiom, shriekQuotient, h_real]
 
 /-- Default complete signature complex with trivial spin structure. -/
 noncomputable def defaultSignatureComplexComplete : SignatureComplexComplete where
