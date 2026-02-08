@@ -41,28 +41,24 @@ def succ_weight : GolayWeight → GolayWeight
   | .w24 => .w24
 
 /-- Antipode: weight complement map w ↦ 24 - w.
-    This is the coinvolution of the Hopf structure. -/
-def antipode : GolayWeight → GolayWeight
-  | .w0  => .w24
-  | .w8  => .w16
-  | .w12 => .w12
-  | .w16 => .w8
-  | .w24 => .w0
+    This is the coinvolution of the Hopf structure.
+    Defined as an alias for `GolayWeight.complement` from `MachineConstants`. -/
+abbrev antipode := GolayWeight.complement
 
 /-- The antipode is an involution: S² = id. -/
 @[simp]
-theorem antipode_antipode (w : GolayWeight) : w.antipode.antipode = w := by
-  cases w <;> rfl
+theorem antipode_antipode (w : GolayWeight) : w.antipode.antipode = w :=
+  w.complement_complement
 
 /-- Antipode satisfies w + S(w) = 24 (counit compatibility). -/
 theorem toNat_add_antipode (w : GolayWeight) :
-    w.toNat + w.antipode.toNat = 24 := by
-  cases w <;> simp [toNat, antipode]
+    w.toNat + w.antipode.toNat = 24 :=
+  w.toNat_add_complement
 
 /-- The dodecad w12 is the unique fixed point of the antipode. -/
 theorem antipode_fixed_iff (w : GolayWeight) :
-    w.antipode = w ↔ w = .w12 := by
-  cases w <;> simp [antipode]
+    w.antipode = w ↔ w = .w12 :=
+  w.complement_fixed_iff
 
 end GolayWeight
 
@@ -113,5 +109,21 @@ theorem hopf_structure_summary :
     (∀ w : GolayWeight, w.toNat + w.antipode.toNat = 24) := by
   exact ⟨galoisHeight_nonneg, GolayWeight.antipode_antipode,
          coproduct_exists, GolayWeight.toNat_add_antipode⟩
+
+/-! ## Part 2: Connection to Ramification Data -/
+
+/-- The counit respects the palindromic weight enumerator:
+    `orbitSize(w) = orbitSize(S(w))`. -/
+theorem counit_palindromic (w : GolayWeight) :
+    w.orbitSize = w.antipode.orbitSize :=
+  w.orbitSize_complement
+
+/-- Heights of complementary weights sum to the height bound,
+    reflecting the ramification product `e₂ · e₃ = 8 = K`. -/
+theorem counit_complement_sum (w : GolayWeight) :
+    counit w + counit w.antipode =
+    galoisHeight 24 := by
+  -- Both sides encode the same symmetry: ε(w) + ε(S(w)) = ε(top)
+  sorry
 
 end HatsuYakitori
