@@ -11,6 +11,9 @@
 --   HatsuYakitori.WittFoundation    -- Witt design foundations
 
 import HatsuYakitori.MachineConstants
+import HatsuYakitori.GolayWeight
+import HatsuYakitori.HopfStructure
+import HatsuYakitori.AnabelianSketch
 -- import HatsuYakitori.CartanUtils       -- TODO
 -- import HatsuYakitori.GolayFrontier     -- TODO
 -- import HatsuYakitori.KakDecomposition  -- TODO
