@@ -149,7 +149,7 @@ theorem triple_equality :
     algebraic_rank = analytic_rank ∧
     tensorBangCount = analytic_rank :=
   ⟨tensorBang_count_eq_algebraic_rank,
-   BSD_conjecture,
+   BSD_conjecture.symm,
    tensorBang_count_eq_analytic_rank⟩
 
 /-- If the Hom-space is finite, then both ranks are bounded. -/
@@ -270,7 +270,9 @@ theorem counit_antipode_sum (w : GolayWeight) :
     ∃ (s : ℝ), counit w + counit w.antipode = s ∧
     s = galoisHeight w.toNat + galoisHeight (24 - w.toNat) := by
   exact ⟨counit w + counit w.antipode, rfl, by
-    simp only [counit, counit_antipode_eq]⟩
+    simp only [counit]
+    congr 1
+    cases w <;> simp [GolayWeight.antipode, GolayWeight.complement, GolayWeight.toNat]⟩
 
 /-- The galoisHeight function is bounded for Golay weights.
     Since Golay weights are in {0, 8, 12, 16, 24}
@@ -283,8 +285,9 @@ theorem galoisHeight_golay_bounded :
   · unfold galoisHeightBound; norm_num
   · intro w
     simp only [counit]
-    apply galoisHeight_bounded
-    cases w <;> simp [GolayWeight.toNat] <;> omega
+    cases w with
+    | w0 => simp [GolayWeight.toNat, galoisHeight_zero]; unfold galoisHeightBound; norm_num
+    | _ => apply galoisHeight_bounded <;> simp [GolayWeight.toNat]
 
 /-- For the weight 24 (the maximum Golay weight), galoisHeight is nonneg. -/
 theorem galoisHeight_24_nonneg : galoisHeight 24 ≥ 0 :=
@@ -335,8 +338,10 @@ theorem theta_data_prime_ge_5 (θ : InitialThetaData) : θ.prime ≥ 5 :=
 theorem theta_data_ramification_compatible
     (θ : InitialThetaData)
     (h2 : θ.prime = 2 ∨ θ.prime = 3) :
+    haveI := θ.prime_fact
     let ram := cyclotomic_ramification_24 θ.prime
     ram.e * ram.f = 8 := by
+  haveI := θ.prime_fact
   exact ramification_degree_check θ.prime
 
 /-- The rigid triple from `MachineConstants` constrains the
