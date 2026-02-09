@@ -1262,16 +1262,35 @@ theorem GolayWeight.complement_complement (w : GolayWeight) :
     w.complement.complement = w := by
   cases w <;> rfl
 
+/-- Antipode: alias for `complement`, used in the Hopf structure. -/
+@[simp]
+def GolayWeight.antipode : GolayWeight → GolayWeight := GolayWeight.complement
+
+/-- The antipode is an involution: `antipode² = id`. -/
+@[simp]
+theorem GolayWeight.antipode_antipode (w : GolayWeight) :
+    w.antipode.antipode = w := w.complement_complement
+
 /-- Numerical content: `w + complement(w) = 24`. -/
 theorem GolayWeight.toNat_add_complement (w : GolayWeight) :
     w.toNat + w.complement.toNat = 24 := by
   cases w <;> simp [toNat, complement]
+
+/-- Antipode satisfies w + S(w) = 24 (counit compatibility). -/
+theorem GolayWeight.toNat_add_antipode (w : GolayWeight) :
+    w.toNat + w.antipode.toNat = 24 :=
+  w.toNat_add_complement
 
 /-- The dodecad `w12` is the unique fixed point of the complement.
     This reflects the self-duality of `∧¹² V²⁴` in the exterior algebra. -/
 theorem GolayWeight.complement_fixed_iff (w : GolayWeight) :
     w.complement = w ↔ w = .w12 := by
   cases w <;> simp [complement]
+
+/-- The dodecad w12 is the unique fixed point of the antipode. -/
+theorem GolayWeight.antipode_fixed_iff (w : GolayWeight) :
+    w.antipode = w ↔ w = .w12 :=
+  w.complement_fixed_iff
 
 /-- Heights of complementary weights sum to `galoisHeightBound`.
     This is the Hopf counit symmetry `ε(w) + ε(S(w)) = K`. -/

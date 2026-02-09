@@ -36,6 +36,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineCons
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_arikiKoikeN;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGolayWeight;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_galoisHeightBound___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_antipode___boxed(lean_object*);
 uint8_t lean_nat_dec_le(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_Affine11Sqrt_zero___closed__1;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instFintypeGolayWeight___closed__2;
@@ -146,6 +147,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineCons
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_total__codewords___nativeDecide__1__1___closed__2;
 lean_object* l_Repr_addAppParen(lean_object*, lean_object*);
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_antipode(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_Affine11Sqrt_ofReal(lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instDecidableEqHidaTransition_decEq(uint8_t, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_machineEpsilonReal___closed__1;
@@ -1765,6 +1767,24 @@ _start:
 uint8_t x_2; uint8_t x_3; lean_object* x_4; 
 x_2 = lean_unbox(x_1);
 x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_complement(x_2);
+x_4 = lean_box(x_3);
+return x_4;
+}
+}
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_antipode(uint8_t x_1) {
+_start:
+{
+uint8_t x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_complement(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_antipode___boxed(lean_object* x_1) {
+_start:
+{
+uint8_t x_2; uint8_t x_3; lean_object* x_4; 
+x_2 = lean_unbox(x_1);
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_antipode(x_2);
 x_4 = lean_box(x_3);
 return x_4;
 }

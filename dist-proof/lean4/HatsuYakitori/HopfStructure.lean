@@ -40,26 +40,6 @@ def succ_weight : GolayWeight → GolayWeight
   | .w16 => .w24
   | .w24 => .w24
 
-/-- Antipode: weight complement map w ↦ 24 - w.
-    This is the coinvolution of the Hopf structure.
-    Defined as an alias for `GolayWeight.complement` from `MachineConstants`. -/
-abbrev antipode := GolayWeight.complement
-
-/-- The antipode is an involution: S² = id. -/
-@[simp]
-theorem antipode_antipode (w : GolayWeight) : w.antipode.antipode = w :=
-  w.complement_complement
-
-/-- Antipode satisfies w + S(w) = 24 (counit compatibility). -/
-theorem toNat_add_antipode (w : GolayWeight) :
-    w.toNat + w.antipode.toNat = 24 :=
-  w.toNat_add_complement
-
-/-- The dodecad w12 is the unique fixed point of the antipode. -/
-theorem antipode_fixed_iff (w : GolayWeight) :
-    w.antipode = w ↔ w = .w12 :=
-  w.complement_fixed_iff
-
 end GolayWeight
 
 /-- The coproduct structure: factorization of a transition through
@@ -78,7 +58,7 @@ noncomputable def counit (w : GolayWeight) : ℝ :=
 /-- Counit respects the antipode: ε(S(w)) = galoisHeight(24 - w). -/
 theorem counit_antipode_eq (w : GolayWeight) :
     counit w.antipode = galoisHeight (24 - w.toNat) := by
-  cases w <;> simp [counit, GolayWeight.antipode, GolayWeight.toNat]
+  cases w <;> simp [counit, GolayWeight.antipode, GolayWeight.complement, GolayWeight.toNat]
 
 /-- Triangle inequality for the counit (Yang-Baxter compatibility). -/
 theorem counit_triangle (w₁ w₂ w₃ : GolayWeight) :
