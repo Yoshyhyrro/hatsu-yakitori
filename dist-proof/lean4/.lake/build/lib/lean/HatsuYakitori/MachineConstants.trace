@@ -1,39 +1,30 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["d6e3b9938c1b6554.olean"],
-  "i": "6699a1cad2df09cb.ilean",
-  "c": "b41d4fee0e6af24b.c"},
+ {"o": ["ef98113e4d2edcbc.olean"],
+  "i": "d0b760cf2bcc2bbc.ilean",
+  "c": "00aedeaec10d1638.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\MachineConstants.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\MachineConstants.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\MachineConstants.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\MachineConstants.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\MachineConstants.setup.json --json",
    "level": "trace"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:802:5: unused variable `h1`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/MachineConstants.lean:1034:18: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:802:37: unused variable `h2`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/MachineConstants.lean:1203:18: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:802:69: unused variable `h3`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/MachineConstants.lean:1363:18: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:816:5: unused variable `h1_pos`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/MachineConstants.lean:1374:8: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:816:23: unused variable `h2_pos`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/MachineConstants.lean:1399:8: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/MachineConstants.lean:816:41: unused variable `h3_pos`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:863:8: This simp argument is unused:\n  Equiv.swap_apply_right\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵E̵q̵u̵i̵v̵.̵s̵w̵a̵p̵_̵a̵p̵p̵l̵y̵_̵r̵i̵g̵h̵t̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:874:7: unused variable `f`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:879:10: This simp argument is unused:\n  Fintype.card_ofSubsingleton\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵t̵y̵p̵e̵.̵c̵a̵r̵d̵_̵o̵f̵S̵u̵b̵s̵i̵n̵g̵l̵e̵t̵o̵n̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "HatsuYakitori/MachineConstants.lean:1407:8: declaration uses `sorry`",
    "level": "warning"}],
  "inputs":
  [["HatsuYakitori.MachineConstants:deps",
@@ -41,12 +32,16 @@
      [["«hatsu-yakitori-proof»/HatsuYakitori:extraDep",
        [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
       ["imports",
-       [["Mathlib transitive imports (legacy)", "58ffeec2e7cde9a5"],
-        ["Mathlib:importAllArts", "ca831f0e40918c14"],
+       [["Mathlib transitive imports (legacy)", "c45700db1e569efb"],
+        ["Mathlib:importAllArts", "8309c2c5e4fbf9c7"],
         ["Mathlib.GroupTheory.GroupAction.Iwasawa transitive imports (legacy)",
-         "7857d4770d45615f"],
+         "3b79fd597e1651e5"],
         ["Mathlib.GroupTheory.GroupAction.Iwasawa:importAllArts",
-         "9c7738ea811a488a"]]]]],
+         "f1ad8a3f61b39116"],
+        ["Mathlib.Combinatorics.Quiver.Path transitive imports (legacy)",
+         "2d55e3a95047e7de"],
+        ["Mathlib.Combinatorics.Quiver.Path:importAllArts",
+         "ce13e2c07892e6c2"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -55,7 +50,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\MachineConstants.lean",
-   "fad4df749719d036"],
+   "64119312c80d17b2"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "2f4f192c4a37c4b4"}
+ "depHash": "1a4e441bcc95da7a"}
