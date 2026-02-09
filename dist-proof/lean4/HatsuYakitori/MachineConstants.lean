@@ -1141,9 +1141,6 @@ theorem shriekQuotient_noncomm_witness :
         imag_part := fun i => if i = ⟨0, AffineDimension_pos⟩ then 1 else 0,
         norm_nonneg := by intro i; positivity }
   simp [shriekQuotient, Affine11Sqrt.ofReal]
-  constructor
-  · -- imag part of LHS is 1, imag part of RHS is 0
-    sorry -- requires detailed Finset.sum computation
 
 /-!
 ### Complete Signature Complex
@@ -1345,7 +1342,8 @@ theorem ramification_degree_check (p : ℕ) [Fact p.Prime] :
 
 /-- Placeholder for M₂₄ group -/
 axiom M24 : Type
-axiom M24.group : Group M24
+axiom M24.instGroup : Group M24
+attribute [instance] M24.instGroup
 
 /-- Conjugacy class in M₂₄ -/
 structure ConjugacyClass (G : Type*) [Group G] where
@@ -1376,8 +1374,6 @@ A triple (C₁, C₂, C₃) is rigid if:
 theorem M24_triple_is_rigid :
     let (c₁, c₂, c₃) := M24_rigid_triple
     (1 : ℚ) / c₁.size + 1 / c₂.size + 1 / c₃.size = 1 := by
-  simp [M24_rigid_triple]
-  norm_num
   -- 1/276 + 1/1288 + 1/759 = 1
   -- This requires rational arithmetic verification
   sorry
@@ -1402,8 +1398,7 @@ def rigidity_condition (triple : ConjugacyClass M24 × ConjugacyClass M24 × Con
 
 theorem rigidity_holds : rigidity_condition M24_rigid_triple := by
   unfold rigidity_condition M24_rigid_triple
-  simp
-  sorry
+  refine ⟨rfl, rfl, rfl, rfl⟩
 
 /-! ### Connection to Hopf Counit and Weight Complement -/
 
@@ -1412,7 +1407,8 @@ theorem rigidity_holds : rigidity_condition M24_rigid_triple := by
 theorem rigid_triple_octad_size :
     let (_, _, c₈) := M24_rigid_triple
     c₈.size = GolayWeight.w8.orbitSize := by
-  simp [M24_rigid_triple, GolayWeight.orbitSize]
+  unfold M24_rigid_triple GolayWeight.orbitSize
+  rfl
 
 /-- The complement involution is compatible with ramification:
     the product `e₂ · e₃ = 8` equals `galoisHeightBound` (= 8),

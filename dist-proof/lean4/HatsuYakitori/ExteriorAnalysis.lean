@@ -321,11 +321,25 @@ summation (because `log(τ₁ + τ₂ + 1) ≠ log(τ₁+1) + log(τ₂+1)` in
 general), but they satisfy a sub-additivity bound.
 
 For τ₁, τ₂ ≥ 0:
-$$h(τ₁ + τ₂) ≤ h(τ₁) + h(τ₂) + \frac{\log 2}{\log 25}$$
+$$h(τ₁ + τ₂) ≤ h(τ₁) + h(τ₂)$$
 -/
-axiom tauLogScale_sub_additive :
-  ∀ (τ₁ τ₂ : ℕ),
-    tauLogScale (τ₁ + τ₂) ≤ tauLogScale τ₁ + tauLogScale τ₂ + Real.log 2 / Real.log 25
+theorem tauLogScale_sub_additive (τ₁ τ₂ : ℕ) :
+    tauLogScale (τ₁ + τ₂) ≤ tauLogScale τ₁ + tauLogScale τ₂ := by
+  simp only [tauLogScale]
+  have h_log25_pos : Real.log 25 > 0 := Real.log_pos (by norm_num)
+  rw [div_add_div_same]
+  apply (div_le_div_right h_log25_pos).mpr
+  have h1 : (τ₁ : ℝ) ≥ 0 := Nat.cast_nonneg τ₁
+  have h2 : (τ₂ : ℝ) ≥ 0 := Nat.cast_nonneg τ₂
+  have h_prod : (τ₁ + 1 : ℝ) * (τ₂ + 1) ≥ τ₁ + τ₂ + 1 := by nlinarith
+  calc
+    Real.log (τ₁ + τ₂ + 1 : ℝ)
+      ≤ Real.log ((τ₁ + 1 : ℝ) * (τ₂ + 1)) := by
+        apply Real.log_le_log (by positivity)
+        push_cast
+        linarith
+    _ = Real.log (τ₁ + 1 : ℝ) + Real.log (τ₂ + 1 : ℝ) := by
+        rw [Real.log_mul (by positivity) (by positivity)]
 
 /-!
 ## Part 9: Approximate Uniformity of Log-Level Spacing
