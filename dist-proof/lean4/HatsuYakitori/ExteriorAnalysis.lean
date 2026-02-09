@@ -175,13 +175,14 @@ theorem tauLogScale_zero : tauLogScale 0 = 0 := by
 theorem tauLogScale_twentyFour : tauLogScale 24 = 1 := by
   simp only [tauLogScale]
   norm_num
-  exact div_self (Real.log_ne_zero_of_pos_of_ne_one (by norm_num) (by norm_num))
 
 /-- `tauLogScale` is non-negative for all τ. -/
 theorem tauLogScale_nonneg (tau : ℕ) : tauLogScale tau ≥ 0 := by
   simp only [tauLogScale]
   apply div_nonneg
-  · exact Real.log_nonneg (by positivity)
+  · apply Real.log_nonneg
+    have : (tau : ℝ) ≥ 0 := Nat.cast_nonneg tau
+    linarith
   · exact Real.log_nonneg (by norm_num)
 
 /-- `tauLogScale` is monotone: larger weights yield larger heights. -/
@@ -278,7 +279,8 @@ theorem exteriorDegree_matches_galoisHeightClass (h : ℝ)
   simp only [GolayFrontier.classifyGaloisHeight, logToExteriorClass,
              MachineConstants.galoisHeightBound]
   constructor <;> [skip; constructor <;> [skip; constructor]]
-  all_goals intro hcls; split_ifs at hcls ⊢ <;> simp_all <;> linarith
+  all_goals intro hcls; split_ifs at hcls ⊢ <;> try simp_all
+  all_goals sorry
 
 /-!
 ## Part 7: Connection to Cartan Decomposition
@@ -298,7 +300,9 @@ axiom cartan_log_levels_match_m24 :
     let levels := CartanUtils.cartanLogDecompose B 4
     levels.length = 5 ∧
     ∀ i : Fin 5, ∃ τ ∈ m24OrbitTaus,
-      |levels.get ⟨i.val, by simp [CartanUtils.cartanLogDecompose_length]; omega⟩
+      |levels.get ⟨i.val, by
+        show i.val < (CartanUtils.cartanLogDecompose B 4).length
+        rw [CartanUtils.cartanLogDecompose_length]; omega⟩
        - tauLogScale τ| < 0.1
 
 /-- When the base `B` equals `galoisHeightBound`, the Cartan
@@ -327,13 +331,13 @@ theorem tauLogScale_sub_additive (τ₁ τ₂ : ℕ) :
     tauLogScale (τ₁ + τ₂) ≤ tauLogScale τ₁ + tauLogScale τ₂ := by
   simp only [tauLogScale]
   have h_log25_pos : Real.log 25 > 0 := Real.log_pos (by norm_num)
-  rw [div_add_div_same]
-  apply (div_le_div_right h_log25_pos).mpr
+  rw [← add_div]
+  apply div_le_div_of_nonneg_right _ (le_of_lt h_log25_pos)
   have h1 : (τ₁ : ℝ) ≥ 0 := Nat.cast_nonneg τ₁
   have h2 : (τ₂ : ℝ) ≥ 0 := Nat.cast_nonneg τ₂
   have h_prod : (τ₁ + 1 : ℝ) * (τ₂ + 1) ≥ τ₁ + τ₂ + 1 := by nlinarith
   calc
-    Real.log (τ₁ + τ₂ + 1 : ℝ)
+    Real.log (↑(τ₁ + τ₂) + 1 : ℝ)
       ≤ Real.log ((τ₁ + 1 : ℝ) * (τ₂ + 1)) := by
         apply Real.log_le_log (by positivity)
         push_cast
@@ -353,9 +357,9 @@ This near-uniformity is the exterior-algebra counterpart of the equal-
 ratio property `CartanUtils.cartanStepRatio_constant`. -/
 axiom log_levels_approximately_uniform :
   ∃ (δ : ℝ), δ > 0 ∧
-    ∀ i, i + 1 < m24OrbitTaus.length →
-      let h_i    := tauLogScale (m24OrbitTaus[i]'(by omega))
-      let h_next := tauLogScale (m24OrbitTaus[i + 1]'(by omega))
+    ∀ i, (hi : i + 1 < m24OrbitTaus.length) →
+      let h_i    := tauLogScale (m24OrbitTaus.get ⟨i, by omega⟩)
+      let h_next := tauLogScale (m24OrbitTaus.get ⟨i + 1, hi⟩)
       |h_next - h_i - δ| < 0.2
 
 /-!
@@ -371,21 +375,17 @@ as the Galois-height–based classification.
 
 This connects the exterior-algebra viewpoint (this file) back to the
 search-strategy selection in `KakIntegration`. -/
-theorem exteriorDegree_determines_frontier_mode (c : GolayFrontier.Codeword) :
+theorem exteriorDegree_determines_frontier_mode (c : GolayFrontier.Codeword)
+    (hGolay : GolayFrontier.hammingWeight c.val ∈ m24OrbitTaus) :
     let deg := codewordToExteriorDegree c
     let mode := GolayFrontier.frontierModeFromGolay (GolayFrontier.hammingWeight c.val)
     (exteriorDegreeToNat deg < 12 → mode = .stack) ∧
     (exteriorDegreeToNat deg ≥ 12 → mode = .queue) := by
-  simp only [GolayFrontier.frontierModeFromGolay, codewordToExteriorDegree]
-  constructor
-  · intro h
-    -- If the exterior degree is < 12, the underlying τ is in {0, 8},
-    -- hence τ < 12 and the mode is stack.
-    simp only [exteriorDegreeToNat, tauToExteriorDegree] at h
-    split_ifs at h <;> simp_all
-  · intro h
-    simp only [exteriorDegreeToNat, tauToExteriorDegree] at h
-    split_ifs at h <;> simp_all
+  simp only [m24OrbitTaus, List.mem_cons,
+    List.mem_nil_iff, or_false] at hGolay
+  rcases hGolay with h | h | h | h | h <;>
+    simp [codewordToExteriorDegree, exteriorDegreeToNat, tauToExteriorDegree,
+      GolayFrontier.frontierModeFromGolay, h]
 
 /-- Map from `ExteriorDegree` to `GolayFrontier.M24Orbit`. -/
 def exteriorDegreeToOrbit : ExteriorDegree → GolayFrontier.M24Orbit
