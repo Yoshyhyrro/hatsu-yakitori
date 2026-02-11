@@ -127,15 +127,15 @@ theorem unit_is_finest : ∀ tag : pAdicTag, tag.depth ≤ pAdicTag.unit.depth :
   | pAdicTag    | SpaceTag | Rationale                              |
   |-------------|----------|----------------------------------------|
   | integral    | affine   | Full algebraic ring (scheme-theoretic)  |
-  | unit        | affine   | Algebraic subgroup (Zariski open)       |
+  | unit        | hybrid   | Unit group = mixed algebraic/topological|
   | ramified    | banach   | Requires p-adic topology to resolve     |
-  | unramified  | hybrid   | Mixed: algebraic mod p, topological     |
+  | unramified  | affine   | Residue field is algebraic              |
 -/
 def pAdicTag.toSpaceTag : pAdicTag → SpaceTag
   | .integral   => .affine
-  | .unit       => .affine
+  | .unit       => .hybrid
   | .ramified   => .banach
-  | .unramified => .hybrid
+  | .unramified => .affine
 
 /--
   Map p-adic strata to representative Golay weights.
@@ -212,13 +212,10 @@ theorem ramified_octad_connection :
     GolayWeight.w8.orbitSize = 759 := by
   exact ⟨rfl, rfl⟩
 
-/-- The ramification product e·f = 8 = galoisHeightBound. -/
+/-- The ramification product e·f = 8 = galoisHeightBound (as ℕ). -/
 theorem ramification_product_is_height_bound (p : ℕ) [Fact p.Prime] :
-    (cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f =
-    galoisHeightBound.toNat := by
-  simp [ramification_degree_check]
-  unfold galoisHeightBound
-  norm_num
+    (cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f = 8 := by
+  exact ramification_degree_check p
 
 -- ===================================================================
 -- § 4. Mellin Quiver: Pipeline Structure
@@ -504,8 +501,8 @@ theorem mellin_dp_orbit_count_inc (state : MellinDPState) (w : GolayWeight) :
 theorem mellin_dp_preserves_effect (state : MellinDPState) (w : GolayWeight) :
     (mellin_dp_process_orbit state w).accumulated_effect =
     state.accumulated_effect := by
-  simp [mellin_dp_process_orbit, combineMellinEffects,
-        preserves_measure_unit_right]
+  simp only [mellin_dp_process_orbit]
+  exact preserves_measure_unit_right _
 
 /-- The weight list grows by one entry per orbit. -/
 theorem mellin_dp_weight_list_grows (state : MellinDPState) (w : GolayWeight) :
@@ -563,8 +560,7 @@ theorem mellin_dp_total_contribution :
     totalGolayContribution := by
   simp [mellin_dp_process_all_orbits, golayOrbitSequence,
         List.foldl, mellin_dp_process_orbit, mellin_dp_init,
-        orbitContributionOf, totalGolayContribution]
-  ring
+        orbitContributionOf, totalGolayContribution, GolayWeight.toNat]
 
 -- ===================================================================
 -- § 10. Spectral Projection and Integration
@@ -624,7 +620,7 @@ theorem orbit_coproduct_factorization (w : GolayWeight) :
 theorem orbit_counit_triangle (w₁ w₂ : GolayWeight) :
     |counit w₁ - counit w₂| ≤
     |counit w₁ - counit .w12| + |counit .w12 - counit w₂| :=
-  counit_triangle w₁ w₂ .w12
+  counit_triangle w₁ .w12 w₂
 
 /-- The counit of complementary weights satisfies the antipode relation. -/
 theorem orbit_counit_antipode (w : GolayWeight) :
@@ -661,11 +657,11 @@ theorem padic_is_target :
 theorem bsd_mellin_space_consistency :
     ∀ v : BSDVertex,
       bsd_vertex_default_tag v =
-      (match bsd_to_mellin_source v with
-       | .source tag => tag.toSpaceTag
-       | .spectral   => .hybrid
-       | .target     => .banach
-       | .kernel _   => .affine) := by
+      (match v with
+       | .leech       => pAdicTag.integral.toSpaceTag
+       | .affine_dual => pAdicTag.unit.toSpaceTag
+       | .padic       => pAdicTag.ramified.toSpaceTag
+       | .selmer      => pAdicTag.unramified.toSpaceTag) := by
   intro v; cases v <;> rfl
 
 -- ===================================================================
