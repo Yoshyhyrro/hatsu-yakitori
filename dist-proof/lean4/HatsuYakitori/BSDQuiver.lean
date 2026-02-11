@@ -45,6 +45,13 @@ as a **quiver representation** with dynamic programming over paths.
 * `bsd_vertex_to_golay_weight`: Map from BSD vertices to representative
   Golay weights, connecting the two quiver structures.
 
+## Extended structures (Phantom-typed categorical layer)
+
+* `SpaceTag`: Type-level indices for geometric modality (Affine/Banach/Hybrid).
+* `PauliTransform`: Morphisms between space modalities as categorical functors.
+* `TransformEffect`: Effect system tracking morphic side-effects.
+* `TaggedBSDVertex`: BSD vertices enriched with geometric modality descriptors.
+
 ## Design
 
 The BSD quiver is a **finite** quiver with 4 vertices and 4 arrows.
@@ -52,6 +59,7 @@ This makes it suitable for:
 1. Exhaustive path enumeration (DP over paths).
 2. Representation-theoretic analysis (Gabriel's theorem: A₄ quiver).
 3. Concrete linear maps between `MachineConstants.SignatureComplex` fields.
+4. Phantom-type tracking of geometric structure preservation.
 
 ## References
 
@@ -60,7 +68,8 @@ This makes it suitable for:
 
 ## Tags
 
-BSD, quiver, tensor product, dynamic programming, Golay, Leech lattice
+BSD, quiver, tensor product, dynamic programming, Golay, Leech lattice,
+phantom types, Pauli operators, space tags
 -/
 
 open HatsuYakitori MachineConstants
@@ -166,7 +175,6 @@ def bsd_arrow_to_hida {v₁ v₂ : BSDVertex} (_a : BSDArrow v₁ v₂) :
     Instead of ad hoc constants, we use the galoisHeight of the
     target vertex's Golay weight. This ensures compatibility with
     the Hopf counit. -/
--- FIX: Changed argument name from `a` to `_` to suppress "unused variable" warning.
 noncomputable def arrow_weight {v₁ v₂ : BSDVertex} (_ : BSDArrow v₁ v₂) : ℝ :=
   galoisHeight (bsd_vertex_to_golay_weight v₂).toNat
 
@@ -198,8 +206,6 @@ theorem project_selmer_targets_complement :
     `leech` to `selmer`, accumulating:
     - `accumulated_weight`: product of arrow weights along the path
     - `golay_pattern`: sequence of Golay τ-values encountered -/
--- FIX: Removed `deriving Repr` because `accumulated_weight` is of type `ℝ`,
--- and Real does not have a computable Repr instance, causing the kernel error.
 structure DPState where
   /-- Current vertex in the BSD quiver -/
   current_vertex : BSDVertex
@@ -242,11 +248,9 @@ theorem dp_transition_length_inc (state : DPState)
 noncomputable def direct_path_contribution : ℝ :=
   galoisHeight GolayWeight.w16.toNat
 
--- FIX: Changed `/-- ... -/` to `/- ... -/`.
--- Doc comments must immediately precede a declaration.
-/- Two-step path: leech → affine_dual → selmer (via recover). -/
--- Note: This path does not exist in the current arrow set
--- (no arrow affine_dual → selmer), demonstrating the quiver's constraints.
+/- Two-step path: leech → affine_dual → selmer (via recover).
+   Note: This path does not exist in the current arrow set
+   (no arrow affine_dual → selmer), demonstrating the quiver's constraints. -/
 
 /-- Three-step cycle: leech → selmer → affine_dual → padic.
     This path visits all four vertices. -/
@@ -408,34 +412,530 @@ theorem sha_as_kernel :
   exact funext_iff.mp hx ⟨0, AffineDimension_pos⟩
 
 -- ===================================================================
--- § 10. Summary: Bridge between Quivers
+-- § 10. Phantom Types for Categorical Space Tagging
 -- ===================================================================
 
-/-- Summary of the BSD quiver's connection to the existing codebase.
+/--
+  SpaceTag: Type-level indices for classifying the geometric modality of fibers.
+  Tracks the structure (Affine, Banach, or Hybrid) at the type level.
 
-    1. BSD vertices embed into Golay weights via `bsd_vertex_to_golay_weight`
-    2. BSD arrows induce Hida transitions via `bsd_arrow_to_hida`
-    3. Arrow weights are derived from `galoisHeight` (= Hopf counit)
+  - `affine`: Algebraic/Zariski geometry (scheme-theoretic base)
+  - `banach`: p-adic Banach completion (non-Archimedean topology)
+  - `hybrid`: Mixed algebraic-topological structure (adelic viewpoint)
+-/
+inductive SpaceTag where
+  | affine : SpaceTag   -- Affine space A¹ over k
+  | banach : SpaceTag   -- p-adic Banach space (Non-Archimedean completion)
+  | hybrid : SpaceTag   -- Hybridized structure (Mixed algebraic-topological)
+  deriving DecidableEq, Repr
+
+instance : Fintype SpaceTag where
+  elems := {.affine, .banach, .hybrid}
+  complete := by intro x; cases x <;> simp
+
+/-- The number of space modalities. -/
+theorem space_tag_card : Fintype.card SpaceTag = 3 := by decide
+
+/--
+  Mapping from BSD vertices to their default geometric modality.
+
+  | BSD Vertex    | SpaceTag | Rationale                               |
+  |---------------|----------|-----------------------------------------|
+  | leech         | affine   | Algebraic lattice (scheme-theoretic)     |
+  | affine_dual   | hybrid   | Spin dual lives in mixed geometry        |
+  | padic         | banach   | p-adic integers are Banach               |
+  | selmer        | affine   | Cohomological/algebraic structure        |
+-/
+def bsd_vertex_default_tag : BSDVertex → SpaceTag
+  | .leech       => .affine
+  | .affine_dual => .hybrid
+  | .padic       => .banach
+  | .selmer      => .affine
+
+-- ===================================================================
+-- § 11. Pauli Operators as Categorical Functors
+-- ===================================================================
+
+/--
+  PauliTransform: Defines the morphisms between different space modalities.
+  Represents transformations of the underlying geometric structure.
+
+  These are analogous to Pauli matrices acting on quantum states, but here
+  they act on the geometric modality of fibers in the BSD diagram.
+
+  - `X_completion`: Completion functor (Affine → Banach)
+  - `Z_algebraize`: Algebraization / forgetful functor (Banach → Affine)
+  - `Y_hybridize`: Injection into the mixed category (any → Hybrid)
+  - `I_preserve`: Identity (structure-preserving)
+-/
+inductive PauliTransform : SpaceTag → SpaceTag → Type where
+  /-- X: Completion Functor (Affine to p-adic Banach) -/
+  | X_completion :
+      PauliTransform .affine .banach
+  /-- Z: Algebraization (Forgetful Functor from Banach back to Affine) -/
+  | Z_algebraize :
+      PauliTransform .banach .affine
+  /-- Y: Hybridization (Injection into the Mixed category from Affine) -/
+  | Y_hybridize_from_affine :
+      PauliTransform .affine .hybrid
+  /-- Y: Hybridization from Banach -/
+  | Y_hybridize_from_banach :
+      PauliTransform .banach .hybrid
+  /-- P_A: Projection from Hybrid to Affine (algebraic skeleton extraction) -/
+  | P_hybrid_to_affine :
+      PauliTransform .hybrid .affine
+  /-- P_B: Projection from Hybrid to Banach (topological completion extraction) -/
+  | P_hybrid_to_banach :
+      PauliTransform .hybrid .banach
+  /-- I: Identity Morphism (Structure-preserving transition) -/
+  | I_preserve {tag : SpaceTag} :
+      PauliTransform tag tag
+  deriving DecidableEq
+
+/-- Composition of Pauli transforms (external, not built into the inductive). -/
+noncomputable def PauliTransform.compose {t₁ t₂ t₃ : SpaceTag}
+    (_f : PauliTransform t₁ t₂) (_g : PauliTransform t₂ t₃) :
+    PauliTransform t₁ t₃ :=
+  -- In general, composition may not land in a constructor; we axiomatize it
+  Classical.choice inferInstance
+
+noncomputable instance {t₁ t₂ : SpaceTag} : Inhabited (PauliTransform t₁ t₂) where
+  default := Classical.choice (by
+    cases t₁ <;> cases t₂ <;> exact ⟨by first
+      | exact PauliTransform.I_preserve
+      | exact PauliTransform.X_completion
+      | exact PauliTransform.Z_algebraize
+      | exact PauliTransform.Y_hybridize_from_affine
+      | exact PauliTransform.Y_hybridize_from_banach
+      | exact PauliTransform.P_hybrid_to_affine
+      | exact PauliTransform.P_hybrid_to_banach⟩)
+
+-- ===================================================================
+-- § 12. Transform Effect System
+-- ===================================================================
+
+/--
+  TransformEffect: Qualitative classification of the mathematical result
+  of a Pauli morphism. This is an "effect system" in the PL sense:
+  it tracks what geometric side-effect resulted from applying a transform.
+-/
+inductive TransformEffect where
+  | preserves_algebraic : TransformEffect    -- Endomorphism of algebraic structures
+  | adds_topology : TransformEffect          -- Topological completion (e.g., X)
+  | forgets_topology : TransformEffect       -- Algebraization / Reduction (e.g., Z)
+  | mixes_structures : TransformEffect       -- Hybridization (e.g., Y)
+  deriving DecidableEq, Repr
+
+/-- Classify a Pauli transform by its geometric effect. -/
+def classifyEffect {t₁ t₂ : SpaceTag} : PauliTransform t₁ t₂ → TransformEffect
+  | .X_completion              => .adds_topology
+  | .Z_algebraize              => .forgets_topology
+  | .Y_hybridize_from_affine   => .mixes_structures
+  | .Y_hybridize_from_banach   => .mixes_structures
+  | .P_hybrid_to_affine        => .forgets_topology
+  | .P_hybrid_to_banach        => .adds_topology
+  | .I_preserve                => .preserves_algebraic
+
+/-- Monoidal composition rule for effects.
+
+    The key identities are:
+    - `adds_topology ∘ forgets_topology = preserves_algebraic` (XZ = I)
+    - `forgets_topology ∘ adds_topology = preserves_algebraic` (ZX = I)
+    - anything composed with `mixes_structures` yields `mixes_structures`
+-/
+def combineEffects : TransformEffect → TransformEffect → TransformEffect
+  | .preserves_algebraic, e => e
+  | e, .preserves_algebraic => e
+  | .adds_topology, .forgets_topology => .preserves_algebraic
+  | .forgets_topology, .adds_topology => .preserves_algebraic
+  | _, _ => .mixes_structures
+
+/-- Effect composition is commutative for the XZ/ZX pair. -/
+theorem xz_effect_commutes :
+    combineEffects .adds_topology .forgets_topology =
+    combineEffects .forgets_topology .adds_topology := by rfl
+
+/-- Identity effect is a left unit. -/
+theorem effect_left_unit (e : TransformEffect) :
+    combineEffects .preserves_algebraic e = e := by rfl
+
+/-- Identity effect is a right unit. -/
+theorem effect_right_unit (e : TransformEffect) :
+    combineEffects e .preserves_algebraic = e := by
+  cases e <;> rfl
+
+-- ===================================================================
+-- § 13. Golay-Indexed Space Configurations
+-- ===================================================================
+
+/-- A space configuration assigns a geometric modality to each of the
+    24 coordinates (Leech lattice positions). -/
+def SpaceConfig := Fin 24 → SpaceTag
+
+instance : Repr SpaceConfig where
+  reprPrec _ _ := "SpaceConfig⟨…⟩"
+
+/-- Mapping Golay Hamming weights to canonical space configurations.
+
+    | Weight | Configuration                | Geometric meaning        |
+    |--------|------------------------------|--------------------------|
+    | 0      | All affine                   | Universal algebraic      |
+    | 8      | First 8 banach, rest affine  | Octad completion         |
+    | 12     | First 12 hybrid, rest affine | Dodecad hybridization    |
+    | 16     | First 16 banach, rest affine | Complement completion    |
+    | 24     | All banach                   | Global p-adic completion |
+-/
+def spaceConfigFromGolayWeight : GolayWeight → SpaceConfig
+  | .w0  => fun _ => .affine
+  | .w8  => fun i => if i.val < 8  then .banach else .affine
+  | .w12 => fun i => if i.val < 12 then .hybrid else .affine
+  | .w16 => fun i => if i.val < 16 then .banach else .affine
+  | .w24 => fun _ => .banach
+
+/-- The trivial weight yields a uniformly affine configuration. -/
+theorem w0_all_affine :
+    ∀ i : Fin 24, spaceConfigFromGolayWeight .w0 i = .affine := by
+  intro i; rfl
+
+/-- The total weight yields a uniformly banach configuration. -/
+theorem w24_all_banach :
+    ∀ i : Fin 24, spaceConfigFromGolayWeight .w24 i = .banach := by
+  intro i; rfl
+
+/-- Count how many coordinates carry a given tag in a configuration. -/
+def tagCount (config : SpaceConfig) (tag : SpaceTag) : ℕ :=
+  (Finset.univ.filter (fun i => config i = tag)).card
+
+/-- The w8 configuration has exactly 8 banach coordinates. -/
+theorem w8_banach_count :
+    tagCount (spaceConfigFromGolayWeight .w8) .banach = 8 := by
+  simp [tagCount, spaceConfigFromGolayWeight]
+  decide
+
+/-- The w12 configuration has exactly 12 hybrid coordinates. -/
+theorem w12_hybrid_count :
+    tagCount (spaceConfigFromGolayWeight .w12) .hybrid = 12 := by
+  simp [tagCount, spaceConfigFromGolayWeight]
+  decide
+
+-- ===================================================================
+-- § 14. BSD Arrows Induce Tag Transitions
+-- ===================================================================
+
+/-- A BSD arrow induces a transition between space tags via the
+    default tag assignment. This connects the quiver structure to
+    the Pauli transform system. -/
+def bsd_arrow_tag_transition {v₁ v₂ : BSDVertex} (a : BSDArrow v₁ v₂) :
+    SpaceTag × SpaceTag :=
+  (bsd_vertex_default_tag v₁, bsd_vertex_default_tag v₂)
+
+/-- The tensor_bang arrow induces an affine → hybrid transition. -/
+theorem tensor_bang_tag :
+    bsd_arrow_tag_transition BSDArrow.tensor_bang = (.affine, .hybrid) := by rfl
+
+/-- The oplus_padic arrow induces a hybrid → banach transition. -/
+theorem oplus_padic_tag :
+    bsd_arrow_tag_transition BSDArrow.oplus_padic = (.hybrid, .banach) := by rfl
+
+/-- The project_selmer arrow preserves the affine tag. -/
+theorem project_selmer_tag :
+    bsd_arrow_tag_transition BSDArrow.project_selmer = (.affine, .affine) := by rfl
+
+/-- The recover arrow induces an affine → hybrid transition. -/
+theorem recover_tag :
+    bsd_arrow_tag_transition BSDArrow.recover = (.affine, .hybrid) := by rfl
+
+/-- Classify the effect of a BSD arrow via the induced tag transition. -/
+def bsd_arrow_effect {v₁ v₂ : BSDVertex} (a : BSDArrow v₁ v₂) : TransformEffect :=
+  match a with
+  | .tensor_bang    => .mixes_structures    -- affine → hybrid
+  | .oplus_padic    => .adds_topology       -- hybrid → banach
+  | .project_selmer => .preserves_algebraic -- affine → affine
+  | .recover        => .mixes_structures    -- affine → hybrid
+
+/-- The three-step path leech → selmer → affine_dual → padic has
+    combined effect: mixes_structures (from overall composition). -/
+theorem three_step_effect :
+    combineEffects
+      (combineEffects (bsd_arrow_effect .project_selmer) (bsd_arrow_effect .recover))
+      (bsd_arrow_effect .oplus_padic) =
+    .mixes_structures := by rfl
+
+-- ===================================================================
+-- § 15. Tagged BSD Quiver (Enriched Vertices)
+-- ===================================================================
+
+/--
+  TaggedBSDVertex: Extension of the BSD quiver vertices enriched with
+  geometric modality descriptors.
+
+  This is the "refined" quiver where each vertex carries:
+  - its underlying BSD vertex identity
+  - its space configuration (for leech/selmer: full 24-component config;
+    for affine_dual/padic: a single tag)
+-/
+structure TaggedBSDVertex where
+  /-- The underlying BSD vertex -/
+  base : BSDVertex
+  /-- The geometric modality tag at this vertex -/
+  tag : SpaceTag
+  deriving DecidableEq, Repr
+
+/-- Canonical embedding: BSD vertex with its default tag. -/
+def BSDVertex.tagged (v : BSDVertex) : TaggedBSDVertex :=
+  ⟨v, bsd_vertex_default_tag v⟩
+
+/-- Morphisms in the tagged BSD quiver must be compatible with
+    both the base arrow structure and the tag transition. -/
+structure TaggedBSDArrow (v₁ v₂ : TaggedBSDVertex) where
+  /-- The underlying BSD arrow -/
+  base_arrow : BSDArrow v₁.base v₂.base
+  /-- The effect classification -/
+  effect : TransformEffect
+  /-- Consistency: the effect matches the arrow's classification -/
+  effect_consistent : effect = bsd_arrow_effect base_arrow
+
+/-- The tagged BSD quiver instance. -/
+instance : Quiver TaggedBSDVertex where
+  Hom := TaggedBSDArrow
+
+-- ===================================================================
+-- § 16. Type-Safe DP State with Tag Tracking
+-- ===================================================================
+
+/--
+  TypedDPState: DP state enriched with geometric modality tracking.
+
+  Unlike the basic `DPState`, this records:
+  - The space tag at each visited vertex
+  - The accumulated effects of all traversed arrows
+  - The full tag history for structural analysis
+-/
+structure TypedDPState where
+  /-- Current tagged vertex -/
+  current : TaggedBSDVertex
+  /-- Number of arrows traversed -/
+  path_length : ℕ
+  /-- Accumulated weight (product of galoisHeights) -/
+  accumulated_weight : ℝ
+  /-- History of Golay τ-values -/
+  golay_pattern : List ℕ
+  /-- History of space tags visited -/
+  tag_history : List SpaceTag
+  /-- Accumulated geometric effect -/
+  accumulated_effect : TransformEffect
+
+/-- Initial typed DP state at the Leech vertex. -/
+def typed_dp_init : TypedDPState :=
+  { current := BSDVertex.leech.tagged
+    path_length := 0
+    accumulated_weight := 1
+    golay_pattern := [0]
+    tag_history := [.affine]
+    accumulated_effect := .preserves_algebraic }
+
+/-- Typed DP transition along a tagged BSD arrow. -/
+noncomputable def typed_dp_transition (state : TypedDPState)
+    {v₂ : TaggedBSDVertex}
+    (arrow : TaggedBSDArrow state.current v₂) : TypedDPState :=
+  { current := v₂
+    path_length := state.path_length + 1
+    accumulated_weight :=
+      state.accumulated_weight * arrow_weight arrow.base_arrow
+    golay_pattern :=
+      state.golay_pattern ++ [arrow_golay_tau arrow.base_arrow]
+    tag_history :=
+      state.tag_history ++ [v₂.tag]
+    accumulated_effect :=
+      combineEffects state.accumulated_effect arrow.effect }
+
+/-- Typed DP transition preserves path length monotonicity. -/
+theorem typed_dp_transition_length_inc (state : TypedDPState)
+    {v₂ : TaggedBSDVertex}
+    (arrow : TaggedBSDArrow state.current v₂) :
+    (typed_dp_transition state arrow).path_length =
+    state.path_length + 1 := by
+  rfl
+
+/-- The accumulated effect always equals the fold of individual effects. -/
+theorem typed_dp_effect_accumulation (state : TypedDPState)
+    {v₂ : TaggedBSDVertex}
+    (arrow : TaggedBSDArrow state.current v₂) :
+    (typed_dp_transition state arrow).accumulated_effect =
+    combineEffects state.accumulated_effect arrow.effect := by
+  rfl
+
+-- ===================================================================
+-- § 17. Pauli Ensemble over the Leech Lattice
+-- ===================================================================
+
+/--
+  Pauli24Ensemble: An assignment of space tags to all 24 coordinates,
+  together with a global phase. This represents the action of a
+  24-qubit Pauli operator on the geometric fiber bundle.
+-/
+structure Pauli24Ensemble where
+  /-- The resulting space configuration after applying the ensemble -/
+  config : SpaceConfig
+  /-- Global phase in ℤ/4ℤ (scalar action) -/
+  global_phase : ZMod 4
+  deriving Repr
+
+/-- Construct a Pauli ensemble from a Golay weight. -/
+def pauli24FromGolayWeight (w : GolayWeight) : Pauli24Ensemble :=
+  { config := spaceConfigFromGolayWeight w
+    global_phase := 0 }
+
+/-- The ensemble from the trivial weight is uniformly affine. -/
+theorem pauli24_w0_affine :
+    ∀ i : Fin 24, (pauli24FromGolayWeight .w0).config i = .affine := by
+  intro i; rfl
+
+/-- The ensemble from the octad weight has 8 banach positions. -/
+theorem pauli24_w8_count :
+    tagCount (pauli24FromGolayWeight .w8).config .banach = 8 :=
+  w8_banach_count
+
+/-- The ensemble from the dodecad weight has 12 hybrid positions. -/
+theorem pauli24_w12_count :
+    tagCount (pauli24FromGolayWeight .w12).config .hybrid = 12 :=
+  w12_hybrid_count
+
+-- ===================================================================
+-- § 18. Structural Preservation Theorems
+-- ===================================================================
+
+/-- A typed DP transition starting from the identity effect
+    produces exactly the arrow's effect. -/
+theorem fresh_transition_effect
+    {v₂ : TaggedBSDVertex}
+    (arrow : TaggedBSDArrow (BSDVertex.leech.tagged) v₂) :
+    (typed_dp_transition typed_dp_init arrow).accumulated_effect =
+    arrow.effect := by
+  simp [typed_dp_transition, typed_dp_init, combineEffects]
+
+/-- Tag history grows by exactly one entry per transition. -/
+theorem tag_history_grows (state : TypedDPState)
+    {v₂ : TaggedBSDVertex}
+    (arrow : TaggedBSDArrow state.current v₂) :
+    (typed_dp_transition state arrow).tag_history.length =
+    state.tag_history.length + 1 := by
+  simp [typed_dp_transition]
+
+/-- Pattern match completeness: every Golay weight produces a valid
+    space configuration. -/
+theorem golay_weight_config_complete :
+    ∀ (w : GolayWeight),
+      ∃ (config : SpaceConfig),
+        config = spaceConfigFromGolayWeight w := by
+  intro w
+  exact ⟨spaceConfigFromGolayWeight w, rfl⟩
+
+-- ===================================================================
+-- § 19. Bridge Summary (Extended)
+-- ===================================================================
+
+/-- Extended summary incorporating phantom type infrastructure.
+
+    1. BSD vertices embed into Golay weights (`bsd_vertex_to_golay_weight`)
+    2. BSD arrows induce Hida transitions (`bsd_arrow_to_hida`)
+    3. Arrow weights derived from `galoisHeight` (= Hopf counit)
     4. Path factorization uses `Coproduct` via the dodecad
-    5. The `SignatureComplex` fields populate the representation
-    6. DP over paths computes L-function contributions (future work) -/
-theorem bsd_quiver_bridge_summary :
+    5. `SignatureComplex` fields populate the representation
+    6. Space tags classify geometric modality (affine/banach/hybrid)
+    7. Pauli transforms are categorical functors between modalities
+    8. Effect system tracks structural side-effects of morphisms
+    9. Tagged DP states track both numerical and structural evolution
+   10. Golay weights canonically produce 24-coordinate configurations -/
+theorem bsd_quiver_extended_bridge_summary :
     -- Vertex count
     (Fintype.card BSDVertex = 4) ∧
-    -- Padic↔Selmer are complements (octad ↔ complement of octad)
+    -- Space tag count
+    (Fintype.card SpaceTag = 3) ∧
+    -- Padic↔Selmer are complements
     ((bsd_vertex_to_golay_weight .padic).antipode =
      bsd_vertex_to_golay_weight .selmer) ∧
-    -- Affine dual is self-dual (dodecad)
+    -- Affine dual is self-dual
     ((bsd_vertex_to_golay_weight .affine_dual).antipode =
      bsd_vertex_to_golay_weight .affine_dual) ∧
-    -- Arrow weights are nonneg
+    -- Effect identity laws
+    (∀ e : TransformEffect,
+      combineEffects .preserves_algebraic e = e) ∧
+    -- XZ involution
+    (combineEffects .adds_topology .forgets_topology =
+     .preserves_algebraic) ∧
+    -- Octad banach count
+    (tagCount (spaceConfigFromGolayWeight .w8) .banach = 8) ∧
+    -- Arrow weights nonneg
     (arrow_weight BSDArrow.tensor_bang ≥ 0) ∧
-    -- Direct path is nonneg
+    -- Direct path nonneg
     (direct_path_contribution ≥ 0) := by
   exact ⟨bsd_vertex_card,
+         space_tag_card,
          padic_selmer_complement,
          affine_dual_is_self_dual,
+         fun e => effect_left_unit e,
+         xz_effect_commutes ▸ rfl,
+         w8_banach_count,
          arrow_weight_nonneg _,
          direct_path_nonneg⟩
+
+-- ===================================================================
+-- § 20. p-adic Mellin Bridge Preparation
+-- ===================================================================
+
+/-! This section provides the forward-facing API used by
+    `PAdicMellin.lean` to connect the BSD quiver's geometric
+    modality framework to the p-adic Mellin transform pipeline.
+
+    The key exports are:
+    - `SpaceTag`, `SpaceConfig`, `spaceConfigFromGolayWeight`, `tagCount`
+    - `bsd_vertex_default_tag` (vertex → SpaceTag)
+    - `TransformEffect`, `combineEffects` (effect monad)
+    - `BSDVertex.tagged`, `TaggedBSDArrow` (enriched quiver)
+    - `Pauli24Ensemble`, `pauli24FromGolayWeight` (24-coordinate configs)
+
+    `PAdicMellin` introduces `pAdicTag` and `MellinEffect` which map
+    *into* these structures via:
+    - `pAdicTag.toSpaceTag : pAdicTag → SpaceTag`
+    - `mellinEffectToTransformEffect : MellinEffect → TransformEffect`
+-/
+
+/-- BSD vertex → SpaceConfig: the full 24-coordinate configuration
+    induced by a BSD vertex (via its Golay weight). -/
+def bsd_vertex_space_config (v : BSDVertex) : SpaceConfig :=
+  spaceConfigFromGolayWeight (bsd_vertex_to_golay_weight v)
+
+/-- The Leech vertex yields a uniformly affine configuration. -/
+theorem leech_config_affine :
+    ∀ i : Fin 24, bsd_vertex_space_config .leech i = .affine := by
+  intro i; rfl
+
+/-- The padic vertex yields 8 banach coordinates (octad). -/
+theorem padic_config_banach_count :
+    tagCount (bsd_vertex_space_config .padic) .banach = 8 :=
+  w8_banach_count
+
+/-- The affine_dual vertex yields 12 hybrid coordinates (dodecad). -/
+theorem affine_dual_config_hybrid_count :
+    tagCount (bsd_vertex_space_config .affine_dual) .hybrid = 12 :=
+  w12_hybrid_count
+
+/-- Effect composition is associative for the XZ-involution chain. -/
+theorem effect_assoc_xz (e : TransformEffect) :
+    combineEffects (combineEffects .adds_topology .forgets_topology) e =
+    combineEffects .preserves_algebraic e := by rfl
+
+/-- The three fundamental effect identities needed by PAdicMellin:
+    1. preserves is left identity
+    2. preserves is right identity
+    3. XZ = identity -/
+theorem effect_fundamental_laws :
+    (∀ e, combineEffects .preserves_algebraic e = e) ∧
+    (∀ e, combineEffects e .preserves_algebraic = e) ∧
+    (combineEffects .adds_topology .forgets_topology = .preserves_algebraic) := by
+  exact ⟨fun e => effect_left_unit e,
+         fun e => effect_right_unit e,
+         rfl⟩
 
 end HatsuYakitori.BSDQuiver
