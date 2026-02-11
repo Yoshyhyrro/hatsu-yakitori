@@ -287,7 +287,7 @@ theorem galoisHeight_golay_bounded :
     simp only [counit]
     cases w with
     | w0 => simp [GolayWeight.toNat, galoisHeight_zero]; unfold galoisHeightBound; norm_num
-    | _ => apply galoisHeight_bounded <;> simp [GolayWeight.toNat]
+    | _ => apply galoisHeight_bounded; simp [GolayWeight.toNat]
 
 /-- For the weight 24 (the maximum Golay weight), galoisHeight is nonneg. -/
 theorem galoisHeight_24_nonneg : galoisHeight 24 ≥ 0 :=

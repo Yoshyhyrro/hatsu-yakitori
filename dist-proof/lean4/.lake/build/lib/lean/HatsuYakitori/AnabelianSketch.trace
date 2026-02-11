@@ -1,8 +1,8 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["1d123dd38283ad8d.olean"],
-  "i": "8db87cf5981026a3.ilean",
+ {"o": ["cb50d49a4c8849c8.olean"],
+  "i": "9c9f20931a57bed1.ilean",
   "c": "225ad77473a878ca.c"},
  "log":
  [{"message":
@@ -37,9 +37,6 @@
    "level": "warning"},
   {"message":
    "HatsuYakitori/AnabelianSketch.lean:207:8: declaration uses `sorry`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/AnabelianSketch.lean:290:38: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice\n\nNote: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
    "level": "warning"},
   {"message":
    "HatsuYakitori/AnabelianSketch.lean:340:5: unused variable `h2`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
@@ -79,7 +76,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\AnabelianSketch.lean",
-   "304d4bc3e7e8ca72"],
+   "0c965ec51fc5e966"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "3ebd323b4dc39640"}
+ "depHash": "02d01113484a6f8c"}
