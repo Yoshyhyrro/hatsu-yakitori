@@ -496,8 +496,16 @@ inductive PauliTransform : SpaceTag → SpaceTag → Type where
 noncomputable def PauliTransform.compose {t₁ t₂ t₃ : SpaceTag}
     (_f : PauliTransform t₁ t₂) (_g : PauliTransform t₂ t₃) :
     PauliTransform t₁ t₃ :=
-  -- In general, composition may not land in a constructor; we axiomatize it
-  Classical.choice inferInstance
+  -- In general, composition may not land in a constructor; we pick a canonical inhabitant
+  Classical.choice (by
+    cases t₁ <;> cases t₃ <;> exact ⟨by first
+      | exact PauliTransform.I_preserve
+      | exact PauliTransform.X_completion
+      | exact PauliTransform.Z_algebraize
+      | exact PauliTransform.Y_hybridize_from_affine
+      | exact PauliTransform.Y_hybridize_from_banach
+      | exact PauliTransform.P_hybrid_to_affine
+      | exact PauliTransform.P_hybrid_to_banach⟩)
 
 noncomputable instance {t₁ t₂ : SpaceTag} : Inhabited (PauliTransform t₁ t₂) where
   default := Classical.choice (by

@@ -19,6 +19,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_ExteriorAnalysis_0__HatsuYakitori_ExteriorAnalysis_instReprExteriorDegree_repr_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_ExteriorAnalysis_0__HatsuYakitori_ExteriorAnalysis_tauToExteriorDegree_match__1_splitter(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_exterior__duality___nativeDecide__1__2___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_convert__degree__to__fin___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_ExteriorDegree_twentyFour_elim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_exteriorDegreeToOrbit___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_exterior__duality___nativeDecide__1__3___closed__1;
@@ -105,6 +106,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_exteriorProduct___boxed(lean_object*, lean_object*);
 static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_exterior__duality___nativeDecide__1__2___closed__4;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_ExteriorDegree_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_convert__degree__to__fin(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_ExteriorDegree_twentyFour_elim___redArg___boxed(lean_object*);
 uint8_t lean_nat_dec_le(lean_object*, lean_object*);
 lean_object* lean_nat_add(lean_object*, lean_object*);
@@ -1633,6 +1635,52 @@ x_2 = lean_unbox(x_1);
 x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_exteriorDegreeToOrbit(x_2);
 x_4 = lean_box(x_3);
 return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_convert__degree__to__fin(uint8_t x_1) {
+_start:
+{
+switch (x_1) {
+case 0:
+{
+lean_object* x_2; 
+x_2 = lean_unsigned_to_nat(0u);
+return x_2;
+}
+case 1:
+{
+lean_object* x_3; 
+x_3 = lean_unsigned_to_nat(8u);
+return x_3;
+}
+case 2:
+{
+lean_object* x_4; 
+x_4 = lean_unsigned_to_nat(12u);
+return x_4;
+}
+case 3:
+{
+lean_object* x_5; 
+x_5 = lean_unsigned_to_nat(16u);
+return x_5;
+}
+default: 
+{
+lean_object* x_6; 
+x_6 = lean_unsigned_to_nat(24u);
+return x_6;
+}
+}
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_convert__degree__to__fin___boxed(lean_object* x_1) {
+_start:
+{
+uint8_t x_2; lean_object* x_3; 
+x_2 = lean_unbox(x_1);
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_ExteriorAnalysis_convert__degree__to__fin(x_2);
+return x_3;
 }
 }
 lean_object* initialize_Init(uint8_t builtin);
