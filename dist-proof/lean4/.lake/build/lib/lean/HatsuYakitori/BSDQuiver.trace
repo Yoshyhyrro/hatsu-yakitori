@@ -36,7 +36,7 @@
         ["HatsuYakitori.HopfStructure:importAllArts", "16ede2e9bef49d93"],
         ["HatsuYakitori.AnabelianSketch transitive imports (legacy)",
          "66ce6df90efef133"],
-        ["HatsuYakitori.AnabelianSketch:importAllArts", "d961009e9cc214e9"]]]]],
+        ["HatsuYakitori.AnabelianSketch:importAllArts", "b4c43543977d0715"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -48,4 +48,4 @@
    "bc265624276e92b7"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "6cf3a21cf8e3803d"}
+ "depHash": "8b857046acf1f8a2"}

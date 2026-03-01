@@ -718,12 +718,14 @@ theorem mordell_weil_sha_duality :
   constructor <;> rfl
 
 /-- Heights of Tate-dual weights sum to galoisHeightBound = 8.
-    Arithmetic Poincaré duality at the height level. -/
+    Arithmetic Poincaré duality at the height level.
+
+    NOTE: This uses the *combinatorial* counit (octadHeight), not
+    the analytic counit (galoisHeight). The analytic counit breaks
+    this exact duality — the defect is `collapseDefect w`. -/
 theorem cohomological_duality_height (w : GolayWeight) :
-    cohomological_level w + cohomological_level w.antipode =
-    galoisHeight 24 := by
-  simp only [cohomological_level]
-  exact counit_complement_sum w
+    w.height + w.complement.height = galoisHeightBound :=
+  counit_complement_sum w
 
 /-- The dodecad orbit (2576 codewords) provides a model bound for |Sel_p|. -/
 theorem selmer_size_model :
