@@ -1,7 +1,7 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["ba2d6c0d0d0af9ba.olean"],
+ {"o": ["1e8b149effa8186b.olean"],
   "i": "fa0f08ffc5c55b56.ilean",
   "c": "ed0f9f2b960ef95f.c"},
  "log":
@@ -33,10 +33,10 @@
         ["HatsuYakitori.MachineConstants:importAllArts", "c729777dabad0c63"],
         ["HatsuYakitori.HopfStructure transitive imports (legacy)",
          "3f3f449e89b60a0a"],
-        ["HatsuYakitori.HopfStructure:importAllArts", "16ede2e9bef49d93"],
+        ["HatsuYakitori.HopfStructure:importAllArts", "b220afa9f8ed07c8"],
         ["HatsuYakitori.AnabelianSketch transitive imports (legacy)",
-         "66ce6df90efef133"],
-        ["HatsuYakitori.AnabelianSketch:importAllArts", "b4c43543977d0715"]]]]],
+         "18814abed65104d0"],
+        ["HatsuYakitori.AnabelianSketch:importAllArts", "acc3512790603915"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -48,4 +48,4 @@
    "bc265624276e92b7"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "8b857046acf1f8a2"}
+ "depHash": "7c8960fc8c63f2e1"}

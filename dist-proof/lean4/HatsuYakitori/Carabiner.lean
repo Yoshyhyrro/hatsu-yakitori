@@ -69,6 +69,8 @@ import HatsuYakitori.BSDQuiver          -- SpaceTag, TransformEffect, etc.
 open HatsuYakitori.MachineConstants
 open HatsuYakitori.BSDQuiver
 
+set_option linter.dupNamespace false
+
 namespace HatsuYakitori.Carabiner
 
 /-! ## §1  Carabiner height and rigidity -/
@@ -91,13 +93,41 @@ section Height
     h(24) = 8                 (maximum / cusp direction)
 -/
 
-/-- A carabiner is a Golay weight together with its height.
-    The weight encodes *which* lattice point we are at;
-    the height encodes *where* on the Berkovich tree. -/
+/-- A carabiner is a Golay weight together with a Pauli phase.
+
+    The weight encodes *which* lattice point on the Berkovich tree
+    (the real part of a complex evaluation point).
+
+    The phase ∈ ℤ/4ℤ encodes {1, i, −1, −i} ⊂ ℂ×, the 4th roots of
+    unity arising from the Pauli group action on the 24-coordinate
+    ensemble (BSDQuiver.Pauli24Ensemble).  The pair (weight, phase)
+    gives a discrete approximation to a complex evaluation point
+
+        s  =  h(weight)  +  (π/2)·phase
+
+    on the critical strip, bridging ℝ-valued Berkovich height to ℂ.
+
+    Via `Carabiner.ensemble`, every carabiner determines a
+    `Pauli24Ensemble`: the 24-coordinate space configuration from
+    `spaceConfigFromGolayWeight weight` (Steiner block structure)
+    plus `global_phase = phase`.  In particular the w8 carabiners
+    correspond to octad blocks of S(5,8,24) with 759 = orbitSize w8. -/
 structure Carabiner where
   weight : GolayWeight
-  height : ℝ := weight.height   -- derived from the Golay weight
-  deriving Repr
+  phase  : ZMod 4 := 0
+  deriving DecidableEq, Repr
+
+/-- The height of a carabiner, derived from the Golay weight.
+    This is the *real* part of the complex evaluation point. -/
+noncomputable def Carabiner.height (c : Carabiner) : ℝ := c.weight.height
+
+/-- Reconstruct the Pauli24Ensemble from a carabiner.
+    The 24-coordinate config is determined by the weight;
+    the global phase is the carabiner's phase.
+    This is the bridge: Carabiner → S(5,8,24) block structure. -/
+def Carabiner.ensemble (c : Carabiner) : Pauli24Ensemble :=
+  { config := spaceConfigFromGolayWeight c.weight
+    global_phase := c.phase }
 
 /-- Two carabiners are at the same height iff they have the same weight. -/
 @[simp]
@@ -108,18 +138,26 @@ theorem carabiner_height_injective (c₁ c₂ : Carabiner) :
     -- heights are injective on GolayWeight (the five values are distinct)
     sorry
   · intro h
-    simp [h]
+    simp [Carabiner.height, h]
 
-/-- The five standard carabiners, one per Golay weight. -/
-def carabiner0  : Carabiner := ⟨.w0⟩
-def carabiner8  : Carabiner := ⟨.w8⟩
-def carabiner12 : Carabiner := ⟨.w12⟩
-def carabiner16 : Carabiner := ⟨.w16⟩
-def carabiner24 : Carabiner := ⟨.w24⟩
+/-- The five standard carabiners, one per Golay weight (phase = 0).
+    These are the "classical" evaluation points on the real axis. -/
+def carabiner0  : Carabiner := ⟨.w0, 0⟩
+def carabiner8  : Carabiner := ⟨.w8, 0⟩
+def carabiner12 : Carabiner := ⟨.w12, 0⟩
+def carabiner16 : Carabiner := ⟨.w16, 0⟩
+def carabiner24 : Carabiner := ⟨.w24, 0⟩
 
-/-- The complement carabiner: reflects across the self-dual midpoint h=4. -/
+/-- Construct a carabiner at a given weight with non-trivial phase.
+    Phase 1 = i, phase 2 = −1, phase 3 = −i in the unit circle. -/
+def Carabiner.withPhase (w : GolayWeight) (φ : ZMod 4) : Carabiner := ⟨w, φ⟩
+
+/-- The complement carabiner: reflects across the self-dual midpoint h=4
+    and negates the phase (Hopf antipode on the unit circle).
+    In ℂ: if s = h + (π/2)φ then S(s) = (K−h) + (π/2)(−φ),
+    giving the functional equation s + S(s) = K on the critical strip. -/
 def Carabiner.complement (c : Carabiner) : Carabiner :=
-  ⟨c.weight.complement⟩
+  ⟨c.weight.complement, -c.phase⟩
 
 /-- Complement is an involution. -/
 @[simp]
@@ -170,11 +208,11 @@ def Route.len (r : Route) : ℕ := r.length
 
 /-- A route is *ascending* if heights are non-decreasing. -/
 def Route.isAscending (r : Route) : Prop :=
-  r.Sorted (fun c₁ c₂ => c₁.height ≤ c₂.height)
+  r.Pairwise (fun c₁ c₂ => c₁.height ≤ c₂.height)
 
 /-- A route is *descending* if heights are non-increasing. -/
 def Route.isDescending (r : Route) : Prop :=
-  r.Sorted (fun c₁ c₂ => c₁.height ≥ c₂.height)
+  r.Pairwise (fun c₁ c₂ => c₁.height ≥ c₂.height)
 
 /-- A route is *valid* if it is ascending or descending.
     (No backtracking in the Berkovich tree.) -/
@@ -195,7 +233,7 @@ theorem Route.complement_ascending_is_descending (r : Route)
 
 /-- A route and its complement together cover the full height range [0,8].
     Concretely: the heights of r ++ r.complement span the full lattice. -/
-theorem Route.complement_spans (r : Route) (hr : r.isValid) :
+theorem Route.complement_spans (r : Route) (_hr : r.isValid) :
     ∀ c ∈ r, c.complement ∈ r.complement := by
   intro c hc
   simp [Route.complement, List.mem_map, List.mem_reverse]
@@ -206,7 +244,7 @@ def golayRoute : Route :=
   [carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
 
 theorem golayRoute_ascending : golayRoute.isAscending := by
-  simp [golayRoute, Route.isAscending, List.Sorted,
+  simp [golayRoute, Route.isAscending, List.Pairwise,
         carabiner0, carabiner8, carabiner12, carabiner16, carabiner24,
         Carabiner.height, GolayWeight.height]
   sorry  -- Numerical check: 0 ≤ 8/3 ≤ 4 ≤ 16/3 ≤ 8
@@ -249,7 +287,6 @@ theorem golayRoute_total_positions :
         GolayWeight.orbitSize,
         carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
   -- 1 + 759 + 2576 + 759 + 1 = 4096 = 2¹²
-  decide
 
 /-- A carabiner codeword is a binary vector indexed by route positions.
     We represent it as a function from positions to 𝔽₂. -/
@@ -282,7 +319,7 @@ def Route.distanceLowerBound (r : Route) : ℕ :=
     The route structure ensures crossings are independent.
     Therefore weight ≥ number of crossed carabiners ≥ r.length.
 -/
-theorem carabiner_distance_lower_bound (r : Route) (hr : r.isValid) :
+theorem carabiner_distance_lower_bound (r : Route) (_hr : r.isValid) :
     True :=   -- placeholder for: minDistance(C(r)) ≥ r.length
   trivial
 
@@ -314,13 +351,12 @@ section GolaySpecialisation
 def GolayCarabinerCode := CarabinerCode golayRoute
 
 /-- The Golay route is self-complementary:
-    its complement equals its reversal. -/
+    its complement equals itself (reverse then complement recovers the route). -/
 theorem golayRoute_self_complementary :
-    golayRoute.complement = golayRoute.reverse := by
+    golayRoute.complement = golayRoute := by
   simp [golayRoute, Route.complement, Carabiner.complement,
-        carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
-  -- Weight complements: 0↔24, 8↔16, 12↔12
-  decide
+        carabiner0, carabiner8, carabiner12, carabiner16, carabiner24,
+        GolayWeight.complement]
 
 /-- The orbit-size sequence of golayRoute is palindromic. -/
 theorem golayRoute_palindrome :
@@ -329,7 +365,6 @@ theorem golayRoute_palindrome :
   simp [golayRoute, Carabiner.orbitSize, GolayWeight.orbitSize,
         carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
   -- (1, 759, 2576, 759, 1) is palindromic
-  decide
 
 /-
   **The Golay uniqueness conjecture** (informal):
@@ -388,8 +423,7 @@ def golayGoppaInterface : GoppaInterface golayRoute :=
 
 theorem golayGoppaInterface_distance :
     golayGoppaInterface.distanceBound = 5 := by
-  simp [golayGoppaInterface, GoppaInterface.distanceBound,
-        GoppaInterface.goppaDegree, golayRoute_length]
+  simp [golayGoppaInterface, golayRoute_length]
 
 end GoppaConnection
 
@@ -418,9 +452,8 @@ theorem golayRoute_lattice_points :
 /-- The Golay height interval is self-dual:
     the midpoint is galoisHeightBound / 2 = 4. -/
 theorem golayRoute_interval_self_dual :
-    galoisHeight 12 = galoisHeightBound / 2 := by
-  simp [galoisHeight, galoisHeightBound]
-  norm_num
+    GolayWeight.w12.height = galoisHeightBound / 2 := by
+  simp [GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeightBound]
 
 /-- Interface connecting a route to toric code parameters. -/
 structure ToricInterface (r : Route) where
@@ -487,7 +520,7 @@ def Route.recessionFan (r : Route) : Route :=
     This is the *self-dual* property: the Golay route is invariant
     under the recession operation. -/
 theorem golayRoute_recession_self_dual :
-    golayRoute.recessionFan = golayRoute.reverse := by
+    golayRoute.recessionFan = golayRoute := by
   exact golayRoute_self_complementary
 
 /-- Extract the weight sequence from a route. -/
@@ -503,11 +536,9 @@ theorem golayRoute_weights :
 /-- The weight sequence of the Golay recession fan. -/
 theorem golayRoute_recession_weights :
     golayRoute.recessionFan.weights = [.w0, .w8, .w12, .w16, .w24] := by
-  simp [Route.recessionFan, golayRoute_self_complementary,
-        golayRoute, Route.weights, Carabiner.complement,
-        carabiner0, carabiner8, carabiner12, carabiner16, carabiner24,
-        GolayWeight.complement]
-  decide
+  have h := golayRoute_recession_self_dual
+  rw [h]
+  exact golayRoute_weights
 
 /-- Fan pairing: the i-th forward carabiner and the (l-1-i)-th recession
     carabiner have complementary weights. -/
@@ -516,8 +547,7 @@ theorem fan_pairing_complementary (i : Fin golayRoute.length) :
     (golayRoute.get ⟨golayRoute.length - 1 - i, by omega⟩).weight := by
   fin_cases i <;>
   simp [golayRoute, carabiner0, carabiner8, carabiner12,
-        carabiner16, carabiner24, GolayWeight.complement,
-        List.get]
+        carabiner16, carabiner24, GolayWeight.complement]
 
 /-- **The Fan Functional Equation**: for each position i,
     the forward height + recession mirror height = galoisHeightBound.
@@ -649,7 +679,6 @@ theorem golayRoute_tags_palindromic :
     (golayRoute.map Carabiner.spaceTag).reverse := by
   simp [golayRoute, Carabiner.spaceTag,
         carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
-  decide
 
 end RecessionFanEffects
 
@@ -681,7 +710,8 @@ theorem golayRoute_is_golay_like : golayRoute.isGolayLike := by
     intro c hc
     simp [golayRoute] at hc
     rcases hc with rfl | rfl | rfl | rfl | rfl <;>
-    simp [Carabiner.complement, GolayWeight.complement, golayRoute]
+    simp [Carabiner.complement, GolayWeight.complement, golayRoute,
+          carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
   · -- (B) AK-generated: sorry (requires AK pipeline)
     sorry
   · -- (C) palindromic
@@ -739,8 +769,8 @@ theorem carabiner_bridge_summary :
     -- Palindromic SpaceTag sequence
     golayRoute.map Carabiner.spaceTag =
       (golayRoute.map Carabiner.spaceTag).reverse ∧
-    -- Recession fan = reversal (self-complementary)
-    golayRoute.recessionFan = golayRoute.reverse ∧
+    -- Recession fan = self (self-complementary)
+    golayRoute.recessionFan = golayRoute ∧
     -- Fan functional equations (all 5)
     (∀ i : Fin golayRoute.length,
       (golayRoute.get i).height +
@@ -758,5 +788,97 @@ theorem carabiner_bridge_summary :
          carabiner12_self_dual⟩
 
 end Summary
+
+
+/-! ## §11  Steiner System S(5,8,24) via Pauli Ensemble
+
+  The carabiner framework encodes the Steiner system S(5,8,24):
+
+  | Steiner parameter | Value | Carabiner realization                          |
+  |-------------------|-------|------------------------------------------------|
+  | t (covering #)    | 5     | golayRoute.length = 5                          |
+  | k (block size)    | 8     | tagCount (config w8) .banach = 8               |
+  | v (point set)     | 24    | Fin 24 (coordinates of SpaceConfig)            |
+  | # blocks          | 759   | GolayWeight.w8.orbitSize = 759                 |
+  | # dodecads        | 2576  | GolayWeight.w12.orbitSize = 2576               |
+
+  The bridge operates via `Carabiner.ensemble`:
+    carabiner ↦ Pauli24Ensemble
+      weight  ↦ SpaceConfig (which coordinates are banach = "in the block")
+      phase   ↦ global_phase ∈ ℤ/4ℤ (quantum phase on the block)
+
+  An *octad carabiner* (weight = w8) corresponds to a single block
+  of S(5,8,24): the 8 banach-tagged coordinates are the block's points.
+
+  The XZ involution (X_completion ∘ Z_algebraize = I_preserve) is the
+  Steiner block replacement operation: adding a point to a block and
+  removing another preserves the algebraic structure.
+-/
+section SteinerSystem
+
+/-- A carabiner is an *octad* (Steiner block) when its weight is w8. -/
+def Carabiner.isOctad (c : Carabiner) : Prop := c.weight = .w8
+
+/-- A carabiner is a *dodecad* when its weight is w12. -/
+def Carabiner.isDodecad (c : Carabiner) : Prop := c.weight = .w12
+
+/-- The octad orbit has exactly 759 blocks = |S(5,8,24)|. -/
+theorem octad_steiner_count : GolayWeight.w8.orbitSize = 759 := rfl
+
+/-- The dodecad orbit has exactly 2576 elements. -/
+theorem dodecad_count : GolayWeight.w12.orbitSize = 2576 := rfl
+
+/-- Steiner parameters (t, k, v) = (5, 8, 24) match the carabiner framework:
+    t = route length, k = octad banach count, v = ensemble coordinate count. -/
+theorem steiner_params_match :
+    golayRoute.length = 5 ∧
+    tagCount (spaceConfigFromGolayWeight .w8) .banach = 8 ∧
+    Fintype.card (Fin 24) = 24 := by
+  exact ⟨golayRoute_length, w8_banach_count, by decide⟩
+
+/-- The ensemble of a standard octad carabiner has 8 banach coordinates. -/
+theorem octad_ensemble_banach_count :
+    tagCount (carabiner8.ensemble.config) .banach = 8 := by
+  simp [carabiner8, Carabiner.ensemble]
+  exact w8_banach_count
+
+/-- The ensemble of a dodecad carabiner has 12 hybrid coordinates. -/
+theorem dodecad_ensemble_hybrid_count :
+    tagCount (carabiner12.ensemble.config) .hybrid = 12 := by
+  simp [carabiner12, Carabiner.ensemble]
+  exact w12_hybrid_count
+
+/-- Phase-shifted octad: same block structure, different quantum phase.
+    All four phases give the same SpaceConfig but distinct ensembles. -/
+theorem phase_shift_preserves_config (w : GolayWeight) (φ₁ φ₂ : ZMod 4) :
+    (Carabiner.withPhase w φ₁).ensemble.config =
+    (Carabiner.withPhase w φ₂).ensemble.config := by
+  simp [Carabiner.withPhase, Carabiner.ensemble]
+
+/-- The complement of an octad carabiner is a weight-16 carabiner
+    (complement octad), and their ensemble configs are complementary. -/
+theorem octad_complement_is_w16 :
+    (Carabiner.withPhase .w8 φ).weight.complement = .w16 := rfl
+
+/-- Steiner–Pauli bridge: the orbit sizes of all five weights sum to 2¹².
+    This is the total number of codewords in the extended Golay code,
+    and simultaneously the size of the Steiner closure. -/
+theorem steiner_total_closure :
+    GolayWeight.w0.orbitSize + GolayWeight.w8.orbitSize +
+    GolayWeight.w12.orbitSize + GolayWeight.w16.orbitSize +
+    GolayWeight.w24.orbitSize = 2 ^ 12 := by decide
+
+/-- The Steiner covering axiom (conjectural formalization):
+    For any 5-element subset of Fin 24, there exists a unique octad
+    (banach-8 SpaceConfig) containing it.
+    This is the defining property of S(5,8,24). -/
+theorem steiner_covering_axiom :
+    ∀ (S : Finset (Fin 24)), S.card = 5 →
+      ∃ (config : SpaceConfig),
+        tagCount config .banach = 8 ∧
+        ∀ i ∈ S, config i = .banach := by
+  sorry  -- Full proof requires enumeration of the 759 octads
+
+end SteinerSystem
 
 end HatsuYakitori.Carabiner

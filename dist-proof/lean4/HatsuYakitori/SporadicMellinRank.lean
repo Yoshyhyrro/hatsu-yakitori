@@ -220,7 +220,6 @@ theorem conway_shell0_height : conwayShell0.height = 0 := by
 /-- Shell 4 has height galoisHeightBound = 8. -/
 theorem conway_shell4_height : conwayShell4.height = galoisHeightBound := by
   simp [ConwayShellWeight.height, conwayShell4, galoisHeightBound]
-  ring
 
 /-- All shell heights are non-negative. -/
 theorem ConwayShellWeight.height_nonneg (w : ConwayShellWeight) :
@@ -243,18 +242,20 @@ def ConwayShellWeight.complement (w : ConwayShellWeight) : ConwayShellWeight :=
 /-- Complement is an involution. -/
 theorem ConwayShellWeight.complement_complement (w : ConwayShellWeight) :
     w.complement.complement = w := by
-  simp [ConwayShellWeight.complement]
+  obtain ⟨n, hn⟩ := w
+  simp only [ConwayShellWeight.complement]
+  congr 1
   omega
 
 /-- **Conway functional equation**: heights of complementary shells sum to K.
     This is the Co₁ analogue of `mellin_functional_equation_discrete`. -/
 theorem conway_functional_equation (w : ConwayShellWeight) :
     w.height + w.complement.height = galoisHeightBound := by
-  simp [ConwayShellWeight.height, ConwayShellWeight.complement, galoisHeightBound]
+  simp only [ConwayShellWeight.height, ConwayShellWeight.complement, galoisHeightBound]
   have hb := w.bounded
+  rw [Nat.cast_sub hb]
   push_cast
-  field_simp
-  linarith
+  ring
 
 /-- Shell 2 is the midpoint (analogue of the dodecad w₁₂). -/
 theorem conway_shell2_midpoint :
@@ -295,8 +296,8 @@ def conwayToGolay (w : ConwayShellWeight) : GolayWeight :=
     conwayToGolay(complement(w)) = complement(conwayToGolay(w)). -/
 theorem conway_golay_complement_compatible (w : ConwayShellWeight) :
     conwayToGolay w.complement = (conwayToGolay w).complement := by
-  simp [conwayToGolay, ConwayShellWeight.complement, GolayWeight.complement]
   have hb := w.bounded
+  simp only [conwayToGolay, ConwayShellWeight.complement, GolayWeight.complement]
   interval_cases w.shellIndex <;> simp_all
 
 /-- The projection preserves the midpoint:
@@ -378,18 +379,20 @@ theorem CliffordLevelWeight.height_bounded (w : CliffordLevelWeight) :
 /-- Complement is an involution. -/
 theorem CliffordLevelWeight.complement_complement (w : CliffordLevelWeight) :
     w.complement.complement = w := by
-  simp [CliffordLevelWeight.complement]
+  obtain ⟨n, hn⟩ := w
+  simp only [CliffordLevelWeight.complement]
+  congr 1
   omega
 
 /-- **Clifford functional equation**: heights of complementary levels sum to K.
     This is the 𝒞ₙ analogue of `mellin_functional_equation_discrete`. -/
 theorem clifford_functional_equation (w : CliffordLevelWeight) :
     w.height + w.complement.height = galoisHeightBound := by
-  simp [CliffordLevelWeight.height, CliffordLevelWeight.complement, galoisHeightBound]
+  simp only [CliffordLevelWeight.height, CliffordLevelWeight.complement, galoisHeightBound]
   have hb := w.bounded
+  rw [Nat.cast_sub hb]
   push_cast
-  field_simp
-  linarith
+  ring
 
 /-- The Clifford → SpaceTag assignment extends BSDQuiver's tagging. -/
 def CliffordLevelWeight.toSpaceTag (w : CliffordLevelWeight) : SpaceTag :=
@@ -419,8 +422,8 @@ def cliffordToGolay (w : CliffordLevelWeight) : GolayWeight :=
 /-- The projection is complement-compatible. -/
 theorem clifford_golay_complement_compatible (w : CliffordLevelWeight) :
     cliffordToGolay w.complement = (cliffordToGolay w).complement := by
-  simp [cliffordToGolay, CliffordLevelWeight.complement, GolayWeight.complement]
   have hb := w.bounded
+  simp only [cliffordToGolay, CliffordLevelWeight.complement, GolayWeight.complement]
   interval_cases w.level <;> simp_all
 
 -- ===================================================================
@@ -456,15 +459,14 @@ structure SporadicOrbitData where
 
 /-- Construct orbit data from a Golay weight (M₂₄). -/
 noncomputable def sporadicOrbitOfGolay (w : GolayWeight) : SporadicOrbitData :=
-  let idx := match w with
-    | .w0  => 0
-    | .w8  => 1
-    | .w12 => 2
-    | .w16 => 3
-    | .w24 => 4
   { family := .mathieu
-    orbitIndex := idx
-    bounded := by cases w <;> simp_all
+    orbitIndex := match w with
+      | .w0  => 0
+      | .w8  => 1
+      | .w12 => 2
+      | .w16 => 3
+      | .w24 => 4
+    bounded := by cases w <;> simp
     height_value := w.height
     height_nonneg := GolayWeight.height_nonneg w
     height_bounded := GolayWeight.height_bounded w
@@ -756,8 +758,8 @@ theorem extended_pipeline_orbit_count :
 /-- The Mathieu contribution equals totalGolayContribution. -/
 theorem extended_pipeline_mathieu_eq_total :
     extended_pipeline_all.mathieu_contribution = totalGolayContribution := by
-  simp [extended_pipeline_all, extended_dp_process, extended_dp_init,
-        totalGolayContribution]
+  delta extended_pipeline_all extended_dp_process extended_dp_init
+        totalGolayContribution
   ring
 
 -- ===================================================================
@@ -848,7 +850,7 @@ theorem three_functional_equations :
     -- Clifford (for all 5 levels)
     (∀ w : CliffordLevelWeight,
       w.height + w.complement.height = galoisHeightBound) := by
-  exact ⟨mellin_functional_equation_discrete,
+  exact ⟨HatsuYakitori.PAdicMellin.mellin_functional_equation_discrete,
          conway_functional_equation,
          clifford_functional_equation⟩
 
@@ -864,7 +866,7 @@ theorem self_dual_points :
 -- § 15. Embedding Hierarchy: M₂₄ ⊂ Co₁
 -- ===================================================================
 
-/--
+/-
   The Mathieu group M₂₄ embeds into the Conway group Co₁ as the
   stabilizer of the "frame" (a fixed type 2 vector in Λ₂₄).
 
