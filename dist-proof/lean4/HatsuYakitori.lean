@@ -14,3 +14,4 @@ import HatsuYakitori.MachineConstants
 import HatsuYakitori.HopfStructure
 import HatsuYakitori.AnabelianSketch
 import HatsuYakitori.YangBaxterBanach
+import HatsuYakitori.SporadicMellinRank
