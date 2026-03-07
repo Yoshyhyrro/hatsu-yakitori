@@ -283,10 +283,10 @@ def Route.totalPositions (r : Route) : ℕ :=
 
 theorem golayRoute_total_positions :
     golayRoute.totalPositions = 2 ^ 12 := by
-  simp [golayRoute, Route.totalPositions, Carabiner.orbitSize,
-        GolayWeight.orbitSize,
-        carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
-  -- 1 + 759 + 2576 + 759 + 1 = 4096 = 2¹²
+  simp only [Route.totalPositions, golayRoute, List.foldl,
+             Carabiner.orbitSize, GolayWeight.orbitSize,
+             carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
+  norm_num
 
 /-- A carabiner codeword is a binary vector indexed by route positions.
     We represent it as a function from positions to 𝔽₂. -/
