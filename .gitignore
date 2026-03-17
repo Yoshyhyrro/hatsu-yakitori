@@ -27,3 +27,8 @@ Thumbs.db
 
 # Setup script (distribution-time only)
 setup.bash
+
+
+#Unpublished patent
+examples/AES-128 SubBytes via Galois Height Function
+examples/Berkovich_Flow_Codes
