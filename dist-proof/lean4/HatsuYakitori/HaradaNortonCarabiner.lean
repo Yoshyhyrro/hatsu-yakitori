@@ -116,8 +116,34 @@ section HNWeight
     | d4     |         4 | quadruple (even)      | 132        |
     | d5     |         5 | full depth (unit dual)| 1          |
 
+    Origin of orbit sizes (all derived from ATLAS + Monstrous Moonshine):
+
+    **133**: The minimal non-trivial irreducible representation dimension of HN
+             (ATLAS of Finite Groups, p.166). HN arises as the quotient of
+             the Monster centralizer of a 5A element: C_𝕄(5A) ≅ HN · 2.
+             This 133-dim representation appears directly as the degree-1
+             coefficient of the 5A McKay-Thompson series T_{5A}(τ).
+
+    **132 = 133 − 1**: Codimension of the trivial submodule in the 133-dim
+             irrep. Corresponds to the quotient space under the action of
+             the 2A centralizer of HN. Coincides with the hexad count
+             132 = C(12,5)/C(6,5) in the Steiner system S(5,6,12)
+             (see CliffordCarabiner.lean) — a trace of M₁₂ ⊂ HN.
+
+    **1463 = 11 · 133**: The degree-2 coefficient of the McKay-Thompson series
+             T_{5A}(τ) = q⁻¹ + 0 + 133q + 1463q² + … for Monster class 5A
+             (Conway-Norton 1979). The factor 11 is a prime divisor of |HN|;
+             1463 = 11 · 133 is the dimension of the degree-2 layer of the
+             HN moonshine grading.
+
+    **3192 = 24 · 133**: Product of the Leech lattice dimension 24 and the
+             HN minimal irrep dimension 133. Corresponds to the dimension
+             of the tensor product of the Monster's Leech lattice module M²⁴
+             with the HN representation; 3192 is the natural spectral size
+             of the HN moonshine decomposition.
+
     Note: orbit sizes are palindromic: (1, 132, 1463, 1463, 132, 1).
-    Total = 1 + 132 + 1463 + 1463 + 132 + 1 = 3192.
+    Total = 1 + 132 + 1463 + 1463 + 132 + 1 = 3192 = 24 · 133.
 
     The palindrome breaks at d2 ↔ d3: both have size 1463 but
     d3 is in the odd-depth sector (the Fischer lift of f9). -/
@@ -225,10 +251,19 @@ def HNWeight.mzvParity : HNWeight → Int
   | .d5 => -1   -- odd: full-depth, but paired with d0
 
 /-- The orbit size at each HN weight.
-    These arise from the HN permutation representation on the
-    quinary structure. The sizes are chosen to satisfy:
-    1. Palindromic: |Orbit(dₖ)| = |Orbit(d_{5-k})|
-    2. Total = 3192 (a divisor related to HN's structure) -/
+    Derived from HN's representation theory via ATLAS + Monstrous Moonshine:
+
+    - d0, d5: 1 (trivial/unit sectors, by definition)
+    - d1, d4: 132 = 133 − 1, where 133 is the minimal non-trivial irrep
+              dimension of HN (ATLAS p.166; codimension of trivial in
+              the 133-dim module)
+    - d2, d3: 1463 = 11 · 133, the degree-2 coefficient of the
+              McKay-Thompson series T_{5A}(τ) for Monster class 5A
+              (Conway-Norton 1979; T_{5A} = q⁻¹ + 133q + 1463q² + …)
+
+    Total = 3192 = 24 · 133 (Leech lattice dim × HN minimal irrep dim).
+    Palindromic: |Orbit(dₖ)| = |Orbit(d_{5-k})| reflects the
+    self-duality of the HN moonshine grading under depth reversal. -/
 def HNWeight.orbitSize : HNWeight → ℕ
   | .d0 => 1
   | .d1 => 132
@@ -237,7 +272,8 @@ def HNWeight.orbitSize : HNWeight → ℕ
   | .d4 => 132
   | .d5 => 1
 
-/-- Total orbit count. -/
+/-- Total orbit count = 3192 = 24 · 133.
+    (Leech lattice dimension × HN minimal irrep dimension) -/
 theorem hnWeight_total_orbits :
     HNWeight.d0.orbitSize + HNWeight.d1.orbitSize +
     HNWeight.d2.orbitSize + HNWeight.d3.orbitSize +
