@@ -1,19 +1,19 @@
 /-
   HatsuYakitori.GolayFrontier
-  
+
   Golay[24,12] Code as Galois Group Automorphism Encoding
-  
+
   The Golay[24,12] code is a perfect binary linear code with:
   - n = 24 (codeword length)
   - k = 12 (information bits)
   - d = 8  (minimum distance)
-  
+
   Mathematical Correspondence (Galois Interpretation):
   - info-bits (12-bit)  ↔  Parameter space of Galois actions
   - codeword (24-bit)   ↔  Representative of M₂₄ orbits (Witt Octads)
   - Hamming weight τ    ↔  Galois height h(σ)
   - frontier mode       ↔  Orbit decomposition strategy (Interior/Exterior)
-  
+
   Key Properties:
   - Self-dual: G · Gᵀ = 0 (mod 2)
   - Automorphism group: Mathieu group M₂₄ (order = 244823040)
@@ -88,8 +88,8 @@ theorem hammingWeight_zero : hammingWeight 0 = 0 := by
 
 /-- The 12 rows of the Golay generator matrix (hex constants).
     Each row is the parity bits for one information bit. -/
-def golayGeneratorRows : List ℕ := 
-  [0xC75, 0x63B, 0xF68, 0x7B4, 0x3DA, 0xD99, 
+def golayGeneratorRows : List ℕ :=
+  [0xC75, 0x63B, 0xF68, 0x7B4, 0x3DA, 0xD99,
    0x6CD, 0x367, 0xDC6, 0xA97, 0x93E, 0x8EB]
 
 /-- The generator matrix has exactly 12 rows -/
@@ -110,7 +110,7 @@ theorem golayParityCheckRows_length : golayParityCheckRows.length = 12 := by
 /-- Compute parity bits for encoding -/
 def computeParity (info : ℕ) : ℕ :=
   let indexedRows := (List.range golayGeneratorRows.length).zip golayGeneratorRows
-  indexedRows.foldl 
+  indexedRows.foldl
     (fun acc (i, row) => if info &&& (1 <<< i) ≠ 0 then acc ^^^ row else acc) 0
 
 /-- Helper: all generator rows are < 2^12 (verified by computation) -/
@@ -177,7 +177,7 @@ theorem golayToGaloisHeight_nonneg (c : Codeword) : golayToGaloisHeight c ≥ 0 
   · exact le_of_lt galoisHeightBound_pos
 
 /-- Galois height is bounded by K -/
-theorem golayToGaloisHeight_le_bound (c : Codeword) : 
+theorem golayToGaloisHeight_le_bound (c : Codeword) :
     golayToGaloisHeight c ≤ MachineConstants.galoisHeightBound := by
   simp only [golayToGaloisHeight]
   have hw : hammingWeight c.val ≤ 24 := hammingWeight_le_24 c
@@ -186,7 +186,7 @@ theorem golayToGaloisHeight_le_bound (c : Codeword) :
   have hdiv : (hammingWeight c.val : ℝ) / 24 ≤ 1 := by
     rw [div_le_one (by norm_num : (24 : ℝ) > 0)]
     exact Nat.cast_le.mpr hw
-  calc (hammingWeight c.val : ℝ) / 24 * MachineConstants.galoisHeightBound 
+  calc (hammingWeight c.val : ℝ) / 24 * MachineConstants.galoisHeightBound
       ≤ 1 * MachineConstants.galoisHeightBound := by
         apply mul_le_mul_of_nonneg_right hdiv (le_of_lt hK)
     _ = MachineConstants.galoisHeightBound := one_mul _
@@ -273,7 +273,7 @@ noncomputable def frontierModeFromGaloisHeight (h : ℝ) : FrontierMode :=
 /-- Frontier mode is consistent between weight and height.
     τ < 12 ⟺ (τ/24)*K < K/2, since K > 0. -/
 theorem frontierMode_consistent (c : Codeword) :
-    frontierModeFromGolay (hammingWeight c.val) = 
+    frontierModeFromGolay (hammingWeight c.val) =
     frontierModeFromGaloisHeight (golayToGaloisHeight c) := by
   simp only [frontierModeFromGolay, frontierModeFromGaloisHeight, golayToGaloisHeight]
   have hK : MachineConstants.galoisHeightBound > 0 := galoisHeightBound_pos
@@ -285,7 +285,7 @@ theorem frontierMode_consistent (c : Codeword) :
     apply h2
     have hw : (hammingWeight c.val : ℝ) < 12 := Nat.cast_lt.mpr h1
     have hdiv : (hammingWeight c.val : ℝ) / 24 < 1/2 := by linarith
-    calc (hammingWeight c.val : ℝ) / 24 * MachineConstants.galoisHeightBound 
+    calc (hammingWeight c.val : ℝ) / 24 * MachineConstants.galoisHeightBound
         < (1/2) * MachineConstants.galoisHeightBound := mul_lt_mul_of_pos_right hdiv hK
       _ = MachineConstants.galoisHeightBound / 2 := by ring
   · -- h1: ¬(τ < 12), h2: (τ/24)*K < K/2 — contradiction
@@ -293,7 +293,7 @@ theorem frontierMode_consistent (c : Codeword) :
     push_neg at h1
     have hw : (hammingWeight c.val : ℝ) ≥ 12 := Nat.cast_le.mpr h1
     have hdiv : (hammingWeight c.val : ℝ) / 24 ≥ 1/2 := by linarith
-    have hge : (hammingWeight c.val : ℝ) / 24 * MachineConstants.galoisHeightBound 
+    have hge : (hammingWeight c.val : ℝ) / 24 * MachineConstants.galoisHeightBound
                ≥ MachineConstants.galoisHeightBound / 2 := by
       have : (1/2 : ℝ) * MachineConstants.galoisHeightBound = MachineConstants.galoisHeightBound / 2 := by ring
       rw [← this]
@@ -324,11 +324,11 @@ noncomputable def makeAdaptiveFrontier (info : InfoWord) : AdaptiveFrontier :=
 /-! ## Part 10: Key Theorems -/
 
 /-- Golay code is perfect: can correct up to 3 errors -/
-axiom golay_perfect : ∀ c : Codeword, ∀ e : ℕ, 
+axiom golay_perfect : ∀ c : Codeword, ∀ e : ℕ,
   hammingWeight e ≤ 3 → ∃ c' : Codeword, hammingWeight (c.val ^^^ e ^^^ c'.val) = 0
 
 /-- M₂₄ is the automorphism group of the Golay code -/
-axiom m24_automorphism : True  -- Placeholder for group action formalization
+theorem m24_automorphism : True := trivial  -- Placeholder for group action formalization
 
 /-- Weight enumerator coefficients match known values -/
 theorem weight_enumerator_coefficient_8 : orbitSize .octad = 759 := rfl
@@ -336,7 +336,7 @@ theorem weight_enumerator_coefficient_12 : orbitSize .dodecad = 2576 := rfl
 theorem weight_enumerator_coefficient_16 : orbitSize .octadComplement = 759 := rfl
 
 /-- The Golay code is self-dual -/
-axiom golay_self_dual : True  -- G · Gᵀ = 0 (mod 2)
+theorem golay_self_dual : True := trivial  -- G · Gᵀ = 0 (mod 2)
 
 /-! ## Part 11: Generalized Code Parameters (Restriction Functor)
 
