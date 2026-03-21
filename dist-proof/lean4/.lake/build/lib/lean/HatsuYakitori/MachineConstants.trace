@@ -1,31 +1,13 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["6100097ee04df4b3.olean"],
-  "i": "0f785ad3c16d7235.ilean",
-  "c": "4dd7e9261eca3193.c"},
+ {"o": ["9b4a7f705e614da6.olean"],
+  "i": "51183be5fb1ef673.ilean",
+  "c": "9104a6fc654b3e9c.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\MachineConstants.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\MachineConstants.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\MachineConstants.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\MachineConstants.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\MachineConstants.setup.json --json",
-   "level": "trace"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:1034:18: declaration uses `sorry`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:1203:18: declaration uses `sorry`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:1382:18: declaration uses `sorry`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:1393:8: declaration uses `sorry`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:1418:8: declaration uses `sorry`",
-   "level": "warning"},
-  {"message":
-   "HatsuYakitori/MachineConstants.lean:1426:8: declaration uses `sorry`",
-   "level": "warning"}],
+   "level": "trace"}],
  "inputs":
  [["HatsuYakitori.MachineConstants:deps",
    [["deps",
@@ -50,7 +32,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\MachineConstants.lean",
-   "4b3ac66f955d1967"],
+   "9af04a63a4ed7a73"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "94cb8407754d820c"}
+ "depHash": "28604aab12ab1e8f"}

@@ -182,6 +182,18 @@ structure Carabiner where
   phase  : GF4Phase
   deriving DecidableEq, Repr
 
+/-- A minimal model of the height space `H_√C_p`.
+    It records the real Berkovich height together with the GF(4) phase,
+    so the Clifford carabiner can be viewed as a point of the `√C_p`-flavored
+    height space without changing the real-valued height calculus. -/
+structure HSqrtCp where
+  re    : ℝ
+  phase : GF4Phase
+
+/-- Embed a Clifford carabiner into the height space `H_√C_p`. -/
+noncomputable def Carabiner.hHeight (c : Carabiner) : HSqrtCp :=
+  ⟨c.weight.height, c.phase⟩
+
 /-- The complex evaluation point on the critical strip.
     s = h + i * (π/2) * phase
     This is the Clifford analogue of `Carabiner.complexHeight`
@@ -191,6 +203,12 @@ noncomputable def Carabiner.complexHeight (c : Carabiner) : ℂ :=
 
 /-- The real height of a Clifford carabiner. -/
 noncomputable def Carabiner.height (c : Carabiner) : ℝ := c.weight.height
+
+@[simp]
+theorem Carabiner.hHeight_re (c : Carabiner) : c.hHeight.re = c.height := rfl
+
+@[simp]
+theorem Carabiner.hHeight_phase (c : Carabiner) : c.hHeight.phase = c.phase := rfl
 
 end CliffordBase
 

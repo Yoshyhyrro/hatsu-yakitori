@@ -244,9 +244,8 @@ def golayRoute : Route :=
   [carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
 
 theorem golayRoute_ascending : golayRoute.isAscending := by
-  simp [golayRoute, Route.isAscending, List.Pairwise,
-        carabiner0, carabiner8, carabiner12, carabiner16, carabiner24,
-        Carabiner.height, GolayWeight.height]
+  simp [golayRoute, Route.isAscending, carabiner0, carabiner8, carabiner12, carabiner16,
+    carabiner24, Carabiner.height, GolayWeight.height]
   sorry  -- Numerical check: 0 ≤ 8/3 ≤ 4 ≤ 16/3 ≤ 8
 
 theorem golayRoute_length : golayRoute.length = 5 := by decide
