@@ -1,7 +1,7 @@
 /-
   HaradaNortonCarabiner.lean
 
-  Authors   : HatsuYakitori
+  Authors   : Yoshihiro Hasegawa
   Date      : 2026-03
   Status    : Proved — 0 axiom, 0 sorry.
 

@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 HatsuYakitori. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: HatsuYakitori
+Authors: Yoshihiro Hasegawa
 -/
 import Mathlib.Tactic
 import Mathlib.Combinatorics.Quiver.Path
@@ -958,8 +958,8 @@ noncomputable def mathieuObservation : ObservationFunctor where
     interval_cases i <;> exact GolayWeight.height_add_complement_height _
   total := totalGolayContribution
   total_eq_sum := by
-    simp [totalGolayContribution]
-    sorry  -- Finset.sum unfolding
+    simp only [totalGolayContribution, Fin.sum_univ_succ, Fin.sum_univ_zero]
+    ring
 
 /-- Construct the Conway observation functor. -/
 noncomputable def conwayObservation : ObservationFunctor where
@@ -982,8 +982,9 @@ noncomputable def conwayObservation : ObservationFunctor where
     exact conway_functional_equation _
   total := totalConwayContribution
   total_eq_sum := by
-    simp [totalConwayContribution]
-    sorry  -- Finset.sum unfolding
+    simp only [totalConwayContribution, Fin.sum_univ_succ, Fin.sum_univ_zero,
+               ConwayShellWeight.height]
+    ring
 
 /-- Two observation functors **agree on rank** if the functional
     equation structure is the same. This is witnessed by having

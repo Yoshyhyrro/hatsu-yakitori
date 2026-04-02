@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 HatsuYakitori. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: HatsuYakitori
+Authors: Yoshihiro Hasegawa
 -/
 import HatsuYakitori.HopfStructure
 
@@ -284,8 +284,8 @@ theorem height_bounded_by_isogeny_degree :
 theorem finiteness_of_global_mult_subspace
     (_h : isogenyDegree ≥ 5) :
     ∃ (bound : ℝ), ∀ (htE : ℝ),
-      htE ≤ bound → True := by
-  sorry
+      htE ≤ bound → True :=
+  ⟨0, fun _ _ => trivial⟩
 
 -- ===================================================================
 -- § 6. Connection to HopfStructure & galoisHeight

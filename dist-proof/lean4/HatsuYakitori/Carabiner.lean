@@ -1,7 +1,7 @@
 /-
   Carabiner.lean
 
-  Authors   : HatsuYakitori
+  Authors   : Yoshihiro Hasegawa
   Date      : 2026-02
   Status    : Sketch — core ideas captured, proofs mostly sorry.
 
@@ -32,6 +32,9 @@
     §7  Recession Fan: Forward–Backward duality
     §8  Structural functional equation via fan pairing
     §9  Bridge to PAdicMellin / BSDQuiver
+    §10 Bridge summary
+    §11 Steiner system S(5,8,24)
+    §12 Sorry backlog and difficulty tiers
 
   Key design principle:
     We work over a *discrete* height set to keep everything computable.
@@ -244,10 +247,10 @@ def golayRoute : Route :=
   [carabiner0, carabiner8, carabiner12, carabiner16, carabiner24]
 
 theorem golayRoute_ascending : golayRoute.isAscending := by
-  simp [golayRoute, Route.isAscending, List.Pairwise,
-        carabiner0, carabiner8, carabiner12, carabiner16, carabiner24,
-        Carabiner.height, GolayWeight.height]
-  sorry  -- Numerical check: 0 ≤ 8/3 ≤ 4 ≤ 16/3 ≤ 8
+  simp [golayRoute, Route.isAscending, carabiner0, carabiner8, carabiner12, carabiner16,
+    carabiner24, Carabiner.height, GolayWeight.height, GolayWeight.toFin25,
+    octadHeight, galoisHeightBound]
+  norm_num
 
 theorem golayRoute_length : golayRoute.length = 5 := by decide
 
@@ -880,5 +883,118 @@ theorem steiner_covering_axiom :
   sorry  -- Full proof requires enumeration of the 759 octads
 
 end SteinerSystem
+
+
+/-! ## §12  Sorry Backlog and Difficulty Tiers
+
+  This section records the current `sorry` backlog in a machine-readable form.
+  The intent is to distinguish:
+
+  - small local finite proofs
+  - medium structural list / route arguments
+  - interface-blocked items whose definitions are not imported yet
+  - globally hard uniqueness / Steiner enumeration problems
+
+  Tier guide:
+
+  | Tier | Meaning | Typical proof shape |
+  |------|---------|---------------------|
+  | T1   | local finite proof | `cases`, `simp`, `decide`, arithmetic |
+  | T2   | structural route/list proof | `Pairwise`, `reverse`, `map`, monotonicity |
+  | T3   | algebraic bridge proof | multiple existing subsystems, but no missing API |
+  | T4   | blocked by missing interface | definition or import must be added first |
+  | T5   | global hard problem | uniqueness theorem or large combinatorial enumeration |
+-/
+section SorryBacklog
+
+/-- Difficulty tiers for the remaining `sorry` items in this file. -/
+inductive SorryTier where
+  | T1 : SorryTier
+  | T2 : SorryTier
+  | T3 : SorryTier
+  | T4 : SorryTier
+  | T5 : SorryTier
+  deriving DecidableEq, Repr
+
+/-- A backlog entry for one `sorry` goal or blocked definition. -/
+structure SorryTask where
+  declarationName : String
+  tier : SorryTier
+  reason : String
+  suggestedFirstMove : String
+  deriving Repr
+
+/-- Current `sorry` backlog for `Carabiner.lean`. -/
+def carabinerSorryBacklog : List SorryTask :=
+  [ { declarationName := "carabiner_height_injective"
+      tier := .T1
+      reason := "Finite injectivity on the five Golay heights; no external dependency."
+      suggestedFirstMove := "Case split on both weights and discharge impossible equalities by simp/norm_num." }
+  , { declarationName := "Route.complement_ascending_is_descending"
+      tier := .T2
+      reason := "Needs a `Pairwise` transport through `reverse` and complement height symmetry h -> K-h."
+      suggestedFirstMove := "Rewrite the target using `Carabiner.height_add_complement` and prove an auxiliary lemma for reversed pairwise lists." }
+  , { declarationName := "golayRoute_lattice_points"
+      tier := .T1
+      reason := "Pure unfolding of the five standard carabiners and Golay height definitions."
+      suggestedFirstMove := "Expand `golayRoute`, `Carabiner.height`, and `GolayWeight.height`, then close numerically." }
+  , { declarationName := "Route.isAKGenerated"
+      tier := .T4
+      reason := "Blocked by the missing Ariki-Koike reachability interface; the predicate itself is only a placeholder."
+      suggestedFirstMove := "Import or define the AK pipeline/reachability notion before attempting any proof." }
+  , { declarationName := "golayRoute_is_golay_like (AK branch)"
+      tier := .T4
+      reason := "This branch reduces immediately to `Route.isAKGenerated`, so it is blocked by the same missing interface."
+      suggestedFirstMove := "Prove `Route.isAKGenerated golayRoute` after the AK interface exists, then reuse the other three finished branches." }
+  , { declarationName := "golayRoute_unique"
+      tier := .T5
+      reason := "A global uniqueness theorem combining self-duality, AK-generation, palindrome, and total position constraints."
+      suggestedFirstMove := "Split uniqueness into smaller classification lemmas on route weights, then isolate the AK-generated part." }
+  , { declarationName := "steiner_covering_axiom"
+      tier := .T5
+      reason := "Requires either formal Steiner-system infrastructure or explicit enumeration/control of the 759 octads."
+      suggestedFirstMove := "Decide whether to import a Steiner design API or encode the octad family as data before proving coverage." }
+  ]
+
+/-- The backlog currently contains 7 unresolved items. -/
+theorem carabinerSorryBacklog_count : carabinerSorryBacklog.length = 7 := by
+  decide
+
+/-- Histogram of `sorry` items by difficulty tier. -/
+def carabinerSorryTierCount (tier : SorryTier) : Nat :=
+  (carabinerSorryBacklog.filter (fun task => task.tier = tier)).length
+
+/-- Tier distribution for the current backlog. -/
+theorem carabinerSorryTierCount_summary :
+    carabinerSorryTierCount .T1 = 2 /\
+    carabinerSorryTierCount .T2 = 1 /\
+    carabinerSorryTierCount .T3 = 0 /\
+    carabinerSorryTierCount .T4 = 2 /\
+    carabinerSorryTierCount .T5 = 2 := by
+  decide
+
+/-- Recommended attack order: clear the local finite proofs first,
+    defer the AK-blocked and global classification statements. -/
+def recommendedSorryAttackOrder : List String :=
+  [ "carabiner_height_injective"
+  , "golayRoute_lattice_points"
+  , "Route.complement_ascending_is_descending"
+  , "Route.isAKGenerated"
+  , "golayRoute_is_golay_like (AK branch)"
+  , "steiner_covering_axiom"
+  , "golayRoute_unique"
+  ]
+
+/-- The first three backlog items are the non-blocked proofs that should be
+    attempted before touching AK integration or global uniqueness. -/
+theorem recommendedSorryAttackOrder_starts_local :
+    recommendedSorryAttackOrder.take 3 =
+      [ "carabiner_height_injective"
+      , "golayRoute_lattice_points"
+      , "Route.complement_ascending_is_descending"
+      ] := by
+  rfl
+
+end SorryBacklog
 
 end HatsuYakitori.Carabiner
