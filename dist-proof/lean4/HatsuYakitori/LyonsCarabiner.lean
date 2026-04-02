@@ -979,7 +979,7 @@ noncomputable def inverseHeegnerMellin (f : MulPosReals → ℂ)
                           = 2 × 10 = 20 -/
 theorem inverseHeegner_pontryagin_decomposition :
     phantomCharacters.length * 10 = inverseHeegnerDim := by
-  native_decide
+  simp [phantomCharacters, inverseHeegnerDim]
 
 /-- An enriched inverse Heegner element: pairs a phantom character
     (specifying which Pontryagin frequency) with the affine component
