@@ -1,5 +1,5 @@
 // Lean compiler output
-// Module: HatsuYakitori.AnabelianSketch
+// Module: HatsuYakitori.anabelianSketch
 // Imports: public import Init public import HatsuYakitori.HopfStructure
 #include <lean/lean.h>
 #if defined(__clang__)
@@ -66,7 +66,7 @@ static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_isogenyDeg
 _start:
 {
 lean_object* x_1; 
-x_1 = lean_mk_string_unchecked("AnabelianSketch", 15, 15);
+x_1 = lean_mk_string_unchecked("anabelianSketch", 15, 15);
 return x_1;
 }
 }
@@ -301,7 +301,7 @@ return x_5;
 lean_object* initialize_Init(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(uint8_t builtin);
 static bool _G_initialized = false;
-LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_AnabelianSketch(uint8_t builtin) {
+LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_anabelianSketch(uint8_t builtin) {
 lean_object * res;
 if (_G_initialized) return lean_io_result_mk_ok(lean_box(0));
 _G_initialized = true;

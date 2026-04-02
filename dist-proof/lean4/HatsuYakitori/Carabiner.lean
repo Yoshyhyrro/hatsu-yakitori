@@ -245,8 +245,9 @@ def golayRoute : Route :=
 
 theorem golayRoute_ascending : golayRoute.isAscending := by
   simp [golayRoute, Route.isAscending, carabiner0, carabiner8, carabiner12, carabiner16,
-    carabiner24, Carabiner.height, GolayWeight.height]
-  sorry  -- Numerical check: 0 ≤ 8/3 ≤ 4 ≤ 16/3 ≤ 8
+    carabiner24, Carabiner.height, GolayWeight.height, GolayWeight.toFin25,
+    octadHeight, galoisHeightBound]
+  norm_num
 
 theorem golayRoute_length : golayRoute.length = 5 := by decide
 

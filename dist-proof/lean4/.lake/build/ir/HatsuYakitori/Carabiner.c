@@ -856,73 +856,6 @@ x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayRoute___closed_
 return x_1;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize(lean_object* x_1) {
-_start:
-{
-uint8_t x_2; lean_object* x_3; 
-x_2 = lean_ctor_get_uint8(x_1, sizeof(void*)*1);
-x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_orbitSize(x_2);
-return x_3;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize___boxed(lean_object* x_1) {
-_start:
-{
-lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize(x_1);
-lean_dec_ref(x_1);
-return x_2;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0(lean_object* x_1, lean_object* x_2) {
-_start:
-{
-if (lean_obj_tag(x_2) == 0)
-{
-return x_1;
-}
-else
-{
-lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; 
-x_3 = lean_ctor_get(x_2, 0);
-x_4 = lean_ctor_get(x_2, 1);
-x_5 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize(x_3);
-x_6 = lean_nat_add(x_1, x_5);
-lean_dec(x_5);
-lean_dec(x_1);
-x_1 = x_6;
-x_2 = x_4;
-goto _start;
-}
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0___boxed(lean_object* x_1, lean_object* x_2) {
-_start:
-{
-lean_object* x_3; 
-x_3 = lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0(x_1, x_2);
-lean_dec(x_2);
-return x_3;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_totalPositions(lean_object* x_1) {
-_start:
-{
-lean_object* x_2; lean_object* x_3; 
-x_2 = lean_unsigned_to_nat(0u);
-x_3 = lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0(x_2, x_1);
-return x_3;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_totalPositions___boxed(lean_object* x_1) {
-_start:
-{
-lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_totalPositions(x_1);
-lean_dec(x_1);
-return x_2;
-}
-}
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
 _start:
 {
@@ -1009,6 +942,73 @@ uint8_t x_8; lean_object* x_9;
 x_8 = lean_unbox(x_2);
 x_9 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter(x_1, x_8, x_3, x_4, x_5, x_6, x_7);
 return x_9;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize(lean_object* x_1) {
+_start:
+{
+uint8_t x_2; lean_object* x_3; 
+x_2 = lean_ctor_get_uint8(x_1, sizeof(void*)*1);
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_orbitSize(x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize(x_1);
+lean_dec_ref(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+if (lean_obj_tag(x_2) == 0)
+{
+return x_1;
+}
+else
+{
+lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; 
+x_3 = lean_ctor_get(x_2, 0);
+x_4 = lean_ctor_get(x_2, 1);
+x_5 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize(x_3);
+x_6 = lean_nat_add(x_1, x_5);
+lean_dec(x_5);
+lean_dec(x_1);
+x_1 = x_6;
+x_2 = x_4;
+goto _start;
+}
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0___boxed(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0(x_1, x_2);
+lean_dec(x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_totalPositions(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; 
+x_2 = lean_unsigned_to_nat(0u);
+x_3 = lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0(x_2, x_1);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_totalPositions___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_totalPositions(x_1);
+lean_dec(x_1);
+return x_2;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_distanceLowerBound(lean_object* x_1) {

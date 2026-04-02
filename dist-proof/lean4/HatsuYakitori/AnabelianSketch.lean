@@ -284,8 +284,8 @@ theorem height_bounded_by_isogeny_degree :
 theorem finiteness_of_global_mult_subspace
     (_h : isogenyDegree ≥ 5) :
     ∃ (bound : ℝ), ∀ (htE : ℝ),
-      htE ≤ bound → True := by
-  sorry
+      htE ≤ bound → True :=
+  ⟨0, fun _ _ => trivial⟩
 
 -- ===================================================================
 -- § 6. Connection to HopfStructure & galoisHeight

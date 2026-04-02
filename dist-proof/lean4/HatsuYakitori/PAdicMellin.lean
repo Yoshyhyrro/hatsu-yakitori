@@ -561,7 +561,7 @@ theorem mellin_dp_total_contribution :
     totalGolayContribution := by
   simp [mellin_dp_process_all_orbits, golayOrbitSequence,
         List.foldl, mellin_dp_process_orbit, mellin_dp_init,
-        orbitContributionOf, totalGolayContribution, GolayWeight.toNat]
+        orbitContributionOf, totalGolayContribution]
 
 -- ===================================================================
 -- § 10. Spectral Projection and Integration
@@ -959,7 +959,7 @@ theorem mellin_functional_equation_discrete (w : GolayWeight) :
     (orbitContributionOf w).height_value +
     (orbitContributionOf w.complement).height_value =
     galoisHeightBound := by
-  rw [←(orbitContributionOf w).height_consistent, ←(orbitContributionOf w.complement).height_consistent]
+  simp only [orbitContributionOf]
   exact GolayWeight.height_add_complement_height w
 
 /-- Unit tests: check the discrete functional equation for all 5 orbits.
@@ -1028,7 +1028,7 @@ theorem mellin_height_model :
 theorem mellin_height_bounded :
     totalGolayContribution ≤ 5 * galoisHeightBound := by
   unfold totalGolayContribution
-  have h0 := GolayWeight.height_nonneg .w0
+  have h0 := GolayWeight.height_bounded .w0
   have h8 := GolayWeight.height_bounded .w8
   have h12 := GolayWeight.height_bounded .w12
   have h16 := GolayWeight.height_bounded .w16

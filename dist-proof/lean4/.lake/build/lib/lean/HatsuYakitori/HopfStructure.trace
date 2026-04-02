@@ -24,10 +24,10 @@
        [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
       ["imports",
        [["HatsuYakitori.MachineConstants transitive imports (legacy)",
-         "8807d8cce13347b9"],
+         "4c66a65052b3f869"],
         ["HatsuYakitori.MachineConstants:importAllArts", "2cd0d1b446f5742f"],
         ["Mathlib.Data.Real.Basic transitive imports (legacy)",
-         "fe964f6901c7b630"],
+         "bb9cd1d32c20fb6d"],
         ["Mathlib.Data.Real.Basic:importAllArts", "4776157901363150"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
@@ -37,7 +37,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\HopfStructure.lean",
-   "79209314bb00cc20"],
+   "d1b7d8c692be6158"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "4cba283e41d47d86"}
+ "depHash": "64a68d5749017c22"}

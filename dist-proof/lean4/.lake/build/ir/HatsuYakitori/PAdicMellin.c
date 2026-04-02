@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: HatsuYakitori.PAdicMellin
-// Imports: public import Init public import Mathlib.Tactic public import Mathlib.Combinatorics.Quiver.Path public import HatsuYakitori.MachineConstants public import HatsuYakitori.HopfStructure public import HatsuYakitori.BSDQuiver
+// Imports: public import Init public import Mathlib.Tactic public import Mathlib.Combinatorics.Quiver.Path public import HatsuYakitori.MachineConstants public import HatsuYakitori.HopfStructure public import HatsuYakitori.BSDQuiver public import HatsuYakitori.Carabiner
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -54,6 +54,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinEffect_repr___closed__5;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_golayOrbitSequence___closed__4;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instDecidableEqMellinEffect___boxed(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_topologicalSpace;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinEffect_integrates_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinEffect_repr___closed__3;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinArrow_spectral__project_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
@@ -143,6 +144,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_inst
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_mellin__dp__init___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinEffect_changes__valuation_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinVertex_repr___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_measurableSpace;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprPAdicTag_repr___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinArrow_repr(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinEffect_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
@@ -3131,12 +3133,29 @@ x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_bsd__to__mellin__s
 return x_3;
 }
 }
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_topologicalSpace() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_box(0);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_measurableSpace() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_box(0);
+return x_1;
+}
+}
 lean_object* initialize_Init(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Tactic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Combinatorics_Quiver_Path(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver(uint8_t builtin);
+lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner(uint8_t builtin);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin(uint8_t builtin) {
 lean_object * res;
@@ -3158,6 +3177,9 @@ res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(builtin)
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprPAdicTag_repr___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprPAdicTag_repr___closed__0();
@@ -3278,6 +3300,10 @@ lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_golayOrbitSequence = _in
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_golayOrbitSequence);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_bsd__to__mellin__source___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_bsd__to__mellin__source___closed__0();
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_bsd__to__mellin__source___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_topologicalSpace = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_topologicalSpace();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_topologicalSpace);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_measurableSpace = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_measurableSpace();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MulPosReals_measurableSpace);
 return lean_io_result_mk_ok(lean_box(0));
 }
 #ifdef __cplusplus
