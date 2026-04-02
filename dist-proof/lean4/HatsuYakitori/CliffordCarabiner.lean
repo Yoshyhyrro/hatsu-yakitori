@@ -1,7 +1,7 @@
 /-
   CliffordCarabiner.lean
 
-  Authors   : HatsuYakitori
+  Authors   : Yoshihiro Hasegawa
   Date      : 2026-03
   Status    : Sketch — core ideas captured, proofs mostly sorry.
 
