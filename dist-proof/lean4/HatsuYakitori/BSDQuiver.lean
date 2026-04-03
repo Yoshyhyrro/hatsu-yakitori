@@ -17,12 +17,21 @@ import HatsuYakitori.CliffordCarabiner
 This file formalizes the BSD (Birch and Swinnerton-Dyer) diagram
 
 ```
-z(Λ₂₄)  ---⊗!--->  √A₁₁∨
-  |                   |
-  | Δ (coproduct)     | eval
-  v                   v
-z(Λ₂₄) ⊗ z(Λ₂₄) --> ℝ  ⊕  Op
+        z(Λ₂₄)  ---⊗!--->  √A₁₁∨
+          |                   |
+          | Δ (coproduct)     | eval
+          v                   v
+z(Λ₂₄) ⊗ z(Λ₂₄)  ------->  ℝ ⊕ Op
+          |
+          |  project to phantom zone
+          v
+  InverseHeegner₂₀  ≅  Span{l₁,l₂} ⊗ (A₁₁∨ / 2·A₁₁)
 ```
+
+The bottom arrow is the **Lyons projection**: the tensor square of the
+Leech center maps into the 20-dimensional inverse Heegner space
+(see `LyonsCarabiner.InverseHeegnerElement`), where the phantom weights
+l₁, l₂ of the MDS code [6,4,3]₅ generate the missing orbits.
 
 as a **quiver representation** with dynamic programming over paths.
 
