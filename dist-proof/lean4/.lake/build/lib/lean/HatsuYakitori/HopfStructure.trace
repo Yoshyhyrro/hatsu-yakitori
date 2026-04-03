@@ -24,10 +24,10 @@
        [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
       ["imports",
        [["HatsuYakitori.MachineConstants transitive imports (legacy)",
-         "4c66a65052b3f869"],
+         "88a26dafbf5fbfc0"],
         ["HatsuYakitori.MachineConstants:importAllArts", "2cd0d1b446f5742f"],
         ["Mathlib.Data.Real.Basic transitive imports (legacy)",
-         "bb9cd1d32c20fb6d"],
+         "fe964f6901c7b630"],
         ["Mathlib.Data.Real.Basic:importAllArts", "4776157901363150"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
@@ -40,4 +40,4 @@
    "d1b7d8c692be6158"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "64a68d5749017c22"}
+ "depHash": "d80be2ef90fe2d70"}

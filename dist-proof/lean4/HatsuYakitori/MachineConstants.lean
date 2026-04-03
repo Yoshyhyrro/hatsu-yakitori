@@ -1459,4 +1459,40 @@ theorem bound_from_ramification :
     let _ram₃ := cyclotomic_ramification_24 3
     (4 : ℝ) / 3 = (1 + 1/3) := by norm_num
 
+/-! ### Carabiner Height Protocol
+
+  Abstract interface for height systems shared across all carabiner
+  families (Golay, Clifford, Fischer, HN, Lyons, …).  Each family
+  provides a finite weight type `W`, a height function `h : W → ℝ`
+  valued in `[0, K]`, and a complement involution satisfying
+  `h(w) + h(w') = K`.  The normalised height `h(w)/K ∈ [0, 1]`
+  gives a common scale for cross-family comparisons. -/
+
+/-- Height system for a carabiner weight type. -/
+class CarabinerHeight (W : Type*) where
+  /-- Height on the Berkovich tree. -/
+  height : W → ℝ
+  /-- Height bound (`K`). -/
+  heightBound : ℝ
+  /-- Complement involution. -/
+  complement : W → W
+  height_nonneg : ∀ w, 0 ≤ height w
+  height_bounded : ∀ w, height w ≤ heightBound
+  complement_involutive : ∀ w, complement (complement w) = w
+  height_complement_add : ∀ w, height w + height (complement w) = heightBound
+
+/-- Normalised height in `[0, 1]` (requires `heightBound > 0`). -/
+noncomputable def CarabinerHeight.normalizedHeight
+    {W : Type*} [CarabinerHeight W] (w : W) : ℝ :=
+  CarabinerHeight.height w / CarabinerHeight.heightBound (W := W)
+
+noncomputable instance : CarabinerHeight GolayWeight where
+  height := GolayWeight.height
+  heightBound := galoisHeightBound
+  complement := GolayWeight.complement
+  height_nonneg := fun w => le_of_eq_of_le rfl (GolayWeight.height_nonneg w)
+  height_bounded := GolayWeight.height_bounded
+  complement_involutive := GolayWeight.complement_complement
+  height_complement_add := GolayWeight.height_add_complement_height
+
 end HatsuYakitori.MachineConstants

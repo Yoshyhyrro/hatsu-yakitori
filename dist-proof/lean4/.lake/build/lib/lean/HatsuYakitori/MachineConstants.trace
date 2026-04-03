@@ -14,14 +14,14 @@
      [["«hatsu-yakitori-proof»/HatsuYakitori:extraDep",
        [["@«hatsu-yakitori-proof»:extraDep", "00000000000006bb"]]],
       ["imports",
-       [["Mathlib transitive imports (legacy)", "e9ee74fe891db314"],
+       [["Mathlib transitive imports (legacy)", "40418219382c402a"],
         ["Mathlib:importAllArts", "8309c2c5e4fbf9c7"],
         ["Mathlib.GroupTheory.GroupAction.Iwasawa transitive imports (legacy)",
-         "54dc76f3fdfe106a"],
+         "3b79fd597e1651e5"],
         ["Mathlib.GroupTheory.GroupAction.Iwasawa:importAllArts",
          "f1ad8a3f61b39116"],
         ["Mathlib.Combinatorics.Quiver.Path transitive imports (legacy)",
-         "e0459f32de2c96a4"],
+         "2d55e3a95047e7de"],
         ["Mathlib.Combinatorics.Quiver.Path:importAllArts",
          "ce13e2c07892e6c2"]]]]],
     ["libs",
@@ -35,4 +35,4 @@
    "40aece5a499d63cc"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "e64483c9d8b1ea51"}
+ "depHash": "2a798d1ba0dab610"}
