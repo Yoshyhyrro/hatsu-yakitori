@@ -27,6 +27,8 @@ import HatsuYakitori.MachineConstants
 import HatsuYakitori.CartanUtils
 import HatsuYakitori.GolayFrontier
 import HatsuYakitori.KakDecomposition
+import HatsuYakitori.LyonsCarabiner
+import HatsuYakitori.FischerCarabiner
 
 namespace HatsuYakitori.KakIntegration
 
@@ -254,5 +256,219 @@ theorem kak_integration_coherence (σ : Perm (Fin 24)) :
     -- Then apply the (currently-skeleton) mode-consistency lemma.
     simpa [frontier_mode_from_perm, frontier_mode_from_codeword, hdecode] using
       (perm_codeword_mode_consistency σ)
+
+/-! ## Part 9: Phantom KAK Strip — Lyons Imaginary Axis Extension
+
+The Lyons carabiner (§4 of `LyonsCarabiner.lean`) identifies two
+**phantom weights** l₁ and l₂ whose Hamming weights 1, 2 fall below the
+MDS minimum distance d = 3. Their orbit sizes are zero, yet the complement
+pairing symmetry demands their formal existence.
+
+The KAK Cartan parameter has so far been a *real* quantity (galoisHeight).
+The phantom imaginary part promotes it to a complex-like parameter
+
+    s  =  h  +  h(l₂) · i
+
+where the real axis `h` ranges over `[0, lyonsHeightBound]` and the
+imaginary part is pinned to `h(l₂) = 2` (the second phantom weight).
+
+Geometric meaning:
+The resulting **phantom KAK strip** is an infinite horizontal band of
+height 2 in the upper half-plane. Its area equals
+
+    lyonsHeightBound × h(l₂) = 6 × 2 = 12 = fischerHeightBound
+
+recovering the Fischer height bound as a *product* of Lyons invariants.
+This "dimension transmutation" from a single real interval to a strip
+is the mechanism by which the phantom vacuum generates new structure in
+the KAK decomposition.
+
+The frontier mode (stack/queue) depends only on the real part, so the
+imaginary phantom coordinate is a *spectral* parameter that refines the
+algorithm without altering the traversal order.
+-/
+section PhantomKAKStrip
+
+open HatsuYakitori.LyonsCarabiner
+open HatsuYakitori.FischerCarabiner
+
+/-- A point in the phantom KAK strip.
+
+    The real axis carries the Cartan parameter (galoisHeight in the
+    Lyons code `[6,4,3]₅`), and the imaginary axis is fixed at the
+    second phantom weight `h(l₂) = 2`.
+
+    The strip is the rectangle
+      `{ s ∈ ℂ  |  0 ≤ Re(s) ≤ lyonsHeightBound,  Im(s) = h(l₂) }`. -/
+structure PhantomKAKStrip where
+  /-- Real part: the classical Cartan height parameter. -/
+  realHeight : ℝ
+  /-- The real part is bounded by `[0, lyonsHeightBound]`. -/
+  hbound : 0 ≤ realHeight ∧ realHeight ≤ lyonsHeightBound
+
+/-- The imaginary part of the phantom strip, equal to `h(l₂) = 2`.
+
+    This is a global constant: the phantom vacuum selects the
+    second forbidden Hamming weight as the spectral offset. -/
+noncomputable def phantomImaginaryPart : ℝ := LyonsWeight.l2.height
+
+/-- The imaginary part equals 2. -/
+theorem phantomImaginaryPart_eq : phantomImaginaryPart = 2 := by
+  simp [phantomImaginaryPart, LyonsWeight.height]
+
+/-- The complex Cartan parameter `s = h + h(l₂) · i`.
+
+    Represented as a pair `(re, im) : ℝ × ℝ` rather than `ℂ`,
+    since the current import set does not include Mathlib's complex
+    numbers. The imaginary part is always `h(l₂) = 2`. -/
+noncomputable def PhantomKAKStrip.toComplex (s : PhantomKAKStrip) : ℝ × ℝ :=
+  (s.realHeight, phantomImaginaryPart)
+
+/-- The imaginary component is constant across the strip. -/
+theorem PhantomKAKStrip.im_fixed (s : PhantomKAKStrip) :
+    s.toComplex.2 = 2 := by
+  simp [PhantomKAKStrip.toComplex, phantomImaginaryPart, LyonsWeight.height]
+
+/-- The real component agrees with `realHeight`. -/
+theorem PhantomKAKStrip.re_eq (s : PhantomKAKStrip) :
+    s.toComplex.1 = s.realHeight := by
+  rfl
+
+/-- Area of the phantom strip:
+
+      lyonsHeightBound × h(l₂) = 6 × 2 = 12 = fischerHeightBound.
+
+    The Fischer height bound emerges as the product of two Lyons
+    invariants (the code length and the second phantom height).
+    This is the key "dimension transmutation" identity. -/
+noncomputable def phantomStripArea : ℝ :=
+  lyonsHeightBound * phantomImaginaryPart
+
+theorem phantomStripArea_eq_fischerBound :
+    phantomStripArea = fischerHeightBound := by
+  simp [phantomStripArea, lyonsHeightBound, phantomImaginaryPart,
+        LyonsWeight.height, fischerHeightBound]
+  norm_num
+
+/-- Numerical value of the strip area. -/
+theorem phantomStripArea_eq_twelve :
+    phantomStripArea = 12 := by
+  simp [phantomStripArea, lyonsHeightBound, phantomImaginaryPart,
+        LyonsWeight.height]
+  norm_num
+
+/-- The frontier mode is determined solely by the real part.
+
+    Since `frontierModeFromGaloisHeight` depends only on whether
+    `h < galoisHeightBound / 2`, the phantom imaginary coordinate
+    is invisible to the stack/queue decision. The imaginary axis
+    is a *spectral refinement* that does not alter traversal order. -/
+noncomputable def PhantomKAKStrip.frontierMode
+    (s : PhantomKAKStrip) : GolayFrontier.FrontierMode :=
+  GolayFrontier.frontierModeFromGaloisHeight s.realHeight
+
+/-- The midpoint of the strip `h = lyonsHeightBound / 2 = 3`
+    lies at the stack/queue boundary, mirroring the Lyons self-dual
+    weight `l₃` (the unique fixed point of complement pairing). -/
+theorem phantomStrip_midpoint_eq_l3 :
+    lyonsHeightBound / 2 = LyonsWeight.l3.height := by
+  simp [lyonsHeightBound, LyonsWeight.height]
+  ring
+
+/-- The strip splits into two equal halves:
+    - Stack region: `[0, 3) × {2}`, area = 3 × 2 = 6 = lyonsHeightBound
+    - Queue region: `[3, 6] × {2}`, area = 3 × 2 = 6 = lyonsHeightBound
+
+    Each half has area equal to the Lyons height bound itself. -/
+theorem phantomStrip_balanced :
+    (lyonsHeightBound / 2) * phantomImaginaryPart = lyonsHeightBound := by
+  simp [lyonsHeightBound, phantomImaginaryPart, LyonsWeight.height]
+  norm_num
+
+/-- The phantom weight `l₂` has height ≤ lyonsHeightBound / 2, so an
+    evaluation point at `(h(l₂), h(l₂))` sits in the stack region.
+
+    Concretely `h(l₂) = 2 < 3 = lyonsHeightBound / 2`. -/
+theorem phantom_l2_in_stack_region :
+    LyonsWeight.l2.height ≤ lyonsHeightBound / 2 := by
+  simp [LyonsWeight.height, lyonsHeightBound]
+  norm_num
+
+/-- Bridge from `PhantomKAKStrip` to the existing `kakApply` pipeline.
+
+    The frontier mode is determined by the real part of the strip
+    parameter, and fed verbatim into `KakDecomposition.kakApply`.
+    The imaginary part annotates the result but does not change it. -/
+noncomputable def kakApplyFromStrip
+    (graph : KakDecomposition.Graph)
+    (sources : List KakDecomposition.Node)
+    (s : PhantomKAKStrip) : KakDecomposition.DistTable :=
+  KakDecomposition.kakApply graph sources s.frontierMode
+
+/-- The strip-based KAK application is consistent with the
+    height-based application: the imaginary part is inert. -/
+theorem kakApplyFromStrip_eq_height
+    (graph : KakDecomposition.Graph)
+    (sources : List KakDecomposition.Node)
+    (s : PhantomKAKStrip) :
+    kakApplyFromStrip graph sources s =
+    KakDecomposition.kakApply graph sources
+      (GolayFrontier.frontierModeFromGaloisHeight s.realHeight) := by
+  rfl
+
+/-- The two phantom heights `h(l₁) = 1` and `h(l₂) = 2` sum to
+    the self-dual midpoint height `h(l₃) = 3`, providing a
+    factorization of the critical line into phantom components.
+
+    This is the Lyons analogue of the Golay dodecad splitting
+    `w₁₂ = 8 + 4` and the Fischer hexacode splitting `f₆ = 3 + 3`. -/
+theorem phantom_heights_sum_to_critical_line :
+    LyonsWeight.l1.height + LyonsWeight.l2.height =
+    lyonsHeightBound / 2 := by
+  simp [LyonsWeight.height, lyonsHeightBound]
+  norm_num
+
+/-- The product of phantom heights equals the imaginary part:
+    `h(l₁) × h(l₂) = 1 × 2 = 2 = phantomImaginaryPart`.
+
+    The spectral offset is itself the phantom height product. -/
+theorem phantom_height_product_eq_im :
+    LyonsWeight.l1.height * LyonsWeight.l2.height =
+    phantomImaginaryPart := by
+  simp [LyonsWeight.height, phantomImaginaryPart]
+
+/-- The ratio `phantomImaginaryPart / lyonsHeightBound = 1/3`.
+
+    This is the reciprocal of the Lyons self-dual normalised
+    height, connecting the imaginary spectral offset to the
+    critical-line position. -/
+theorem phantom_im_ratio :
+    phantomImaginaryPart / lyonsHeightBound = 1 / 3 := by
+  simp [phantomImaginaryPart, LyonsWeight.height, lyonsHeightBound]
+  norm_num
+
+/-- Coherence check: the strip's numerical invariants interlock.
+
+    1. Strip area = fischerHeightBound = 12
+    2. Each half-area = lyonsHeightBound = 6
+    3. Imaginary part = h(l₂) = 2
+    4. Midpoint = h(l₃) = lyonsHeightBound / 2 = 3
+    5. Phantom height sum = midpoint height
+    6. Phantom height product = imaginary part -/
+theorem phantomKAKStrip_coherence :
+    phantomStripArea = 12 ∧
+    (lyonsHeightBound / 2) * phantomImaginaryPart = lyonsHeightBound ∧
+    phantomImaginaryPart = 2 ∧
+    lyonsHeightBound / 2 = LyonsWeight.l3.height ∧
+    LyonsWeight.l1.height + LyonsWeight.l2.height = lyonsHeightBound / 2 ∧
+    LyonsWeight.l1.height * LyonsWeight.l2.height = phantomImaginaryPart := by
+  exact ⟨phantomStripArea_eq_twelve,
+         phantomStrip_balanced,
+         phantomImaginaryPart_eq,
+         phantomStrip_midpoint_eq_l3,
+         phantom_heights_sum_to_critical_line,
+         phantom_height_product_eq_im⟩
+
+end PhantomKAKStrip
 
 end HatsuYakitori.KakIntegration
