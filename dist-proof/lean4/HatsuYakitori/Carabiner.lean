@@ -138,8 +138,10 @@ theorem carabiner_height_injective (c₁ c₂ : Carabiner) :
     c₁.height = c₂.height ↔ c₁.weight = c₂.weight := by
   constructor
   · intro h
-    -- heights are injective on GolayWeight (the five values are distinct)
-    sorry
+    have h' : c₁.weight.height = c₂.weight.height := h
+    cases hw₁ : c₁.weight <;> cases hw₂ : c₂.weight <;>
+      simp_all [GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeightBound] <;>
+      revert h' <;> norm_num
   · intro h
     simp [Carabiner.height, h]
 
@@ -227,12 +229,19 @@ def Route.isValid (r : Route) : Prop :=
 def Route.complement (r : Route) : Route :=
   r.reverse.map Carabiner.complement
 
-/-- The complement of an ascending route is descending. -/
-theorem Route.complement_ascending_is_descending (r : Route)
-    (h : r.isAscending) : r.complement.isDescending := by
-  sorry
+/-- The complement of an ascending route is ascending. -/
+theorem Route.complement_ascending_is_ascending (r : Route)
+    (h : r.isAscending) : r.complement.isAscending := by
+  unfold Route.isAscending Route.complement at *
+  rw [List.pairwise_map, List.pairwise_reverse]
+  apply List.Pairwise.imp _ h
+  intro a b hab
+  dsimp
+  have ha := a.height_add_complement
+  have hb := b.height_add_complement
+  linarith
   -- Strategy: reverse flips the order; complement flips the height
-  -- (h → 8-h), so ≤ becomes ≥ after both operations.
+  -- (h → 8-h), so both flips cancel out and ≤ remains ≤.
 
 /-- A route and its complement together cover the full height range [0,8].
     Concretely: the heights of r ++ r.complement span the full lattice. -/
@@ -445,12 +454,11 @@ def Route.heightInterval (r : Route) : Set ℝ :=
     exactly the five Golay heights. -/
 theorem golayRoute_lattice_points :
     golayRoute.map (fun c => c.height) =
-    [galoisHeight 0, galoisHeight 8, galoisHeight 12,
-     galoisHeight 16, galoisHeight 24] := by
+    [0, galoisHeightBound / 3, galoisHeightBound / 2,
+     galoisHeightBound * 2 / 3, galoisHeightBound] := by
   simp [golayRoute, carabiner0, carabiner8, carabiner12,
         carabiner16, carabiner24, Carabiner.height,
-        GolayWeight.height]
-  sorry  -- Unfolds height definitions
+        GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeight]
 
 /-- The Golay height interval is self-dual:
     the midpoint is galoisHeightBound / 2 = 4. -/
@@ -994,7 +1002,7 @@ end SteinerSystem
   * `golayRoute_lattice_points` **(T1)** —
     Unfold the five standard carabiners and `GolayWeight.height`, then close numerically.
 
-  * `Route.complement_ascending_is_descending` **(T2)** —
+  * `Route.complement_ascending_is_ascending` **(T2)** —
     Transport `List.Pairwise` through `List.reverse` using complement height symmetry
     `h + h' = K ↔ K - h' < K - h`.
 
