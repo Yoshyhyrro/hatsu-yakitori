@@ -16,3 +16,5 @@ import HatsuYakitori.AnabelianSketch
 import HatsuYakitori.YangBaxterBanach
 import HatsuYakitori.SporadicMellinRank
 import HatsuYakitori.RudvalisCarabiner
+import HatsuYakitori.ObstructionGoppa
+import HatsuYakitori.InverseHeegnerGram

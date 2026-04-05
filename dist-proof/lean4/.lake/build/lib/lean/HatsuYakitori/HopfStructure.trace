@@ -25,7 +25,7 @@
       ["imports",
        [["HatsuYakitori.MachineConstants transitive imports (legacy)",
          "88a26dafbf5fbfc0"],
-        ["HatsuYakitori.MachineConstants:importAllArts", "2cd0d1b446f5742f"],
+        ["HatsuYakitori.MachineConstants:importAllArts", "9a2cb3f64707c990"],
         ["Mathlib.Data.Real.Basic transitive imports (legacy)",
          "fe964f6901c7b630"],
         ["Mathlib.Data.Real.Basic:importAllArts", "4776157901363150"]]]]],
@@ -40,4 +40,4 @@
    "d1b7d8c692be6158"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "d80be2ef90fe2d70"}
+ "depHash": "36e8ea1e261ad91e"}

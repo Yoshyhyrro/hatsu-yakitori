@@ -1,17 +1,17 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["a9278e240f21c9cc.olean"],
-  "i": "479c65457f7fa463.ilean",
+ {"o": ["efaa6c1f3e0a4af8.olean"],
+  "i": "d1e2af09eea3bb46.ilean",
   "c": "67ff80591541a529.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\BSDQuiver.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\BSDQuiver.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\BSDQuiver.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\BSDQuiver.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\BSDQuiver.setup.json --json",
    "level": "trace"},
-  {"message": "HatsuYakitori/BSDQuiver.lean:401:8: declaration uses `sorry`",
+  {"message": "HatsuYakitori/BSDQuiver.lean:410:8: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/BSDQuiver.lean:637:50: unused variable `a`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/BSDQuiver.lean:646:50: unused variable `a`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
    "level": "warning"}],
  "inputs":
  [["HatsuYakitori.BSDQuiver:deps",
@@ -30,13 +30,13 @@
          "ea9f295ed16abc5f"],
         ["HatsuYakitori.MachineConstants transitive imports (legacy)",
          "88a26dafbf5fbfc0"],
-        ["HatsuYakitori.MachineConstants:importAllArts", "2cd0d1b446f5742f"],
+        ["HatsuYakitori.MachineConstants:importAllArts", "9a2cb3f64707c990"],
         ["HatsuYakitori.HopfStructure transitive imports (legacy)",
-         "317db88460aa6a43"],
+         "bd1bf594e41396ff"],
         ["HatsuYakitori.HopfStructure:importAllArts", "b220afa9f8ed07c8"],
         ["HatsuYakitori.AnabelianSketch transitive imports (legacy)",
-         "e89e255a9fca86f4"],
-        ["HatsuYakitori.AnabelianSketch:importAllArts", "9b4369b3b7a7bbe8"],
+         "b8d7be967110d995"],
+        ["HatsuYakitori.AnabelianSketch:importAllArts", "ee6d08252d18f4dc"],
         ["HatsuYakitori.CliffordCarabiner transitive imports (legacy)",
          "137fffeeaea25dc7"],
         ["HatsuYakitori.CliffordCarabiner:importAllArts",
@@ -49,7 +49,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\BSDQuiver.lean",
-   "3479145d995a3016"],
+   "b1dd86c7cbf53d74"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "da10a552022bc659"}
+ "depHash": "15a5c49d775bb897"}

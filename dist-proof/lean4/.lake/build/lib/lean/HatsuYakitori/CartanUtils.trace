@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["65bbd7fe598e8554.olean"],
-  "i": "1793a93be7679a61.ilean",
-  "c": "dbd891117f2318ae.c"},
+ {"o": ["19eac4a2729b8b24.olean"],
+  "i": "74d9bff839c6a96e.ilean",
+  "c": "4713b0e9ebfb2c6f.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\CartanUtils.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\CartanUtils.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\CartanUtils.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\CartanUtils.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\CartanUtils.setup.json --json",
@@ -34,12 +34,12 @@
         ["Mathlib.Algebra.Order.Field.Basic transitive imports (legacy)",
          "0cebc6107b8125b5"],
         ["Mathlib.Algebra.Order.Field.Basic:importAllArts", "c30c6556fe113fbe"],
-        ["Mathlib.Tactic transitive imports (legacy)", "cc88570b5faed882"],
+        ["Mathlib.Tactic transitive imports (legacy)", "e1c5dd0bc306e0ba"],
         ["Mathlib.Tactic:importAllArts", "241c4cdbff37a2a5"],
         ["HatsuYakitori.MachineConstants transitive imports (legacy)",
-         "8807d8cce13347b9"],
+         "88a26dafbf5fbfc0"],
         ["HatsuYakitori.MachineConstants:importAllArts",
-         "c729777dabad0c63"]]]]],
+         "9a2cb3f64707c990"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -48,7 +48,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\CartanUtils.lean",
-   "d8e55626170ee11a"],
+   "f06622a886e4e752"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "b5072ac6ebcf1ed8"}
+ "depHash": "93183d3ed32cf4ac"}

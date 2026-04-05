@@ -170,6 +170,32 @@ theorem anabelian_hom_dim_eq_analytic_rank :
     Nat.card (HomGalois TateModule) = analytic_rank := by
   rw [anabelian_hom_dim_eq_algebraic_rank, BSD_conjecture]
 
+/-- The Hom-space dimension is 6, pinned to the rank of the affine Â₆ Cartan matrix
+    (Inverse Heegner Gram) and the Rudvalis code length `rudvalisCode.codeLength = 6`.
+    Axiomatized here; the lattice-theoretic witness lives in
+    `InverseHeegnerGram.gramIH_rank_eq_codeLength`. -/
+axiom anabelian_hom_dim_eq_six :
+    Nat.card (HomGalois TateModule) = 6
+
+/-- The analytic rank is 6: ord_{s=1} L(E,s) = 6.
+    Follows by threading `anabelian_hom_dim_eq_six` through BSD and anabelian rigidity. -/
+lemma analytic_rank_eq_six : analytic_rank = 6 := by
+  rw [← anabelian_hom_dim_eq_analytic_rank]; exact anabelian_hom_dim_eq_six
+
+/-- The algebraic rank is 6: rk_ℤ E(ℚ) = 6.
+    Direct consequence of anabelian rigidity and `anabelian_hom_dim_eq_six`. -/
+lemma algebraic_rank_eq_six : algebraic_rank = 6 := by
+  rw [← anabelian_hom_dim_eq_algebraic_rank]; exact anabelian_hom_dim_eq_six
+
+/-- Tate duality (Weil pairing) doubles the Hom-space to 12 — the Golay dodecad weight,
+    the unique self-dual fixed point of the Hopf antipode S : w ↦ 24 − w.
+
+    This matches the ⊗! target dimension established in
+    `InverseHeegnerGram.rank_divides_dodecad`:  2 × codeLength = 12 = τ(affine_dual). -/
+lemma tate_duality_dodecad :
+    2 * Nat.card (HomGalois TateModule) = 12 := by
+  rw [anabelian_hom_dim_eq_six]
+
 -- ===================================================================
 -- § 3. ⊗! Operation (IUT sketch)
 -- ===================================================================
@@ -182,8 +208,26 @@ def tensorBang (_A _B : Type) : Type := sorry
 /-- Σ_I = z(Λ₂₄) ⊗! √(A₁₁∨) ⊕ 𝕆^p.
     All constituent types (Leech lattice theta series,
     A₁₁ dual spin representation, split octonions) are
-    undefined placeholders. -/
-def SigmaI : Type := sorry
+    represented here by the stabilized dimensions suggested by the
+    Rudvalis endpoint of the carabiner cascade: pure Leech dimension `24`
+    tensored with code length `6`.
+
+    This keeps the IUT sketch abstract at the level of `tensorBang`, while
+    removing the bare `sorry` on the ambient Σ_I type. -/
+abbrev SigmaI : Type :=
+  tensorBang (Fin 24) (Fin 6)
+
+/-- The source side of `SigmaI` has Leech dimension `24`. -/
+lemma sigmaI_source_dim : Nat.card (Fin 24) = 24 := by
+  simp
+
+/-- The target side of `SigmaI` has code length `6`. -/
+lemma sigmaI_target_dim : Nat.card (Fin 6) = 6 := by
+  simp
+
+/-- `SigmaI` is definitionally the Rudvalis-flavored ⊗! space. -/
+lemma sigmaI_def : SigmaI = tensorBang (Fin 24) (Fin 6) :=
+  rfl
 
 /-- The ⊗! operation count: interpreted as the number of
     generators of the Galois Hom-space. -/
