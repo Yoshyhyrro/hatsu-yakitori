@@ -2,16 +2,16 @@
   Carabiner.lean
 
   Authors   : Yoshihiro Hasegawa
-  Date      : 2026-02
-  Status    : Sketch — core ideas captured, proofs mostly sorry.
+  Date      : 2026-04
+  Status    : Core structural lemmas proven, finite-geometry parts (e.g. S(5,8,24)) remain sorry.
 
   Overview
   --------
   A *carabiner* is a rigid loop at a fixed height on the Berkovich tree.
-  Formally it is a Type II Berkovich point at a rational-power radius.
+  Formally, it pairs a `GolayWeight` with a ZMod 4 phase.
   Under Tate rigidity, the tree has only finitely many allowed heights
-  (lattice points), and a sequence of carabiners defines a *route*
-  (a path in the Berkovich tree).
+  (lattice points: {0, K/3, K/2, 2K/3, K} where K = galoisHeightBound).
+  A sequence of carabiners defines a *route* (a path in the Berkovich tree).
 
   The central observation:
     A route through k carabiners defines an evaluation structure
@@ -20,7 +20,7 @@
       · the route length ↔  the Goppa distance lower bound
       · the Golay weight lattice {0,8,12,16,24} ↔  the only rigid height
         set that is simultaneously self-dual (complement-symmetric) and
-        closed under the Ariki-Koike transitions.
+        closed under Ariki-Koike transitions.
 
   This file captures:
     §1  Carabiner height and rigidity
@@ -28,26 +28,31 @@
     §3  The code associated to a route  (Carabiner code)
     §4  Distance lower bound  (d ≥ route length)
     §5  Golay specialisation  (why {0,8,12,16,24} is special)
-    §6  Connection to Goppa / Toric codes  (interface, mostly sorry)
+    §6  Connection to Goppa / Toric codes
     §7  Recession Fan: Forward–Backward duality
     §8  Structural functional equation via fan pairing
     §9  Bridge to PAdicMellin / BSDQuiver
     §10 Bridge summary
     §11 Steiner system S(5,8,24)
-    §12 Sorry backlog and difficulty tiers
+    §12 Proof status and difficulty tiers
 
   Key design principle:
     We work over a *discrete* height set to keep everything computable.
     The continuous Berkovich tree is approximated by the rigid lattice;
-    this is the "carabiner hypothesis" that makes the code construction
-    algorithmic.
+    this is the "carabiner hypothesis" that makes the code construction algorithmic.
+    This discrete height spectrum directly feeds into `CartanUtils` for
+    cusp extraction and odd unimodular θ-decomposition.
 
   Recession Fan / Backward Fan
   ----------------------------
   The *recession fan* is the complement-reverse of a route.
-  For the Golay route [w0, w8, w12, w16, w24], the recession fan is:
+  For the standard `golayRoute` [w0, w8, w12, w16, w24], the recession fan is:
     [complement(w24), complement(w16), complement(w12), complement(w8), complement(w0)]
-  = [w0, w8, w12, w16, w24]  (the same route!)
+  = [w0, w8, w12, w16, w24]  (the exact same ascending route!)
+
+  Crucially, the complement of an *ascending* route remains *ascending*
+  since the `reverse` and the `height_add_complement` (which maps h → K - h)
+  cancel each other's order-reversing effects.
 
   This self-complementary property is the structural root of the
   Mellin discrete functional equation: h(w) + h(S(w)) = K.
@@ -56,11 +61,12 @@
     h(route[i]) + h(recession[i]) = galoisHeightBound
   which is exactly the functional equation for ALL orbits simultaneously.
 
-  Bridge to BSDQuiver:
+  Bridge to BSDQuiver & HopfStructure:
   - Forward fan  ↔ forward path (leech → padic via tensor_bang)
   - Recession fan ↔ backward path (padic → leech via recover)
   - XZ involution: adds_topology ∘ forgets_topology = preserves_algebraic
-  - The dodecad (w12) is the unique fixed point of both fans.
+  - The dodecad (w12) is the unique fixed point of both fans, carrying
+    the maximal `collapseDefect` (cusp contribution).
 -/
 
 import Mathlib.Data.Finset.Basic

@@ -1,19 +1,19 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["f909f76f008ef388.olean"],
-  "i": "3cb482e391844517.ilean",
+ {"o": ["bf50987c7e19f4ec.olean"],
+  "i": "16ee6eed42a726c0.ilean",
   "c": "6c31ae2b96d793d3.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\Carabiner.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\Carabiner.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\Carabiner.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\Carabiner.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\Carabiner.setup.json --json",
    "level": "trace"},
   {"message":
-   "HatsuYakitori/Carabiner.lean:461:62: This simp argument is unused:\n  galoisHeight\n\nHint: Omit it from the simp argument list.\n  simp [golayRoute, carabiner0, carabiner8, carabiner12,\n  ̵  ̵ ̵ ̵ ̵ ̵ ̵ ̵carabiner16, carabiner24, Carabiner.height,\n       ̵ ̵ ̵ ̵GolayWeight.height, GolayWeight.toFin25, octadHeight,̵ ̵g̵a̵l̵o̵i̵s̵H̵e̵i̵g̵h̵t̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "HatsuYakitori/Carabiner.lean:467:62: This simp argument is unused:\n  galoisHeight\n\nHint: Omit it from the simp argument list.\n  simp [golayRoute, carabiner0, carabiner8, carabiner12,\n  ̵  ̵ ̵ ̵ ̵ ̵ ̵ ̵carabiner16, carabiner24, Carabiner.height,\n       ̵ ̵ ̵ ̵GolayWeight.height, GolayWeight.toFin25, octadHeight,̵ ̵g̵a̵l̵o̵i̵s̵H̵e̵i̵g̵h̵t̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
    "level": "warning"},
-  {"message": "HatsuYakitori/Carabiner.lean:784:16: declaration uses `sorry`",
+  {"message": "HatsuYakitori/Carabiner.lean:790:16: declaration uses `sorry`",
    "level": "warning"},
-  {"message": "HatsuYakitori/Carabiner.lean:969:8: declaration uses `sorry`",
+  {"message": "HatsuYakitori/Carabiner.lean:975:8: declaration uses `sorry`",
    "level": "warning"}],
  "inputs":
  [["HatsuYakitori.Carabiner:deps",
@@ -44,7 +44,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\Carabiner.lean",
-   "972f37850c1b5109"],
+   "55b9a7b723870939"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "69ea55b5cad7f1c2"}
+ "depHash": "bbb708cc2cf83301"}
