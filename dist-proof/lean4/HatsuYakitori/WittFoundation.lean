@@ -53,16 +53,17 @@ namespace HatsuYakitori.WittFoundation
 section FoundationTypes
 
 /-- A point of the Witt design is one of the 24 coordinate positions. -/
-abbrev WittPoint := Fin 24
+abbrev WittPoint := Fin wittPointCount
 
 /-- Number of points in the Witt design. -/
-theorem wittPoint_card : Fintype.card WittPoint = 24 := by decide
+theorem wittPoint_card : Fintype.card WittPoint = wittPointCount := by
+  simp [WittPoint, wittPointCount]
 
 /-- The full point set as a `Finset`. -/
 def wittPoints : Finset WittPoint := Finset.univ
 
-theorem wittPoints_card : wittPoints.card = 24 := by
-  simp [wittPoints, Fintype.card_fin]
+theorem wittPoints_card : wittPoints.card = wittPointCount := by
+  simp [wittPoints, WittPoint, wittPointCount]
 
 /-- An **octad** is a subset of 8 points from the 24-point set.
     In the Witt design S(5,8,24), octads are the blocks. -/
@@ -70,20 +71,20 @@ structure Octad where
   /-- The underlying point set. -/
   points : Finset WittPoint
   /-- An octad has exactly 8 elements. -/
-  card_eq : points.card = 8
+  card_eq : points.card = octadWeightNat
 
 /-- An octad has weight 8 (by definition). -/
-theorem Octad.weight_eq (o : Octad) : o.points.card = 8 := o.card_eq
+theorem Octad.weight_eq (o : Octad) : o.points.card = octadWeightNat := o.card_eq
 
 /-- A **dodecad** is a subset of 12 points (self-dual codeword). -/
 structure Dodecad where
   points : Finset WittPoint
-  card_eq : points.card = 12
+  card_eq : points.card = dodecadWeightNat
 
 /-- A **complementary octad** is a subset of 16 points. -/
 structure OctadComplement where
   points : Finset WittPoint
-  card_eq : points.card = 16
+  card_eq : points.card = octadComplementWeightNat
 
 /-- Witt design codeword weights form the set {0, 8, 12, 16, 24}.
     This is the weight enumerator support of the extended Golay code. -/
@@ -118,9 +119,9 @@ structure WittDesign where
   /-- The 759 octads. -/
   octads : Finset (Finset WittPoint)
   /-- Every block has exactly 8 points. -/
-  blocks_are_octads : ∀ B ∈ octads, B.card = 8
+  blocks_are_octads : ∀ B ∈ octads, B.card = octadWeightNat
   /-- There are exactly 759 blocks. -/
-  octad_count : octads.card = 759
+  octad_count : octads.card = wittOctadCountNat
   /-- **Steiner S(5,8,24) property**: every 5-element subset of the 24 points
       is contained in exactly one octad. -/
   steiner : ∀ S : Finset WittPoint, S.card = 5 →
@@ -157,16 +158,17 @@ def finsetToCodeword (s : Finset WittPoint) : Codeword :=
 
 /-- The Golay generator matrix rows (hex), matching `core/witt_foundation.scm`. -/
 def golay24GeneratorMatrix : List ℕ :=
-  [0xC75, 0x63B, 0xF68, 0x7B4, 0x3DA, 0xD99,
-   0x6CD, 0x367, 0xDC6, 0xA97, 0x93E, 0x8EB]
+  golay24GeneratorRows
 
 /-- The generator matrix has 12 rows. -/
 theorem golay24GeneratorMatrix_length :
-    golay24GeneratorMatrix.length = 12 := by native_decide
+    golay24GeneratorMatrix.length = golayDimension := by
+  simpa [golay24GeneratorMatrix] using golay24GeneratorRows_length
 
 /-- Each generator row fits in 12 bits. -/
 theorem golay24GeneratorMatrix_bounded :
-    ∀ r ∈ golay24GeneratorMatrix, r < 2 ^ 12 := by decide
+    ∀ r ∈ golay24GeneratorMatrix, r < 2 ^ golayDimension := by
+  simpa [golay24GeneratorMatrix] using golay24GeneratorRows_bounded
 
 end FoundationTypes
 
@@ -183,9 +185,8 @@ def wittComplement (s : Finset WittPoint) : Finset WittPoint :=
 /-- The complement of an octad (weight 8) is an octad-complement (weight 16). -/
 theorem wittComplement_octad_card (o : Octad) :
     (wittComplement o.points).card = 16 := by
-  simp [wittComplement, Finset.card_sdiff (Finset.subset_univ _)]
-  simp [Fintype.card_fin]
-  omega
+  simp only [wittComplement, Finset.card_sdiff, Finset.inter_univ,
+             Finset.card_univ, Fintype.card_fin, o.card_eq]
 
 /-- Build an `OctadComplement` from an `Octad`. -/
 def Octad.toComplement (o : Octad) : OctadComplement where
@@ -200,7 +201,12 @@ theorem wittComplement_involutive (s : Finset WittPoint) :
 /-- Complement is an involution on octads and octad-complements. -/
 theorem wittComplement_card_sum (s : Finset WittPoint) (hs : s ⊆ Finset.univ) :
     s.card + (wittComplement s).card = 24 := by
-  simp [wittComplement, Finset.card_sdiff hs, Fintype.card_fin]
+  have hle : s.card ≤ 24 := by
+    calc s.card ≤ Finset.univ.card := Finset.card_le_card hs
+    _ = 24 := by simp [Fintype.card_fin]
+  simp only [wittComplement, Finset.card_sdiff, Finset.inter_univ,
+             Finset.card_univ, Fintype.card_fin]
+  omega
 
 /-- Intersection of two point sets.
     Corresponds to `octad-intersection` in `witt_foundation.scm`. -/
@@ -277,8 +283,11 @@ theorem octad_disjoint_or_meet (W : WittDesign) (B₁ B₂ : Finset WittPoint)
     (h1 : B₁ ∈ W.octads) (h2 : B₂ ∈ W.octads) (hne : B₁ ≠ B₂) :
     (B₁ ∩ B₂).card = 0 ∨ (B₁ ∩ B₂).card = 2 ∨ (B₁ ∩ B₂).card = 4 := by
   have h := witt_intersection_property W B₁ B₂ h1 h2 hne
-  simp [Finset.mem_insert, Finset.mem_singleton] at h
-  exact h
+  simp only [Finset.mem_insert, Finset.mem_singleton] at h
+  rcases h with h | h | h
+  · left; exact h
+  · right; left; exact h
+  · right; right; exact h
 
 end OctadOperations
 
@@ -306,16 +315,18 @@ def preservesOctads (W : WittDesign) (σ : WittPerm) : Prop :=
 theorem preservesOctads_id (W : WittDesign) :
     preservesOctads W (Equiv.refl _) := by
   intro B hB
-  simp [preservesOctads]
-  convert hB
-  simp [Finset.image_id']
+  convert hB using 1
+  ext x
+  simp
 
 /-- Composition of octad-preserving permutations preserves octads. -/
 theorem preservesOctads_comp (W : WittDesign) (σ τ : WittPerm)
     (hσ : preservesOctads W σ) (hτ : preservesOctads W τ) :
     preservesOctads W (σ.trans τ) := by
   intro B hB
-  simp [Equiv.Perm.coe_trans, Finset.image_image]
+  have key : B.image (⇑(σ.trans τ)) = (B.image ⇑σ).image ⇑τ := by
+    simp [Finset.image_image]
+  rw [key]
   exact hτ _ (hσ B hB)
 
 /-- Apply a permutation to an octad. Permutations preserve cardinality,
@@ -347,21 +358,28 @@ theorem applyPerm_preserves_orbit (σ : WittPerm) (s : Finset WittPoint) :
 theorem applyPerm_complement (σ : WittPerm) (s : Finset WittPoint) :
     (wittComplement s).image σ = wittComplement (s.image σ) := by
   ext p
-  simp [wittComplement, Finset.mem_sdiff, Finset.mem_image, Finset.mem_univ]
+  simp only [wittComplement, Finset.mem_image, Finset.mem_sdiff,
+             Finset.mem_univ, true_and]
   constructor
-  · rintro ⟨q, ⟨_, hq⟩, rfl⟩
-    exact fun ⟨r, hr, heq⟩ => hq (σ.injective heq ▸ hr)
+  · rintro ⟨q, hq, rfl⟩
+    rintro ⟨r, hr, heq⟩
+    exact hq (σ.injective heq ▸ hr)
   · intro h
-    refine ⟨σ.symm p, ?_, σ.apply_symm_apply p⟩
-    constructor
-    · exact Finset.mem_univ _
-    · intro hs
-      exact h ⟨σ.symm p, hs, σ.apply_symm_apply p⟩
+    exact ⟨σ.symm p, fun hs => h ⟨σ.symm p, hs, σ.apply_symm_apply p⟩,
+           σ.apply_symm_apply p⟩
 
 /-- Permutations distribute over intersection. -/
 theorem applyPerm_intersection (σ : WittPerm) (s t : Finset WittPoint) :
     (wittIntersection s t).image σ = wittIntersection (s.image σ) (t.image σ) := by
-  simp [wittIntersection, Finset.image_inter_of_injective _ σ.injective]
+  simp only [wittIntersection]
+  ext p
+  simp only [Finset.mem_image, Finset.mem_inter]
+  constructor
+  · rintro ⟨a, ⟨has, hat⟩, rfl⟩
+    exact ⟨⟨a, has, rfl⟩, ⟨a, hat, rfl⟩⟩
+  · rintro ⟨⟨a, has, ha⟩, ⟨b, hbt, hb⟩⟩
+    have hab : a = b := σ.injective (ha.trans hb.symm)
+    exact ⟨a, ⟨has, hab ▸ hbt⟩, ha⟩
 
 /-- Permutations preserve intersection weight. -/
 theorem applyPerm_intersection_weight (σ : WittPerm) (s t : Finset WittPoint) :
@@ -405,13 +423,13 @@ def m24Gen1 : WittPerm where
     match hp : p.val with
     | 0 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 1 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | n + 2 => simp [hp]; ext; simp [Fin.val_mk]; omega
+    | n + 2 => simp [hp]
   right_inv p := by
     simp only
     match hp : p.val with
     | 0 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 1 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | n + 2 => simp [hp]; ext; simp [Fin.val_mk]; omega
+    | n + 2 => simp [hp]
 
 /-- Generator 2: 3-cycle (0 1 2).
     Matches `witt_foundation.scm` generator 3. -/
@@ -432,14 +450,14 @@ def m24Gen2 : WittPerm where
     | 0 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 1 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 2 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | n + 3 => simp [hp]; ext; simp [Fin.val_mk]; omega
+    | n + 3 => simp [hp]
   right_inv p := by
     simp only
     match hp : p.val with
     | 0 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 1 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | 2 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | n + 3 => simp [hp]; ext; simp [Fin.val_mk]; omega
+    | 2 => simp [hp]; ext; simp; omega
+    | n + 3 => simp [hp]
 
 /-- Generator 3: double transposition (0 1)(2 3).
     Matches `witt_foundation.scm` generator 4. -/
@@ -463,15 +481,15 @@ def m24Gen3 : WittPerm where
     | 1 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 2 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 3 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | n + 4 => simp [hp]; ext; simp [Fin.val_mk]; omega
+    | n + 4 => simp [hp]
   right_inv p := by
     simp only
     match hp : p.val with
     | 0 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 1 => simp [hp]; ext; simp [Fin.val_mk]; omega
     | 2 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | 3 => simp [hp]; ext; simp [Fin.val_mk]; omega
-    | n + 4 => simp [hp]; ext; simp [Fin.val_mk]; omega
+    | 3 => simp; ext; simp; omega
+    | n + 4 => simp [hp]
 
 /-- The list of representative generators.
     NOTE: These four permutations alone do NOT generate M₂₄ —
@@ -486,22 +504,22 @@ theorem m24Generators_length : m24Generators.length = 4 := by native_decide
 /-- Generator 1 is an involution: σ² = id. -/
 theorem m24Gen1_involution : m24Gen1.trans m24Gen1 = Equiv.refl _ := by
   ext p
-  simp [m24Gen1, Equiv.Perm.coe_trans]
+  simp [m24Gen1, Equiv.trans_apply]
   match hp : p.val with
-  | 0 => simp [hp, Fin.val_mk]
-  | 1 => simp [hp, Fin.val_mk]
-  | n + 2 => simp [hp]; ext; simp [Fin.val_mk]; omega
+  | 0 => simp [hp]
+  | 1 => simp
+  | n + 2 => simp [hp]
 
 /-- Generator 3 is an involution: (0 1)(2 3) applied twice = id. -/
 theorem m24Gen3_involution : m24Gen3.trans m24Gen3 = Equiv.refl _ := by
   ext p
-  simp [m24Gen3, Equiv.Perm.coe_trans]
+  simp [m24Gen3, Equiv.trans_apply]
   match hp : p.val with
   | 0 => simp [hp, Fin.val_mk]
   | 1 => simp [hp, Fin.val_mk]
-  | 2 => simp [hp, Fin.val_mk]
-  | 3 => simp [hp, Fin.val_mk]
-  | n + 4 => simp [hp]; ext; simp [Fin.val_mk]; omega
+  | 2 => simp [hp]
+  | 3 => simp
+  | n + 4 => simp [hp]
 
 /-- Generator 0 has order 24: the cyclic rotation returns to identity after 24 steps.
     (Statement only; full proof would enumerate all 24 applications.) -/
@@ -512,12 +530,12 @@ axiom m24Gen0_order : (List.range 24).foldl (fun acc _ => acc.trans m24Gen0) (Eq
 theorem m24Gen2_order3 :
     m24Gen2.trans (m24Gen2.trans m24Gen2) = Equiv.refl _ := by
   ext p
-  simp [m24Gen2, Equiv.Perm.coe_trans]
+  simp [m24Gen2, Equiv.trans_apply]
   match hp : p.val with
-  | 0 => simp [hp, Fin.val_mk]
-  | 1 => simp [hp, Fin.val_mk]
-  | 2 => simp [hp, Fin.val_mk]
-  | n + 3 => simp [hp]; ext; simp [Fin.val_mk]; omega
+  | 0 => simp
+  | 1 => simp
+  | 2 => simp
+  | n + 3 => simp [hp]
 
 -- -----------------------------------------------------------------
 -- §3.3  Orbit computation (bounded search)
@@ -556,7 +574,8 @@ private theorem permOrbit_go_acc_subset (σ : WittPerm) (cur : Finset WittPoint)
 theorem permOrbit_contains_self (σ : WittPerm) (s : Finset WittPoint) (bound : ℕ) :
     s ∈ permOrbit σ s bound := by
   unfold permOrbit
-  exact permOrbit_go_acc_subset σ s [s] bound s (List.mem_cons_self s [])
+  apply permOrbit_go_acc_subset
+  simp
 
 -- -----------------------------------------------------------------
 -- §3.4  Coherence: M₂₄ action ↔ GolayFrontier.M24Orbit

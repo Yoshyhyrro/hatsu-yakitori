@@ -1,13 +1,187 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["804621dc8fd47f44.olean"],
-  "i": "f60be39083143021.ilean",
-  "c": "8dba4dfcf439532f.c"},
+ {"o": ["365f07e13fa39f19.olean"],
+  "i": "ae93d48a6894fd4f.ilean",
+  "c": "73665d12e46f6810.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\WittFoundation.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\WittFoundation.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\WittFoundation.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\WittFoundation.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\WittFoundation.setup.json --json",
-   "level": "trace"}],
+   "level": "trace"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:326:30: This simp argument is unused:\n  Function.comp\n\nHint: Omit it from the simp argument list.\n  simp [Finset.image_image, F̵u̵n̵c̵t̵i̵o̵n̵.̵c̵o̵m̵p̵,̵ ̵Equiv.trans_apply]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:326:45: This simp argument is unused:\n  Equiv.trans_apply\n\nHint: Omit it from the simp argument list.\n  simp [Finset.image_image, Function.comp,̵ ̵E̵q̵u̵i̵v̵.̵t̵r̵a̵n̵s̵_̵a̵p̵p̵l̵y̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:400:15: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp only ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:405:15: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp only ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:422:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:422:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:423:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:423:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:428:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:428:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:429:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:429:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:448:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:448:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:449:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:449:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:450:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:450:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:455:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:455:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:456:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:456:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:457:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:457:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:478:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:478:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:479:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:479:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:480:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:480:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:481:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:481:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:486:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:486:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:487:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:487:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:488:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:488:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:489:17: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵h̵p̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:489:33: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp ̵[̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]̵\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:507:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:507:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:508:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:508:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:516:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:516:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:517:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:517:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:518:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:518:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:519:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:519:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:533:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:533:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:534:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:534:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:535:15: This simp argument is unused:\n  hp\n\nHint: Omit it from the simp argument list.\n  simp [h̵p̵,̵ ̵Fin.val_mk]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "HatsuYakitori/WittFoundation.lean:535:19: This simp argument is unused:\n  Fin.val_mk\n\nHint: Omit it from the simp argument list.\n  simp [hp,̵ ̵F̵i̵n̵.̵v̵a̵l̵_̵m̵k̵]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"}],
  "inputs":
  [["HatsuYakitori.WittFoundation:deps",
    [["deps",
@@ -29,8 +203,21 @@
         ["Mathlib.Data.Finset.Card:importAllArts", "a25f65f5d33a08cd"],
         ["Mathlib.Data.Finset.Lattice.Basic transitive imports (legacy)",
          "d5ceb630bf62a682"],
-        ["Mathlib.Data.Finset.Lattice.Basic:importAllArts",
-         "3e001930cdca4e6e"]]]]],
+        ["Mathlib.Data.Finset.Lattice.Basic:importAllArts", "3e001930cdca4e6e"],
+        ["Mathlib.GroupTheory.Perm.Basic transitive imports (legacy)",
+         "017cf899f8ba5d89"],
+        ["Mathlib.GroupTheory.Perm.Basic:importAllArts", "e26400a9407abc55"],
+        ["Mathlib.GroupTheory.Perm.Fin transitive imports (legacy)",
+         "68ccbfbb2354eed0"],
+        ["Mathlib.GroupTheory.Perm.Fin:importAllArts", "7fdf728e6bd3ca19"],
+        ["Mathlib.Tactic transitive imports (legacy)", "e1c5dd0bc306e0ba"],
+        ["Mathlib.Tactic:importAllArts", "241c4cdbff37a2a5"],
+        ["HatsuYakitori.MachineConstants transitive imports (legacy)",
+         "88a26dafbf5fbfc0"],
+        ["HatsuYakitori.MachineConstants:importAllArts", "9a2cb3f64707c990"],
+        ["HatsuYakitori.GolayFrontier transitive imports (legacy)",
+         "ffeedf0279631189"],
+        ["HatsuYakitori.GolayFrontier:importAllArts", "19bf562b6a62e02d"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -39,7 +226,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\WittFoundation.lean",
-   "fe0692d6a899ca36"],
+   "c265630701113723"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "e9e9328a1d792d84"}
+ "depHash": "1494165fe25ea210"}
