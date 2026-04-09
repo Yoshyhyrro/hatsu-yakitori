@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["8ba571642187ed2f.olean"],
-  "i": "bae4ee5a232d0088.ilean",
-  "c": "93e83d64ab9c9765.c"},
+ {"o": ["822134c33a4203c5.olean"],
+  "i": "8e503344dc2be3fe.ilean",
+  "c": "d2e37bda2ef18dff.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\AnabelianSketch.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\AnabelianSketch.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\AnabelianSketch.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\AnabelianSketch.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\AnabelianSketch.setup.json --json",
@@ -24,19 +24,19 @@
    "HatsuYakitori/AnabelianSketch.lean:206:4: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/AnabelianSketch.lean:299:18: declaration uses `sorry`",
+   "HatsuYakitori/AnabelianSketch.lean:301:18: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/AnabelianSketch.lean:302:4: declaration uses `sorry`",
+   "HatsuYakitori/AnabelianSketch.lean:304:4: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/AnabelianSketch.lean:320:8: declaration uses `sorry`",
+   "HatsuYakitori/AnabelianSketch.lean:322:8: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/AnabelianSketch.lean:461:5: unused variable `h2`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/AnabelianSketch.lean:463:5: unused variable `h2`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
    "level": "warning"},
   {"message":
-   "HatsuYakitori/AnabelianSketch.lean:548:30: unused variable `c`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "HatsuYakitori/AnabelianSketch.lean:550:30: unused variable `c`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
    "level": "warning"}],
  "inputs":
  [["HatsuYakitori.AnabelianSketch:deps",
@@ -55,7 +55,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\AnabelianSketch.lean",
-   "15562f0dbe20895f"],
+   "124373e18e65cf34"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "b5002d7d04d88801"}
+ "depHash": "fec9a0427b0ccdc5"}

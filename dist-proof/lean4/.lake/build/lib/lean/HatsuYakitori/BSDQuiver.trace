@@ -36,7 +36,7 @@
         ["HatsuYakitori.HopfStructure:importAllArts", "b220afa9f8ed07c8"],
         ["HatsuYakitori.AnabelianSketch transitive imports (legacy)",
          "b8d7be967110d995"],
-        ["HatsuYakitori.AnabelianSketch:importAllArts", "ee6d08252d18f4dc"],
+        ["HatsuYakitori.AnabelianSketch:importAllArts", "062b5b7d324a5115"],
         ["HatsuYakitori.CliffordCarabiner transitive imports (legacy)",
          "137fffeeaea25dc7"],
         ["HatsuYakitori.CliffordCarabiner:importAllArts",
@@ -52,4 +52,4 @@
    "b1dd86c7cbf53d74"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "15a5c49d775bb897"}
+ "depHash": "4c7740d4d0f7bc54"}

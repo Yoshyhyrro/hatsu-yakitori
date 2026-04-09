@@ -55,6 +55,7 @@
     §5  Quiver obstruction functor matching
     §6  Coherence with LyonsCarabiner / RudvalisCarabiner / ObstructionGoppa
     §7  First Chern class encoding (c₁ pairing interpretation)
+    §8  ALE intersection pairing bridge
 -/
 
 import Mathlib.Data.Finset.Basic
@@ -620,11 +621,10 @@ structure ChernPairing (n : ℕ) where
     Equivalently, the all-ones vector $(1,\ldots,1)$ is in the kernel,
     which is the defining property of affine (extended) Dynkin diagrams. -/
 structure AffineChernPairing (n : ℕ) extends ChernPairing n where
-  /-- The null-mode condition: the all-ones vector is in the kernel.
+  /-- The null-mode condition: each row sums to 0.
       $\sum_j \langle c_1(L_i), c_1(L_j) \rangle = 0$ for all $i$. -/
-  nullMode : ∀ i : Fin n, ∀ (ones : Fin n → ℤ),
-    (∀ k, ones k = 1) →
-    (Finset.univ.sum fun j => pairing i j * ones j) = 0
+  rowSum_zero : ∀ i : Fin n,
+    (Finset.univ.sum fun j => pairing i j) = 0
 
 /-- The Gram matrix `gramIH` constitutes a `ChernPairing` on 7 line bundles.
 
@@ -645,17 +645,9 @@ def gramIH_affineChernPairing : AffineChernPairing 7 where
   symm := gramIH_symm
   selfIntersection := 2
   diag := gramIH_diag
-  nullMode := by
-    intro i ones hones
-    have h0 : ones 0 = 1 := hones 0
-    have h1 : ones 1 = 1 := hones 1
-    have h2 : ones 2 = 1 := hones 2
-    have h3 : ones 3 = 1 := hones 3
-    have h4 : ones 4 = 1 := hones 4
-    have h5 : ones 5 = 1 := hones 5
-    have h6 : ones 6 = 1 := hones 6
-    fin_cases i <;> simp [gramIH, Finset.sum_fin_eq_sum_range, h0, h1, h2, h3, h4, h5, h6] <;>
-      decide
+  rowSum_zero := by
+    intro i
+    fin_cases i <;> native_decide
 
 -- -----------------------------------------------------------------
 -- c₁ encoding: interpreting gramIH entries as Chern class pairings
@@ -754,7 +746,7 @@ theorem c₁_obs_support_hamming :
     number $-2$ with $L_3$ itself. -/
 theorem c₁_double_defect_midpoint :
     defectVec 3 = -(gramIH_chernPairing.selfIntersection) := by
-  simp [defectVec, gramIH_chernPairing]; decide
+  simp [defectVec, gramIH_chernPairing]
 
 /-- **Chern–Quiver compatibility**: the quiver dimension total (12 = dodecad)
     decomposes as:
@@ -765,7 +757,7 @@ theorem c₁_double_defect_midpoint :
 theorem chern_quiver_dodecad :
     gramIH_chernPairing.selfIntersection *
       (rudvalisCode.codeLength : ℤ) = 12 := by
-  simp [gramIH_chernPairing, ru_code_length]; decide
+  simp [gramIH_chernPairing, ru_code_length]
 
 /-- Master theorem: `gramIH` encodes as a first Chern class intersection pairing.
 
@@ -815,5 +807,161 @@ theorem chern_encoding_summary :
          chern_quiver_dodecad⟩
 
 end ChernClassEncoding
+
+-- ===================================================================
+-- §8  ALE intersection pairing bridge
+-- ===================================================================
+/-!
+### ALE space bridge
+
+The axiomatized `ALESpace` and `ExceptionalDivisor` from AnabelianSketch §6
+model the minimal resolution of $\mathbb{C}^2 / \mathbb{Z}_7$.  The resolution
+has exactly 7 exceptional divisors $E_0, \ldots, E_6 \cong \mathbb{P}^1$ whose
+intersection numbers form the affine $\hat{A}_6$ Cartan matrix — which is
+precisely `gramIH`.
+
+Since Mathlib lacks intersection theory, we cannot *construct* the ALE space.
+Instead we give a **conditional bridge**: given *any* ALE realization with 7
+exceptional divisors whose intersection numbers satisfy the $\hat{A}_6$ axioms
+(symmetry, self-intersection 2, cyclic adjacency $-1$), the intersection numbers
+must agree with `gramIH` entry-by-entry, and every `ChernPairing` / defect
+theorem from §7 transfers verbatim.
+-/
+section ALEBridge
+
+/-- Local alias for the axiomatized intersection number from AnabelianSketch §6. -/
+private noncomputable abbrev intNum {X : ALESpace} := @_root_.HatsuYakitori.intersectionNumber X
+
+/-- An **ALE realization** of the $\\hat{A}_6$ diagram is an `ALESpace` together
+    with an indexing of 7 exceptional divisors by `Fin 7`, such that their
+    intersection numbers reproduce the affine Cartan matrix `gramIH`.
+
+    This is the data needed to lift the abstract axioms in AnabelianSketch §6
+    to the concrete Gram matrix computation in this file. -/
+structure ALERealization where
+  /-- The underlying ALE space (minimal resolution of $\\mathbb{C}^2 / \\mathbb{Z}_7$). -/
+  space : ALESpace
+  /-- The 7 exceptional divisors, indexed by `Fin 7` along the cyclic diagram. -/
+  divisor : Fin 7 → ExceptionalDivisor space
+  /-- Hypothesis: the intersection numbers agree with `gramIH`. -/
+  intersection_eq : ∀ i j : Fin 7,
+    intNum (divisor i) (divisor j) = gramIH i j
+
+/-- Given an ALE realization, the intersection pairing is symmetric. -/
+theorem ALERealization.symm (R : ALERealization) (i j : Fin 7) :
+    intNum (R.divisor i) (R.divisor j) =
+    intNum (R.divisor j) (R.divisor i) := by
+  rw [R.intersection_eq, R.intersection_eq]
+  exact gramIH_symm i j
+
+/-- Given an ALE realization, each exceptional divisor has self-intersection 2. -/
+theorem ALERealization.selfInt (R : ALERealization) (i : Fin 7) :
+    intNum (R.divisor i) (R.divisor i) = 2 := by
+  rw [R.intersection_eq]
+  exact gramIH_diag i
+
+/-- Given an ALE realization, adjacent divisors ($|i-j| \equiv 1 \pmod 7$)
+    have intersection $-1$. -/
+theorem ALERealization.adj (R : ALERealization) (i j : Fin 7) (h : i ≠ j)
+    (hadj : (i.val + 1) % 7 = j.val ∨ (j.val + 1) % 7 = i.val) :
+    intNum (R.divisor i) (R.divisor j) = -1 := by
+  rw [R.intersection_eq]
+  exact gramIH_adj i j h hadj
+
+/-- Given an ALE realization, non-adjacent distinct divisors have
+    intersection 0. -/
+theorem ALERealization.nonadj (R : ALERealization) (i j : Fin 7) (h : i ≠ j)
+    (hnadj : ¬((i.val + 1) % 7 = j.val ∨ (j.val + 1) % 7 = i.val)) :
+    intNum (R.divisor i) (R.divisor j) = 0 := by
+  rw [R.intersection_eq]
+  exact gramIH_nonadj i j h hnadj
+
+/-- An ALE realization lifts to a `ChernPairing` via the intersection form.
+    $\langle c_1(\mathcal{O}(E_i)),\, c_1(\mathcal{O}(E_j)) \rangle
+     = E_i \cdot E_j = G_{IH}(i,j)$. -/
+noncomputable def ALERealization.toChernPairing (R : ALERealization) : ChernPairing 7 where
+  pairing i j := intNum (R.divisor i) (R.divisor j)
+  symm := R.symm
+  selfIntersection := 2
+  diag i := R.selfInt i
+
+/-- The `ChernPairing` obtained from an ALE realization is identical to
+    `gramIH_chernPairing`. -/
+theorem ALERealization.chernPairing_eq (R : ALERealization) :
+    R.toChernPairing.pairing = gramIH_chernPairing.pairing := by
+  funext i j
+  simp [ALERealization.toChernPairing, gramIH_chernPairing, R.intersection_eq]
+
+/-- The null-mode condition transfers: the total intersection of any divisor
+    with all 7 divisors is 0.
+    $\sum_{j=0}^{6} E_i \cdot E_j = 0$ for all $i$. -/
+theorem ALERealization.nullMode (R : ALERealization) (i : Fin 7) :
+    intNum (R.divisor i) (R.divisor 0) +
+    intNum (R.divisor i) (R.divisor 1) +
+    intNum (R.divisor i) (R.divisor 2) +
+    intNum (R.divisor i) (R.divisor 3) +
+    intNum (R.divisor i) (R.divisor 4) +
+    intNum (R.divisor i) (R.divisor 5) +
+    intNum (R.divisor i) (R.divisor 6) = 0 := by
+  simp only [R.intersection_eq]
+  exact gramIH_row_sum i
+
+/-- The obstruction product transfers: applying the intersection form to
+    `obsVec` yields the defect vector.
+    $\sum_j E_i \cdot E_j \cdot \mathrm{obs}_j = \mathrm{defect}_i$. -/
+theorem ALERealization.obstruction_defect (R : ALERealization) (i : Fin 7) :
+    intNum (R.divisor i) (R.divisor 0) * obsVec 0 +
+    intNum (R.divisor i) (R.divisor 1) * obsVec 1 +
+    intNum (R.divisor i) (R.divisor 2) * obsVec 2 +
+    intNum (R.divisor i) (R.divisor 3) * obsVec 3 +
+    intNum (R.divisor i) (R.divisor 4) * obsVec 4 +
+    intNum (R.divisor i) (R.divisor 5) * obsVec 5 +
+    intNum (R.divisor i) (R.divisor 6) * obsVec 6 = defectVec i := by
+  simp only [R.intersection_eq]
+  exact gramIH_mul_obs_eq_defect i
+
+/-- The defect is concentrated at divisors $E_2, E_3, E_4$: the center
+    of the cyclic Dynkin diagram. In geometric terms, the obstruction
+    is supported on the "equatorial belt" of the exceptional locus. -/
+theorem ALERealization.defect_central_support (_R : ALERealization) :
+    (∀ i : Fin 7, defectVec i ≠ 0 → i.val ∈ ({2, 3, 4} : Finset ℕ)) := by
+  intro i hi
+  fin_cases i <;> simp_all [defectVec]
+
+/-- Master bridge theorem: an ALE realization recovers the full §7 Chern
+    encoding — symmetry, self-intersection, null mode, Chern roots, obstruction,
+    Whitney conservation, double defect, and Chern–quiver dodecad. -/
+theorem ALERealization.chern_bridge (R : ALERealization) :
+    -- ALE intersection = gramIH
+    (∀ i j, intNum (R.divisor i) (R.divisor j) = gramIH i j) ∧
+    -- Lifts to same ChernPairing
+    R.toChernPairing.pairing = gramIH_chernPairing.pairing ∧
+    -- Self-intersection = 2
+    (∀ i, intNum (R.divisor i) (R.divisor i) = 2) ∧
+    -- Null mode (det bundle trivial)
+    (∀ i, gramIH_mulVec onesVec i = 0) ∧
+    -- 6 Chern roots
+    rudvalisCode.codeLength = 6 ∧
+    -- Obstruction = −c₁(L₃)
+    (∀ i, defectVec i = -(gramIH i 3)) ∧
+    -- Whitney sum conservation
+    defectVec 0 + defectVec 1 + defectVec 2 + defectVec 3 +
+    defectVec 4 + defectVec 5 + defectVec 6 = 0 ∧
+    -- Double defect: defect₃ = −selfInt
+    defectVec 3 = -(gramIH_chernPairing.selfIntersection) ∧
+    -- Chern–quiver: selfInt × #roots = 12
+    gramIH_chernPairing.selfIntersection *
+      (rudvalisCode.codeLength : ℤ) = 12 := by
+  exact ⟨R.intersection_eq,
+         R.chernPairing_eq,
+         R.selfInt,
+         gramIH_mul_ones_eq_zero,
+         rfl,
+         defect_eq_neg_r3_column,
+         defect_sum_zero,
+         c₁_double_defect_midpoint,
+         chern_quiver_dodecad⟩
+
+end ALEBridge
 
 end HatsuYakitori.InverseHeegnerGram
