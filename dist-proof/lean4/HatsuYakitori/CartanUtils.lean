@@ -1,18 +1,18 @@
 /-
   HatsuYakitori.CartanUtils
-  
+
   Cartan Decomposition Utilities
-  
+
   This module provides utility functions for Cartan decomposition,
   combining Hausdorff distance considerations with logarithmic scaling.
-  
+
   Mathematical Background:
   The Cartan decomposition generates log-spaced levels from B^0 to B^1,
   useful for multi-scale analysis and Hausdorff distance approximations.
-  
+
   For B > 1 and n steps, we generate levels:
     a_k = exp(k * ln(B) / n)  for k = 0, 1, ..., n
-  
+
   This gives a geometric progression from 1 to B.
 -/
 
@@ -53,7 +53,7 @@ noncomputable def validateDecomposition (B : ℝ) (steps : ℕ) : Bool :=
   decide (B > 1) && decide (steps > 0)
 
 /-- Validation implies the parameter predicate -/
-theorem validateDecomposition_correct {B : ℝ} {steps : ℕ} 
+theorem validateDecomposition_correct {B : ℝ} {steps : ℕ}
     (h : validateDecomposition B steps = true) : ValidDecompositionParams B steps := by
   simp [validateDecomposition, ValidDecompositionParams] at *
   exact h
@@ -70,7 +70,7 @@ noncomputable def safeLog (x : ℝ) : ℝ :=
 /-- Compute a single level of the Cartan decomposition.
     For level k out of n steps with base B:
       a_k = exp(k * ln(B) / n) = B^(k/n)
-    
+
     This generates a geometric progression from 1 to B. -/
 noncomputable def cartanLevel (B : ℝ) (steps : ℕ) (k : ℕ) : ℝ :=
   if steps = 0 then 1
@@ -84,7 +84,7 @@ noncomputable def cartanLogDecompose (B : ℝ) (steps : ℕ) : List ℝ :=
   (List.range (steps + 1)).map (cartanLevel B steps)
 
 /-- The first level is always 1 (= B^0) -/
-theorem cartanLevel_zero (B : ℝ) (steps : ℕ) (hsteps : steps > 0) : 
+theorem cartanLevel_zero (B : ℝ) (steps : ℕ) (hsteps : steps > 0) :
     cartanLevel B steps 0 = 1 := by
   simp only [cartanLevel]
   have hne : steps ≠ 0 := Nat.pos_iff_ne_zero.mp hsteps
@@ -110,10 +110,10 @@ theorem cartanLogDecompose_length (B : ℝ) (steps : ℕ) :
 
 /-- Find the decomposition level closest to a target value.
     Returns the index and value if found within tolerance.
-    
+
     Useful for Hausdorff distance lookups in multi-scale analysis.
 -/
-noncomputable def cartanInverseLookup (decomp : List ℝ) (target : ℝ) (tolerance : ℝ) : 
+noncomputable def cartanInverseLookup (decomp : List ℝ) (target : ℝ) (tolerance : ℝ) :
     Option (ℕ × ℝ) :=
   let indexed := (List.range decomp.length).zip decomp
   List.find? (fun (_, v) => decide (|v - target| < tolerance)) indexed
@@ -126,17 +126,58 @@ noncomputable def cartanStepRatio (decomp : List ℝ) : List ℝ :=
   match decomp with
   | [] => []
   | [_] => []
-  | x :: xs => 
+  | x :: xs =>
     let rec go (prev : ℝ) (rest : List ℝ) : List ℝ :=
       match rest with
       | [] => []
       | y :: ys => (y / prev) :: go y ys
     go x xs
 
-/-- For valid decomposition, all step ratios are equal -/
-axiom cartanStepRatio_constant : ∀ (B : ℝ) (steps : ℕ), B > 1 →
-    ∀ r ∈ cartanStepRatio (cartanLogDecompose B steps), 
-      |r - Real.rpow B (1 / (steps : ℝ))| < defaultTolerance
+/-- All elements of `go prev rest` equal `c` when consecutive values satisfy
+    `f(k+1)/f(k) = c`, using the `List.range'` decomposition. -/
+private lemma go_range'_eq (f : ℕ → ℝ) (c : ℝ)
+    (hf : ∀ k, f (k + 1) / f k = c) (prev_k : ℕ) :
+    ∀ (n : ℕ), ∀ r ∈ cartanStepRatio.go (f prev_k)
+      ((List.range' (prev_k + 1) n).map f), r = c
+  | 0, r, hr => by simp [cartanStepRatio.go] at hr
+  | n + 1, r, hr => by
+    simp only [List.range', List.map_cons, cartanStepRatio.go, List.mem_cons] at hr
+    rcases hr with rfl | hr
+    · exact hf prev_k
+    · exact go_range'_eq f c hf (prev_k + 1) n r hr
+
+/-- For valid decomposition, all step ratios are equal to `B^(1/steps)`. -/
+theorem cartanStepRatio_constant : ∀ (B : ℝ) (steps : ℕ), B > 1 →
+    ∀ r ∈ cartanStepRatio (cartanLogDecompose B steps),
+      |r - Real.rpow B (1 / (steps : ℝ))| < defaultTolerance := by
+  intro B steps hB r hr
+  have hB_pos : B > 0 := lt_trans one_pos hB
+  have htol : defaultTolerance > 0 := by
+    unfold defaultTolerance; exact MachineConstants.defaultToleranceReal_pos
+  suffices h : r = Real.rpow B (1 / (steps : ℝ)) by
+    rw [h, sub_self, abs_zero]; exact htol
+  rcases eq_or_ne steps 0 with rfl | hne
+  · simp [cartanLogDecompose, cartanStepRatio] at hr
+  · set f := cartanLevel B steps
+    set c := Real.rpow B (1 / (steps : ℝ))
+    have h_ratio : ∀ k, f (k + 1) / f k = c := by
+      intro k
+      simp only [f, cartanLevel, if_neg hne, safeLog, if_pos hB_pos]
+      rw [← Real.exp_sub]
+      have hsub : ↑(k + 1) * Real.log B / ↑steps - ↑k * Real.log B / ↑steps
+          = Real.log B * (1 / ↑steps) := by push_cast; field_simp; ring
+      rw [hsub, ← Real.rpow_def_of_pos hB_pos]; rfl
+    have h_list : (List.range (steps + 1)).map f = f 0 :: (List.range' 1 steps).map f := by
+      conv_lhs => rw [show List.range (steps + 1) = 0 :: List.range' 1 steps from by
+        simp [List.range_eq_range', List.range']]
+      simp [List.map_cons]
+    rw [show cartanLogDecompose B steps = (List.range (steps + 1)).map f from rfl, h_list] at hr
+    have h_ne : (List.range' 1 steps).map f ≠ [] := by simp; omega
+    obtain ⟨hd, tl, h_tl⟩ := List.exists_cons_of_ne_nil h_ne
+    rw [h_tl] at hr
+    simp only [cartanStepRatio] at hr
+    rw [← h_tl] at hr
+    exact go_range'_eq f c h_ratio 0 steps r hr
 
 /-! ## Part 5: Properties and Correctness -/
 
@@ -203,11 +244,13 @@ theorem cartanLogDecompose_last (B : ℝ) (steps : ℕ) (hB : B > 0) (hsteps : s
     For a set S with Hausdorff dimension d, the multi-scale covering
     at level a_k has measure proportional to a_k^d.
 -/
-axiom hausdorff_scaling_principle :
+theorem hausdorff_scaling_principle :
   ∀ (B : ℝ) (steps : ℕ) (d : ℝ),
     B > 1 → steps > 0 → d ≥ 0 →
     ∀ k : ℕ, k ≤ steps →
-      ∃ C : ℝ, C > 0
+      ∃ C : ℝ, C > 0 := by
+  intros
+  exact ⟨1, by norm_num⟩
 
 /-!
 ## Part 7: Integration with Machine Constants -/
@@ -226,16 +269,16 @@ theorem standardCartanDecompose_bounds (steps : ℕ) (hsteps : steps > 0) :
   have hK : HatsuYakitori.MachineConstants.galoisHeightBound > 1 := by
     simp only [MachineConstants.galoisHeightBound]
     norm_num
-  have hK_pos : HatsuYakitori.MachineConstants.galoisHeightBound > 0 := 
+  have hK_pos : HatsuYakitori.MachineConstants.galoisHeightBound > 0 :=
     lt_trans (by norm_num) hK
   have hne : steps ≠ 0 := Nat.pos_iff_ne_zero.mp hsteps
-  have hlogK_pos : Real.log HatsuYakitori.MachineConstants.galoisHeightBound > 0 := 
+  have hlogK_pos : Real.log HatsuYakitori.MachineConstants.galoisHeightBound > 0 :=
     Real.log_pos hK
 
   -- Unfold once and split
   simp only [cartanLevel, safeLog, if_pos hK_pos]
   rw [if_neg hne]
-  
+
   constructor
   · -- 1 ≤ exp(...)
     rw [Real.one_le_exp_iff]
@@ -264,10 +307,10 @@ noncomputable def inDecompositionInterval (decomp : List ℝ) (x : ℝ) : Option
     if a ≤ x ∧ x < b then some 0
     else (inDecompositionInterval (b :: rest) x).map (· + 1)
 
-/-- Format a real number to string (specification) -/
-axiom formatFloat : ℝ → ℕ → String
+/-- Format a real number to string (opaque: computational aspect handled externally) -/
+opaque formatFloat : ℝ → ℕ → String
 
-/-- Pretty print specification (computational aspect handled in Scheme) -/
-axiom prettyPrintDecomposition : ℝ → ℕ → String
+/-- Pretty print specification (opaque: computational aspect handled in Scheme) -/
+opaque prettyPrintDecomposition : ℝ → ℕ → String
 
 end HatsuYakitori.CartanUtils

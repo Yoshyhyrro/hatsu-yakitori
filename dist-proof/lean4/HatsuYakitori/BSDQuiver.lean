@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 HatsuYakitori. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: HatsuYakitori
+Authors: Yoshihiro Hasegawa
 -/
 import Mathlib.Tactic
 import Mathlib.Combinatorics.Quiver.Path
@@ -9,6 +9,7 @@ import Mathlib.LinearAlgebra.Dimension.Basic
 import HatsuYakitori.MachineConstants
 import HatsuYakitori.HopfStructure
 import HatsuYakitori.AnabelianSketch
+import HatsuYakitori.CliffordCarabiner
 
 /-!
 # BSD Quiver: Tensor-Coproduct Diagram as a Quiver Representation
@@ -16,12 +17,21 @@ import HatsuYakitori.AnabelianSketch
 This file formalizes the BSD (Birch and Swinnerton-Dyer) diagram
 
 ```
-z(Λ₂₄)  ---⊗!--->  √A₁₁∨
-  |                   |
-  | Δ (coproduct)     | eval
-  v                   v
-z(Λ₂₄) ⊗ z(Λ₂₄) --> ℝ  ⊕  Op
+        z(Λ₂₄)  ---⊗!--->  √A₁₁∨
+          |                   |
+          | Δ (coproduct)     | eval
+          v                   v
+z(Λ₂₄) ⊗ z(Λ₂₄)  ------->  ℝ ⊕ Op
+          |
+          |  project to phantom zone
+          v
+  InverseHeegner₂₀  ≅  Span{l₁,l₂} ⊗ (A₁₁∨ / 2·A₁₁)
 ```
+
+The bottom arrow is the **Lyons projection**: the tensor square of the
+Leech center maps into the 20-dimensional inverse Heegner space
+(see `LyonsCarabiner.InverseHeegnerElement`), where the phantom weights
+l₁, l₂ of the MDS code [6,4,3]₅ generate the missing orbits.
 
 as a **quiver representation** with dynamic programming over paths.
 
@@ -789,10 +799,40 @@ structure Pauli24Ensemble where
   global_phase : ZMod 4
   deriving Repr
 
+/-- Interpret a Pauli ensemble as a point in `H_√C_p` once a real height
+    is supplied.  The phase is inherited from `global_phase`. -/
+noncomputable def Pauli24Ensemble.toHSqrtCp
+    (e : Pauli24Ensemble) (h : ℝ) : HatsuYakitori.CliffordCarabiner.HSqrtCp :=
+  ⟨h, e.global_phase⟩
+
 /-- Construct a Pauli ensemble from a Golay weight. -/
 def pauli24FromGolayWeight (w : GolayWeight) : Pauli24Ensemble :=
   { config := spaceConfigFromGolayWeight w
     global_phase := 0 }
+
+/-- Canonical `H_√C_p` point attached to a Golay-indexed Pauli ensemble:
+    use the Golay real height and the ensemble's global phase. -/
+noncomputable def pauli24FromGolayWeightHSqrtCp
+    (w : GolayWeight) : HatsuYakitori.CliffordCarabiner.HSqrtCp :=
+  (pauli24FromGolayWeight w).toHSqrtCp w.height
+
+@[simp]
+theorem pauli24_toHSqrtCp_phase (e : Pauli24Ensemble) (h : ℝ) :
+    (e.toHSqrtCp h).phase = e.global_phase := rfl
+
+@[simp]
+theorem pauli24_toHSqrtCp_re (e : Pauli24Ensemble) (h : ℝ) :
+    (e.toHSqrtCp h).re = h := rfl
+
+@[simp]
+theorem pauli24FromGolayWeightHSqrtCp_phase (w : GolayWeight) :
+    (pauli24FromGolayWeightHSqrtCp w).phase = 0 := by
+  simp [pauli24FromGolayWeightHSqrtCp, pauli24FromGolayWeight]
+
+@[simp]
+theorem pauli24FromGolayWeightHSqrtCp_re (w : GolayWeight) :
+    (pauli24FromGolayWeightHSqrtCp w).re = w.height := by
+  simp [pauli24FromGolayWeightHSqrtCp]
 
 /-- The ensemble from the trivial weight is uniformly affine. -/
 theorem pauli24_w0_affine :

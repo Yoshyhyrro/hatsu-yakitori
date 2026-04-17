@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 HatsuYakitori. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: HatsuYakitori
+Authors: Yoshihiro Hasegawa
 
 Extension theorems for MachineConstants.lean connecting:
 1. Height decomposition (ΣI = ζ(Λ₂₄)/A₁₁ + O_p)

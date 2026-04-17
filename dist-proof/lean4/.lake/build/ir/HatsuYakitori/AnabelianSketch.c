@@ -84,7 +84,7 @@ static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_isogenyDeg
 _start:
 {
 lean_object* x_1; lean_object* x_2; lean_object* x_3; 
-x_1 = lean_unsigned_to_nat(181u);
+x_1 = lean_unsigned_to_nat(258u);
 x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_isogenyDegree___closed__3;
 x_3 = l_Lean_Name_num___override(x_2, x_1);
 return x_3;
@@ -104,7 +104,7 @@ static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_isogenyDeg
 _start:
 {
 lean_object* x_1; lean_object* x_2; lean_object* x_3; 
-x_1 = lean_unsigned_to_nat(181u);
+x_1 = lean_unsigned_to_nat(258u);
 x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_isogenyDegree___closed__5;
 x_3 = l_Lean_Name_num___override(x_2, x_1);
 return x_3;
@@ -246,7 +246,7 @@ static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_isogenyDeg
 _start:
 {
 lean_object* x_1; lean_object* x_2; lean_object* x_3; 
-x_1 = lean_unsigned_to_nat(6u);
+x_1 = lean_unsigned_to_nat(10u);
 x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_isogenyDegree___closed__20;
 x_3 = l_Lean_Name_num___override(x_2, x_1);
 return x_3;

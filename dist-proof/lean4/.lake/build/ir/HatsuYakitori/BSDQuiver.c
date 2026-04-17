@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: HatsuYakitori.BSDQuiver
-// Imports: public import Init public import Mathlib.Tactic public import Mathlib.Combinatorics.Quiver.Path public import Mathlib.LinearAlgebra.Dimension.Basic public import HatsuYakitori.MachineConstants public import HatsuYakitori.HopfStructure public import HatsuYakitori.AnabelianSketch
+// Imports: public import Init public import Mathlib.Tactic public import Mathlib.Combinatorics.Quiver.Path public import Mathlib.LinearAlgebra.Dimension.Basic public import HatsuYakitori.MachineConstants public import HatsuYakitori.HopfStructure public import HatsuYakitori.AnabelianSketch public import HatsuYakitori.CliffordCarabiner
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -4793,6 +4793,7 @@ lean_object* initialize_mathlib_Mathlib_LinearAlgebra_Dimension_Basic(uint8_t bu
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_AnabelianSketch(uint8_t builtin);
+lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_CliffordCarabiner(uint8_t builtin);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver(uint8_t builtin) {
 lean_object * res;
@@ -4817,6 +4818,9 @@ res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(builtin)
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_AnabelianSketch(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_CliffordCarabiner(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDVertex_repr___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDVertex_repr___closed__0();
