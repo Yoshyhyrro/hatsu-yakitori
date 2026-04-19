@@ -3,179 +3,210 @@ Copyright (c) 2026 HatsuYakitori. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yoshihiro Hasegawa
 
-# Unknown Dual Exploration
+# Inverse Heegner Cascade
 
-This file explores the conjectural "unknown dual" that relates:
-- The affine Cartan matrix `gramIH` (signature `[6,0,1]₇`)
-- The combinatorial parameters `[7,5,3]₇` from the Golay/Steiner system
-- The anabelian geometry of the Tate module (via `AnabelianSketch`)
-- The exterior algebra grading on the Golay code (via `ExteriorAnalysis`)
+This file formalizes the cascade of structures derived from the
+affine Â₆ Gram matrix `gramIH` (see `InverseHeegnerGram.lean`) using
+quiver functors and path algebra representations.
 
-The unknown dual is conjectured to be an outer automorphism of the
-étale fundamental group of a 7-punctured projective line, whose
-abelianization acts as multiplication by a primitive 7th root of unity
-on a 6-dimensional subspace, fixing a 1-dimensional phantom axis.
+The cascade describes how the 7-dimensional lattice, its null direction
+(the phantom axis), the obstruction vector, and the defect vector
+interact with the BSD quiver.
+
+Key concepts:
+- The path algebra `ℚ[BSDQuiver]` (or its completion) acts on the
+  vector spaces assigned to vertices.
+- A **Picard operator** is a functor from the BSD quiver to the
+  category of matrices that respects the Gram matrix structure.
+- The cascade is the sequence of linear maps:
+  `kernel (1-dim) → defect (3-dim) → full (7-dim) → quotient (6-dim)`
+  each corresponding to a path in the quiver.
+
+## Main definitions
+
+* `GramMatrixModule` : the 7-dimensional module with bilinear form `gramIH`.
+* `NullVector`, `ObstructionVector`, `DefectVector` as elements of this module.
+* `BSDCascade` : assignment of subspaces to BSD vertices.
+* `PicardFunctor` : a functor from the BSD quiver to matrices that
+  intertwines the cascade with the Gram matrix.
+
+## References
+
+- `InverseHeegnerGram.lean` for the Gram matrix definitions.
+- `BSDQuiver.lean` for the quiver structure.
+- `Carabiner.lean` for the recession fan analogy.
 -/
 
-import HatsuYakitori.AnabelianSketch
-import HatsuYakitori.ExteriorAnalysis
 import HatsuYakitori.InverseHeegnerGram
-import HatsuYakitori.Carabiner
-import HatsuYakitori.MachineConstants
+import HatsuYakitori.BSDQuiver
+import Mathlib.Combinatorics.Quiver.Path
+import Mathlib.LinearAlgebra.Matrix.BilinearForm
 
 open HatsuYakitori
-open HatsuYakitori.AnabelianSketch
-open HatsuYakitori.ExteriorAnalysis
 open HatsuYakitori.InverseHeegnerGram
-open HatsuYakitori.Carabiner
-open HatsuYakitori.MachineConstants
+open HatsuYakitori.BSDQuiver
+open Quiver
+open Path
 
 set_option linter.dupNamespace false
 
-namespace HatsuYakitori.UnknownDualExploration
+namespace HatsuYakitori.InverseHeegnerCascade
 
 -- ===================================================================
--- §1. Basic definitions: Gram bilinear form and phantom axis
+-- §1. The 7-dimensional module with Gram form
 -- ===================================================================
 
-/-- The bilinear form defined by the Gram matrix `gramIH`. -/
-def gramBilinear (v w : Fin 7 → ℤ) : ℤ :=
-  ∑ i : Fin 7, ∑ j : Fin 7, v i * gramIH i j * w j
+/-- The module `V = ℚ⁷` equipped with the bilinear form `gramIH`. -/
+def V : Type := Fin 7 → ℚ
 
-/-- The phantom axis: kernel of the Gram form (all-ones vector). -/
-def phantomAxis : Submodule ℤ (Fin 7 → ℤ) where
-  carrier := { v | ∀ i, gramIH_mulVec v i = 0 }
-  add_mem' := by sorry
-  zero_mem' := by sorry
-  smul_mem' := by sorry
+/-- The Gram bilinear form on `V`. -/
+def B (x y : V) : ℚ :=
+  ∑ i, ∑ j, x i * gramIH i j * y j
 
-/-- The phantom axis is 1‑dimensional. -/
-theorem phantomAxis_dim : Module.rank ℤ phantomAxis = 1 := by sorry
+/-- V has a natural module structure as a Pi type. -/
+instance : AddCommMonoid V := Pi.instAddCommMonoid
+instance : Module ℚ V := Pi.instModule ℚ V
+
+/-- V has negation. -/
+instance : Neg V := ⟨fun v i => -(v i)⟩
+
+/-- The all-ones vector – the null direction (phantom axis). -/
+def nullVec : V := fun _ => 1
+
+/-- The obstruction vector `obsΦ` lifted to ℚ. -/
+def obsVec : V :=
+  fun i => match i with
+  | 0 => 1 | 1 => 1 | 2 => 1 | 3 => 0 | 4 => 1 | 5 => 1 | 6 => 1
+
+/-- The defect vector `d = gramIH · obsVec`. -/
+def defectVec : V :=
+  fun i => match i with
+  | 0 => 0 | 1 => 0 | 2 => 1 | 3 => -2 | 4 => 1 | 5 => 0 | 6 => 0
+
+/-- Verification that `gramIH_mulVec obsVec = defectVec`. -/
+theorem defect_eq_gram_mul_obs :
+    gramIH_mulVec obsVec = defectVec := by
+  funext i; fin_cases i <;> rfl
+
+/-- The null vector is indeed in the kernel of `B`. -/
+theorem nullVec_kernel : ∀ v, B nullVec v = 0 := by
+  intro v
+  simp only [B, nullVec]
+  have key : ∀ i, gramIH i 0 + gramIH i 1 + gramIH i 2 +
+                   gramIH i 3 + gramIH i 4 + gramIH i 5 + gramIH i 6 = 0 :=
+    gramIH_row_sum
+  refine Fintype.sum_eq_zero ?_
+  intro i
+  refine Fintype.sum_eq_zero ?_
+  intro j
+  have : (fun _ => 1 : Fin 7 → ℚ) i = 1 := rfl
+  rw [show (fun _ => (1 : ℚ) : Fin 7 → ℚ) i = 1 by rfl]
+  ring_nf
+  -- The row sum equals 0, so the total is 0
+  sorry
 
 -- ===================================================================
--- §2. Unknown dual structure
+-- §2. BSD Quiver and its path algebra
 -- ===================================================================
 
-/-- Conjectural data of the unknown dual. -/
+/-- The path algebra over ℚ of the BSD quiver. -/
+def PathAlgebra : Type* := PathAlgebra ℚ BSDVertex
+
+/-- The representation of the path algebra on `V` induced by the cascade. -/
+structure CascadeRepresentation where
+  /-- Assignment of a subspace of `V` to each vertex. -/
+  subspace : BSDVertex → Submodule ℚ V
+  /-- Assignment of a linear map to each arrow, compatible with subspaces. -/
+  map : ∀ {a b} (f : BSDArrow a b), subspace a →ₗ[ℚ] subspace b
+
+/-- The canonical cascade derived from the Gram matrix. -/
+def canonicalCascade : CascadeRepresentation :=
+  { subspace := fun v => match v with
+    | .leech       => Submodule.span ℚ {nullVec}
+    | .affine_dual => Submodule.span ℚ {defectVec}
+    | .padic       => ⊤  -- whole V
+    | .selmer      => Submodule.span ℚ {obsVec, nullVec}  -- 2-dim? Actually 3-dim support.
+    map := sorry }
+
+-- ===================================================================
+-- §3. Picard functor: a quiver functor to matrices
+-- ===================================================================
+
+/-- A Picard functor assigns a matrix to each vertex and a matrix to each arrow,
+    such that the Gram matrix is recovered as a natural transformation. -/
+structure PicardFunctor where
+  /-- Matrix assigned to vertex `leech` (should be 1×1). -/
+  M_leech : Matrix (Fin 1) (Fin 1) ℚ
+  /-- Matrix assigned to vertex `affine_dual` (1×1). -/
+  M_affine : Matrix (Fin 1) (Fin 1) ℚ
+  /-- Matrix assigned to vertex `padic` (7×7). -/
+  M_padic : Matrix (Fin 7) (Fin 7) ℚ
+  /-- Matrix assigned to vertex `selmer` (1×1). -/
+  M_selmer : Matrix (Fin 1) (Fin 1) ℚ
+  /-- Matrix assigned to arrow `tensor_bang` (1×1). -/
+  A_tensor : Matrix (Fin 1) (Fin 1) ℚ
+  /-- Matrix assigned to arrow `oplus_padic` (1×7). -/
+  A_oplus : Matrix (Fin 1) (Fin 7) ℚ
+  /-- Matrix assigned to arrow `project_selmer` (1×1). -/
+  A_project : Matrix (Fin 1) (Fin 1) ℚ
+  /-- Matrix assigned to arrow `recover` (1×1). -/
+  A_recover : Matrix (Fin 1) (Fin 1) ℚ
+  /-- Compatibility: the diagram commutes in the matrix category. -/
+  commutes : A_recover * A_project = A_tensor
+
+/-- The canonical Picard functor derived from the Gram cascade. -/
+noncomputable def canonicalPicardFunctor : PicardFunctor :=
+  { M_leech := !![1]
+    M_affine := !![1]
+    M_padic := Matrix.of (fun i j => gramIH i j)  -- 7×7 Gram matrix
+    M_selmer := !![1]  -- 1×1 identity
+    A_tensor := !![1]
+    A_oplus := Matrix.of (fun _ j => if j.val = 0 then 1 else 0)  -- projection onto first coordinate
+    A_project := !![1]  -- 1×1 identity
+    A_recover := !![1]  -- 1×1 identity
+    commutes := by ring }
+
+-- ===================================================================
+-- §4. Matrix matching condition (the cascade equation)
+-- ===================================================================
+
+/-- The cascade equation: the Gram matrix factors through the quiver. -/
+def cascade_equation (F : PicardFunctor) : Prop :=
+  F.M_padic = (F.A_oplus.transpose) * (F.M_affine • (1 : Matrix (Fin 7) (Fin 1) ℚ)) * F.A_oplus
+  ∧ F.M_selmer = F.A_project * F.M_leech * (F.A_project.transpose)
+  ∧ F.A_recover * F.A_project = F.A_tensor
+
+/-- The canonical Picard functor satisfies the cascade equation. -/
+theorem canonical_picard_satisfies_cascade :
+    cascade_equation canonicalPicardFunctor := by
+  constructor
+  · sorry
+  constructor
+  · sorry
+  · sorry
+
+-- ===================================================================
+-- §5. The unknown dual as an automorphism of the Picard functor
+-- ===================================================================
+
+/-- An unknown dual is an automorphism of the cascade that
+    respects the Gram matrix and the Picard functor structure. -/
 structure UnknownDual where
-  /-- Linear automorphism of the 7‑dimensional space. -/
-  automorphism : (Fin 7 → ℤ) ≃ₗ[ℤ] (Fin 7 → ℤ)
-  /-- It fixes every vector in the phantom axis. -/
-  fixes_phantom : ∀ v : Fin 7 → ℤ, (∀ i, gramIH_mulVec v i = 0) → automorphism v = v
-  /-- It preserves the Gram bilinear form. -/
-  is_isometry : ∀ v w, gramBilinear (automorphism v) (automorphism w) = gramBilinear v w
-  /-- Its action on the quotient (positive part) has order 7. -/
-  order_on_quotient : (automorphism : (Fin 7 → ℤ) → (Fin 7 → ℤ)) ^ 7 ≡ id [mod phantomAxis]
+  /-- Automorphism of the 7-dimensional module preserving the Gram form. -/
+  φ : V ≃ₗ[ℚ] V
+  /-- It fixes the null vector. -/
+  fixes_null : φ nullVec = nullVec
+  /-- It maps the obstruction vector to itself up to sign. -/
+  maps_obs : φ obsVec = obsVec ∨ φ obsVec = -obsVec
+  /-- It preserves the bilinear form. -/
+  naturality : ∀ v w, B (φ v) (φ w) = B v w
 
--- ===================================================================
--- §3. Action on exterior degrees (τ ↦ 24-τ)
--- ===================================================================
-
-/-- Action on exterior degrees: Hodge star duality. -/
-def unknownDualActionOnExterior (d : ExteriorDegree) : ExteriorDegree :=
-  match d with
-  | .zero => .twentyFour
-  | .eight => .sixteen
-  | .twelve => .twelve
-  | .sixteen => .eight
-  | .twentyFour => .zero
-
-/-- The dodecad is fixed. -/
-theorem dodecad_fixed : unknownDualActionOnExterior .twelve = .twelve := rfl
-
--- ===================================================================
--- §4. Functional equation for Galois heights
--- ===================================================================
-
-/-- Auxiliary lemma: height = galoisHeight ∘ toNat. -/
-lemma height_eq_galoisHeight (w : GolayWeight) :
-    w.height = galoisHeight (GolayWeight.toNat w) := rfl
-
-/-- galoisHeight satisfies h(τ) + h(24-τ) = 8. -/
-theorem galoisHeight_functional_equation (w : GolayWeight) :
-    galoisHeight (GolayWeight.toNat w) + galoisHeight (GolayWeight.toNat (GolayWeight.complement w)) =
-    galoisHeightBound := by
-  rw [← height_eq_galoisHeight, ← height_eq_galoisHeight (GolayWeight.complement w)]
-  exact GolayWeight.height_add_complement_height w
-
-/-- The dodecad weight 12 gives the midpoint. -/
-theorem dodecad_midpoint :
-    galoisHeight (GolayWeight.toNat GolayWeight.w12) = galoisHeightBound / 2 := by
-  simp [galoisHeight, GolayWeight.w12, galoisHeightBound]
-  norm_num
-
--- ===================================================================
--- §5. Connection to Carabiner route (recession fan)
--- ===================================================================
-
-/-- The unknown dual on a carabiner: complement. -/
-def unknownDualOnCarabiner (c : Carabiner) : Carabiner := Carabiner.complement c
-
-/-- Action on a route: complement then reverse. -/
-def unknownDualOnRoute (r : Route) : Route := (r.map Carabiner.complement).reverse
-
-/-- The Golay route is fixed. -/
-theorem golayRoute_fixed : unknownDualOnRoute golayRoute = golayRoute := by sorry
-
--- ===================================================================
--- §6. Anabelian realisation (outer automorphism of fundamental group)
--- ===================================================================
-
-/-- Placeholder for the étale fundamental group of ℙ¹ minus 7 points. -/
-def EtaleFundamentalGroup : Type := sorry
-
-/-- The unknown dual as an outer automorphism. -/
-def unknownDualAsOuterAutomorphism : Type := sorry
-
-/-- The abelianization acts by multiplication by a primitive 7th root of unity. -/
-theorem abelianization_action :
-    ∃ (φ : unknownDualAsOuterAutomorphism), sorry := sorry
-
--- ===================================================================
--- §7. Compatibility with the Tate module
--- ===================================================================
-
-/-- Induced automorphism of the Tate module (abstract). -/
-def unknownDualOnTateModule : TateModule ≃ TateModule := sorry
-
--- ===================================================================
--- §8. The parameters [7,5,3]₇
--- ===================================================================
-
-def param7 : ℕ := 7
-def param5 : ℕ := 5
-def param3 : ℕ := 3
-
-/-- The number of octads (759) is divisible by 3. -/
-theorem octad_count_mod3 : GolayWeight.orbitSize GolayWeight.w8 % 3 = 0 := by
-  decide
-
--- ===================================================================
--- §9. Signature [6,0,1]₇
--- ===================================================================
-
-def signature : ℕ × ℕ × ℕ := (6, 0, 1)
-theorem total_7 : 6 + 0 + 1 = 7 := rfl
-theorem pos_minus_null_5 : 6 - 1 = 5 := rfl
-
--- ===================================================================
--- §10. Exploration with `obtain` and `have`
--- ===================================================================
-
-/-- Main conjecture: existence of an unknown dual. -/
+/-- The unknown dual conjecture: there exists a non‑trivial unknown dual
+    of order 7 (or 2) acting on the cascade. -/
 def UnknownDualConjecture : Prop :=
-  ∃ φ : UnknownDual,
-    (∀ w : GolayWeight, galoisHeight_functional_equation w) ∧
-    unknownDualOnRoute golayRoute = golayRoute ∧
-    ∀ d : ExteriorDegree, unknownDualActionOnExterior d = tauToExteriorDegree (24 - exteriorDegreeToNat d)
+  ∃ (d : UnknownDual), (Function.iterate (d.φ : V → V) 7 = id) ∧ (d.φ : V → V) ≠ id
 
-/-- The conjecture is open (axiomatised for now). -/
+/-- The conjecture is open. -/
 axiom unknownDualConjecture_holds : UnknownDualConjecture
 
-/-- Example of using `obtain` to extract components of the conjecture. -/
-example : ∃ (φ : UnknownDual), ∀ w : GolayWeight,
-    galoisHeight (GolayWeight.toNat w) + galoisHeight (GolayWeight.toNat (GolayWeight.complement w)) = galoisHeightBound := by
-  obtain ⟨φ, h1, _, _⟩ := unknownDualConjecture_holds
-  exact ⟨φ, h1⟩
-
-end HatsuYakitori.UnknownDualExploration
+end HatsuYakitori.InverseHeegnerCascade
