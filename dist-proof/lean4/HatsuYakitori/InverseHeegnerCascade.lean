@@ -1,18 +1,15 @@
-/-
-  hatsuyakitori/InverseHeegnerCascade.lean
-  A formalization of the Inverse Heegner Cascade, a structure arising in the study of BSD quivers and their associated lattices.
-Copyright (c) 2026 HatsuYakitori. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yoshihiro Hasegawa
+-- hatsuyakitori/InverseHeegnerCascade.lean
+-- A formalization of the Inverse Heegner Cascade, a structure arising in the study of BSD quivers and their associated lattices.
+--
+-- Copyright (c) 2026 HatsuYakitori. All rights reserved.
+-- Released under Apache 2.0 license as described in the file LICENSE.
+-- Authors: Yoshihiro Hasegawa
 
-# Inverse Heegner Cascade (Fixed)
--/
-
-import HatsuYakitori.InverseHeegnerGram
 import HatsuYakitori.BSDQuiver
+import HatsuYakitori.InverseHeegnerGram
 import Mathlib.Combinatorics.Quiver.Path
 import Mathlib.LinearAlgebra.Matrix.BilinearForm
-import Mathlib.LinearAlgebra.Matrix.Transpose
+import Mathlib.Data.Matrix.Basic
 import Mathlib.Tactic
 
 open HatsuYakitori

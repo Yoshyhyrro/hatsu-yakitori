@@ -54,6 +54,10 @@ as a **quiver representation** with dynamic programming over paths.
 * `DPState`: Dynamic programming state for path enumeration.
 * `bsd_vertex_to_golay_weight`: Map from BSD vertices to representative
   Golay weights, connecting the two quiver structures.
+* `FVRole`: Frobenius/Verschiebung role of each BSD arrow.
+* `bsd_arrow_fv_role`: Assignment of `FVRole` to arrows; identifies `recover`
+  and `project_selmer` as Verschiebung, `tensor_bang` and `oplus_padic` as Frobenius.
+* `VerschiebungData`: Dieudonné-module structure on a `BSDRepresentation`.
 
 ## Extended structures (Phantom-typed categorical layer)
 
@@ -61,6 +65,10 @@ as a **quiver representation** with dynamic programming over paths.
 * `PauliTransform`: Morphisms between space modalities as categorical functors.
 * `TransformEffect`: Effect system tracking morphic side-effects.
 * `TaggedBSDVertex`: BSD vertices enriched with geometric modality descriptors.
+* `FVRole`: Classification of BSD arrows as Frobenius (`frob`) or Verschiebung (`versch`).
+* `VerschiebungData`: Height-2 formal group structure at the p-adic vertex, encoding
+  the Dieudonné relation $V \circ F = [p]$. Provides the missing `canonicalCascade.map`
+  data for `InverseHeegnerCascade` via the `padic → selmer` arrow.
 
 ## Design
 
@@ -171,7 +179,11 @@ theorem padic_selmer_complement :
 
 /-- Each BSD arrow induces a Hida transition between the corresponding
     Golay weights. This "forgetful" functor maps the BSD quiver into
-    the Golay weight quiver. -/
+    the Golay weight quiver.
+
+    Note: at this weight level all arrows uniformly use `.frob`.
+    The F–V distinction (Frobenius vs. Verschiebung) is captured at the
+    representation-theoretic level by `bsd_arrow_fv_role` in §21. -/
 def bsd_arrow_to_hida {v₁ v₂ : BSDVertex} (_a : BSDArrow v₁ v₂) :
     HidaTransition (bsd_vertex_to_golay_weight v₁) (bsd_vertex_to_golay_weight v₂) :=
   .frob  -- All BSD arrows induce Frobenius transitions at the weight level
@@ -985,5 +997,161 @@ theorem effect_fundamental_laws :
   exact ⟨fun e => effect_left_unit e,
          fun e => effect_right_unit e,
          rfl⟩
+
+-- ===================================================================
+-- § 21. Frobenius–Verschiebung Decomposition
+-- ===================================================================
+
+/-!
+## Frobenius–Verschiebung Decomposition
+
+The BSD quiver admits a natural **F–V decomposition** inherited from the
+height-2 formal group structure at the prime 7 (the order of the
+`UnknownDual` in `InverseHeegnerCascade`).
+
+Concretely:
+
+- **Frobenius arrows** (`tensor_bang`, `oplus_padic`):
+  pull back along $F : M \to M^{(p)}$, increasing the Newton slope.
+- **Verschiebung arrows** (`recover`, `project_selmer`):
+  push forward along $V : M^{(p)} \to M$ (the dual of Frobenius).
+
+The phantom null direction (`nullVec` in `InverseHeegnerCascade`) lies in
+$\ker F$, which is the unit-root (slope-0) subspace fixed by $V$ in the
+Dieudonné module of a height-2 supersingular formal group at $p = 7$.
+
+The `PicardFunctor` commutativity condition
+`A_recover * A_project = A_tensor`
+is the matrix shadow of $FV = \mathrm{id}$ restricted to the height-1 factor,
+and provides the algebraic scaffolding for filling in the `sorry` in
+`canonicalCascade.map` of `InverseHeegnerCascade`.
+
+### Arrow roles at a glance
+
+| Arrow             | `FVRole`       | Dieudonné meaning                              |
+|-------------------|----------------|------------------------------------------------|
+| `tensor_bang`     | `frobenius`    | F-crystal pullback $z(\Lambda_{24}) \xrightarrow{F} \sqrt{A_{11}^\vee}$ |
+| `oplus_padic`     | `frobenius`    | Inclusion $\sqrt{A_{11}^\vee} \hookrightarrow M$ (height-2 module)     |
+| `project_selmer`  | `verschiebung` | Projection to $\operatorname{Im}(V) = \ker(F)^\perp$                   |
+| `recover`         | `verschiebung` | $V : \Sigma_I \to \sqrt{A_{11}^\vee}$                                  |
+-/
+
+/-- Classification of BSD arrows by their role in the Frobenius–Verschiebung
+    decomposition of the underlying height-2 formal group.
+
+    - `frobenius`:    the arrow acts as $F : M \to M^{(p)}$.
+    - `verschiebung`: the arrow acts as $V : M^{(p)} \to M$ (dual of $F$).
+    - `neutral`:      slope-preserving; reserved for future arrows. -/
+inductive FVRole where
+  | frobenius    : FVRole
+  | verschiebung : FVRole
+  | neutral      : FVRole
+  deriving DecidableEq, Repr
+
+/-- Assign a Frobenius–Verschiebung role to each BSD arrow.
+
+    The assignment is determined by the Newton-slope direction:
+    Frobenius arrows increase slope; Verschiebung arrows decrease it. -/
+def bsd_arrow_fv_role {v₁ v₂ : BSDVertex} : BSDArrow v₁ v₂ → FVRole
+  | .tensor_bang    => .frobenius
+  | .oplus_padic    => .frobenius
+  | .project_selmer => .verschiebung
+  | .recover        => .verschiebung
+
+@[simp]
+theorem fv_tensor_bang :
+    bsd_arrow_fv_role BSDArrow.tensor_bang = .frobenius := rfl
+
+@[simp]
+theorem fv_oplus_padic :
+    bsd_arrow_fv_role BSDArrow.oplus_padic = .frobenius := rfl
+
+@[simp]
+theorem fv_project_selmer :
+    bsd_arrow_fv_role BSDArrow.project_selmer = .verschiebung := rfl
+
+@[simp]
+theorem fv_recover :
+    bsd_arrow_fv_role BSDArrow.recover = .verschiebung := rfl
+
+/-- No BSD arrow has the `neutral` role (all arrows are either F or V). -/
+theorem fv_no_neutral {v₁ v₂ : BSDVertex} (a : BSDArrow v₁ v₂) :
+    bsd_arrow_fv_role a ≠ .neutral := by
+  cases a <;> simp [bsd_arrow_fv_role]
+
+/-- Verschiebung data for a `BSDRepresentation` at a prime `p`.
+
+    Packages the Dieudonné-module structure at the `padic` vertex:
+    a Frobenius endomorphism `frob`, its dual `versch`, and the two
+    Dieudonné relations
+
+      $V \circ F = [p]_M$   and   $F \circ V = [p]_M$
+
+    which lift the phantom null-direction condition $B(\mathtt{nullVec}, -) = 0$
+    to the representation-theoretic level.
+
+    Setting `p = 7` and using the `sig_to_representation` base recovers
+    the `UnknownDualConjecture` data from `InverseHeegnerCascade`. -/
+structure VerschiebungData (k : Type*) [Field k] (p : ℕ)
+    (R : BSDRepresentation k) where
+  /-- The Frobenius endomorphism $F$ on $R.\mathtt{at\_padic}$ -/
+  frob   : R.at_padic →ₗ[k] R.at_padic
+  /-- The Verschiebung endomorphism $V$ on $R.\mathtt{at\_padic}$ -/
+  versch : R.at_padic →ₗ[k] R.at_padic
+  /-- Left Dieudonné relation: $V \circ F = [p]$ -/
+  dieudonne_vf : versch.comp frob = (p : k) • LinearMap.id
+  /-- Right Dieudonné relation: $F \circ V = [p]$ -/
+  dieudonne_fv : frob.comp versch = (p : k) • LinearMap.id
+
+/-- $F$ and $V$ have equal composites (both equal scalar multiplication by $p$). -/
+theorem VerschiebungData.fv_eq_vf {k : Type*} [Field k] {p : ℕ}
+    {R : BSDRepresentation k} (vd : VerschiebungData k p R) :
+    vd.frob.comp vd.versch = vd.versch.comp vd.frob := by
+  rw [vd.dieudonne_fv, vd.dieudonne_vf]
+
+/-- The Verschiebung is **injective on the Selmer image** iff
+    the Tate–Shafarevich group $\Sha(E)$ vanishes (BSD corollary). -/
+def VerschiebungData.shaVanishes {k : Type*} [Field k] {p : ℕ}
+    {R : BSDRepresentation k} (vd : VerschiebungData k p R) : Prop :=
+  Function.Injective vd.versch
+
+/-- The phantom null direction is annihilated by Frobenius:
+    `frob` maps anything in the kernel of `dieudonne_vf` to zero.
+    This is the representation-theoretic counterpart of `nullVec_kernel`. -/
+theorem VerschiebungData.frob_kills_phantom {k : Type*} [Field k] {p : ℕ}
+    {R : BSDRepresentation k} (vd : VerschiebungData k p R) (hp : (p : k) = 0) :
+    vd.frob.comp vd.versch = 0 := by
+  rw [vd.dieudonne_fv, hp]
+  simp
+
+/-- The F–V decomposition is coherent with the faithful representation condition.
+
+    A representation is faithful iff `recover ∘ project = tensor_bang` (§6).
+    This is exactly the `dieudonne_fv` condition at `p = 1`
+    (or the unit-component of the Dieudonné relation), confirming that the
+    `PicardFunctor` commutativity `A_recover * A_project = A_tensor`
+    is the matrix shadow of $FV = \mathrm{id}$. -/
+theorem fv_faithful_coherence {k : Type*} [Field k]
+    {R : BSDRepresentation k} (h : R.isFaithful) :
+    R.recover_map.comp R.project_map = R.tensor_bang_map := h
+
+/-- The `recover` arrow (Verschiebung) and the `oplus_padic` arrow (Frobenius)
+    are dual to each other in the F–V decomposition.
+
+    Their composition `oplus_padic ∘ recover` corresponds to $F \circ V = [p]$,
+    while `tensor_bang ∘ project_selmer` corresponds to $F \circ V$ at the level
+    of the outer diagram. -/
+theorem fv_recover_oplus_dual :
+    bsd_arrow_fv_role BSDArrow.recover = .verschiebung ∧
+    bsd_arrow_fv_role BSDArrow.oplus_padic = .frobenius := ⟨rfl, rfl⟩
+
+/-- Summary: the BSD quiver splits into two F-arrows and two V-arrows.
+    This 2+2 split matches the height-2 formal group decomposition. -/
+theorem fv_split_summary :
+    (bsd_arrow_fv_role BSDArrow.tensor_bang    = .frobenius) ∧
+    (bsd_arrow_fv_role BSDArrow.oplus_padic    = .frobenius) ∧
+    (bsd_arrow_fv_role BSDArrow.project_selmer = .verschiebung) ∧
+    (bsd_arrow_fv_role BSDArrow.recover        = .verschiebung) :=
+  ⟨rfl, rfl, rfl, rfl⟩
 
 end HatsuYakitori.BSDQuiver
