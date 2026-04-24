@@ -31,9 +31,9 @@
         ["HatsuYakitori.HopfStructure:importAllArts", "b220afa9f8ed07c8"],
         ["HatsuYakitori.BSDQuiver transitive imports (legacy)",
          "1d45d70e2d417a02"],
-        ["HatsuYakitori.BSDQuiver:importAllArts", "06ba73b3457173a9"],
+        ["HatsuYakitori.BSDQuiver:importAllArts", "014e1cfc97e2b380"],
         ["HatsuYakitori.Carabiner transitive imports (legacy)",
-         "5a3b1ead79dbbcf7"],
+         "4f4d16af4a875ca3"],
         ["HatsuYakitori.Carabiner:importAllArts", "07f85188cbd9516d"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
@@ -46,4 +46,4 @@
    "30053a9a9b1166e4"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "0e0ab6d78b9c8794"}
+ "depHash": "a9e96598a83aae0e"}

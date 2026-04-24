@@ -3,6 +3,12 @@ Copyright (c) 2026 HatsuYakitori. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yoshihiro Hasegawa
 -/
+import HatsuYakitori.BSDQuiver
+import HatsuYakitori.InverseHeegnerGram
+import Mathlib.Combinatorics.Quiver.Path
+import Mathlib.LinearAlgebra.Matrix.BilinearForm
+import Mathlib.Data.Matrix.Basic
+import Mathlib.Tactic
 /-!
 # Inverse Heegner Cascade
 
@@ -58,13 +64,6 @@ explanations. Condition 3 is proved.
 * `BSDQuiver.lean` — `BSDVertex`, `BSDArrow`, `FVRole`, `VerschiebungData`.
 -/
 
-import HatsuYakitori.BSDQuiver
-import HatsuYakitori.InverseHeegnerGram
-import Mathlib.Combinatorics.Quiver.Path
-import Mathlib.LinearAlgebra.Matrix.BilinearForm
-import Mathlib.Data.Matrix.Basic
-import Mathlib.Tactic
-
 open HatsuYakitori
 open HatsuYakitori.InverseHeegnerGram
 open HatsuYakitori.BSDQuiver
@@ -101,12 +100,17 @@ def defectVec : V :=
   fun i => match i with
   | 0 => 0 | 1 => 0 | 2 => 1 | 3 => -2 | 4 => 1 | 5 => 0 | 6 => 0
 
-/-- Verification that the matrix-vector product `gramIH · obsVec = defectVec`. -/
+/-- The matrix-vector product `gramIH · obsVec` equals `defectVec`.
+
+    After `funext i` and `fin_cases i`, each of the 7 goals is a concrete
+    `∑ x : Fin 7, gramIH i x * obsVec x = defectVec i`.
+    We expand the sum with `Fin.sum_univ_seven`, unfold all `if`-branches via
+    `simp [gramIH, obsVec, defectVec]`, then close with `norm_num`. -/
 theorem defect_eq_gram_mul_obs :
     (fun i => ∑ j, (gramIH i j : ℚ) * obsVec j) = defectVec := by
   funext i
   fin_cases i <;>
-  simp only [obsVec, defectVec, gramIH] <;>
+  simp [Fin.sum_univ_seven, gramIH, obsVec, defectVec] <;>
   norm_num
 
 /-! ### Kernel of `B`: column-sum argument -/
@@ -114,26 +118,39 @@ theorem defect_eq_gram_mul_obs :
 /-- Column sums of `gramIH` vanish.
 
     The matrix `gramIH` is symmetric (Cartan matrix of the affine Â₆ root system),
-    so column sums equal row sums; those vanish by `gramIH_row_sum`. -/
+    so column sums equal row sums; those vanish by `gramIH_row_sum`.
+
+    Proof steps:
+    1. `sym`: symmetry, swaps the index order `gramIH i j = gramIH j i`.
+    2. `simp_rw [sym]`: rewrite the sum to `∑ i, gramIH j i`.
+    3. `Fin.sum_univ_seven`: unfold `∑ i : Fin 7` to an explicit 7-term sum so
+       that `exact_mod_cast` can match against `gramIH_row_sum j`. -/
 private lemma gramIH_col_sum_zero (j : Fin 7) :
     ∑ i : Fin 7, (gramIH i j : ℚ) = 0 := by
   have sym : ∀ i : Fin 7, (gramIH i j : ℚ) = (gramIH j i : ℚ) := by
     intro i; fin_cases i <;> fin_cases j <;> simp [gramIH]
   simp_rw [sym]
+  -- After rewrite: goal is  ∑ i : Fin 7, (gramIH j i : ℚ) = 0
+  -- Expand the Finset.sum to a 7-term addition so exact_mod_cast can fire.
+  rw [Fin.sum_univ_seven]
   exact_mod_cast gramIH_row_sum j
 
 /-- The phantom axis `nullVec = (1,…,1)` lies in `ker B` for any right argument.
 
-    **Proof sketch**:
-    1. Unfold `B nullVec v = ∑ i, ∑ j, 1 * gramIH i j * v j`.
+    **Proof**:
+    1. Unfold `B nullVec v` to `∑ i, ∑ j, 1 * gramIH i j * v j`.
     2. Swap the two sums via `Finset.sum_comm`.
     3. Factor out `v j` via `← Finset.sum_mul`.
-    4. Apply `gramIH_col_sum_zero j` to kill each inner sum. -/
+    4. Rewrite each inner sum `∑ i, gramIH i j` using `Fin.sum_univ_seven`
+       to expose the 7-term form, then apply `gramIH_col_sum_zero`. -/
 theorem nullVec_kernel : ∀ v, B nullVec v = 0 := by
   intro v
   simp only [B, nullVec, one_mul]
+  -- swap ∑ i ∑ j  →  ∑ j ∑ i
   rw [Finset.sum_comm]
+  -- factor: ∑ i, gramIH i j * v j  =  (∑ i, gramIH i j) * v j
   simp_rw [← Finset.sum_mul]
+  -- each column sum is zero
   simp [gramIH_col_sum_zero]
 
 -- ===================================================================
@@ -166,8 +183,8 @@ We build all four uniformly via `scaleByCoord` and `spanSingletonMap`. -/
     * `map_smul'`: `(r • x) j • w = r • (x j • w)`       (`smul_smul`). -/
 private noncomputable def scaleByCoord (j : Fin 7) (w : V) : V →ₗ[ℚ] V where
   toFun     x   := x j • w
-  map_add'  x y := by simp [Pi.add_apply, add_smul]
-  map_smul' r x := by simp [Pi.smul_apply, smul_smul]
+  map_add'  x y := add_smul (x j) (y j) w
+  map_smul' r x := mul_smul r (x j) w
 
 @[simp]
 private lemma scaleByCoord_apply (j : Fin 7) (w x : V) :
@@ -182,7 +199,7 @@ private lemma scaleByCoord_maps_span {j : Fin 7} {u w : V} (huj : u j = 1)
     scaleByCoord j w x ∈ Submodule.span ℚ ({w} : Set V) := by
   rw [Submodule.mem_span_singleton] at hx ⊢
   obtain ⟨c, rfl⟩ := hx
-  exact ⟨c, by simp [Pi.smul_apply, huj, smul_smul]⟩
+  exact ⟨c, by simp [huj]⟩
 
 /-- Restrict `scaleByCoord j w` to produce a map `span{u} →ₗ[ℚ] span{w}`,
     given that the source generator has unit value at coordinate `j`. -/
@@ -198,8 +215,9 @@ private noncomputable def spanSingletonMap
     (as an element of the ambient `V`). -/
 private lemma spanSingletonMap_generator
     {j : Fin 7} {u w : V} (huj : u j = 1) :
-    (spanSingletonMap huj ⟨u, Submodule.mem_span_singleton_self u⟩ : V) = w := by
-  simp [spanSingletonMap, scaleByCoord_apply, huj]
+    (spanSingletonMap (w := w) huj ⟨u, Submodule.mem_span_singleton_self u⟩ : V) = w := by
+  unfold spanSingletonMap
+  simp [scaleByCoord_apply, huj]
 
 -- ---------------------------------------------------------------------------
 -- The four arrow maps of the canonical cascade
@@ -242,18 +260,21 @@ noncomputable def cascadeMap_recover :
 
 /-- `recover` sends the obstruction generator to the defect generator. -/
 lemma cascadeMap_recover_maps_generator :
-    (cascadeMap_recover ⟨obsVec, obsVec_mem_selmer⟩ : V) = defectVec :=
-  spanSingletonMap_generator (show obsVec ⟨0, by omega⟩ = 1 from rfl)
+    (cascadeMap_recover ⟨obsVec, obsVec_mem_selmer⟩ : V) = defectVec := by
+  unfold cascadeMap_recover spanSingletonMap
+  simp [scaleByCoord_apply, obsVec]
 
 /-- `tensor_bang` sends the phantom generator to the defect generator. -/
 lemma cascadeMap_tensorBang_maps_generator :
-    (cascadeMap_tensorBang ⟨nullVec, nullVec_mem_leech⟩ : V) = defectVec :=
-  spanSingletonMap_generator (show nullVec ⟨0, by omega⟩ = 1 from rfl)
+    (cascadeMap_tensorBang ⟨nullVec, nullVec_mem_leech⟩ : V) = defectVec := by
+  unfold cascadeMap_tensorBang spanSingletonMap
+  simp [scaleByCoord_apply, nullVec]
 
 /-- `project_selmer` sends the phantom generator to the obstruction generator. -/
 lemma cascadeMap_projectSelmer_maps_generator :
-    (cascadeMap_projectSelmer ⟨nullVec, nullVec_mem_leech⟩ : V) = obsVec :=
-  spanSingletonMap_generator (show nullVec ⟨0, by omega⟩ = 1 from rfl)
+    (cascadeMap_projectSelmer ⟨nullVec, nullVec_mem_leech⟩ : V) = obsVec := by
+  unfold cascadeMap_projectSelmer spanSingletonMap
+  simp [scaleByCoord_apply, nullVec]
 
 /-- The composition `recover ∘ project_selmer` sends `nullVec` to `defectVec`.
 
@@ -361,7 +382,12 @@ noncomputable def canonicalPicardFunctor : PicardFunctor :=
     A_oplus   := Matrix.of (fun _ j => if j = 0 then 1 else 0)
     A_project := Matrix.of (fun k _ => match k with | 0 => 1 | 1 => 0 | 2 => 0)
     A_recover := Matrix.of (fun _ k => match k with | 0 => 1 | 1 => 0 | 2 => 0)
-    commutes  := by simp [Matrix.mul]; rfl }
+    commutes  := by
+      ext i j
+      fin_cases i
+      fin_cases j
+      simp only [Matrix.mul_apply, Fin.sum_univ_three, Matrix.of_apply]
+      norm_num }
 
 -- ===================================================================
 -- §4. Matrix matching condition (the cascade equation)
@@ -464,10 +490,8 @@ namespace UnknownDual
     `naturality` to move `φ` inside `B`, leaving `B (φ⁻¹ nullVec) v = B nullVec v = 0`. -/
 lemma preserves_kernel (d : UnknownDual) {v : V} (hv : B nullVec v = 0) :
     B nullVec (d.φ v) = 0 := by
-  have key : B nullVec (d.φ v) =
-             B (d.φ (d.φ.symm nullVec)) (d.φ v) := by
-    congr 1; simp [d.fixes_null]
-  rw [key, d.naturality, LinearEquiv.symm_apply_apply]
+  -- nullVec = d.φ nullVec  (by d.fixes_null), then naturality gives B nullVec v = 0
+  rw [← d.fixes_null, d.naturality]
   exact hv
 
 /-- The self-pairing `B obsVec obsVec` is an isometry invariant. -/
@@ -522,7 +546,7 @@ end UnknownDual
     identifies this with the Verschiebung of the height-2 formal group at `p = 7`
     (`BSDQuiver.VerschiebungData` with `p = 7`). -/
 def UnknownDualConjecture : Prop :=
-  ∃ (d : UnknownDual), (d.φ : V → V) ^ 7 = LinearMap.id ∧ d.φ ≠ LinearMap.id
+  ∃ (d : UnknownDual), d.φ.toLinearMap ^ 7 = LinearMap.id ∧ d.φ.toLinearMap ≠ LinearMap.id
 
 -- Phantom KAK Strip invariants (from KakIntegration.lean):
 -- h(l₁) + h(l₂) = 3  (Critical Line)
