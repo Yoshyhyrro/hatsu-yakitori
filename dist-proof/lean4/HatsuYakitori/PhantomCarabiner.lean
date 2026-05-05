@@ -570,10 +570,10 @@ theorem theta_link_iterate_normSq (n : ℕ) :
 theorem complement_berryPhase_of_real (hr : c.weight.re = 3) (hi : c.weight.im = 0) :
     c.complement.berryPhaseAngle = 0 := by
   simp only [ComplexCarabiner.berryPhaseAngle, ComplexCarabiner.complement]
-  have hw : c.weight = (3 : ℂ) := by
-    apply Complex.ext <;> simp [hr, hi]
   have hcompw : (6 : ℂ) - star c.weight = (3 : ℂ) := by
-    rw [hw]; apply Complex.ext <;> simp [Complex.star_def]
+    have : star c.weight = (3 : ℂ) := by
+      apply Complex.ext <;> simp [hr, hi]
+    rw [this]; ring
   rw [hcompw]
   simp [Complex.arg, show (0 : ℝ) ≤ 3 from by norm_num]
 
