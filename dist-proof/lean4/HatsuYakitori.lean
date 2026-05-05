@@ -18,3 +18,6 @@ import HatsuYakitori.SporadicMellinRank
 import HatsuYakitori.RudvalisCarabiner
 import HatsuYakitori.ObstructionGoppa
 import HatsuYakitori.InverseHeegnerGram
+import HatsuYakitori.PlueckerOrthogonalDegeneration
+import HatsuYakitori.PhantomCarabiner
+import HatsuYakitori.DirectedBanachQuiver
