@@ -39,6 +39,7 @@ Key concepts:
 
 import HatsuYakitori.InverseHeegnerGram
 import HatsuYakitori.BSDQuiver
+import HatsuYakitori.DirectedBanachQuiver
 import Mathlib.Combinatorics.Quiver.Path
 import Mathlib.Data.Finsupp.Basic
 import Mathlib.LinearAlgebra.Matrix.BilinearForm
@@ -194,6 +195,125 @@ lemma idMonomial_right (a b : BSDVertex) (p : Quiver.Path a b) :
     pathMonomial p * pathMonomial (a := b) (b := b) Quiver.Path.nil = pathMonomial p := by
   simpa using pathMonomial_mul_of_composable p (Quiver.Path.nil : Quiver.Path b b)
 
+private lemma sum_pathBasisMul_right_add
+    (p : PathBasis) (a : ℚ) (y z : PathAlgebra) :
+    (y + z).sum (fun q b => (a * b) • pathBasisMul p q) =
+      y.sum (fun q b => (a * b) • pathBasisMul p q) +
+      z.sum (fun q b => (a * b) • pathBasisMul p q) := by
+  exact Finsupp.sum_add_index'
+    (by intro q; simp)
+    (by intro q u v; simp [mul_add, add_smul])
+
+private lemma sum_pathBasisMul_leftCoeff_add
+    (y : PathAlgebra) (p : PathBasis) (a b : ℚ) :
+    y.sum (fun q c => ((a + b) * c) • pathBasisMul p q) =
+      y.sum (fun q c => (a * c) • pathBasisMul p q) +
+      y.sum (fun q c => (b * c) • pathBasisMul p q) := by
+  classical
+  refine Finsupp.induction y ?_ ?_
+  · simp
+  · intro q c f hq hc ih
+    rw [Finsupp.sum_add_index', Finsupp.sum_add_index', Finsupp.sum_add_index']
+    · rw [ih]
+      simp [add_mul, add_smul, add_assoc, add_left_comm]
+    · intro r
+      simp
+    · intro r u v
+      simp [mul_add, add_smul]
+    · intro r
+      simp
+    · intro r u v
+      simp [mul_add, add_smul]
+    · intro r
+      simp
+    · intro r u v
+      simp [mul_add, add_smul]
+
+private lemma pathMul_single_add_left
+    (p : PathBasis) (a : ℚ) (f y : PathAlgebra) :
+    pathMul (Finsupp.single p a + f) y = pathMul (Finsupp.single p a) y + pathMul f y := by
+  unfold pathMul
+  exact Finsupp.sum_add_index'
+    (by intro r; simp)
+    (by intro r u v; exact sum_pathBasisMul_leftCoeff_add y r u v)
+
+private lemma pathMul_single_add_right
+    (p : PathBasis) (a : ℚ) (y z : PathAlgebra) :
+    pathMul (Finsupp.single p a) (y + z) = pathMul (Finsupp.single p a) y + pathMul (Finsupp.single p a) z := by
+  unfold pathMul
+  rw [Finsupp.sum_single_index, Finsupp.sum_single_index, Finsupp.sum_single_index]
+  · exact sum_pathBasisMul_right_add p a y z
+  · simp
+  · simp
+  · simp
+
+private lemma zero_pathMul_single (p : PathBasis) (a : ℚ) :
+    pathMul 0 (Finsupp.single p a) = 0 := by
+  unfold pathMul
+  rw [Finsupp.sum_zero_index]
+
+private lemma pathMul_single_zero (p : PathBasis) (a : ℚ) :
+    pathMul (Finsupp.single p a) 0 = 0 := by
+  unfold pathMul
+  rw [Finsupp.sum_single_index]
+  · simp
+  · simp
+
+@[simp] lemma zero_pathMul (x : PathAlgebra) : (0 : PathAlgebra) * x = 0 := by
+  change pathMul 0 x = 0
+  unfold pathMul
+  rw [Finsupp.sum_zero_index]
+
+lemma pathMul_add_right (x y z : PathAlgebra) :
+    x * (y + z) = x * y + x * z := by
+  classical
+  refine Finsupp.induction x ?_ ?_
+  · simp
+  · intro p a f hp ha ih
+    have ih' : pathMul f (y + z) = pathMul f y + pathMul f z := by
+      simpa using ih
+    calc
+      pathMul (Finsupp.single p a + f) (y + z)
+          = pathMul (Finsupp.single p a) (y + z) + pathMul f (y + z) :=
+              pathMul_single_add_left p a f (y + z)
+      _ = (pathMul (Finsupp.single p a) y + pathMul (Finsupp.single p a) z) +
+            (pathMul f y + pathMul f z) := by rw [pathMul_single_add_right, ih']
+      _ = (pathMul (Finsupp.single p a) y + pathMul f y) +
+            (pathMul (Finsupp.single p a) z + pathMul f z) := by ac_rfl
+      _ = pathMul (Finsupp.single p a + f) y + pathMul (Finsupp.single p a + f) z := by
+            rw [pathMul_single_add_left, pathMul_single_add_left]
+
+lemma pathMul_add_left (x y z : PathAlgebra) :
+    (x + y) * z = x * z + y * z := by
+  classical
+  refine Finsupp.induction x ?_ ?_
+  · simp [zero_pathMul]
+  · intro p a f hp ha ih
+    have ih' : pathMul (f + y) z = pathMul f z + pathMul y z := by
+      simpa using ih
+    calc
+      pathMul ((Finsupp.single p a + f) + y) z
+          = pathMul (Finsupp.single p a) z + pathMul (f + y) z := by
+              simpa [add_assoc] using pathMul_single_add_left p a (f + y) z
+      _ = pathMul (Finsupp.single p a) z + (pathMul f z + pathMul y z) := by rw [ih']
+      _ = (pathMul (Finsupp.single p a) z + pathMul f z) + pathMul y z := by ac_rfl
+      _ = pathMul (Finsupp.single p a + f) z + pathMul y z := by rw [pathMul_single_add_left]
+
+@[simp] lemma pathMul_zero (x : PathAlgebra) : x * (0 : PathAlgebra) = 0 := by
+  classical
+  refine Finsupp.induction x ?_ ?_
+  · change pathMul 0 0 = 0
+    unfold pathMul
+    rw [Finsupp.sum_zero_index]
+  · intro p a f hp ha ih
+    have ih' : pathMul f 0 = 0 := by
+      simpa using ih
+    calc
+      pathMul (Finsupp.single p a + f) 0
+          = pathMul (Finsupp.single p a) 0 + pathMul f 0 := pathMul_single_add_left p a f 0
+      _ = 0 + 0 := by rw [pathMul_single_zero, ih']
+      _ = 0 := by simp
+
 /-- The representation of the path algebra on `V` induced by the cascade. -/
 structure CascadeRepresentation where
   /-- Assignment of a subspace of `V` to each vertex. -/
@@ -326,6 +446,68 @@ theorem canonical_picard_satisfies_cascade :
     fin_cases j
     simp [canonicalPicardFunctor, Matrix.mul_apply, Matrix.transpose]
   · exact canonicalPicardFunctor.commutes
+
+/-- The affine-dual theta rotation in `DirectedBanachQuiver` realizes the
+    negative phantom obstruction as the value `-4` on the imaginary axis. -/
+theorem affine_dual_negative_phantom_obstruction :
+    Complex.im
+      (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.weight
+        (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.theta_link
+          (HatsuYakitori.DirectedBanachQuiver.quiverToComplexCarabiner BSDVertex.affine_dual))) = -4 := by
+  exact HatsuYakitori.DirectedBanachQuiver.theta_link_affine_dual_im
+
+/-- Applying `project_selmer` to the theta-linked affine-dual carabiner flips
+    the sign of the phantom obstruction back to `+4`. -/
+theorem project_selmer_flips_affine_dual_negative_phantom_obstruction :
+    Complex.im
+      (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.weight
+        (HatsuYakitori.DirectedBanachQuiver.applyArrow BSDArrow.project_selmer
+          (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.theta_link
+            (HatsuYakitori.DirectedBanachQuiver.quiverToComplexCarabiner BSDVertex.affine_dual)))) = 4 := by
+  rw [HatsuYakitori.DirectedBanachQuiver.project_selmer_conjugates]
+  rw [affine_dual_negative_phantom_obstruction]
+  norm_num
+
+/-- A concrete linear witness for the negative branch of `UnknownDual.maps_obs`.
+
+    This is the global sign involution on `V`: it sends every vector to its
+    negative, so in particular it realizes `obsVec ↦ -obsVec`.  It is not by
+    itself an `UnknownDual`, since it also sends `nullVec` to `-nullVec`; the
+    point here is only to witness that the negative `maps_obs` branch is
+    genuinely inhabited. -/
+def negativeObsWitness : V ≃ₗ[ℚ] V where
+  toFun := fun v => -v
+  invFun := fun v => -v
+  left_inv := by
+    intro v
+    ext i
+    simp
+  right_inv := by
+    intro v
+    ext i
+    simp
+  map_add' := by
+    intro v w
+    funext i
+    have h : -(v i + w i) = -v i + -w i := by
+      ring
+    simpa [sub_eq_add_neg] using h
+  map_smul' := by
+    intro a v
+    funext i
+    simp
+
+@[simp] theorem negativeObsWitness_apply (v : V) :
+    negativeObsWitness v = -v := rfl
+
+@[simp] theorem negativeObsWitness_obsVec :
+    negativeObsWitness obsVec = -obsVec := by
+  rfl
+
+/-- The negative branch in `UnknownDual.maps_obs` is concretely realized. -/
+theorem negativeObsWitness_realizes_maps_obs :
+    negativeObsWitness obsVec = obsVec ∨ negativeObsWitness obsVec = -obsVec := by
+  exact Or.inr negativeObsWitness_obsVec
 
 -- ===================================================================
 -- §5. The unknown dual as an automorphism of the Picard functor
