@@ -450,11 +450,8 @@ theorem canonical_picard_satisfies_cascade :
 /-- The affine-dual theta rotation in `DirectedBanachQuiver` realizes the
     negative phantom obstruction as the value `-4` on the imaginary axis. -/
 theorem affine_dual_negative_phantom_obstruction :
-    Complex.im
-      (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.weight
-        (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.theta_link
-          (HatsuYakitori.DirectedBanachQuiver.quiverToComplexCarabiner BSDVertex.affine_dual))) = -4 := by
-  exact HatsuYakitori.DirectedBanachQuiver.theta_link_affine_dual_im
+      (DirectedBanachQuiver.quiverToComplexCarabiner BSDVertex.affine_dual).theta_link.weight.im = -4 := by
+    exact DirectedBanachQuiver.theta_link_affine_dual_im
 
 /-- Applying `project_selmer` to the theta-linked affine-dual carabiner flips
     the sign of the phantom obstruction back to `+4`. -/
@@ -467,6 +464,18 @@ theorem project_selmer_flips_affine_dual_negative_phantom_obstruction :
   rw [HatsuYakitori.DirectedBanachQuiver.project_selmer_conjugates]
   rw [affine_dual_negative_phantom_obstruction]
   norm_num
+
+/-- The `project_selmer` conjugation restores the positive obstruction sign,
+    again normalized to the `0`-th coordinate of `obsVec`. -/
+theorem project_selmer_restores_obstruction_sign :
+    Complex.im
+        (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.weight
+          (HatsuYakitori.DirectedBanachQuiver.applyArrow BSDArrow.project_selmer
+            (HatsuYakitori.PhantomCarabiner.ComplexCarabiner.theta_link
+              (HatsuYakitori.DirectedBanachQuiver.quiverToComplexCarabiner BSDVertex.affine_dual)))) / 4
+      = (((obsVec 0 : ℚ)) : ℝ) := by
+  rw [project_selmer_flips_affine_dual_negative_phantom_obstruction]
+  norm_num [obsVec]
 
 /-- A concrete linear witness for the negative branch of `UnknownDual.maps_obs`.
 
@@ -509,6 +518,65 @@ theorem negativeObsWitness_realizes_maps_obs :
     negativeObsWitness obsVec = obsVec ∨ negativeObsWitness obsVec = -obsVec := by
   exact Or.inr negativeObsWitness_obsVec
 
+/-- A null-preserving involution that flips the obstruction direction.
+
+    On coordinates this is `v_i ↦ -v_i + 2 v_3`, i.e. reflection across the
+    phantom axis determined by the midpoint coordinate `3`. -/
+def phantomFlip : V ≃ₗ[ℚ] V where
+  toFun := fun v => -v + (2 * v 3) • nullVec
+  invFun := fun v => -v + (2 * v 3) • nullVec
+  left_inv := by
+    intro v
+    ext i
+    simp [nullVec]
+    ring
+  right_inv := by
+    intro v
+    ext i
+    simp [nullVec]
+    ring
+  map_add' := by
+    intro v w
+    ext i
+    simp [nullVec]
+    ring
+  map_smul' := by
+    intro a v
+    ext i
+    simp [nullVec]
+    ring
+
+@[simp] theorem phantomFlip_apply_coord (v : V) (i : Fin 7) :
+    phantomFlip v i = -v i + 2 * v 3 := by
+  simp [phantomFlip, nullVec]
+
+@[simp] theorem phantomFlip_nullVec :
+    phantomFlip nullVec = nullVec := by
+  ext i
+  simp [phantomFlip_apply_coord, nullVec]
+  ring
+
+@[simp] theorem phantomFlip_obsVec :
+    phantomFlip obsVec = -obsVec := by
+  ext i
+  fin_cases i <;> simp [phantomFlip_apply_coord, obsVec]
+
+theorem phantomFlip_naturality (v w : V) :
+    B (phantomFlip v) (phantomFlip w) = B v w := by
+  simp [B, phantomFlip_apply_coord, Fin.sum_univ_seven, gramIH]
+  ring
+
+/-- After normalizing by the affine-dual height `4`, the geometric negative
+    phantom obstruction matches the linear sign of `obsVec` after `phantomFlip`.
+
+    We read the linear sign on the `0`-th coordinate, where `obsVec` has value `1`. -/
+theorem affine_dual_negative_obstruction_matches_phantomFlip_sign :
+    (DirectedBanachQuiver.quiverToComplexCarabiner BSDVertex.affine_dual).theta_link.weight.im / 4
+      = (((phantomFlip obsVec) 0 : ℚ) : ℝ) := by
+  rw [affine_dual_negative_phantom_obstruction]
+  norm_num
+  simp [obsVec]
+
 -- ===================================================================
 -- §5. The unknown dual as an automorphism of the Picard functor
 -- ===================================================================
@@ -524,6 +592,16 @@ structure UnknownDual where
   maps_obs : φ obsVec = obsVec ∨ φ obsVec = -obsVec
   /-- It preserves the bilinear form. -/
   naturality : ∀ v w, B (φ v) (φ w) = B v w
+
+/-- A concrete unknown dual candidate of order two.
+
+    It fixes the phantom axis `nullVec`, sends `obsVec` to `-obsVec`, and
+    preserves the affine Â₆ Gram form. -/
+def phantomFlipDual : UnknownDual where
+  φ := phantomFlip
+  fixes_null := phantomFlip_nullVec
+  maps_obs := Or.inr phantomFlip_obsVec
+  naturality := phantomFlip_naturality
 
 /-- The unknown dual conjecture: there exists a non‑trivial unknown dual
     of order 7 (or 2) acting on the cascade. -/
