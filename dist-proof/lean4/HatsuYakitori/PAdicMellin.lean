@@ -216,15 +216,27 @@ theorem ramified_octad_connection :
 
 /-- The ramified stratum evaluates the same discrete isogeny defect as the octad. -/
 theorem ramified_discreteIsogenyHeightDefect_eq_octad :
-    discreteIsogenyHeightDefect (pAdicTag.ramified.toGolayWeight) =
-      discreteIsogenyHeightDefect GolayWeight.w8 := by
+    HatsuYakitori.discreteIsogenyHeightDefect (pAdicTag.ramified.toGolayWeight) =
+      HatsuYakitori.discreteIsogenyHeightDefect GolayWeight.w8 := by
   rfl
 
 /-- Concretely, the ramified discrete isogeny defect is `K / 3 = 8 / 3`. -/
 theorem ramified_discreteIsogenyHeightDefect_eq :
-    discreteIsogenyHeightDefect (pAdicTag.ramified.toGolayWeight) =
+    HatsuYakitori.discreteIsogenyHeightDefect (pAdicTag.ramified.toGolayWeight) =
       galoisHeightBound / 3 := by
-  simpa [pAdicTag.toGolayWeight] using octad_discreteIsogenyHeightDefect
+  simpa [pAdicTag.toGolayWeight] using HatsuYakitori.octad_discreteIsogenyHeightDefect
+
+/-- The unramified stratum evaluates the same discrete isogeny defect as the hexadecad. -/
+theorem unramified_discreteIsogenyHeightDefect_eq_hexadecad :
+    HatsuYakitori.discreteIsogenyHeightDefect (pAdicTag.unramified.toGolayWeight) =
+      HatsuYakitori.discreteIsogenyHeightDefect GolayWeight.w16 := by
+  rfl
+
+/-- Concretely, the unramified discrete isogeny defect is `-(K / 3) = -8 / 3`. -/
+theorem unramified_discreteIsogenyHeightDefect_eq :
+    HatsuYakitori.discreteIsogenyHeightDefect (pAdicTag.unramified.toGolayWeight) =
+      -(galoisHeightBound / 3) := by
+  simpa [pAdicTag.toGolayWeight] using HatsuYakitori.hexadecad_discreteIsogenyHeightDefect
 
 /-- The ramification product e·f = 8 = galoisHeightBound (as ℕ). -/
 theorem ramification_product_is_height_bound (p : ℕ) [Fact p.Prime] :

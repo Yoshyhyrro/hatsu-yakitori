@@ -1,5 +1,5 @@
 // Lean compiler output
-// Module: HatsuYakitori.bSDQuiver
+// Module: HatsuYakitori.BSDQuiver
 // Imports: public import Init public import Mathlib.Tactic public import Mathlib.Combinatorics.Quiver.Path public import Mathlib.LinearAlgebra.Dimension.Basic public import HatsuYakitori.MachineConstants public import HatsuYakitori.HopfStructure public import HatsuYakitori.AnabelianSketch public import HatsuYakitori.CliffordCarabiner
 #include <lean/lean.h>
 #if defined(__clang__)
@@ -34,28 +34,26 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instRe
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqTaggedBSDVertex(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_SpaceTag_affine_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_selmer_elim___redArg___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter(lean_object*, uint8_t, uint8_t, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_ctorElim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDArrow_tensor__bang_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_SpaceTag_affine_elim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__arrow__to__hida___redArg___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_Y__hybridize__from__affine_elim___redArg___boxed(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprPauli24Ensemble_repr___redArg___closed__11;
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_P__hybrid__to__affine_elim(lean_object*, uint8_t, uint8_t, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_ctorElim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_SpaceTag_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDVertex_repr___closed__3;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_ofNat___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_X__completion_elim___redArg(lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDVertex_repr___boxed(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprSpaceTag_repr___closed__5;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDArrow_repr___redArg___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__arrow__effect___boxed(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTransformEffect_repr___boxed(lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg(uint8_t, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 lean_object* lp_mathlib_ZMod_commRing(lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_SpaceTag_affine_elim___redArg___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTransformEffect_repr___closed__7;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_combineEffects___boxed(lean_object*, lean_object*);
@@ -86,7 +84,6 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_i
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_frobenius_elim___redArg___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_SpaceTag_hybrid_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_preserves__algebraic_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___closed__15;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_toCtorIdx___boxed(lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_SpaceTag_ofNat(lean_object*);
@@ -108,6 +105,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_P
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprSpaceConfig___lam__0(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_toCtorIdx___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_Z__algebraize_elim___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_ctorElim___redArg___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instFintypeSpaceTag___closed__1;
@@ -137,6 +135,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instRe
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___closed__14;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprSpaceTag_repr___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_arrow__golay__tau(uint8_t, uint8_t, uint8_t);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_tagCount(lean_object*, uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_I__preserve_elim___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_verschiebung_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
@@ -145,6 +144,7 @@ LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDe
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_X__completion_elim___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_frobenius_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_tagged(uint8_t);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_pauli24FromGolayWeight___closed__2;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___closed__16;
@@ -169,6 +169,7 @@ lean_object* lp_mathlib_ZMod_repr(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprPauli24Ensemble_repr___redArg___closed__7;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_SpaceTag_banach_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprSpaceConfig___lam__0___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_Z__algebraize_elim___redArg(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprFVRole_repr___closed__4;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_dp__init___closed__0;
@@ -185,7 +186,6 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_F
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_ctorElim___redArg(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_preserves__algebraic_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_pauli24FromGolayWeight___closed__0;
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter(lean_object*, uint8_t, uint8_t, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___boxed(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___closed__8;
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqBSDVertex(uint8_t, uint8_t);
@@ -207,7 +207,6 @@ lean_object* lp_mathlib_NonUnitalNonAssocRing_toNonUnitalNonAssocSemiring___redA
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_Y__hybridize__from__affine_elim(lean_object*, uint8_t, uint8_t, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDArrow_project__selmer_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_selmer_elim(lean_object*, uint8_t, lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqPauliTransform_decEq___redArg(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDVertex_repr___closed__9;
@@ -236,6 +235,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_i
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__vertex__to__golay__weight(uint8_t);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___closed__7;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_ctorIdx___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__vertex__space__config___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqBSDArrow___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_padic_elim___redArg(lean_object*);
@@ -250,7 +250,9 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_F
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_P__hybrid__to__affine_elim___redArg(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDArrow_repr___redArg___closed__2;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprSpaceTag_repr(uint8_t, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter(lean_object*, uint8_t, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqPauliTransform___redArg(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_Z__algebraize_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprFVRole_repr___closed__2;
@@ -299,18 +301,17 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_i
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqTaggedBSDVertex_decEq(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_verschiebung_elim___redArg(lean_object*);
 uint8_t lean_nat_dec_lt(lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter(lean_object*, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_affine__dual_elim___redArg(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_typed__dp__init___closed__2;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprSpaceTag_repr___closed__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instFintypeSpaceTag;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_toCtorIdx___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_leech_elim___redArg(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(uint8_t, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__arrow__fv__role___redArg(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_tagCount___lam__0___boxed(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprFVRole_repr___closed__1;
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instFintypeBSDVertex___closed__3;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTransformEffect_repr___closed__3;
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqBSDArrow_decEq___redArg(uint8_t, uint8_t);
@@ -342,6 +343,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_i
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqPauliTransform_decEq(uint8_t, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_forgets__topology_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_tagged___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg(uint8_t, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__vertex__default__tag___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_affine__dual_elim___redArg___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_pauli24FromGolayWeight___closed__1;
@@ -357,12 +359,10 @@ LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__a
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqFVRole(uint8_t, uint8_t);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprBSDVertex_repr___closed__0;
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_ofNat(lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTransformEffect_repr___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_ctorIdx___redArg___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___closed__9;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprFVRole_repr___closed__5;
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter(lean_object*, uint8_t, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_PauliTransform_P__hybrid__to__banach_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instQuiverBSDVertex;
 lean_object* l_List_finRange(lean_object*);
@@ -371,7 +371,6 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_T
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_TransformEffect_ofNat(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDArrow_oplus__padic_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instDecidableEqTaggedBSDVertex___boxed(lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(uint8_t, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDArrow_project__selmer_elim___redArg___boxed(lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_bsd__vertex__default__tag(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_classifyEffect___redArg___boxed(lean_object*);
@@ -402,6 +401,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_B
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprTaggedBSDVertex_repr___redArg___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_instReprPauli24Ensemble_repr___redArg___closed__5;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_FVRole_ctorIdx(uint8_t);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter(lean_object*, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_BSDVertex_ctorIdx(uint8_t x_1) {
 _start:
 {
@@ -3617,7 +3617,7 @@ x_4 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_tagCount(x_1, x_3);
 return x_4;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
 _start:
 {
 switch (x_1) {
@@ -3679,29 +3679,29 @@ return x_16;
 }
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
 _start:
 {
 uint8_t x_7; lean_object* x_8; 
 x_7 = lean_unbox(x_1);
-x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(x_7, x_2, x_3, x_4, x_5, x_6);
+x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(x_7, x_2, x_3, x_4, x_5, x_6);
 return x_8;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter(lean_object* x_1, uint8_t x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter(lean_object* x_1, uint8_t x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
 _start:
 {
 lean_object* x_8; 
-x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(x_2, x_3, x_4, x_5, x_6, x_7);
+x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___redArg(x_2, x_3, x_4, x_5, x_6, x_7);
 return x_8;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
 _start:
 {
 uint8_t x_8; lean_object* x_9; 
 x_8 = lean_unbox(x_2);
-x_9 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter(x_1, x_8, x_3, x_4, x_5, x_6, x_7);
+x_9 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight_match__1_splitter(x_1, x_8, x_3, x_4, x_5, x_6, x_7);
 return x_9;
 }
 }
@@ -4566,7 +4566,7 @@ x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_pauli24FromGolayWeig
 return x_3;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg(uint8_t x_1, uint8_t x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg(uint8_t x_1, uint8_t x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
 _start:
 {
 switch (x_1) {
@@ -4677,17 +4677,17 @@ return x_28;
 }
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
 _start:
 {
 uint8_t x_8; uint8_t x_9; lean_object* x_10; 
 x_8 = lean_unbox(x_1);
 x_9 = lean_unbox(x_2);
-x_10 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg(x_8, x_9, x_3, x_4, x_5, x_6, x_7);
+x_10 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___redArg(x_8, x_9, x_3, x_4, x_5, x_6, x_7);
 return x_10;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter(lean_object* x_1, uint8_t x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter(lean_object* x_1, uint8_t x_2, uint8_t x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
 _start:
 {
 switch (x_2) {
@@ -4798,13 +4798,13 @@ return x_29;
 }
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
 _start:
 {
 uint8_t x_9; uint8_t x_10; lean_object* x_11; 
 x_9 = lean_unbox(x_2);
 x_10 = lean_unbox(x_3);
-x_11 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter(x_1, x_9, x_10, x_4, x_5, x_6, x_7, x_8);
+x_11 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_combineEffects_match__1_splitter(x_1, x_9, x_10, x_4, x_5, x_6, x_7, x_8);
 return x_11;
 }
 }
@@ -5322,7 +5322,7 @@ x_8 = lean_box(x_7);
 return x_8;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
 _start:
 {
 switch (x_1) {
@@ -5369,31 +5369,31 @@ return x_13;
 }
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
 _start:
 {
 uint8_t x_6; lean_object* x_7; 
 x_6 = lean_unbox(x_1);
-x_7 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(x_6, x_2, x_3, x_4, x_5);
+x_7 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(x_6, x_2, x_3, x_4, x_5);
 return x_7;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter(lean_object* x_1, uint8_t x_2, uint8_t x_3, uint8_t x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter(lean_object* x_1, uint8_t x_2, uint8_t x_3, uint8_t x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
 _start:
 {
 lean_object* x_9; 
-x_9 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(x_4, x_5, x_6, x_7, x_8);
+x_9 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___redArg(x_4, x_5, x_6, x_7, x_8);
 return x_9;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7, lean_object* x_8) {
 _start:
 {
 uint8_t x_9; uint8_t x_10; uint8_t x_11; lean_object* x_12; 
 x_9 = lean_unbox(x_2);
 x_10 = lean_unbox(x_3);
 x_11 = lean_unbox(x_4);
-x_12 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_bSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter(x_1, x_9, x_10, x_11, x_5, x_6, x_7, x_8);
+x_12 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_BSDQuiver_0__HatsuYakitori_BSDQuiver_bsd__arrow__effect_match__1_splitter(x_1, x_9, x_10, x_11, x_5, x_6, x_7, x_8);
 return x_12;
 }
 }
@@ -5406,7 +5406,7 @@ lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(u
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_AnabelianSketch(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_CliffordCarabiner(uint8_t builtin);
 static bool _G_initialized = false;
-LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_bSDQuiver(uint8_t builtin) {
+LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver(uint8_t builtin) {
 lean_object * res;
 if (_G_initialized) return lean_io_result_mk_ok(lean_box(0));
 _G_initialized = true;

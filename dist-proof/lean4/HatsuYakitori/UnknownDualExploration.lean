@@ -38,8 +38,10 @@ Key concepts:
 -/
 
 import HatsuYakitori.InverseHeegnerGram
+import HatsuYakitori.AnabelianSketch
 import HatsuYakitori.BSDQuiver
 import HatsuYakitori.DirectedBanachQuiver
+import HatsuYakitori.PAdicMellin
 import Mathlib.Combinatorics.Quiver.Path
 import Mathlib.Data.Finsupp.Basic
 import Mathlib.LinearAlgebra.Matrix.BilinearForm
@@ -577,6 +579,38 @@ theorem affine_dual_negative_obstruction_matches_phantomFlip_sign :
   norm_num
   simp [obsVec]
 
+/-- Arithmetic-derivative anchor: the affine-dual vertex is the dodecad `w12`,
+    hence sits exactly at the zero defect / self-dual midpoint. -/
+theorem affine_dual_discreteIsogenyHeightDefect_zero :
+    HatsuYakitori.discreteIsogenyHeightDefect (bsd_vertex_to_golay_weight BSDVertex.affine_dual) = 0 := by
+  simpa [bsd_vertex_to_golay_weight] using HatsuYakitori.heegner_discreteIsogenyHeightDefect_zero
+
+/-- Arithmetic-derivative sign split: ramified and unramified p-adic branches
+    carry opposite discrete defects around the affine-dual midpoint. -/
+theorem padic_discreteIsogenyHeightDefect_sign_split :
+    HatsuYakitori.discreteIsogenyHeightDefect
+        (HatsuYakitori.PAdicMellin.pAdicTag.ramified.toGolayWeight) =
+      -HatsuYakitori.discreteIsogenyHeightDefect
+        (HatsuYakitori.PAdicMellin.pAdicTag.unramified.toGolayWeight) := by
+  rw [HatsuYakitori.PAdicMellin.ramified_discreteIsogenyHeightDefect_eq,
+      HatsuYakitori.PAdicMellin.unramified_discreteIsogenyHeightDefect_eq]
+  ring
+
+/-- The affine-dual unknown-dual picture is centered by the arithmetic derivative:
+    unramified < affine_dual = 0 < ramified. This makes the sign flip in
+    `phantomFlip` into the linear shadow of the p-adic height split. -/
+theorem arithmetic_derivative_brackets_affine_dual :
+    HatsuYakitori.discreteIsogenyHeightDefect
+        (HatsuYakitori.PAdicMellin.pAdicTag.unramified.toGolayWeight) <
+      HatsuYakitori.discreteIsogenyHeightDefect (bsd_vertex_to_golay_weight BSDVertex.affine_dual) ∧
+    HatsuYakitori.discreteIsogenyHeightDefect (bsd_vertex_to_golay_weight BSDVertex.affine_dual) <
+      HatsuYakitori.discreteIsogenyHeightDefect
+        (HatsuYakitori.PAdicMellin.pAdicTag.ramified.toGolayWeight) := by
+  rw [HatsuYakitori.PAdicMellin.unramified_discreteIsogenyHeightDefect_eq,
+      affine_dual_discreteIsogenyHeightDefect_zero,
+      HatsuYakitori.PAdicMellin.ramified_discreteIsogenyHeightDefect_eq]
+  constructor <;> norm_num [HatsuYakitori.MachineConstants.galoisHeightBound]
+
 -- ===================================================================
 -- §5. The unknown dual as an automorphism of the Picard functor
 -- ===================================================================
@@ -592,6 +626,31 @@ structure UnknownDual where
   maps_obs : φ obsVec = obsVec ∨ φ obsVec = -obsVec
   /-- It preserves the bilinear form. -/
   naturality : ∀ v w, B (φ v) (φ w) = B v w
+
+/-- `maps_obs` is not just a formal sign choice: after normalizing by `K / 3`,
+    it exactly matches the arithmetic-derivative sign of the p-adic branch
+    selected by the unknown dual. The positive branch corresponds to ramified,
+    and the negative branch to unramified. -/
+theorem UnknownDual.maps_obs_as_arithmetic_derivative_sign (d : UnknownDual) :
+    (∃ h : d.φ obsVec = obsVec,
+        (((d.φ obsVec) 0 : ℚ) : ℝ) =
+          HatsuYakitori.discreteIsogenyHeightDefect
+            (HatsuYakitori.PAdicMellin.pAdicTag.ramified.toGolayWeight) /
+          (HatsuYakitori.MachineConstants.galoisHeightBound / 3)) ∨
+    (∃ h : d.φ obsVec = -obsVec,
+        (((d.φ obsVec) 0 : ℚ) : ℝ) =
+          HatsuYakitori.discreteIsogenyHeightDefect
+            (HatsuYakitori.PAdicMellin.pAdicTag.unramified.toGolayWeight) /
+          (HatsuYakitori.MachineConstants.galoisHeightBound / 3)) := by
+  rcases d.maps_obs with hpos | hneg
+  · left
+    refine ⟨hpos, ?_⟩
+    rw [hpos, HatsuYakitori.PAdicMellin.ramified_discreteIsogenyHeightDefect_eq]
+    norm_num [obsVec, HatsuYakitori.MachineConstants.galoisHeightBound]
+  · right
+    refine ⟨hneg, ?_⟩
+    rw [hneg, HatsuYakitori.PAdicMellin.unramified_discreteIsogenyHeightDefect_eq]
+    norm_num [obsVec, HatsuYakitori.MachineConstants.galoisHeightBound]
 
 /-- A concrete unknown dual candidate of order two.
 

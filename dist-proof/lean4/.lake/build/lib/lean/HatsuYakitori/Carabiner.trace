@@ -1,7 +1,7 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["bf50987c7e19f4ec.olean"],
+ {"o": ["9f128c231fc4c5b8.olean"],
   "i": "16ee6eed42a726c0.ilean",
   "c": "6c31ae2b96d793d3.c"},
  "log":
@@ -34,8 +34,8 @@
          "88a26dafbf5fbfc0"],
         ["HatsuYakitori.MachineConstants:importAllArts", "9a2cb3f64707c990"],
         ["HatsuYakitori.BSDQuiver transitive imports (legacy)",
-         "1d45d70e2d417a02"],
-        ["HatsuYakitori.BSDQuiver:importAllArts", "014e1cfc97e2b380"]]]]],
+         "a8305aae6f4d6c82"],
+        ["HatsuYakitori.BSDQuiver:importAllArts", "553e1ca958b451c9"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -47,4 +47,4 @@
    "55b9a7b723870939"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "cac814e928f37a7a"}
+ "depHash": "4473bdf83a43c381"}

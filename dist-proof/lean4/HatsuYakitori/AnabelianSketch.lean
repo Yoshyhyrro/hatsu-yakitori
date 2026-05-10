@@ -636,6 +636,19 @@ theorem octad_discreteIsogenyHeightDefect :
   norm_num [galoisHeightBound]
 
 open HatsuYakitori.MachineConstants in
+/-- Complement reverses the discrete isogeny height defect. -/
+theorem discreteIsogenyHeightDefect_complement (w : GolayWeight) :
+    discreteIsogenyHeightDefect w.complement = -discreteIsogenyHeightDefect w := by
+  simp [discreteIsogenyHeightDefect, Real.log_one]
+
+open HatsuYakitori.MachineConstants in
+/-- On the hexadecad, the discrete isogeny height defect is exactly `-(K / 3) = -8 / 3`. -/
+theorem hexadecad_discreteIsogenyHeightDefect :
+    discreteIsogenyHeightDefect GolayWeight.w16 = -(galoisHeightBound / 3) := by
+  simpa [GolayWeight.complement, octad_discreteIsogenyHeightDefect] using
+    discreteIsogenyHeightDefect_complement GolayWeight.w8
+
+open HatsuYakitori.MachineConstants in
 /-- Mellin-side bridge: the discrete isogeny defect is controlled by the
     cyclotomic ramification product `e · f`, i.e. the same quantity that
     appears as the height bound in the p-adic Mellin stratification. -/
