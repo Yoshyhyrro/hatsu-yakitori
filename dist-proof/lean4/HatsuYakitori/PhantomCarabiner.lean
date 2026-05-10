@@ -579,4 +579,50 @@ theorem complement_berryPhase_of_real (hr : c.weight.re = 3) (hi : c.weight.im =
 
 end BerryPhase
 
+/-! ## §8  Third Chern class shadow -/
+
+section ThirdChernShadow
+
+/-!
+### §8  Third Chern class shadow of the phantom obstruction
+
+The Θ-link imaginary part at `affine_dual` (= −4) is the **phantom shadow** of the
+third Chern class `c₃` in the Barnes-Wall / Pluecker degeneration picture.
+
+The chain of equalities is:
+
+```
+theta_link.weight.im   = −height(affine_dual)      [theta_link_im: im(−w·i) = −re(w)]
+                       = −4
+                       = −(selfIntersection)^2      [selfIntersection = 2, so 2^2 = 4]
+                       = −c₃Eval(BWWeight.rank .w4)  [PlueckerOrthogonalDegeneration.c₃Eval_eq_affine_dual_height]
+```
+
+After dividing by 4 (= `affine_dual` height), the result is `−1 = −(obsVec 0)`,
+the c₃ Euler number of the tautological line bundle at the E_8 shadow level.
+This is the numerical content of
+`InverseHeegnerCascade.affine_dual_negative_obstruction_matches_phantomFlip_sign`.
+-/
+
+variable (c : ComplexCarabiner)
+
+/-- The imaginary part of the Θ-link equals the negated real part.
+    In the c₃ shadow picture:
+    `c.theta_link.weight.im = −c.weight.re = −height(c)`.
+
+    At `affine_dual` (height = 4 = selfIntersection^2 = 2^2), this gives `−4 = −c₃Eval 2`.
+    See `PlueckerOrthogonalDegeneration.c₃Eval_eq_affine_dual_height`. -/
+lemma theta_link_im_eq_neg_height :
+    c.theta_link.weight.im = -c.weight.re :=
+  theta_link_im c
+
+/-- For any `ComplexCarabiner` whose real weight equals `n : ℕ`, the Θ-link imaginary
+    part is `−n`.  Applied at `affine_dual` (real weight = 4):
+    `theta_link.weight.im = −4 = −(selfIntersection^2)`. -/
+lemma theta_link_im_neg_of_height (n : ℕ) (hn : c.weight.re = n) :
+    c.theta_link.weight.im = -(n : ℝ) := by
+  rw [theta_link_im_eq_neg_height, hn]
+
+end ThirdChernShadow
+
 end HatsuYakitori.PhantomCarabiner
