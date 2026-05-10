@@ -7,6 +7,7 @@ import Mathlib.Tactic
 import Mathlib.Combinatorics.Quiver.Path
 import HatsuYakitori.MachineConstants
 import HatsuYakitori.HopfStructure
+import HatsuYakitori.AnabelianSketch
 import HatsuYakitori.BSDQuiver
 import HatsuYakitori.Carabiner
 
@@ -212,6 +213,18 @@ theorem ramified_octad_connection :
     pAdicTag.toGolayWeight .ramified = .w8 ∧
     GolayWeight.w8.orbitSize = 759 := by
   exact ⟨rfl, rfl⟩
+
+/-- The ramified stratum evaluates the same discrete isogeny defect as the octad. -/
+theorem ramified_discreteIsogenyHeightDefect_eq_octad :
+    discreteIsogenyHeightDefect (pAdicTag.ramified.toGolayWeight) =
+      discreteIsogenyHeightDefect GolayWeight.w8 := by
+  rfl
+
+/-- Concretely, the ramified discrete isogeny defect is `K / 3 = 8 / 3`. -/
+theorem ramified_discreteIsogenyHeightDefect_eq :
+    discreteIsogenyHeightDefect (pAdicTag.ramified.toGolayWeight) =
+      galoisHeightBound / 3 := by
+  simpa [pAdicTag.toGolayWeight] using octad_discreteIsogenyHeightDefect
 
 /-- The ramification product e·f = 8 = galoisHeightBound (as ℕ). -/
 theorem ramification_product_is_height_bound (p : ℕ) [Fact p.Prime] :
@@ -1013,6 +1026,7 @@ theorem mellin_trivial_orbit_bridge :
 | TateModule                 | PontryaginDualGroup MulPosReals  | axiom  |
 | HomGalois T                | ContinuousCharacter T → S¹      | axiom  |
 | abstractHeight             | totalGolayContribution           | proven |
+| discreteIsogenyHeightDefect| ramification product / height gap| bridged |
 | analytic_rank              | ord_{s=1} analyticMellin         | axiom  |
 | galoisHeight ↔ Frobenius   | logCharacter at orbit points     | axiom  |
 -/

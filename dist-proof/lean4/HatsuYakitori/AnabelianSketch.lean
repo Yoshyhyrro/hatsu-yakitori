@@ -303,12 +303,28 @@ noncomputable def abstractHeight : ℝ := sorry
 /-- Isogeny degree (corresponds to l in the paper). -/
 def isogenyDegree : ℕ := sorry
 
+/-- The arithmetic-derivative style defect in the isogeny height comparison:
+    `ht(E*) - (ht(E) + log(l))`.
+
+    This packages the first-order gap on the anabelian side without
+    overloading the Hopf-side `collapseDefect`. -/
+noncomputable def isogenyHeightDefect (htE htE_star : ℝ) : ℝ :=
+  htE_star - (htE + Real.log (isogenyDegree : ℝ))
+
 /-- Faltings' bound: ht(E*) ≈ ht(E) + log(l).
     Axiomatized as it requires deep arithmetic geometry. -/
 axiom faltings_height_bound :
   ∃ (htE htE_star : ℝ) (ε : ℝ),
     ε > 0 ∧ ε < 1 ∧
     |htE_star - (htE + Real.log (isogenyDegree : ℝ))| < ε
+
+/-- Faltings' bound rewritten in terms of `isogenyHeightDefect`. -/
+theorem isogenyHeightDefect_bounded :
+    ∃ (htE htE_star ε : ℝ), ε > 0 ∧ ε < 1 ∧
+      |isogenyHeightDefect htE htE_star| < ε := by
+  rcases faltings_height_bound with ⟨htE, htE_star, ε, hεpos, hεlt, hbound⟩
+  exact ⟨htE, htE_star, ε, hεpos, hεlt, by
+    simpa [isogenyHeightDefect] using hbound⟩
 
 /-- Mochizuki's key inequality (p.7): l · ht(E) ≲ ht(E) + log(l).
     From this one derives ht(E) ≲ log(l)/(l-1). -/
@@ -599,6 +615,43 @@ theorem discrete_faltings_height_bound (w : GolayWeight) :
   constructor <;> linarith
 
 open HatsuYakitori.MachineConstants in
+/-- Discrete analogue of `isogenyHeightDefect` on Golay weights. -/
+noncomputable def discreteIsogenyHeightDefect (w : GolayWeight) : ℝ :=
+  w.complement.height - (w.height + Real.log 1)
+
+open HatsuYakitori.MachineConstants in
+/-- The combinatorial isogeny defect is bounded by the global height bound. -/
+theorem discreteIsogenyHeightDefect_bounded (w : GolayWeight) :
+    |discreteIsogenyHeightDefect w| ≤ galoisHeightBound := by
+  simpa [discreteIsogenyHeightDefect] using discrete_faltings_height_bound w
+
+open HatsuYakitori.MachineConstants in
+/-- On the octad, the discrete isogeny height defect is exactly `K / 3 = 8 / 3`. -/
+theorem octad_discreteIsogenyHeightDefect :
+    discreteIsogenyHeightDefect GolayWeight.w8 = galoisHeightBound / 3 := by
+  simp [discreteIsogenyHeightDefect, GolayWeight.height, GolayWeight.complement,
+    GolayWeight.toFin25, Real.log_one]
+  change octadHeight ⟨16, by norm_num⟩ - octadHeight ⟨8, by norm_num⟩ = galoisHeightBound / 3
+  rw [octadHeight_sixteen, octadHeight_eight]
+  norm_num [galoisHeightBound]
+
+open HatsuYakitori.MachineConstants in
+/-- Mellin-side bridge: the discrete isogeny defect is controlled by the
+    cyclotomic ramification product `e · f`, i.e. the same quantity that
+    appears as the height bound in the p-adic Mellin stratification. -/
+theorem discreteIsogenyHeightDefect_le_ramification_product
+    (w : GolayWeight) (p : ℕ) [Fact p.Prime] :
+    |discreteIsogenyHeightDefect w| ≤
+      (((cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f : ℕ) : ℝ) := by
+  have hbound := discreteIsogenyHeightDefect_bounded w
+  have hram : galoisHeightBound =
+      (((cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f : ℕ) : ℝ) := by
+    have hram_nat : (cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f = 8 :=
+      ramification_degree_check p
+    norm_num [galoisHeightBound, hram_nat]
+  simpa [hram] using hbound
+
+open HatsuYakitori.MachineConstants in
 /-- The height complement sum gives the exact "isogeny formula"
     in the discrete model: htE_star = K - htE. -/
 theorem discrete_isogeny_formula (w : GolayWeight) :
@@ -613,6 +666,14 @@ open HatsuYakitori.MachineConstants in
 theorem heegner_minimizes_isogeny_error :
     GolayWeight.w12.complement.height = GolayWeight.w12.height := by
   simp [GolayWeight.complement]
+
+open HatsuYakitori.MachineConstants in
+/-- At the Heegner point, the discrete isogeny defect vanishes. -/
+theorem heegner_discreteIsogenyHeightDefect_zero :
+    discreteIsogenyHeightDefect GolayWeight.w12 = 0 := by
+  have hfixed := heegner_minimizes_isogeny_error
+  simp [discreteIsogenyHeightDefect, Real.log_one] at hfixed ⊢
+  linarith
 
 -- ===================================================================
 -- § 5. Representation Theory Bridge (M₂₄ Character Degrees)

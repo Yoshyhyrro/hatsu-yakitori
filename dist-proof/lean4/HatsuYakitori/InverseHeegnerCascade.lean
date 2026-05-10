@@ -523,20 +523,103 @@ lemma phi_defect_annihilated (d : UnknownDual) :
     B nullVec (d.φ defectVec) = 0 :=
   d.preserves_kernel defectVec_in_annihilator
 
+-- -----------------------------------------------------------------------
+-- Private numerical lemmas for phi_defect_in_span
+-- -----------------------------------------------------------------------
+
+/-- `B obsVec nullVec = 0`.
+
+    Since `gramIH` has zero row sums (`gramIH_row_sum`), the sum
+    `∑ j gramIH(i,j) = 0` for each `i`, so `B obsVec nullVec = 0`. -/
+private lemma B_obs_null : B obsVec nullVec = 0 := by
+  simp only [B, nullVec]
+  simp_rw [mul_one, ← Finset.mul_sum]
+  have row_zero : ∀ i : Fin 7, ∑ j : Fin 7, (gramIH i j : ℚ) = 0 := fun i => by
+    rw [Fin.sum_univ_seven]; exact_mod_cast gramIH_row_sum i
+  simp [row_zero]
+
+/-- `B obsVec defectVec = 6`.
+
+    Direct computation:
+    `∑ᵢ ∑ⱼ obsVec(i) · gramIH(i,j) · defectVec(j) = 6`.
+
+    The value 6 = |3·A₆·2²| / |S₆| = 4320 / 720 also equals the
+    `phantom_resolution` holonomy contribution × 2 in the Rudvalis route. -/
+private lemma B_obs_defect : B obsVec defectVec = 6 := by
+  native_decide
+
+/-- `B defectVec defectVec = 20`.
+
+    The self-pairing of the defect vector under the affine Â₆ Gram form equals 20:
+    the **inverse Heegner dimension** at the Lyons level (`cascadeDimProfile 0 = 20`).
+
+    This is the central numerical coincidence of the cascade:
+    `B defectVec defectVec = inverseHeegnerDimAtLevel ⟨0, _⟩`. -/
+private lemma B_defect_defect : B defectVec defectVec = 20 := by
+  native_decide
+
+/-- `B` is negation-linear in the first argument: `B (-x) y = -(B x y)`. -/
+private lemma B_neg_left (x y : V) : B (-x) y = -(B x y) := by
+  unfold B
+  -- `V` is a `def` (not `abbrev`), so we establish `(-x) i = -(x i)` explicitly.
+  have neg_coord : ∀ i : Fin 7, (-x) i = -(x i) := fun _ => rfl
+  simp_rw [neg_coord, neg_mul, Finset.sum_neg_distrib]
+
+/-- The isometry constraint on `B(obsVec, φ(defectVec))`.
+
+    From `naturality` at `(obsVec, defectVec)`:
+    `B(φ(obsVec), φ(defectVec)) = B(obsVec, defectVec) = 6`.
+    Since `φ(obsVec) = ±obsVec` (`maps_obs`):
+    - `+` case: `B(obsVec, φ(defectVec)) = 6`.
+    - `−` case: `B(-obsVec, φ(defectVec)) = 6`, so `B(obsVec, φ(defectVec)) = -6`.
+
+    This pins the `obsVec`-component of `φ(defectVec)` to `±1`. -/
+private lemma phi_defect_obs_pairing (d : UnknownDual) :
+    B obsVec (d.φ defectVec) = 6 ∨ B obsVec (d.φ defectVec) = -6 := by
+  have hnat : B (d.φ obsVec) (d.φ defectVec) = 6 := by
+    rw [d.naturality]; exact B_obs_defect
+  cases d.maps_obs with
+  | inl h =>
+    rw [h] at hnat; exact Or.inl hnat
+  | inr h =>
+    rw [h] at hnat
+    rw [B_neg_left] at hnat
+    exact Or.inr (by linarith)
+
 /-- `φ(defectVec)` lies in `span{defectVec, nullVec}`.
 
     This is the key step toward showing `φ` respects the cascade filtration.
-    Proof requires: (a) `phi_defect_annihilated`, (b) the fact that the
-    annihilator of `nullVec` under `B` is exactly `span{defectVec, nullVec}`
-    (a property of the rank-6 quotient of `gramIH`). -/
+
+    **Proof strategy** (partially formalized):
+    Reduce to finding `a b : ℚ` with `φ(defectVec) = a • defectVec + b • nullVec`.
+
+    The coefficient `a` is pinned by the isometry evaluated at `(obsVec, defectVec)`:
+    ```
+      B(obsVec, φ(defectVec)) = a · B(obsVec, defectVec) + b · B(obsVec, nullVec)
+                               = 6a + 0 = 6a
+    ```
+    `phi_defect_obs_pairing` gives `B(obsVec, φ(defectVec)) = ±6`, so `a = ±1`.
+
+    The residual `v = φ(defectVec) − a•defectVec − b•nullVec` must vanish by
+    the corank-1 property of `gramIH` and simultaneous annihilation by
+    `obsVec`, `defectVec`, `nullVec` — a dimension argument on Im(gramIH). -/
 lemma phi_defect_in_span (d : UnknownDual) :
     d.φ defectVec ∈ Submodule.span ℚ ({defectVec, nullVec} : Set V) := by
-  -- We know B nullVec (φ defectVec) = 0 (phi_defect_annihilated).
-  -- It remains to identify ker(B nullVec ·) = span{defectVec, nullVec}
-  -- using the explicit rank computation on gramIH.
+  -- Reduce to finding explicit ℚ-coefficients.
+  suffices h : ∃ a b : ℚ, d.φ defectVec = a • defectVec + b • nullVec from by
+    obtain ⟨a, b, hab⟩ := h
+    rw [hab]
+    apply Submodule.add_mem
+    · exact Submodule.smul_mem _ _
+        (Submodule.subset_span (Set.mem_insert defectVec {nullVec}))
+    · exact Submodule.smul_mem _ _
+        (Submodule.subset_span (Set.mem_insert_of_mem defectVec rfl))
+  -- The pairing `phi_defect_obs_pairing` pins the obsVec-component to ±1.
+  -- Full corank-1 dimension argument for the residual is left as TODO.
   sorry
-  -- TODO: prove ker(λ v, B nullVec v) = span{defectVec, nullVec} via
-  --   the corank-1 property of gramIH and `gramIH_row_sum`.
+  -- TODO: use `phi_defect_obs_pairing` and `B_defect_defect = 20 = B_defect_defect`
+  --   to derive a = ±1, then use the corank-1 structure of Im(gramIH) to force
+  --   the residual v = 0.  Key numeric inputs: B_obs_null, B_obs_defect, B_neg_left.
 
 end UnknownDual
 
