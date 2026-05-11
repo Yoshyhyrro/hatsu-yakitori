@@ -627,21 +627,26 @@ structure UnknownDual where
   /-- It preserves the bilinear form. -/
   naturality : ∀ v w, B (φ v) (φ w) = B v w
 
+/-- The arithmetic-derivative sign carried by an unknown dual.
+    Positive corresponds to the ramified branch, negative to unramified. -/
+def UnknownDual.HasArithmeticDerivativeSign (d : UnknownDual) : Prop :=
+    (∃ _ : d.φ obsVec = obsVec,
+        (((d.φ obsVec) 0 : ℚ) : ℝ) =
+          HatsuYakitori.discreteIsogenyHeightDefect
+            (HatsuYakitori.PAdicMellin.pAdicTag.ramified.toGolayWeight) /
+          (HatsuYakitori.MachineConstants.galoisHeightBound / 3)) ∨
+    (∃ _ : d.φ obsVec = -obsVec,
+        (((d.φ obsVec) 0 : ℚ) : ℝ) =
+          HatsuYakitori.discreteIsogenyHeightDefect
+            (HatsuYakitori.PAdicMellin.pAdicTag.unramified.toGolayWeight) /
+          (HatsuYakitori.MachineConstants.galoisHeightBound / 3))
+
 /-- `maps_obs` is not just a formal sign choice: after normalizing by `K / 3`,
     it exactly matches the arithmetic-derivative sign of the p-adic branch
     selected by the unknown dual. The positive branch corresponds to ramified,
     and the negative branch to unramified. -/
 theorem UnknownDual.maps_obs_as_arithmetic_derivative_sign (d : UnknownDual) :
-    (∃ h : d.φ obsVec = obsVec,
-        (((d.φ obsVec) 0 : ℚ) : ℝ) =
-          HatsuYakitori.discreteIsogenyHeightDefect
-            (HatsuYakitori.PAdicMellin.pAdicTag.ramified.toGolayWeight) /
-          (HatsuYakitori.MachineConstants.galoisHeightBound / 3)) ∨
-    (∃ h : d.φ obsVec = -obsVec,
-        (((d.φ obsVec) 0 : ℚ) : ℝ) =
-          HatsuYakitori.discreteIsogenyHeightDefect
-            (HatsuYakitori.PAdicMellin.pAdicTag.unramified.toGolayWeight) /
-          (HatsuYakitori.MachineConstants.galoisHeightBound / 3)) := by
+    d.HasArithmeticDerivativeSign := by
   rcases d.maps_obs with hpos | hneg
   · left
     refine ⟨hpos, ?_⟩
@@ -667,7 +672,29 @@ def phantomFlipDual : UnknownDual where
 def UnknownDualConjecture : Prop :=
   ∃ (d : UnknownDual), (Nat.iterate (d.φ : V → V) 7 = id) ∧ (d.φ : V → V) ≠ id
 
+/-- Arithmetic-derivative refinement of the unknown dual conjecture:
+    the non-trivial dual not only exists, but its `maps_obs` sign is realized
+    by the normalized ramified/unramified discrete isogeny defect. -/
+def ArithmeticDerivativeUnknownDualConjecture : Prop :=
+  ∃ (d : UnknownDual),
+    (Nat.iterate (d.φ : V → V) 7 = id) ∧
+    (d.φ : V → V) ≠ id ∧
+    d.HasArithmeticDerivativeSign
+
+/-- Any witness to `UnknownDualConjecture` automatically carries an
+    arithmetic-derivative sign witness. -/
+theorem arithmeticDerivativeUnknownDualConjecture_of_unknownDualConjecture :
+    UnknownDualConjecture → ArithmeticDerivativeUnknownDualConjecture := by
+  intro h
+  rcases h with ⟨d, hiterate, hne⟩
+  exact ⟨d, hiterate, hne, UnknownDual.maps_obs_as_arithmetic_derivative_sign d⟩
+
 /-- The conjecture is open. -/
 axiom unknownDualConjecture_holds : UnknownDualConjecture
+
+/-- The refined conjecture holds whenever the original unknown dual conjecture does. -/
+theorem arithmeticDerivativeUnknownDualConjecture_holds :
+    ArithmeticDerivativeUnknownDualConjecture :=
+  arithmeticDerivativeUnknownDualConjecture_of_unknownDualConjecture unknownDualConjecture_holds
 
 end HatsuYakitori.InverseHeegnerCascade
