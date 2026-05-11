@@ -18,6 +18,7 @@ import Data.List (isInfixOf, isSuffixOf)
 
 import Chicken
 import Rules.StandardToplevel (extractDeclareUses, extractModuleDecl)
+import SourceIO (readSourceTextLossy)
 
 -- ============================================================
 -- Type-Safe Compilation Info
@@ -62,7 +63,7 @@ hasMainProcedure content =
 compileToUnit :: FilePath -> String -> FilePath -> Action ()
 compileToUnit src flags out = do
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
-  content <- readFile' src
+  content <- liftIO $ readSourceTextLossy src
   
   let usesDeps = extractDeclareUses content
   let moduleName = extractModuleDecl content
@@ -113,7 +114,7 @@ compileObject src flags = do
   need [src]
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
 
-  content <- readFile' src
+  content <- liftIO $ readSourceTextLossy src
   let usesDeps = extractDeclareUses content
   let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
   
@@ -164,7 +165,7 @@ compileUnitRule out = do
       need [src]
       liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
       
-      content <- readFile' src
+      content <- liftIO $ readSourceTextLossy src
       let usesDeps = extractDeclareUses content
       let moduleName = extractModuleDecl content
       let unitName = case moduleName of
@@ -196,7 +197,7 @@ compileObjectRule out = do
       need [src]
       liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
       
-      content <- readFile' src
+      content <- liftIO $ readSourceTextLossy src
       let usesDeps = extractDeclareUses content
       let isMain = isMainFile src || hasMainProcedure content
       

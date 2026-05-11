@@ -21,6 +21,7 @@ import Control.Monad (forM, unless, when)
 import qualified System.Environment as Env
 import Data.List (nubBy, isInfixOf)
 import qualified System.Directory as Dir
+import SourceIO (readSourceTextLossy)
 
 -- ============================================================
 -- Configuration
@@ -69,7 +70,7 @@ hasModuleDefinition srcFile = do
     if not exists
         then return False
         else do
-            content <- readFile srcFile
+            content <- readSourceTextLossy srcFile
             return $ "(module" `isInfixOf` content
 
 -- ============================================================

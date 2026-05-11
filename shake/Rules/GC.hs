@@ -69,6 +69,7 @@ import Polysemy.State
 
 import Chicken
 import Rules.StandardToplevel (extractAllDeps, classifyDependency, DependencyType(..))
+import SourceIO (readSourceTextLossy)
 
 -- ============================================================
 -- GC Strategy Types
@@ -304,7 +305,7 @@ executeSchemeGCAnalysis srcPath strat = do
 
 estimateTopologyFromSource :: FilePath -> IO TopologyMetrics
 estimateTopologyFromSource srcPath = do
-  content <- readFile srcPath
+  content <- readSourceTextLossy srcPath
   let lineCount = length (lines content)
   
   -- Simple heuristics based on code structure
