@@ -1,20 +1,34 @@
 # Build artifacts
 build/
 dist/
+_build/
+_build_test/
+shake/_build/
+.stack-work/
 salmonella-logs/
 salmonella.log
+salmonella-tmp-*/
 # Compiled Scheme files
 *.c
 *.o
+*.obj
 *.a
 *.so
 *.dylib
+*.link
+*.static.obj
+*.import.scm
+*.types.types
+*.build.bat
+*.install.bat
+*.linux_elf
 
 # Temporary files
 *~
 *.swp
 *.swo
 *.tmp
+build_result.txt
 
 # IDE
 .vscode/
@@ -27,6 +41,16 @@ Thumbs.db
 
 # Setup script (distribution-time only)
 setup.bash
+hatsu-yakitori.build.sh
+hatsu-yakitori.install.sh
+
+# Local debug helpers
+core/gf_test.scm
+core/golay_frontier_tmp_debug.scm
+dist-proof/lean4/.tmp_*.lean
+dist-proof/lean4/HatsuYakitori/_test_*.lean
+tools/read_forms.scm
+tests/run.scm
 
 
 #Unpublished patent

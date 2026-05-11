@@ -862,6 +862,24 @@ theorem self_dual_points :
     cliffordLevel2.complement = cliffordLevel2 := by
   exact ⟨rfl, conway_shell2_midpoint, clifford_level2_self_dual⟩
 
+/-- `SigmaI` is compatible with the Conway midpoint picture:
+    its ambient dimensions are the Leech dimension `24` and the stabilized
+    code length `6`, while shell 2 projects to the self-dual dodecad `w12`. -/
+theorem sigmaI_conway_midpoint_compatible :
+    SigmaI = tensorBang (Fin 24) (Fin 6) ∧
+    conwayToGolay conwayShell2 = .w12 ∧
+    conwayShell2.complement = conwayShell2 := by
+  exact ⟨sigmaI_def, conway_golay_midpoint, conway_shell2_midpoint⟩
+
+/-- The unique self-dual Conway shell and the unique self-dual Golay orbit
+    match the `SigmaI` midpoint data. -/
+theorem sigmaI_self_dual_bridge :
+    SigmaI = tensorBang (Fin 24) (Fin 6) ∧
+    GolayWeight.w12.complement = .w12 ∧
+    conwayToGolay conwayShell2 = .w12 ∧
+    mellinRankConway.self_dual_orbits = 1 := by
+  refine ⟨sigmaI_def, rfl, conway_golay_midpoint, rfl⟩
+
 -- ===================================================================
 -- § 15. Embedding Hierarchy: M₂₄ ⊂ Co₁
 -- ===================================================================
@@ -958,8 +976,7 @@ noncomputable def mathieuObservation : ObservationFunctor where
     interval_cases i <;> exact GolayWeight.height_add_complement_height _
   total := totalGolayContribution
   total_eq_sum := by
-    simp only [totalGolayContribution, Fin.sum_univ_succ, Fin.sum_univ_zero]
-    ring
+    simp [totalGolayContribution, Fin.sum_univ_succ, GolayWeight.height, add_assoc]
 
 /-- Construct the Conway observation functor. -/
 noncomputable def conwayObservation : ObservationFunctor where
@@ -982,9 +999,9 @@ noncomputable def conwayObservation : ObservationFunctor where
     exact conway_functional_equation _
   total := totalConwayContribution
   total_eq_sum := by
-    simp only [totalConwayContribution, Fin.sum_univ_succ, Fin.sum_univ_zero,
-               ConwayShellWeight.height]
-    ring
+    norm_num [totalConwayContribution, Fin.sum_univ_succ, Fin.sum_univ_zero,
+              ConwayShellWeight.height, conwayShell0, conwayShell1, conwayShell2,
+              conwayShell3, conwayShell4, galoisHeightBound]
 
 /-- Two observation functors **agree on rank** if the functional
     equation structure is the same. This is witnessed by having

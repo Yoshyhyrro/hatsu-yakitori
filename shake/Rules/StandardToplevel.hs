@@ -20,6 +20,7 @@ import Data.List (nub, isPrefixOf, isInfixOf)
 import Data.Maybe (listToMaybe)
 import Data.Char (isSpace)
 import Chicken
+import SourceIO (readSourceTextLossy)
 
 -- ============================================================
 -- Dependency Type Classification
@@ -71,7 +72,7 @@ data ExtractedDeps = ExtractedDeps
 -- | Extract all dependencies from a source file with type info
 extractSourceDeps :: FilePath -> IO ExtractedDeps
 extractSourceDeps srcPath = do
-  content <- readFile srcPath
+  content <- readSourceTextLossy srcPath
   
   let rawUses = extractDeclareUses content
   let rawImports = extractImports content
@@ -167,7 +168,7 @@ takeBalanced depth acc s =
 -- | Read a source file and return all declared uses + imports
 extractAllDeps :: FilePath -> IO [String]
 extractAllDeps srcPath = do
-  content <- readFile srcPath
+  content <- readSourceTextLossy srcPath
   let uses = extractDeclareUses content
       imports = extractImports content
   return $ nub (uses ++ imports)

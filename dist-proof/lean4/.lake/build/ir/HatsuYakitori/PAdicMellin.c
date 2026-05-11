@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: HatsuYakitori.PAdicMellin
-// Imports: public import Init public import Mathlib.Tactic public import Mathlib.Combinatorics.Quiver.Path public import HatsuYakitori.MachineConstants public import HatsuYakitori.HopfStructure public import HatsuYakitori.BSDQuiver public import HatsuYakitori.Carabiner
+// Imports: public import Init public import Mathlib.Tactic public import Mathlib.Combinatorics.Quiver.Path public import HatsuYakitori.MachineConstants public import HatsuYakitori.HopfStructure public import HatsuYakitori.AnabelianSketch public import HatsuYakitori.BSDQuiver public import HatsuYakitori.Carabiner
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -32,6 +32,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instDecidableEqMellinArrow_decEq___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_pAdicTag_toGolayWeight___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinArrow_repr___redArg___closed__6;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___redArg(uint8_t, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinArrow_ctorIdx___redArg(lean_object*);
 uint8_t lean_nat_dec_le(lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_mellin__arrow__effect___redArg(lean_object*);
@@ -104,6 +105,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_inst
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instDecidableEqMellinEffect(uint8_t, uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinVertex;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprPAdicTag;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinArrow_repr___redArg___closed__7;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instFintypePAdicTag___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_pAdicTag_depth_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
@@ -111,6 +113,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinEffect_ctorElim___redArg___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinEffect_ofNat___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinVertex_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter(lean_object*, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_golayOrbitSequence;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinEffect_preserves__measure_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprMellinEffect___closed__0;
@@ -125,6 +128,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_inst
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_combineMellinEffects___boxed(lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instDecidableEqMellinArrow(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instDecidableEqMellinVertex(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 extern lean_object* lp_mathlib_Real_definition_00___x40_Mathlib_Data_Real_Basic_1850581184____hygCtx___hyg_8_;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_pAdicTag_unit_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_instReprPAdicTag_repr___closed__3;
@@ -1015,6 +1019,79 @@ x_2 = lean_unbox(x_1);
 x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_pAdicTag_toGolayWeight(x_2);
 x_4 = lean_box(x_3);
 return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+switch (x_1) {
+case 0:
+{
+lean_object* x_6; lean_object* x_7; 
+lean_dec(x_5);
+lean_dec(x_4);
+lean_dec(x_3);
+x_6 = lean_box(0);
+x_7 = lean_apply_1(x_2, x_6);
+return x_7;
+}
+case 1:
+{
+lean_object* x_8; lean_object* x_9; 
+lean_dec(x_5);
+lean_dec(x_4);
+lean_dec(x_2);
+x_8 = lean_box(0);
+x_9 = lean_apply_1(x_3, x_8);
+return x_9;
+}
+case 2:
+{
+lean_object* x_10; lean_object* x_11; 
+lean_dec(x_5);
+lean_dec(x_3);
+lean_dec(x_2);
+x_10 = lean_box(0);
+x_11 = lean_apply_1(x_4, x_10);
+return x_11;
+}
+default: 
+{
+lean_object* x_12; lean_object* x_13; 
+lean_dec(x_4);
+lean_dec(x_3);
+lean_dec(x_2);
+x_12 = lean_box(0);
+x_13 = lean_apply_1(x_5, x_12);
+return x_13;
+}
+}
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+uint8_t x_6; lean_object* x_7; 
+x_6 = lean_unbox(x_1);
+x_7 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___redArg(x_6, x_2, x_3, x_4, x_5);
+return x_7;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter(lean_object* x_1, uint8_t x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
+_start:
+{
+lean_object* x_7; 
+x_7 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___redArg(x_2, x_3, x_4, x_5, x_6);
+return x_7;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
+_start:
+{
+uint8_t x_7; lean_object* x_8; 
+x_7 = lean_unbox(x_2);
+x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_PAdicMellin_0__HatsuYakitori_PAdicMellin_instReprPAdicTag_repr_match__1_splitter(x_1, x_7, x_3, x_4, x_5, x_6);
+return x_8;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_PAdicMellin_MellinVertex_ctorIdx(lean_object* x_1) {
@@ -3154,6 +3231,7 @@ lean_object* initialize_mathlib_Mathlib_Tactic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Combinatorics_Quiver_Path(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(uint8_t builtin);
+lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_AnabelianSketch(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner(uint8_t builtin);
 static bool _G_initialized = false;
@@ -3174,6 +3252,9 @@ res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(built
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_HopfStructure(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_AnabelianSketch(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver(builtin);

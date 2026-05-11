@@ -15,6 +15,7 @@ extern "C" {
 #endif
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg___boxed(lean_object*);
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_decodeGolay24(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__0;
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_frontierModeFromGolay(lean_object*);
@@ -24,6 +25,8 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 lean_object* l_List_lengthTR___redArg(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__10;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_toCtorIdx___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams___boxed(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_codeRate(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__3;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode_repr___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows;
@@ -32,9 +35,12 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__1;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__10;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__8;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__12;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorIdx___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorIdx(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__23;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__8;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_toCtorIdx(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
@@ -42,7 +48,9 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__7;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__7;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_midWeight___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode_repr___boxed(lean_object*, lean_object*);
+static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_toCtorIdx(uint8_t);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqGaloisHeightClass(uint8_t, uint8_t);
@@ -53,43 +61,69 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_go
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_hammingWeight___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__7;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___redArg___boxed(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__5;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__0;
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows__length___nativeDecide__1__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_octadOrbitRepresentative___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorIdx(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_GolayFrontier_computeParity_spec__0___boxed(lean_object*, lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__13;
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_total__codewords___nativeDecide__1__1;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__4;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__2;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__14;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqM24Orbit___boxed(lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams___closed__0;
+lean_object* lean_string_length(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__1;
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams_decEq(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__9;
 lean_object* lean_nat_shiftr(lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ofNat(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit;
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___redArg(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter___redArg(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg___boxed(lean_object*);
+static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1___closed__0;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__2;
+lean_object* l_Nat_reprFast(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim(lean_object*, uint8_t, lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__21;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___redArg___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_toCtorIdx___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__9;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_galoisOrbitSize___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___boxed(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_codeRate___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_toCtorIdx(uint8_t);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__8;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ofNat___boxed(lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_octadOrbitRepresentative(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__1;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__24;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams;
 lean_object* lean_nat_to_int(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__3;
+static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__1;
+static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___boxed(lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__16;
 static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows__length___nativeDecide__1__1___closed__1;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__18;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___redArg___boxed(lean_object*);
 lean_object* l_List_range(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__4;
@@ -97,10 +131,12 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_frontierModeFromGolay___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__11;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__22;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg(lean_object*);
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_decodeGolay24___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim(lean_object*, uint8_t, lean_object*, lean_object*);
@@ -109,38 +145,57 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___redArg(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_other_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqGaloisHeightClass___boxed(lean_object*, lean_object*);
 lean_object* lean_nat_land(lean_object*, lean_object*);
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams(lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dualTrivial_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octad_elim___redArg___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__4;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr(uint8_t, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__6;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_queue_elim___redArg___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg___boxed(lean_object*);
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___redArg___boxed(lean_object*);
+static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode_repr___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__8;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__6;
 static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows__length___nativeDecide__1__1___closed__1;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__20;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__19;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_octadComplement_elim___redArg___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorIdx___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim(lean_object*, uint8_t, lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__7;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__9;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_computeParity___boxed(lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows__length___nativeDecide__1__1;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__2;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__9;
 lean_object* lean_nat_lxor(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim(lean_object*, uint8_t, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams_decEq___boxed(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows__length___nativeDecide__1__1___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__5;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr(uint8_t, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__6;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__10;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows__length___nativeDecide__1__1___closed__0;
+lean_object* lean_nat_pow(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 uint8_t lean_nat_dec_eq(lean_object*, lean_object*);
@@ -156,6 +211,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_galoisOrbitSize(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_fundamental_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_frontierModeFromWeight___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__3;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ctorElim___redArg(lean_object*);
@@ -167,14 +223,18 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_in
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode_repr___closed__1;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__11;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___redArg(lean_object*);
+static uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__1;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__15;
 lean_object* l_Repr_addAppParen(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_intermediate_elim___redArg___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__7;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_midWeight(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ofNat___boxed(lean_object*);
 lean_object* lean_nat_shiftl(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorIdx___boxed(lean_object*);
 lean_object* lean_nat_sub(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__9;
+lean_object* lean_nat_mul(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_hammingWeight(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__5;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_dodecad_elim___redArg___boxed(lean_object*);
@@ -186,15 +246,20 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedHigh_elim___redArg(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__11;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams___closed__0;
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_orbitSize___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_ctorElim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_FrontierMode_stack_elim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_GolayFrontier_computeParity_spec__0(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode_repr(uint8_t, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams;
 lean_object* l_List_zipWith___at___00List_zip_spec__0___redArg(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim___redArg___boxed(lean_object*);
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_frontierModeFromWeight(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__3;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_weightToOrbit___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_dualDim(lean_object*);
 uint8_t lean_nat_dec_le(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_n;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode_repr___closed__3;
@@ -203,13 +268,19 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFronti
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_orbitSize(uint8_t);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayParityCheckRows___closed__6;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__17;
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_d;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_GaloisHeightClass_ramifiedLow_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_GolayFrontier_0__HatsuYakitori_GolayFrontier_hammingWeight_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayGeneratorRows___closed__4;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprGaloisHeightClass_repr___closed__4;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprM24Orbit_repr___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_dualDim___boxed(lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__11;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_M24Orbit_trivial_elim___redArg(lean_object*);
 static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_n() {
 _start:
@@ -2642,6 +2713,890 @@ x_3 = lean_box(x_2);
 return x_3;
 }
 }
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams_decEq(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; lean_object* x_7; lean_object* x_8; lean_object* x_9; lean_object* x_10; lean_object* x_11; lean_object* x_12; lean_object* x_13; lean_object* x_14; uint8_t x_15; 
+x_3 = lean_ctor_get(x_1, 0);
+x_4 = lean_ctor_get(x_1, 1);
+x_5 = lean_ctor_get(x_1, 2);
+x_6 = lean_ctor_get(x_1, 3);
+x_7 = lean_ctor_get(x_1, 4);
+x_8 = lean_ctor_get(x_1, 5);
+x_9 = lean_ctor_get(x_2, 0);
+x_10 = lean_ctor_get(x_2, 1);
+x_11 = lean_ctor_get(x_2, 2);
+x_12 = lean_ctor_get(x_2, 3);
+x_13 = lean_ctor_get(x_2, 4);
+x_14 = lean_ctor_get(x_2, 5);
+x_15 = lean_nat_dec_eq(x_3, x_9);
+if (x_15 == 0)
+{
+return x_15;
+}
+else
+{
+uint8_t x_16; 
+x_16 = lean_nat_dec_eq(x_4, x_10);
+if (x_16 == 0)
+{
+return x_16;
+}
+else
+{
+uint8_t x_17; 
+x_17 = lean_nat_dec_eq(x_5, x_11);
+if (x_17 == 0)
+{
+return x_17;
+}
+else
+{
+uint8_t x_18; 
+x_18 = lean_nat_dec_eq(x_6, x_12);
+if (x_18 == 0)
+{
+return x_18;
+}
+else
+{
+uint8_t x_19; 
+x_19 = lean_nat_dec_eq(x_7, x_13);
+if (x_19 == 0)
+{
+return x_19;
+}
+else
+{
+uint8_t x_20; 
+x_20 = lean_nat_dec_eq(x_8, x_14);
+return x_20;
+}
+}
+}
+}
+}
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams_decEq___boxed(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+uint8_t x_3; lean_object* x_4; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams_decEq(x_1, x_2);
+lean_dec_ref(x_2);
+lean_dec_ref(x_1);
+x_4 = lean_box(x_3);
+return x_4;
+}
+}
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+uint8_t x_3; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams_decEq(x_1, x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams___boxed(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+uint8_t x_3; lean_object* x_4; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instDecidableEqCodeParams(x_1, x_2);
+lean_dec_ref(x_2);
+lean_dec_ref(x_1);
+x_4 = lean_box(x_3);
+return x_4;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__0() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked("{ ", 2, 2);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__1() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked("Z", 1, 1);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__2() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__1;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__3() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__2;
+x_2 = lean_box(0);
+x_3 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_3, 0, x_2);
+lean_ctor_set(x_3, 1, x_1);
+return x_3;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__4() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked(" := ", 4, 4);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__5() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__4;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__6() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__5;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__3;
+x_3 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_3, 0, x_2);
+lean_ctor_set(x_3, 1, x_1);
+return x_3;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__7() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lean_unsigned_to_nat(5u);
+x_2 = lean_nat_to_int(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__8() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked(",", 1, 1);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__9() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__8;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__10() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked("n", 1, 1);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__11() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__10;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__12() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked("k", 1, 1);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__13() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__12;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__14() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked("d", 1, 1);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__15() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__14;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__16() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked("H", 1, 1);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__17() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__16;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__18() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked("O", 1, 1);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__19() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__18;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__20() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_mk_string_unchecked(" }", 2, 2);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__21() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__0;
+x_2 = lean_string_length(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__22() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__21;
+x_2 = lean_nat_to_int(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__23() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__0;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__24() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__20;
+x_2 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; lean_object* x_7; lean_object* x_8; lean_object* x_9; lean_object* x_10; lean_object* x_11; lean_object* x_12; lean_object* x_13; uint8_t x_14; lean_object* x_15; lean_object* x_16; lean_object* x_17; lean_object* x_18; lean_object* x_19; lean_object* x_20; lean_object* x_21; lean_object* x_22; lean_object* x_23; lean_object* x_24; lean_object* x_25; lean_object* x_26; lean_object* x_27; lean_object* x_28; lean_object* x_29; lean_object* x_30; lean_object* x_31; lean_object* x_32; lean_object* x_33; lean_object* x_34; lean_object* x_35; lean_object* x_36; lean_object* x_37; lean_object* x_38; lean_object* x_39; lean_object* x_40; lean_object* x_41; lean_object* x_42; lean_object* x_43; lean_object* x_44; lean_object* x_45; lean_object* x_46; lean_object* x_47; lean_object* x_48; lean_object* x_49; lean_object* x_50; lean_object* x_51; lean_object* x_52; lean_object* x_53; lean_object* x_54; lean_object* x_55; lean_object* x_56; lean_object* x_57; lean_object* x_58; lean_object* x_59; lean_object* x_60; lean_object* x_61; lean_object* x_62; lean_object* x_63; lean_object* x_64; lean_object* x_65; lean_object* x_66; lean_object* x_67; lean_object* x_68; lean_object* x_69; lean_object* x_70; lean_object* x_71; lean_object* x_72; lean_object* x_73; lean_object* x_74; lean_object* x_75; 
+x_2 = lean_ctor_get(x_1, 0);
+lean_inc(x_2);
+x_3 = lean_ctor_get(x_1, 1);
+lean_inc(x_3);
+x_4 = lean_ctor_get(x_1, 2);
+lean_inc(x_4);
+x_5 = lean_ctor_get(x_1, 3);
+lean_inc(x_5);
+x_6 = lean_ctor_get(x_1, 4);
+lean_inc(x_6);
+x_7 = lean_ctor_get(x_1, 5);
+lean_inc(x_7);
+lean_dec_ref(x_1);
+x_8 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__5;
+x_9 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__6;
+x_10 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__7;
+x_11 = l_Nat_reprFast(x_2);
+x_12 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_12, 0, x_11);
+x_13 = lean_alloc_ctor(4, 2, 0);
+lean_ctor_set(x_13, 0, x_10);
+lean_ctor_set(x_13, 1, x_12);
+x_14 = 0;
+x_15 = lean_alloc_ctor(6, 1, 1);
+lean_ctor_set(x_15, 0, x_13);
+lean_ctor_set_uint8(x_15, sizeof(void*)*1, x_14);
+x_16 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_16, 0, x_9);
+lean_ctor_set(x_16, 1, x_15);
+x_17 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__9;
+x_18 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_18, 0, x_16);
+lean_ctor_set(x_18, 1, x_17);
+x_19 = lean_box(1);
+x_20 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_20, 0, x_18);
+lean_ctor_set(x_20, 1, x_19);
+x_21 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__11;
+x_22 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_22, 0, x_20);
+lean_ctor_set(x_22, 1, x_21);
+x_23 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_23, 0, x_22);
+lean_ctor_set(x_23, 1, x_8);
+x_24 = l_Nat_reprFast(x_3);
+x_25 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_25, 0, x_24);
+x_26 = lean_alloc_ctor(4, 2, 0);
+lean_ctor_set(x_26, 0, x_10);
+lean_ctor_set(x_26, 1, x_25);
+x_27 = lean_alloc_ctor(6, 1, 1);
+lean_ctor_set(x_27, 0, x_26);
+lean_ctor_set_uint8(x_27, sizeof(void*)*1, x_14);
+x_28 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_28, 0, x_23);
+lean_ctor_set(x_28, 1, x_27);
+x_29 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_29, 0, x_28);
+lean_ctor_set(x_29, 1, x_17);
+x_30 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_30, 0, x_29);
+lean_ctor_set(x_30, 1, x_19);
+x_31 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__13;
+x_32 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_32, 0, x_30);
+lean_ctor_set(x_32, 1, x_31);
+x_33 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_33, 0, x_32);
+lean_ctor_set(x_33, 1, x_8);
+x_34 = l_Nat_reprFast(x_4);
+x_35 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_35, 0, x_34);
+x_36 = lean_alloc_ctor(4, 2, 0);
+lean_ctor_set(x_36, 0, x_10);
+lean_ctor_set(x_36, 1, x_35);
+x_37 = lean_alloc_ctor(6, 1, 1);
+lean_ctor_set(x_37, 0, x_36);
+lean_ctor_set_uint8(x_37, sizeof(void*)*1, x_14);
+x_38 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_38, 0, x_33);
+lean_ctor_set(x_38, 1, x_37);
+x_39 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_39, 0, x_38);
+lean_ctor_set(x_39, 1, x_17);
+x_40 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_40, 0, x_39);
+lean_ctor_set(x_40, 1, x_19);
+x_41 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__15;
+x_42 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_42, 0, x_40);
+lean_ctor_set(x_42, 1, x_41);
+x_43 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_43, 0, x_42);
+lean_ctor_set(x_43, 1, x_8);
+x_44 = l_Nat_reprFast(x_5);
+x_45 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_45, 0, x_44);
+x_46 = lean_alloc_ctor(4, 2, 0);
+lean_ctor_set(x_46, 0, x_10);
+lean_ctor_set(x_46, 1, x_45);
+x_47 = lean_alloc_ctor(6, 1, 1);
+lean_ctor_set(x_47, 0, x_46);
+lean_ctor_set_uint8(x_47, sizeof(void*)*1, x_14);
+x_48 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_48, 0, x_43);
+lean_ctor_set(x_48, 1, x_47);
+x_49 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_49, 0, x_48);
+lean_ctor_set(x_49, 1, x_17);
+x_50 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_50, 0, x_49);
+lean_ctor_set(x_50, 1, x_19);
+x_51 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__17;
+x_52 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_52, 0, x_50);
+lean_ctor_set(x_52, 1, x_51);
+x_53 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_53, 0, x_52);
+lean_ctor_set(x_53, 1, x_8);
+x_54 = l_Nat_reprFast(x_6);
+x_55 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_55, 0, x_54);
+x_56 = lean_alloc_ctor(4, 2, 0);
+lean_ctor_set(x_56, 0, x_10);
+lean_ctor_set(x_56, 1, x_55);
+x_57 = lean_alloc_ctor(6, 1, 1);
+lean_ctor_set(x_57, 0, x_56);
+lean_ctor_set_uint8(x_57, sizeof(void*)*1, x_14);
+x_58 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_58, 0, x_53);
+lean_ctor_set(x_58, 1, x_57);
+x_59 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_59, 0, x_58);
+lean_ctor_set(x_59, 1, x_17);
+x_60 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_60, 0, x_59);
+lean_ctor_set(x_60, 1, x_19);
+x_61 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__19;
+x_62 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_62, 0, x_60);
+lean_ctor_set(x_62, 1, x_61);
+x_63 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_63, 0, x_62);
+lean_ctor_set(x_63, 1, x_8);
+x_64 = l_Nat_reprFast(x_7);
+x_65 = lean_alloc_ctor(3, 1, 0);
+lean_ctor_set(x_65, 0, x_64);
+x_66 = lean_alloc_ctor(4, 2, 0);
+lean_ctor_set(x_66, 0, x_10);
+lean_ctor_set(x_66, 1, x_65);
+x_67 = lean_alloc_ctor(6, 1, 1);
+lean_ctor_set(x_67, 0, x_66);
+lean_ctor_set_uint8(x_67, sizeof(void*)*1, x_14);
+x_68 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_68, 0, x_63);
+lean_ctor_set(x_68, 1, x_67);
+x_69 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__22;
+x_70 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__23;
+x_71 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_71, 0, x_70);
+lean_ctor_set(x_71, 1, x_68);
+x_72 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__24;
+x_73 = lean_alloc_ctor(5, 2, 0);
+lean_ctor_set(x_73, 0, x_71);
+lean_ctor_set(x_73, 1, x_72);
+x_74 = lean_alloc_ctor(4, 2, 0);
+lean_ctor_set(x_74, 0, x_69);
+lean_ctor_set(x_74, 1, x_73);
+x_75 = lean_alloc_ctor(6, 1, 1);
+lean_ctor_set(x_75, 0, x_74);
+lean_ctor_set_uint8(x_75, sizeof(void*)*1, x_14);
+return x_75;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg(x_1);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___boxed(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr(x_1, x_2);
+lean_dec(x_2);
+return x_3;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams___closed__0() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lean_alloc_closure((void*)(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___boxed), 2, 0);
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams___closed__0;
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; 
+x_1 = lean_unsigned_to_nat(5u);
+x_2 = lean_unsigned_to_nat(8u);
+x_3 = lean_unsigned_to_nat(12u);
+x_4 = lean_unsigned_to_nat(24u);
+x_5 = lean_unsigned_to_nat(2u);
+x_6 = lean_alloc_ctor(0, 6, 0);
+lean_ctor_set(x_6, 0, x_5);
+lean_ctor_set(x_6, 1, x_4);
+lean_ctor_set(x_6, 2, x_3);
+lean_ctor_set(x_6, 3, x_2);
+lean_ctor_set(x_6, 4, x_2);
+lean_ctor_set(x_6, 5, x_1);
+return x_6;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams___closed__0;
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; 
+x_1 = lean_unsigned_to_nat(4u);
+x_2 = lean_unsigned_to_nat(6u);
+x_3 = lean_unsigned_to_nat(12u);
+x_4 = lean_unsigned_to_nat(3u);
+x_5 = lean_alloc_ctor(0, 6, 0);
+lean_ctor_set(x_5, 0, x_4);
+lean_ctor_set(x_5, 1, x_3);
+lean_ctor_set(x_5, 2, x_2);
+lean_ctor_set(x_5, 3, x_2);
+lean_ctor_set(x_5, 4, x_3);
+lean_ctor_set(x_5, 5, x_1);
+return x_5;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams___closed__0;
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; 
+x_1 = lean_unsigned_to_nat(6u);
+x_2 = lean_unsigned_to_nat(8u);
+x_3 = lean_unsigned_to_nat(16u);
+x_4 = lean_unsigned_to_nat(32u);
+x_5 = lean_unsigned_to_nat(2u);
+x_6 = lean_alloc_ctor(0, 6, 0);
+lean_ctor_set(x_6, 0, x_5);
+lean_ctor_set(x_6, 1, x_4);
+lean_ctor_set(x_6, 2, x_3);
+lean_ctor_set(x_6, 3, x_2);
+lean_ctor_set(x_6, 4, x_4);
+lean_ctor_set(x_6, 5, x_1);
+return x_6;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams___closed__0;
+return x_1;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_2 = lean_ctor_get(x_1, 0);
+x_3 = lean_ctor_get(x_1, 2);
+x_4 = lean_nat_pow(x_2, x_3);
+return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords(x_1);
+lean_dec_ref(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; uint8_t x_6; 
+x_2 = lean_ctor_get(x_1, 1);
+x_3 = lean_ctor_get(x_1, 2);
+x_4 = lean_unsigned_to_nat(2u);
+x_5 = lean_nat_mul(x_4, x_3);
+x_6 = lean_nat_dec_eq(x_2, x_5);
+lean_dec(x_5);
+return x_6;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual___boxed(lean_object* x_1) {
+_start:
+{
+uint8_t x_2; lean_object* x_3; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual(x_1);
+lean_dec_ref(x_1);
+x_3 = lean_box(x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_dualDim(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_2 = lean_ctor_get(x_1, 1);
+x_3 = lean_ctor_get(x_1, 2);
+x_4 = lean_nat_sub(x_2, x_3);
+return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_dualDim___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_dualDim(x_1);
+lean_dec_ref(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_midWeight(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_2 = lean_ctor_get(x_1, 1);
+x_3 = lean_unsigned_to_nat(1u);
+x_4 = lean_nat_shiftr(x_2, x_3);
+return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_midWeight___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_midWeight(x_1);
+lean_dec_ref(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_codeRate(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_2 = lean_ctor_get(x_1, 1);
+x_3 = lean_ctor_get(x_1, 2);
+lean_inc(x_2);
+lean_inc(x_3);
+x_4 = lean_alloc_ctor(0, 2, 0);
+lean_ctor_set(x_4, 0, x_3);
+lean_ctor_set(x_4, 1, x_2);
+return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_codeRate___boxed(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_codeRate(x_1);
+lean_dec_ref(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords(x_1);
+return x_2;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__1() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; uint8_t x_3; 
+x_1 = lean_unsigned_to_nat(4096u);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__0;
+x_3 = lean_nat_dec_eq(x_2, x_1);
+return x_3;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1() {
+_start:
+{
+uint8_t x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__1;
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords(x_1);
+return x_2;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__1() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; uint8_t x_3; 
+x_1 = lean_unsigned_to_nat(729u);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__0;
+x_3 = lean_nat_dec_eq(x_2, x_1);
+return x_3;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1() {
+_start:
+{
+uint8_t x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__1;
+return x_1;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_totalCodewords(x_1);
+return x_2;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__1() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; uint8_t x_3; 
+x_1 = lean_unsigned_to_nat(65536u);
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__0;
+x_3 = lean_nat_dec_eq(x_2, x_1);
+return x_3;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1() {
+_start:
+{
+uint8_t x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__1;
+return x_1;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1___closed__0() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual(x_1);
+return x_2;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1() {
+_start:
+{
+uint8_t x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1___closed__0;
+return x_1;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1___closed__0() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual(x_1);
+return x_2;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1() {
+_start:
+{
+uint8_t x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1___closed__0;
+return x_1;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1___closed__0() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams;
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_isSelfDual(x_1);
+return x_2;
+}
+}
+static uint8_t _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1() {
+_start:
+{
+uint8_t x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1___closed__0;
+return x_1;
+}
+}
+LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_frontierModeFromWeight(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; uint8_t x_4; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_midWeight(x_1);
+x_4 = lean_nat_dec_lt(x_2, x_3);
+lean_dec(x_3);
+if (x_4 == 0)
+{
+uint8_t x_5; 
+x_5 = 1;
+return x_5;
+}
+else
+{
+uint8_t x_6; 
+x_6 = 0;
+return x_6;
+}
+}
+}
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_frontierModeFromWeight___boxed(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+uint8_t x_3; lean_object* x_4; 
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_CodeParams_frontierModeFromWeight(x_1, x_2);
+lean_dec(x_2);
+lean_dec_ref(x_1);
+x_4 = lean_box(x_3);
+return x_4;
+}
+}
 lean_object* initialize_Init(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Analysis_SpecialFunctions_Log_Basic(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_Real_Basic(uint8_t builtin);
@@ -2826,6 +3781,90 @@ lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode__
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode___closed__0);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode();
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprFrontierMode);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__1();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__1);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__2 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__2();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__2);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__3 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__3();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__3);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__4 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__4();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__4);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__5 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__5();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__5);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__6 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__6();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__6);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__7 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__7();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__7);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__8 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__8();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__8);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__9 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__9();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__9);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__10 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__10();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__10);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__11 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__11();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__11);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__12 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__12();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__12);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__13 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__13();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__13);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__14 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__14();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__14);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__15 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__15();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__15);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__16 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__16();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__16);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__17 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__17();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__17);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__18 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__18();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__18);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__19 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__19();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__19);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__20 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__20();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__20);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__21 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__21();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__21);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__22 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__22();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__22);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__23 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__23();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__23);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__24 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__24();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams_repr___redArg___closed__24);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_instReprCodeParams);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1___closed__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__total___nativeDecide__1__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1___closed__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__total___nativeDecide__1__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1___closed__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__total___nativeDecide__1__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1___closed__0();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_golayCodeParams__selfDual___nativeDecide__1__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1___closed__0();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_fischerCodeParams__selfDual___nativeDecide__1__1();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1___closed__0();
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_GolayFrontier_cliffordCodeParams__selfDual___nativeDecide__1__1();
 return lean_io_result_mk_ok(lean_box(0));
 }
 #ifdef __cplusplus

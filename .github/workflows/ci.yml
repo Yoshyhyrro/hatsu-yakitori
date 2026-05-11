@@ -6,19 +6,23 @@ on:
       - 'README.md'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   translate:
     name: Translate README to Japanese
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         with:
           fetch-depth: 0
           persist-credentials: true
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.11'
 
@@ -30,27 +34,29 @@ jobs:
       - name: Run translation
         run: python .github/scripts/translate_readme.py
 
-      - name: Commit & push changes
-        id: commit
+      - name: Stage translated README
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          BRANCH="auto/translate-readme-${GITHUB_RUN_ID}"
-          git checkout -b "$BRANCH"
           git add README.ja.md || true
-          if git commit -m "Auto-translate README to Japanese" ; then
-            git push --set-upstream origin "$BRANCH"
-            echo "pushed=true" >> $GITHUB_OUTPUT
-          else
-            echo "pushed=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Create Pull Request
-        if: steps.commit.outputs.pushed == 'true'
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Auto-translate README (ja)"
-          body: "This PR adds/updates README.ja.md generated automatically by CI."
-          base: ${{ github.ref_name }}
-          head: "auto/translate-readme-${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --cached --quiet; then
+            echo "No translation changes to submit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="auto/translate-readme-${GITHUB_RUN_ID}"
+          git checkout -b "$BRANCH"
+          git commit -m "Auto-translate README to Japanese"
+          git push --set-upstream origin "$BRANCH"
+
+          gh pr create \
+            --title "Auto-translate README (ja)" \
+            --body "This PR adds/updates README.ja.md generated automatically by CI." \
+            --base "$GITHUB_REF_NAME" \
+            --head "$BRANCH"

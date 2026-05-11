@@ -1,5 +1,5 @@
 // Lean compiler output
-// Module: HatsuYakitori.carabiner
+// Module: HatsuYakitori.Carabiner
 // Imports: public import Init public import Mathlib.Data.Finset.Basic public import Mathlib.Data.Real.Basic public import Mathlib.Data.List.Basic public import HatsuYakitori.MachineConstants public import HatsuYakitori.BSDQuiver
 #include <lean/lean.h>
 #if defined(__clang__)
@@ -31,7 +31,6 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instRe
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__17;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_carabiner0___closed__3;
 uint8_t lp_mathlib_ZMod_decidableEq(lean_object*, lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__13;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayRoute___closed__3;
@@ -39,7 +38,6 @@ lean_object* lean_string_length(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__3;
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_recessionStepEffect(lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_carabiner8;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_len(lean_object*);
 lean_object* lp_mathlib_CommRing_toNonUnitalCommRing___redArg(lean_object*);
@@ -63,16 +61,17 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayT
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayGoppaInterface;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_carabiner0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_recessionStepEffect___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayRoute___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize(lean_object*);
 lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_orbitSize(uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_weights(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__4;
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_orbitSize___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayGoppaInterface___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_foldl___at___00HatsuYakitori_Carabiner_Route_totalPositions_spec__0(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter(lean_object*, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_complement(lean_object*);
 lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver_spaceConfigFromGolayWeight___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_mapTR_loop___at___00HatsuYakitori_Carabiner_Route_complement_spec__0(lean_object*, lean_object*);
@@ -87,12 +86,14 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instRe
 lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_instReprGolayWeight_repr(uint8_t, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayGoppaInterface___closed__3;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_complement___closed__0;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 lean_object* l_List_reverse___redArg(lean_object*);
 lean_object* lean_nat_sub(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_withPhase(uint8_t, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayRoute;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_List_mapTR_loop___at___00HatsuYakitori_Carabiner_Route_weights_spec__0(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__9;
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instDecidableEqCarabiner(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner___closed__0;
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__16;
@@ -104,7 +105,6 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instRe
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_withPhase___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Carabiner_spaceTag___boxed(lean_object*);
 lean_object* lean_nat_add(lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter(lean_object*, uint8_t, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_instReprCarabiner_repr___redArg___closed__5;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_Route_distanceLowerBound(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_carabiner0___closed__1;
@@ -856,7 +856,7 @@ x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner_golayRoute___closed_
 return x_1;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(uint8_t x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
 _start:
 {
 switch (x_1) {
@@ -918,29 +918,29 @@ return x_16;
 }
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6) {
 _start:
 {
 uint8_t x_7; lean_object* x_8; 
 x_7 = lean_unbox(x_1);
-x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(x_7, x_2, x_3, x_4, x_5, x_6);
+x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(x_7, x_2, x_3, x_4, x_5, x_6);
 return x_8;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter(lean_object* x_1, uint8_t x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter(lean_object* x_1, uint8_t x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
 _start:
 {
 lean_object* x_8; 
-x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(x_2, x_3, x_4, x_5, x_6, x_7);
+x_8 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___redArg(x_2, x_3, x_4, x_5, x_6, x_7);
 return x_8;
 }
 }
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
 _start:
 {
 uint8_t x_8; lean_object* x_9; 
 x_8 = lean_unbox(x_2);
-x_9 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter(x_1, x_8, x_3, x_4, x_5, x_6, x_7);
+x_9 = lp_hatsu_x2dyakitori_x2dproof___private_HatsuYakitori_Carabiner_0__HatsuYakitori_MachineConstants_instReprGolayWeight_repr_match__1_splitter(x_1, x_8, x_3, x_4, x_5, x_6, x_7);
 return x_9;
 }
 }
@@ -1354,7 +1354,7 @@ lean_object* initialize_mathlib_Mathlib_Data_List_Basic(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_BSDQuiver(uint8_t builtin);
 static bool _G_initialized = false;
-LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_carabiner(uint8_t builtin) {
+LEAN_EXPORT lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Carabiner(uint8_t builtin) {
 lean_object * res;
 if (_G_initialized) return lean_io_result_mk_ok(lean_box(0));
 _G_initialized = true;

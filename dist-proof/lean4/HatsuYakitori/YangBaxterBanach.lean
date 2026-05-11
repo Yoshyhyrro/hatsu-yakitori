@@ -298,7 +298,7 @@ theorem yb_trace_at_one_relates_bsd
   intro hyb
   -- Use the BSD Quiver theorem: Faithfulness ↔ BSD Conjecture (analytic = algebraic)
   -- The vanishing of the L-function implies analytic_rank > 0
-  have h_analytic : analytic_rank > 0 := by sorry
+  have h_analytic : HatsuYakitori.analytic_rank > 0 := by sorry
 
   -- Assume the BSD conjecture holds (via the faithful representation in BSDQuiver)
   have h_bsd := HatsuYakitori.BSDQuiver.bsd_faithful_iff_bsd_conjecture
@@ -333,7 +333,7 @@ structure BraidCoboundary (n : ℕ) (M : Type*) [AddCommGroup M] extends BraidCo
   in the corresponding BSD Quiver representation.
   We verify this by mapping the YB operator to the canonical signature representation.
 -/
-def braidCohomologyRank {d : ℕ} (n : ℕ) (yb : YangBaxterOperator d) : ℕ :=
+def braidCohomologyRank {d : ℕ} (_n : ℕ) (_yb : YangBaxterOperator d) : ℕ :=
   -- Use the canonical BSD representation where at_selmer is a vector space over ℝ
   let rep := HatsuYakitori.BSDQuiver.sig_to_representation
   -- The rank is the dimension of the Selmer vertex
@@ -341,16 +341,14 @@ def braidCohomologyRank {d : ℕ} (n : ℕ) (yb : YangBaxterOperator d) : ℕ :=
 
 theorem braid_cohomology_bounds_selmer
     (spiral : SpiralRotation)
-    (disc : Int) (hdisc : disc < 0)
-    (p : ℕ) (hp : Nat.Prime p) :
+    (_disc : Int) (_hdisc : _disc < 0)
+    (_p : ℕ) (_hp : Nat.Prime _p) :
     let u := spiralToSpectralParam spiral
     let yb := spectralRMatrix u
     braidCohomologyRank 24 yb ≤ 24 := by
   -- In sig_to_representation, at_selmer is ℝ, so its rank is 1.
   -- 1 ≤ 24 is trivial.
   simp [braidCohomologyRank, HatsuYakitori.BSDQuiver.sig_to_representation]
-  -- Module.rank ℝ ℝ is 1
-  norm_num
 
 -- ===================================================================
 -- § 11. Putting It Together: Pattern Matching Transition
@@ -361,7 +359,6 @@ structure YBComputeState where
   braid : BraidWord 24
   spectral : ℂ
   trace_acc : ℂ
-  deriving Repr
 
 inductive YBTransitionEffect
   | identity
@@ -433,8 +430,6 @@ theorem yb_height_consistency (w : GolayWeight) :
   · simp [golayWeightToBraid]
   · simp [golayWeightToBraid]
   · simp [golayWeightToBraid]
-    -- w24 is length 23, which is ≤ 24
-    norm_num
 
 theorem yb_orbit_trace_zero (spiral : SpiralRotation) :
     let weights : List GolayWeight := [.w0, .w8, .w12, .w16, .w24]
@@ -444,13 +439,13 @@ theorem yb_orbit_trace_zero (spiral : SpiralRotation) :
 
 theorem yb_rank_equals_analytic_rank
     (spiral : SpiralRotation)
-    (disc : Int) (hdisc : disc < 0)
-    (p : ℕ) (hp : Nat.Prime p) :
+    (_disc : Int) (_hdisc : _disc < 0)
+    (_p : ℕ) (_hp : Nat.Prime _p) :
     let u := spiralToSpectralParam spiral
     let yb := spectralRMatrix u
     let yb_rank := braidCohomologyRank 24 yb
     -- The cohomological rank (algebraic) equals the analytic rank via BSD Quiver
-    yb_rank = analytic_rank := by
+    yb_rank = HatsuYakitori.analytic_rank := by
   dsimp [braidCohomologyRank]
 
   -- The core assumption: The BSD Quiver representation is faithful if and only if

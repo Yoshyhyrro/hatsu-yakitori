@@ -1,8 +1,8 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["9b4a7f705e614da6.olean"],
-  "i": "51183be5fb1ef673.ilean",
+ {"o": ["ce75ccf74dbc3629.olean"],
+  "i": "bedd5df01ea84934.ilean",
   "c": "9104a6fc654b3e9c.c"},
  "log":
  [{"message":
@@ -32,7 +32,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\MachineConstants.lean",
-   "40aece5a499d63cc"],
+   "b8f4abe612513691"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "2a798d1ba0dab610"}
+ "depHash": "9dc9e6b05bce5cb4"}

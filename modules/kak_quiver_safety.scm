@@ -5,7 +5,15 @@
    estimate-quiver-speedup
    make-quiver-context
    quiver-context-steps
-   quiver-context-mode)
+   quiver-context-mode
+   ;; --- DirectedBanachQuiver.lean invariants ---
+   bsd-vertex-height-bound     ; §4: vertex → canonical height
+   bsd-arrow-pauli-phase       ; §7: arrow → Pauli phase ∈ {0,1,2,3}
+   arrow-fv-role               ; §9: arrow → frobenius | verschiebung
+   pauli-conj-weight           ; §2: Pauli conjugation on (re . im) weight
+   height->bsd-vertex          ; §6: real height → BSD vertex (discretisation)
+   quiver-banach-adjunction?   ; §6: round-trip identity check
+   discrete-picard-condition?) ; §9: phase-sum DPC check for arrow sequences
 
   (import scheme 
           (chicken base)
@@ -24,8 +32,118 @@
     (mode  quiver-context-mode))
 
   ;;; ============================================================
+  ;;; DirectedBanachQuiver.lean — BSD vertices, arrows, heights
+  ;;; §4: vertex height bounds
+  ;;; §7: arrow Pauli phases
+  ;;; §6: height discretisation + adjunction
+  ;;; §9: Discrete Picard Condition
+  ;;; ============================================================
+
+  ;; BSD vertex set: leech | padic | affine-dual | selmer
+  ;; §4: canonical Berkovich height bound for each vertex
+  (define (bsd-vertex-height-bound vertex)
+    "Height bound for each BSD vertex (DirectedBanachQuiver §4).
+     leech=0, padic=8/3, affine-dual=4, selmer=16/3."
+    (case vertex
+      ((leech)       0)
+      ((padic)       (/ 8.0 3.0))
+      ((affine-dual) 4.0)
+      ((selmer)      (/ 16.0 3.0))
+      (else (error "bsd-vertex-height-bound: unknown vertex" vertex))))
+
+  ;; §7: each BSD arrow maps to a Pauli phase ∈ {0,1,2,3}
+  ;;   tensor-bang    → 1 (X)  swap re↔im
+  ;;   oplus-padic    → 0 (I)  identity
+  ;;   project-selmer → 3 (Z)  complex conjugate
+  ;;   recover        → 2 (Y)  negate weight
+  (define (bsd-arrow-pauli-phase arrow)
+    "Pauli phase (0–3) for BSD arrow (DirectedBanachQuiver §7)."
+    (case arrow
+      ((tensor-bang)    1)
+      ((oplus-padic)    0)
+      ((project-selmer) 3)
+      ((recover)        2)
+      (else (error "bsd-arrow-pauli-phase: unknown arrow" arrow))))
+
+  ;; §9: Frobenius/Verschiebung role of each arrow
+  (define (arrow-fv-role arrow)
+    "Frobenius/Verschiebung role of arrow (DirectedBanachQuiver §9).
+     tensor-bang/oplus-padic = frobenius; project-selmer/recover = verschiebung."
+    (case arrow
+      ((tensor-bang oplus-padic) 'frobenius)
+      ((project-selmer recover)  'verschiebung)
+      (else (error "arrow-fv-role: unknown arrow" arrow))))
+
+  ;; §2: Pauli conjugation on weight represented as (re . im) pair.
+  ;;   phase 0 (I): identity
+  ;;   phase 1 (X): swap re↔im
+  ;;   phase 2 (Y): negate  (re,im) → (-re,-im)
+  ;;   phase 3 (Z): complex conjugate  (re,im) → (re,-im)
+  (define (pauli-conj-weight re im phase)
+    "Apply Pauli conjugation to weight (re,im) with given phase.
+     Returns (values new-re new-im).
+     DirectedBanachQuiver §2 / pauliConjWeight."
+    (case (modulo phase 4)
+      ((0) (values re im))
+      ((1) (values im re))
+      ((2) (values (- re) (- im)))
+      (else (values re (- im)))))
+
+  ;; §6: discretise real height to nearest BSD vertex
+  ;;   ≤ 4/3           → leech
+  ;;   4/3 < h ≤ 10/3  → padic
+  ;;   10/3 < h ≤ 14/3 → affine-dual
+  ;;   > 14/3          → selmer
+  (define (height->bsd-vertex h)
+    "Discretise real height to nearest BSD vertex (DirectedBanachQuiver §6)."
+    (cond
+      ((<= h (/ 4.0 3.0))  'leech)
+      ((<= h (/ 10.0 3.0)) 'padic)
+      ((<= h (/ 14.0 3.0)) 'affine-dual)
+      (else                 'selmer)))
+
+  ;; §6: round-trip adjunction: height->bsd-vertex ∘ bsd-vertex-height-bound = id
+  (define (quiver-banach-adjunction? vertex)
+    "Check the round-trip adjunction identity for VERTEX
+     (DirectedBanachQuiver theorem quiver_banach_adjunction)."
+    (eq? (height->bsd-vertex (bsd-vertex-height-bound vertex)) vertex))
+
+  ;; §9: Discrete Picard Condition (DPC)
+  ;;   For a sequence of arrows, the sum of Verschiebung phases ≡ Frobenius phase (mod 4).
+  ;;   The canonical instance: phase(recover)+phase(project-selmer) = phase(tensor-bang)
+  ;;   i.e. 2 + 3 = 5 ≡ 1 (mod 4).
+  (define (discrete-picard-condition? arrows)
+    "Return #t iff the arrow sequence ARROWS satisfies the Discrete Picard Condition.
+     Checks: sum of V-phases ≡ first F-phase (mod 4).
+     DirectedBanachQuiver §9, theorem discrete_picard_phase."
+    (let* ((v-phases (filter-map
+                      (lambda (a)
+                        (and (eq? (arrow-fv-role a) 'verschiebung)
+                             (bsd-arrow-pauli-phase a)))
+                      arrows))
+           (f-phases (filter-map
+                      (lambda (a)
+                        (and (eq? (arrow-fv-role a) 'frobenius)
+                             (> (bsd-arrow-pauli-phase a) 0)  ; skip identity
+                             (bsd-arrow-pauli-phase a)))
+                      arrows)))
+      (if (or (null? v-phases) (null? f-phases))
+          #t  ; vacuously true
+          (= (modulo (apply + v-phases) 4)
+             (car f-phases)))))
+
+  ;;; ============================================================
   ;;; Frontier Utilities
   ;;; ============================================================
+
+  (define (make-analysis-frontier mode nodes)
+    "Normalize a frontier representation for quiver analysis.
+     stack -> (stack . nodes)
+     queue -> (queue front-list . back-list) with initial back = ()."
+    (case mode
+      ((stack) (cons 'stack nodes))
+      ((queue) (cons 'queue (cons nodes '())))
+      (else (error "Unknown frontier mode" mode))))
 
   (define (frontier-to-list frontier)
     "Convert K-frontier format (mode . data) to list"
@@ -85,7 +203,7 @@
       ((dynkin-a) 16.0) ((dynkin-d) 8.0) ((affine-a) 4.0) (else 1.0)))
 
   (define (classify-quiver-type graph-fn representative-nodes)
-    (analyze-frontier-as-quiver (cons 'stack representative-nodes) graph-fn))
+    (analyze-frontier-as-quiver (make-analysis-frontier 'stack representative-nodes) graph-fn))
 
   ;;; ============================================================
   ;;; Physics Simulation Helper Functions
@@ -139,7 +257,7 @@
     (let ((max-steps (quiver-context-steps context))
           (mode (quiver-context-mode context)))
       
-      (let loop ((frontier (cons mode sources)) (step 0))
+      (let loop ((frontier (make-analysis-frontier mode sources)) (step 0))
         (if (or (>= step max-steps) (null? (cdr frontier)))
             grid
             (let* ((q-type (analyze-frontier-as-quiver frontier graph-fn))
@@ -151,6 +269,6 @@
                        (execute-synchronized-step! frontier graph-fn grid step context))
                       (else
                        (execute-sequential-step! frontier graph-fn grid step context)))))
-              (loop (cons mode next-nodes) (+ step 1))))))))
+                  (loop (make-analysis-frontier mode next-nodes) (+ step 1))))))))
 
  ;; end module

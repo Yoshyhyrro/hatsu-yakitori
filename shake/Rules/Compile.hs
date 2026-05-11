@@ -18,6 +18,7 @@ import Data.List (isInfixOf, isSuffixOf)
 
 import Chicken
 import Rules.StandardToplevel (extractDeclareUses, extractModuleDecl)
+import SourceIO (readSourceTextLossy)
 
 -- ============================================================
 -- Type-Safe Compilation Info
@@ -35,8 +36,8 @@ data CompileInfo (a :: ArtifactType) = CompileInfo
 
 setupCompileRules :: Rules ()
 setupCompileRules = do
-  "dist/unit_*/*.o" %> \out -> compileUnitRule out
-  "dist/obj_*/*.o" %> \out -> compileObjectRule out
+  ("dist/unit_*/*." ++ objectExtension) %> \out -> compileUnitRule out
+  ("dist/obj_*/*." ++ objectExtension) %> \out -> compileObjectRule out
 
 -- ============================================================
 -- Main Detection Logic
@@ -62,7 +63,7 @@ hasMainProcedure content =
 compileToUnit :: FilePath -> String -> FilePath -> Action ()
 compileToUnit src flags out = do
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
-  content <- readFile' src
+  content <- liftIO $ readSourceTextLossy src
   
   let usesDeps = extractDeclareUses content
   let moduleName = extractModuleDecl content
@@ -93,7 +94,7 @@ compileUnit :: FilePath -> String -> Action (CompileInfo 'Unit)
 compileUnit src flags = do
   let baseName = takeBaseName (dropExtension src)
   let outDir = "dist" </> "unit_default"
-  let out = outDir </> baseName <.> "o"
+  let out = outDir </> baseName <.> objectExtension
   
   need [src]
   compileToUnit src flags out
@@ -108,12 +109,12 @@ compileObject :: FilePath -> String -> Action (CompileInfo 'Obj)
 compileObject src flags = do
   let baseName = takeBaseName (dropExtension src)
   let outDir = "dist" </> "obj_default"
-  let out = outDir </> baseName <.> "o"
+  let out = outDir </> baseName <.> objectExtension
   
   need [src]
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
 
-  content <- readFile' src
+  content <- liftIO $ readSourceTextLossy src
   let usesDeps = extractDeclareUses content
   let usesFlags = concatMap (\d -> ["-uses", d]) usesDeps
   
@@ -164,7 +165,7 @@ compileUnitRule out = do
       need [src]
       liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
       
-      content <- readFile' src
+      content <- liftIO $ readSourceTextLossy src
       let usesDeps = extractDeclareUses content
       let moduleName = extractModuleDecl content
       let unitName = case moduleName of
@@ -196,7 +197,7 @@ compileObjectRule out = do
       need [src]
       liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
       
-      content <- readFile' src
+      content <- liftIO $ readSourceTextLossy src
       let usesDeps = extractDeclareUses content
       let isMain = isMainFile src || hasMainProcedure content
       

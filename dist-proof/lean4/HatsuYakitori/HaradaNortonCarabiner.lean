@@ -23,7 +23,7 @@
 
   Why MZV instead of Pontryagin:
   - Pontryagin duality lives in the additive world (Fourier on LCA groups).
-    The log-link (IUT) goes  乗法 →(log)→ 加法  and Pontryagin cannot see
+    The log-link (IUT) goes multiplicative →(log)→ additive and Pontryagin cannot see
     this transition.
   - MZV duality is defined by **iterated integrals** (Chen integrals):
         ζ(k₁,...,kᵣ) = ∫_{1>t₁>⋯>tₙ>0} ω_{a₁}(t₁)⋯ωₐₙ(tₙ)
@@ -57,7 +57,7 @@
   finite MZV duality theorem.
 
   IUT connection:
-  IUT's log-link performs  乗法的構造 →(log)→ 加法的構造.
+  IUT's log-link performs multiplicative structure →(log)→ additive structure.
   MZV iterated integrals (Chen integrals) naturally encode this:
   the multiplicative differential ω₁ = dt/t and the additive
   differential ω₀ = dt/(1−t) alternate in the integral, bridging
@@ -1022,7 +1022,7 @@ section ChenIntegrals
 /-!
 ### The log-link via Chen Integrals
 
-IUT's log-link:  乗法的構造 →(log)→ 加法的構造
+IUT's log-link: multiplicative structure →(log)→ additive structure
 
 In Chen's iterated integral framework:
     ζ(k₁,...,kᵣ) = ∫_{1>t₁>⋯>tₙ>0} ω_{a₁}(t₁)⋯ω_{aₙ}(tₙ)

@@ -10,7 +10,7 @@ synopsis:       Shake-based build system for Chicken Scheme project
 description:    Polysemy + Shake + Chicken Scheme integration
 homepage:       https://github.com/Yoshyhyrro/hatsu-yakitori#readme
 bug-reports:    https://github.com/Yoshyhyrro/hatsu-yakitori/issues
-author:         Your Name
+author:         Yoshihiro Hasegawa
 maintainer:     je-suis-1oeuf-devautour@proton.me
 license:        BSD3
 license-file:   LICENSE
@@ -27,10 +27,12 @@ executable shake
       Clean
       Pipeline
       Salmonella
+      SourceIO
       Rules.Compile
       Rules.GC
       Rules.Link
       Rules.MEEP
+      Rules.Quadcopter
       Rules.StandardToplevel
       Rules.Proof.LLVM_IR
       Rules.Proof.Lean4

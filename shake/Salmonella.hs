@@ -21,6 +21,8 @@ import Control.Monad (forM, unless, when)
 import qualified System.Environment as Env
 import Data.List (nubBy, isInfixOf)
 import qualified System.Directory as Dir
+import Chicken (objectExtension)
+import SourceIO (readSourceTextLossy)
 
 -- ============================================================
 -- Configuration
@@ -69,7 +71,7 @@ hasModuleDefinition srcFile = do
     if not exists
         then return False
         else do
-            content <- readFile srcFile
+            content <- readSourceTextLossy srcFile
             return $ "(module" `isInfixOf` content
 
 -- ============================================================
@@ -111,7 +113,7 @@ runIsolatedModuleTests config modName moduleSource testSource deps = do
     -- Phase 1: Compile all dependencies
     depObjs <- forM deps $ \src -> do
         let unitName = takeBaseName (dropExtension src)
-        let objName = buildDir </> unitName <.> "o"
+        let objName = buildDir </> unitName <.> objectExtension
         
         liftIO $ Dir.createDirectoryIfMissing True (takeDirectory objName)
         

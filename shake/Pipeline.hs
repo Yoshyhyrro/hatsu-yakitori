@@ -281,7 +281,7 @@ compileCustomDeps projectRoot deps = do
   unless (null uniqueSrcs) $
     putInfo $ "[Pipeline] Pre-compiling custom modules: " ++ show uniqueSrcs
   forM_ uniqueSrcs $ \modSrc -> do
-    let modObj = modSrc -<.> "o"
+    let modObj = modSrc -<.> objectExtension
     let modUnit = takeBaseName modSrc
     liftIO $ Dir.createDirectoryIfMissing True (takeDirectory modObj)
     liftIO $ Proc.callProcess "csc"

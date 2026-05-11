@@ -69,6 +69,7 @@ import Polysemy.State
 
 import Chicken
 import Rules.StandardToplevel (extractAllDeps, classifyDependency, DependencyType(..))
+import SourceIO (readSourceTextLossy)
 
 -- ============================================================
 -- GC Strategy Types
@@ -304,7 +305,7 @@ executeSchemeGCAnalysis srcPath strat = do
 
 estimateTopologyFromSource :: FilePath -> IO TopologyMetrics
 estimateTopologyFromSource srcPath = do
-  content <- readFile srcPath
+  content <- readSourceTextLossy srcPath
   let lineCount = length (lines content)
   
   -- Simple heuristics based on code structure
@@ -380,7 +381,7 @@ instance NFData PerExeGC
 type instance RuleResult PerExeGC = ()
 
 gcObjPath :: FilePath -> FilePath
-gcObjPath exe = exe <.> "gc.o"
+gcObjPath exe = exe <.> ("gc." ++ objectExtension)
 
 gcRule :: Rules ()
 gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
@@ -421,7 +422,7 @@ gcRule = addBuiltinRule noLint noIdentity $ \(PerExeGC exe) _old _mode -> do
         need existingModules
         -- Compile dependencies
         forM_ existingModules $ \modSrc -> do
-          let modObj = modSrc -<.> "o"
+          let modObj = modSrc -<.> objectExtension
           let modUnit = takeBaseName modSrc
           liftIO $ Proc.callProcess "csc" 
             ["-c", "-o", modObj, "-unit", modUnit, "-J", modSrc]
