@@ -111,6 +111,72 @@
             (loop (+ i 1) (cons (cons neighbor 1.0) neighbors)))))))
 
 ;; ============================================================
+;; Proof-driven Cascade Graphs
+;; ============================================================
+
+(define non-happus-dim-profile '(20 10 0))
+(define non-happus-layer-widths '(20 10 1))
+(define inverse-heegner-dim-profile '(1 3 7 6))
+
+(define (profile-layer-starts layer-sizes)
+  (let loop ((remaining layer-sizes)
+             (offset 0)
+             (starts '()))
+    (if (null? remaining)
+        (reverse starts)
+        (loop (cdr remaining)
+              (+ offset (car remaining))
+              (cons offset starts)))))
+
+(define (profile-strictly-antitone? profile)
+  (or (null? profile)
+      (null? (cdr profile))
+      (and (> (car profile) (cadr profile))
+           (profile-strictly-antitone? (cdr profile)))))
+
+(define (layered-node->layer layer-sizes node-id)
+  (let loop ((remaining layer-sizes)
+             (layer 0)
+             (offset 0))
+    (cond
+      ((null? remaining)
+       (error "layered-node->layer: invalid node id" node-id))
+      ((< node-id (+ offset (car remaining)))
+       layer)
+      (else
+       (loop (cdr remaining)
+             (+ layer 1)
+             (+ offset (car remaining)))))))
+
+(define (make-layered-cascade-graph layer-sizes)
+  (let* ((starts (profile-layer-starts layer-sizes))
+         (layer-count (length layer-sizes)))
+    (lambda (node-id)
+      (let* ((layer (layered-node->layer layer-sizes node-id))
+             (neighbors '()))
+        (define (append-layer-neighbors target-layer)
+          (let ((start (list-ref starts target-layer))
+                (size (list-ref layer-sizes target-layer)))
+            (do ((i 0 (+ i 1)))
+                ((= i size))
+              (set! neighbors
+                    (cons (cons (+ start i) 1.0) neighbors)))))
+        (when (> layer 0)
+          (append-layer-neighbors (- layer 1)))
+        (when (< layer (- layer-count 1))
+          (append-layer-neighbors (+ layer 1)))
+        neighbors))))
+
+(define (layered-cascade-distance layer-sizes node-a node-b)
+  (if (= node-a node-b)
+      0
+      (let ((layer-a (layered-node->layer layer-sizes node-a))
+            (layer-b (layered-node->layer layer-sizes node-b)))
+        (if (= layer-a layer-b)
+            2
+            (abs (- layer-a layer-b))))))
+
+;; ============================================================
 ;; Oracle Functions
 ;; ============================================================
 
@@ -133,36 +199,50 @@
 (define (simple-sssp graph-fn start end)
   (let ((visited (make-hash-table))
         (dist (make-hash-table))
-        (queue '()))
+        (front '())
+        (back '()))
+
+    (define (queue-empty?)
+      (and (null? front) (null? back)))
+
+    (define (enqueue! node)
+      (set! back (cons node back)))
+
+    (define (dequeue!)
+      (when (null? front)
+        (set! front (reverse back))
+        (set! back '()))
+      (let ((node (car front)))
+        (set! front (cdr front))
+        node))
     
     (hash-table-set! dist start 0)
-    (set! queue (list start))
+    (set! front (list start))
     
     (let loop ()
-      (unless (null? queue)
-        (let ((current (car queue)))
-          (set! queue (cdr queue))
-          
-          (unless (hash-table-exists? visited current)
-            (hash-table-set! visited current #t)
-            
-            (let ((current-dist (hash-table-ref dist current))
-                  (neighbors (graph-fn current)))
-              
-              (for-each
-               (lambda (edge)
-                 (let ((neighbor (car edge))
-                       (weight (cdr edge)))
-                   (let ((new-dist (+ current-dist weight)))
-                     (when (or (not (hash-table-exists? dist neighbor))
-                              (< new-dist (hash-table-ref dist neighbor)))
-                       (hash-table-set! dist neighbor new-dist)
-                       (set! queue (append queue (list neighbor)))))))
-               neighbors)))
-          
-          (loop))))
-    
-    (hash-table-ref/default dist end +inf.0)))
+      (if (queue-empty?)
+          (hash-table-ref/default dist end +inf.0)
+          (let ((current (dequeue!)))
+            (if (hash-table-exists? visited current)
+                (loop)
+                (begin
+                  (hash-table-set! visited current #t)
+                  (if (= current end)
+                      (hash-table-ref dist current)
+                      (begin
+                        (let ((current-dist (hash-table-ref dist current))
+                              (neighbors (graph-fn current)))
+                          (for-each
+                           (lambda (edge)
+                             (let ((neighbor (car edge))
+                                   (weight (cdr edge)))
+                               (let ((new-dist (+ current-dist weight)))
+                                 (when (or (not (hash-table-exists? dist neighbor))
+                                          (< new-dist (hash-table-ref dist neighbor)))
+                                   (hash-table-set! dist neighbor new-dist)
+                                   (enqueue! neighbor)))))
+                           neighbors))
+                        (loop)))))))))
 
 ;; ============================================================
 ;; Unit Tests
@@ -232,6 +312,61 @@
             (expected (hamming-dist start end)))
         (assert-equal dist expected "All bits flip distance is 5")))))
 
+(define (test-non-happus-cascade)
+  (printf "~%=== Non-Happus Cascade Tests ===~%")
+
+  (let* ((starts (profile-layer-starts non-happus-layer-widths))
+         (graph-fn (make-layered-cascade-graph non-happus-layer-widths))
+         (step0-node (list-ref starts 0))
+         (step1-node (list-ref starts 1))
+         (collapse-node (list-ref starts 2)))
+    (assert-true (profile-strictly-antitone? non-happus-dim-profile)
+                 "Non-Happus profile is strictly antitone")
+    (assert-equal (car non-happus-dim-profile) 20
+                  "Non-Happus step 0 dimension is 20")
+    (assert-equal (simple-sssp graph-fn step0-node step1-node)
+                  (layered-cascade-distance non-happus-layer-widths
+                                            step0-node
+                                            step1-node)
+                  "Non-Happus step 0 -> step 1 distance is 1")
+    (assert-equal (simple-sssp graph-fn step0-node collapse-node)
+                  (layered-cascade-distance non-happus-layer-widths
+                                            step0-node
+                                            collapse-node)
+                  "Non-Happus collapse sink distance is 2")
+    (assert-equal (simple-sssp graph-fn step0-node (+ step0-node 1))
+                  (layered-cascade-distance non-happus-layer-widths
+                                            step0-node
+                                            (+ step0-node 1))
+                  "Non-Happus same-layer reroute distance is 2")))
+
+(define (test-unknown-dual-cascade)
+  (printf "~%=== Unknown Dual Cascade Tests ===~%")
+
+  (let* ((starts (profile-layer-starts inverse-heegner-dim-profile))
+         (graph-fn (make-layered-cascade-graph inverse-heegner-dim-profile))
+         (kernel-node (list-ref starts 0))
+         (defect-node (list-ref starts 1))
+         (full-node (list-ref starts 2))
+         (quotient-node (list-ref starts 3)))
+    (assert-equal inverse-heegner-dim-profile '(1 3 7 6)
+                  "Unknown Dual stage profile matches 1-3-7-6")
+    (assert-equal (simple-sssp graph-fn kernel-node defect-node)
+                  (layered-cascade-distance inverse-heegner-dim-profile
+                                            kernel-node
+                                            defect-node)
+                  "Unknown Dual kernel -> defect distance is 1")
+    (assert-equal (simple-sssp graph-fn kernel-node quotient-node)
+                  (layered-cascade-distance inverse-heegner-dim-profile
+                                            kernel-node
+                                            quotient-node)
+                  "Unknown Dual kernel -> quotient distance is 3")
+    (assert-equal (simple-sssp graph-fn full-node (+ full-node 1))
+                  (layered-cascade-distance inverse-heegner-dim-profile
+                                            full-node
+                                            (+ full-node 1))
+                  "Unknown Dual same-layer reroute distance is 2")))
+
 ;; ============================================================
 ;; Main Test Runner
 ;; ============================================================
@@ -246,6 +381,8 @@
   (test-hamming-distance)
   (test-morton-grid-oracle)
   (test-hypercube-oracle)
+  (test-non-happus-cascade)
+  (test-unknown-dual-cascade)
   
   (printf "~%========================================~%")
   (printf "Test Summary~%")

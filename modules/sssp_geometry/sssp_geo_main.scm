@@ -92,6 +92,81 @@
               (loop (+ i 1) (cons (cons neighbor 1.0) neighbors)))))))
 
   ;; ============================================================
+  ;; Proof-driven Cascade Graphs
+  ;; ============================================================
+
+  (define non-happus-dim-profile '(20 10 0))
+  (define non-happus-layer-widths '(20 10 1))
+  (define inverse-heegner-dim-profile '(1 3 7 6))
+  (define petersen-vertex-count 10)
+  (define petersen-cycle-rank 6)
+
+  (define (profile-total-nodes layer-sizes)
+    (let loop ((remaining layer-sizes)
+               (total 0))
+      (if (null? remaining)
+          total
+          (loop (cdr remaining) (+ total (car remaining))))))
+
+  (define (profile-layer-starts layer-sizes)
+    (let loop ((remaining layer-sizes)
+               (offset 0)
+               (starts '()))
+      (if (null? remaining)
+          (reverse starts)
+          (loop (cdr remaining)
+                (+ offset (car remaining))
+                (cons offset starts)))))
+
+  (define (profile-strictly-antitone? profile)
+    (or (null? profile)
+        (null? (cdr profile))
+        (and (> (car profile) (cadr profile))
+             (profile-strictly-antitone? (cdr profile)))))
+
+  (define (layered-node->layer layer-sizes node-id)
+    (let loop ((remaining layer-sizes)
+               (layer 0)
+               (offset 0))
+      (cond
+        ((null? remaining)
+         (error "layered-node->layer: invalid node id" node-id))
+        ((< node-id (+ offset (car remaining)))
+         layer)
+        (else
+         (loop (cdr remaining)
+               (+ layer 1)
+               (+ offset (car remaining)))))))
+
+  (define (make-layered-cascade-graph layer-sizes)
+    (let* ((starts (profile-layer-starts layer-sizes))
+           (layer-count (length layer-sizes)))
+      (lambda (node-id)
+        (let* ((layer (layered-node->layer layer-sizes node-id))
+               (neighbors '()))
+          (define (append-layer-neighbors target-layer)
+            (let ((start (list-ref starts target-layer))
+                  (size (list-ref layer-sizes target-layer)))
+              (do ((i 0 (+ i 1)))
+                  ((= i size))
+                (set! neighbors
+                      (cons (cons (+ start i) 1.0) neighbors)))))
+          (when (> layer 0)
+            (append-layer-neighbors (- layer 1)))
+          (when (< layer (- layer-count 1))
+            (append-layer-neighbors (+ layer 1)))
+          neighbors))))
+
+  (define (layered-cascade-distance layer-sizes node-a node-b)
+    (if (= node-a node-b)
+        0
+        (let ((layer-a (layered-node->layer layer-sizes node-a))
+              (layer-b (layered-node->layer layer-sizes node-b)))
+          (if (= layer-a layer-b)
+              2
+              (abs (- layer-a layer-b))))))
+
+  ;; ============================================================
   ;; Oracle Functions (Ground Truth)
   ;; ============================================================
 
@@ -115,36 +190,202 @@
   (define (simple-bfs-sssp graph-fn start end)
     (let ((visited (make-hash-table))
           (dist (make-hash-table))
-          (queue '()))
+          (front '())
+          (back '()))
+
+      (define (queue-empty?)
+        (and (null? front) (null? back)))
+
+      (define (enqueue! node)
+        (set! back (cons node back)))
+
+      (define (dequeue!)
+        (when (null? front)
+          (set! front (reverse back))
+          (set! back '()))
+        (let ((node (car front)))
+          (set! front (cdr front))
+          node))
       
       (hash-table-set! dist start 0)
-      (set! queue (list start))
+      (set! front (list start))
       
       (let loop ()
-        (unless (null? queue)
-          (let ((current (car queue)))
-            (set! queue (cdr queue))
-            
-            (unless (hash-table-exists? visited current)
-              (hash-table-set! visited current #t)
-              
-              (let ((current-dist (hash-table-ref dist current))
-                    (neighbors (graph-fn current)))
-                
-                (for-each
-                 (lambda (edge)
-                   (let ((neighbor (car edge))
-                         (weight (cdr edge)))
-                     (let ((new-dist (+ current-dist weight)))
-                       (when (or (not (hash-table-exists? dist neighbor))
-                                (< new-dist (hash-table-ref dist neighbor)))
-                         (hash-table-set! dist neighbor new-dist)
-                         (set! queue (append queue (list neighbor)))))))
-                 neighbors)))
-            
-            (loop))))
-      
-      (hash-table-ref/default dist end +inf.0)))
+        (if (queue-empty?)
+            (hash-table-ref/default dist end +inf.0)
+            (let ((current (dequeue!)))
+              (if (hash-table-exists? visited current)
+                  (loop)
+                  (begin
+                    (hash-table-set! visited current #t)
+                    (if (= current end)
+                        (hash-table-ref dist current)
+                        (begin
+                          (let ((current-dist (hash-table-ref dist current))
+                                (neighbors (graph-fn current)))
+                            (for-each
+                             (lambda (edge)
+                               (let ((neighbor (car edge))
+                                     (weight (cdr edge)))
+                                 (let ((new-dist (+ current-dist weight)))
+                                   (when (or (not (hash-table-exists? dist neighbor))
+                                            (< new-dist (hash-table-ref dist neighbor)))
+                                     (hash-table-set! dist neighbor new-dist)
+                                     (enqueue! neighbor)))))
+                             neighbors))
+                          (loop)))))))))
+
+  (define (run-non-happus-test num-trials)
+    (printf "~%=== Non-Happus Cascade Test (~a trials) ===~%" num-trials)
+    (printf "  Stage profile: ~a~%" non-happus-dim-profile)
+    (let* ((graph-fn (make-layered-cascade-graph non-happus-layer-widths))
+           (starts (profile-layer-starts non-happus-layer-widths))
+           (step0-node (list-ref starts 0))
+           (step1-node (list-ref starts 1))
+           (collapse-node (list-ref starts 2))
+           (total-nodes (profile-total-nodes non-happus-layer-widths))
+           (passed 0)
+           (failed 0)
+           (fixed-checks 6))
+
+      (define (check-true label condition)
+        (if condition
+            (begin
+              (set! passed (+ passed 1))
+              (printf "  Check: ~a => PASS~%" label))
+            (begin
+              (set! failed (+ failed 1))
+              (printf "  Check: ~a => FAIL~%" label))))
+
+      (define (check-dist label start end)
+        (let* ((actual-dist (simple-bfs-sssp graph-fn start end))
+               (expected-dist (layered-cascade-distance non-happus-layer-widths
+                                                        start
+                                                        end)))
+          (if (= actual-dist expected-dist)
+              (begin
+                (set! passed (+ passed 1))
+                (printf "  Check: ~a => PASS (dist=~a)~%" label actual-dist))
+              (begin
+                (set! failed (+ failed 1))
+                (printf "  Check: ~a => FAIL~%" label)
+                (printf "    Start=~a, End=~a~%" start end)
+                (printf "    Expected=~a, Actual=~a~%"
+                        expected-dist actual-dist)))))
+
+      (check-true "20 -> 10 -> 0 is strictly antitone"
+                  (profile-strictly-antitone? non-happus-dim-profile))
+      (check-true "Jacobi dimension matches 2 * Petersen vertices"
+                  (= (car non-happus-dim-profile)
+                     (* 2 petersen-vertex-count)))
+      (check-true "Cycle rank differs from step 0 dimension"
+                  (not (= petersen-cycle-rank (car non-happus-dim-profile))))
+      (check-dist "Step 0 to step 1" step0-node step1-node)
+      (check-dist "Step 0 to collapse sink" step0-node collapse-node)
+      (check-dist "Same-layer reroute" step0-node (+ step0-node 1))
+
+      (do ((i 0 (+ i 1)))
+          ((= i num-trials))
+        (let* ((start (pseudo-random-integer total-nodes))
+               (end (pseudo-random-integer total-nodes))
+               (actual-dist (simple-bfs-sssp graph-fn start end))
+               (expected-dist (layered-cascade-distance non-happus-layer-widths
+                                                        start
+                                                        end)))
+          (if (= actual-dist expected-dist)
+              (begin
+                (set! passed (+ passed 1))
+                (printf "  Trial ~a/~a: PASS (dist=~a)~%"
+                        (+ i 1) num-trials actual-dist))
+              (begin
+                (set! failed (+ failed 1))
+                (printf "  Trial ~a/~a: FAIL~%" (+ i 1) num-trials)
+                (printf "    Start=~a, End=~a~%" start end)
+                (printf "    Expected=~a, Actual=~a~%"
+                        expected-dist actual-dist)))))
+
+      (printf "~%Results: ~a/~a passed, ~a/~a failed~%"
+              passed
+              (+ fixed-checks num-trials)
+              failed
+              (+ fixed-checks num-trials))
+      (= failed 0)))
+
+  (define (run-unknown-dual-test num-trials)
+    (printf "~%=== Unknown Dual Cascade Test (~a trials) ===~%" num-trials)
+    (printf "  Stage profile: ~a~%" inverse-heegner-dim-profile)
+    (let* ((graph-fn (make-layered-cascade-graph inverse-heegner-dim-profile))
+           (starts (profile-layer-starts inverse-heegner-dim-profile))
+           (kernel-node (list-ref starts 0))
+           (defect-node (list-ref starts 1))
+           (full-node (list-ref starts 2))
+           (quotient-node (list-ref starts 3))
+           (total-nodes (profile-total-nodes inverse-heegner-dim-profile))
+           (passed 0)
+           (failed 0)
+           (fixed-checks 6))
+
+      (define (check-true label condition)
+        (if condition
+            (begin
+              (set! passed (+ passed 1))
+              (printf "  Check: ~a => PASS~%" label))
+            (begin
+              (set! failed (+ failed 1))
+              (printf "  Check: ~a => FAIL~%" label))))
+
+      (define (check-dist label start end)
+        (let* ((actual-dist (simple-bfs-sssp graph-fn start end))
+               (expected-dist (layered-cascade-distance inverse-heegner-dim-profile
+                                                        start
+                                                        end)))
+          (if (= actual-dist expected-dist)
+              (begin
+                (set! passed (+ passed 1))
+                (printf "  Check: ~a => PASS (dist=~a)~%" label actual-dist))
+              (begin
+                (set! failed (+ failed 1))
+                (printf "  Check: ~a => FAIL~%" label)
+                (printf "    Start=~a, End=~a~%" start end)
+                (printf "    Expected=~a, Actual=~a~%"
+                        expected-dist actual-dist)))))
+
+      (check-true "Kernel stage has dimension 1"
+                  (= (car inverse-heegner-dim-profile) 1))
+      (check-true "Defect stage has dimension 3"
+                  (= (cadr inverse-heegner-dim-profile) 3))
+      (check-true "Full stage expands to dimension 7"
+                  (= (caddr inverse-heegner-dim-profile) 7))
+      (check-dist "Kernel to defect" kernel-node defect-node)
+      (check-dist "Kernel to quotient" kernel-node quotient-node)
+      (check-dist "Same-layer reroute in full stage" full-node (+ full-node 1))
+
+      (do ((i 0 (+ i 1)))
+          ((= i num-trials))
+        (let* ((start (pseudo-random-integer total-nodes))
+               (end (pseudo-random-integer total-nodes))
+               (actual-dist (simple-bfs-sssp graph-fn start end))
+               (expected-dist (layered-cascade-distance inverse-heegner-dim-profile
+                                                        start
+                                                        end)))
+          (if (= actual-dist expected-dist)
+              (begin
+                (set! passed (+ passed 1))
+                (printf "  Trial ~a/~a: PASS (dist=~a)~%"
+                        (+ i 1) num-trials actual-dist))
+              (begin
+                (set! failed (+ failed 1))
+                (printf "  Trial ~a/~a: FAIL~%" (+ i 1) num-trials)
+                (printf "    Start=~a, End=~a~%" start end)
+                (printf "    Expected=~a, Actual=~a~%"
+                        expected-dist actual-dist)))))
+
+      (printf "~%Results: ~a/~a passed, ~a/~a failed~%"
+              passed
+              (+ fixed-checks num-trials)
+              failed
+              (+ fixed-checks num-trials))
+      (= failed 0)))
 
   ;; ============================================================
   ;; Test Runners
@@ -224,12 +465,16 @@
     (printf "Commands:~%")
     (printf "  test-morton <width> <height> [trials]  Run Morton grid test~%")
     (printf "  test-hypercube <bits> [trials]         Run hypercube test~%")
+    (printf "  test-non-happus [trials]               Run Non-Happus cascade test~%")
+    (printf "  test-unknown-dual [trials]             Run Unknown Dual cascade test~%")
     (printf "  test-all [trials]                      Run all tests~%")
     (printf "  info                                   Show module info~%")
     (printf "  help                                   Show this help~%~%")
     (printf "Examples:~%")
     (printf "  sssp_geometry_app test-morton 32 32 20~%")
     (printf "  sssp_geometry_app test-hypercube 10 20~%")
+    (printf "  sssp_geometry_app test-non-happus 20~%")
+    (printf "  sssp_geometry_app test-unknown-dual 20~%")
     (printf "  sssp_geometry_app test-all~%~%"))
 
   (define (show-info)
@@ -240,7 +485,9 @@
     (printf "~%Features:~%")
     (printf "  - Morton-encoded grid graphs (spatial locality)~%")
     (printf "  - Hypercube graphs (high connectivity)~%")
-    (printf "  - Oracle-based validation (Manhattan/Hamming distance)~%")
+    (printf "  - Non-Happus collapse graph (20 -> 10 -> 0)~%")
+    (printf "  - Unknown Dual cascade graph (1 -> 3 -> 7 -> 6)~%")
+    (printf "  - Oracle-based validation (Manhattan/Hamming/layered distance)~%")
     (printf "~%Dependencies:~%")
     (printf "  - machine-constants~%")
     (printf "  - golay-frontier~%~%"))
@@ -284,6 +531,20 @@
                                   10)))
                    (let ((result (run-hypercube-test bits trials)))
                      (exit (if result 0 1))))))
+
+                ((equal? command "test-non-happus")
+                 (let ((trials (if (> (length args) 1)
+                      (string->number (cadr args))
+                      10)))
+                   (let ((result (run-non-happus-test trials)))
+               (exit (if result 0 1)))))
+
+                ((equal? command "test-unknown-dual")
+                 (let ((trials (if (> (length args) 1)
+                      (string->number (cadr args))
+                      10)))
+                   (let ((result (run-unknown-dual-test trials)))
+               (exit (if result 0 1)))))
             
             ((equal? command "test-all")
              (let ((trials (if (> (length args) 1)
@@ -294,7 +555,9 @@
                (printf "╚════════════════════════════════════════╝~%")
                
                (let ((result1 (run-morton-grid-test 32 32 trials))
-                     (result2 (run-hypercube-test 10 trials)))
+                   (result2 (run-hypercube-test 10 trials))
+                   (result3 (run-non-happus-test trials))
+                   (result4 (run-unknown-dual-test trials)))
                  
                  (printf "~%╔════════════════════════════════════════╗~%")
                  (printf "║  Final Results                         ║~%")
@@ -303,9 +566,13 @@
                          (if result1 "PASS" "FAIL"))
                  (printf "║  Hypercube:    ~a                      ║~%"
                          (if result2 "PASS" "FAIL"))
+               (printf "║  Non-Happus:   ~a                      ║~%"
+                 (if result3 "PASS" "FAIL"))
+               (printf "║  Unknown Dual: ~a                      ║~%"
+                 (if result4 "PASS" "FAIL"))
                  (printf "╚════════════════════════════════════════╝~%")
                  
-                 (exit (if (and result1 result2) 0 1)))))
+               (exit (if (and result1 result2 result3 result4) 0 1)))))
             
             (else
              (printf "Unknown command: ~a~%" command)
