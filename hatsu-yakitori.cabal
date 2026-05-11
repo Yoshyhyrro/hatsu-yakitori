@@ -27,10 +27,12 @@ executable shake
       Clean
       Pipeline
       Salmonella
+      SourceIO
       Rules.Compile
       Rules.GC
       Rules.Link
       Rules.MEEP
+      Rules.Quadcopter
       Rules.StandardToplevel
       Rules.Proof.LLVM_IR
       Rules.Proof.Lean4

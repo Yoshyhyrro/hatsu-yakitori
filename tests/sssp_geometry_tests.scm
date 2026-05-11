@@ -6,10 +6,10 @@
 (import scheme)
 (import (chicken base)
         (chicken bitwise)
+  (chicken format)
         (chicken random)
-        
         srfi-1
-        srfi-69)
+  srfi-69)
 
 (import machine_constants)
 (import golay_frontier)
@@ -114,7 +114,7 @@
 ;; Proof-driven Cascade Graphs
 ;; ============================================================
 
-(define non-happus-dim-profile '(20 10 0))
+;; Shared Lean-derived invariant comes from core/golay_frontier.scm.
 (define non-happus-layer-widths '(20 10 1))
 (define inverse-heegner-dim-profile '(1 3 7 6))
 
@@ -127,12 +127,6 @@
         (loop (cdr remaining)
               (+ offset (car remaining))
               (cons offset starts)))))
-
-(define (profile-strictly-antitone? profile)
-  (or (null? profile)
-      (null? (cdr profile))
-      (and (> (car profile) (cadr profile))
-           (profile-strictly-antitone? (cdr profile)))))
 
 (define (layered-node->layer layer-sizes node-id)
   (let loop ((remaining layer-sizes)
@@ -242,7 +236,7 @@
                                    (hash-table-set! dist neighbor new-dist)
                                    (enqueue! neighbor)))))
                            neighbors))
-                                (loop))))))))))
+                        (loop))))))))))
 
 ;; ============================================================
 ;; Unit Tests

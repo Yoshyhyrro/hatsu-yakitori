@@ -104,115 +104,180 @@ The interaction loop delegates flow control to the Golay frontier:
 4. **Automatic adaptation**: Golay weight τ controls the exploration/exploitation balance
 
 
-## Quick Start
+## Installation
 
 ### Prerequisites
 
-- [Chicken Scheme 5.x](https://www.call-cc.org/)
-- [GHC + cabal-install](https://www.haskell.org/cabal/) (Shake build system)
+- [CHICKEN Scheme 5.x](https://www.call-cc.org/)
+- Eggs: `srfi-1`, `srfi-69`, `srfi-95`, `srfi-4`, `srfi-133`
+- Optional: [GHC + cabal-install](https://www.haskell.org/cabal/) for the Shake-based build pipeline
 
-### Building and Running
+The main public modules exposed by this egg are:
+
+- `machine_constants` — numeric constants, bit utilities, Galois-height helpers
+- `golay_frontier` — Golay[24,12] frontier control with Lean-derived invariants
+- `kak_decomposition` — KAK traversal core and Golay-controlled shortest-path wrapper
+- `kak_quiver_safety` — quiver classification, Pauli-phase logic, and DirectedBanachQuiver invariants
+- `kak_physics_core` — Yee-grid update kernel used by the quiver-safe physics loop
+
+### Build From a Source Checkout
+
+To validate that the egg builds from the current checkout without installing it:
 
 ```bash
-# Build everything (Haskell + Chicken)
+chicken-install -n
+```
+
+To install from the checkout into your configured CHICKEN repository:
+
+```bash
+chicken-install
+```
+
+### Windows Notes
+
+On Windows, the generated install/build scripts are executed via `cmd.exe`, so the runtime `PATH` must contain actual `gcc.exe` and `cp.exe` binaries. The following setup is known to work with this repository:
+
+```powershell
+$env:Path = 'C:\msys64\ucrt64\bin;C:\msys64\usr\bin;C:\tools\chicken\bin;' + $env:Path
+$env:CHICKEN_INSTALL_REPOSITORY = "$env:LOCALAPPDATA\chicken-user-repo\11"
+$env:CHICKEN_REPOSITORY_PATH = "$env:LOCALAPPDATA\chicken-user-repo\11;C:\tools\chicken\lib\chicken\11"
+
+chicken-install srfi-1 srfi-69 srfi-95 srfi-4 srfi-133 records
+chicken-install -n
+```
+
+## REPL Usage
+
+### 1. Golay Frontier and Lean Invariants
+
+The `golay_frontier` module is the main entry point for Golay-controlled traversal. It now enforces the Lean-derived weight classes `{0, 8, 12, 16, 24}` and the Non-Happus antitone profile `(20 10 0)`.
+
+```scheme
+(import golay_frontier)
+
+(define cfg (make-adaptive-frontier #x123))
+
+(print-golay-info cfg)
+(print-galois-interpretation cfg)
+
+(list (adaptive-frontier-mode cfg)
+      (adaptive-frontier-tau cfg)
+      (frontier-respects-witt-symmetry? cfg)
+      (golay-valid-weight? (adaptive-frontier-tau cfg))
+      (profile-strictly-antitone? non-happus-dim-profile))
+```
+
+Typical use:
+
+- `make-adaptive-frontier` chooses `stack` or `queue` from the encoded Golay word
+- `frontier-respects-witt-symmetry?` checks the Lean-derived invariants used in the current implementation
+- `print-galois-interpretation` prints the corresponding M24 orbit class and height interpretation
+
+### 2. KAK Shortest Path With Golay Control
+
+`KAK-apply` accepts either a hash table or an association list as a graph. `KAK-apply-golay` wraps it with a Golay-driven strategy selection.
+
+```scheme
+(import kak_decomposition srfi-69)
+
+(define city-graph
+  '((downtown (station . 2.5) (park . 1.8))
+    (station  (airport . 15.0) (harbor . 8.5))
+    (park     (harbor . 4.0))
+    (harbor   (airport . 3.0))
+    (airport)))
+
+(define-values (distances frontier-config tau)
+  (KAK-apply-golay city-graph '(downtown) 100.0 8 #b101010101010))
+
+(printf "mode=~a tau=~a airport=~a~%"
+        (adaptive-frontier-mode frontier-config)
+        tau
+        (hash-table-ref distances 'airport))
+```
+
+Use `KAK-apply` when the traversal mode is known up front, and `KAK-apply-golay` when you want the codeword to decide between DFS-like and BFS-like behavior.
+
+### 3. Quiver Safety and DirectedBanachQuiver Invariants
+
+The `kak_quiver_safety` module now mirrors the core constructions from `DirectedBanachQuiver.lean`.
+
+```scheme
+(import kak_quiver_safety)
+
+(list (bsd-vertex-height-bound 'padic)
+      (height->bsd-vertex 4.0)
+      (quiver-banach-adjunction? 'affine-dual)
+      (bsd-arrow-pauli-phase 'recover)
+      (arrow-fv-role 'project-selmer)
+      (discrete-picard-condition? '(recover project-selmer tensor-bang)))
+
+(call-with-values
+  (lambda () (pauli-conj-weight 3.0 1.0 3))
+  list)
+```
+
+This gives you:
+
+- `bsd-vertex-height-bound` — canonical heights for `leech`, `padic`, `affine-dual`, `selmer`
+- `height->bsd-vertex` — the discretization back to the nearest BSD vertex
+- `quiver-banach-adjunction?` — the round-trip identity from the Lean adjunction theorem
+- `discrete-picard-condition?` — the phase-level check corresponding to `recover + project_selmer ≡ tensor_bang (mod 4)`
+
+### 4. Quiver-Safe Physics Loop
+
+For Yee-grid stepping, combine `kak_physics_core` with `kak_quiver_safety`:
+
+```scheme
+(import kak_physics_core kak_quiver_safety)
+
+(define grid (make-yee-grid 8 8 0.01 1.0 1.0 1.0))
+(define ctx  (make-quiver-context 4 'queue))
+
+(define (graph-fn node)
+  (case node
+    ((0) '((1 . 1.0) (2 . 1.0)))
+    ((1) '((3 . 1.0)))
+    ((2) '((3 . 1.0)))
+    (else '())))
+
+(kak-apply-quiver-safe graph-fn grid '(0) ctx)
+```
+
+The current implementation is conservative: non-Dynkin-A regions fall back to the global field update path for safety.
+
+## Shake / Cabal Workflow
+
+If you are using the Haskell build pipeline rather than the egg directly:
+
+```bash
 cabal build
-
-# Run the FMM module via Shake
 cabal run shake -- fmm
-
-# Run extended tests for FMM
 cabal run shake -- --module=fmm test
-
-# Clean build artifacts
 cabal run shake -- clean
 ```
 
-### Chicken Scheme Quick Tutorial (cabal workflow)
+You can also populate the local build outputs used by the historical workflow:
 
 ```bash
-# Build Chicken artifacts and tools (populates ./dist with eggs)
 cabal run shake -- witt
-
-# Launch a Chicken REPL with the repo path wired in
-CHICKEN_REPOSITORY_PATH="$(pwd)/dist:$(pwd)/core" csi -quiet
 ```
 
-```scheme
-;; Inside the REPL
-(import witt_foundation)
+## Why Use This?
 
-(define ctx (make-witt-context))
-(define oct (octad-from-points '(0 1 2 3 4 5 6 7)))
+- **Adaptive control**: Golay codewords determine DFS/stack vs BFS/queue behavior
+- **Lean-backed invariants**: current frontier and quiver modules enforce Non-Happus, Golay/Witt, and DirectedBanachQuiver constraints
+- **Bounded traversal**: the KAK layer exposes explicit iteration bounds and frontier shape
+- **Flexible graph input**: shortest-path routines accept either hash tables or association lists
+- **Physics integration**: the same frontier logic can drive Yee-grid stepping and quiver-safe local updates
 
-(printf "octad weight=~a class=~a\n" (octad-weight oct) (octad-class oct))
-```
+## Performance Notes
 
-### Using KAK Decomposition for Large Graph Search
-
-The core `KAK-apply` function provides an adaptive shortest-path algorithm suitable for large-scale graphs:
-
-```scheme
-(import kak_decomposition)
-(import srfi-69) ; hash-tables
-
-;; Example: City road network with 1000+ nodes
-(define city-graph (make-hash-table))
-
-;; Add edges: node -> list of (neighbor . weight)
-(hash-table-set! city-graph 'downtown 
-  '((station . 2.5) (park . 1.8) (mall . 3.2)))
-(hash-table-set! city-graph 'station 
-  '((airport . 15.0) (harbor . 8.5)))
-;; ... (add more nodes)
-
-;; Run adaptive search
-(define distances 
-  (KAK-apply 
-    city-graph          ; graph structure
-    '(downtown)         ; starting point(s)
-    100.0               ; upper bound B
-    'queue              ; frontier mode: 'stack or 'queue
-    8))                 ; decomposition steps
-
-;; Query results
-(hash-table-ref distances 'airport)  ; => 17.5
-```
-
-### Golay-Controlled Adaptive Strategy
-
-For automatic strategy selection based on problem entropy:
-
-```scheme
-;; Let Golay code decide: Stack (DFS) or Queue (BFS)
-(define-values (distances tau frontier-config)
-  (KAK-apply-golay 
-    city-graph 
-    '(downtown)
-    100.0
-    8                   ; decomposition steps
-    #b101010101010))    ; 12-bit info: encodes strategy
-
-;; Check which strategy was used
-(printf "Strategy: ~a (Hamming weight τ=~a/24)~%"
-        (adaptive-frontier-mode frontier-config)
-        tau)
-
-;; Low entropy (τ < 12) → Stack/DFS → Deep local search
-;; High entropy (τ ≥ 12) → Queue/BFS → Broad global sweep
-```
-
-### Why Use This?
-
-- **Automatic decomposition**: Logarithmic scaling handles long-range interactions efficiently
-- **Adaptive control**: Golay codes choose optimal traversal strategy
-- **Bounded precision**: Explicit ε-convergence guarantees from Cartan levels
-- **Flexible**: Works with hash-tables or association lists
-
-### Performance Notes
-
-- Best for graphs with **varying edge weights** and **hierarchical structure**
-- `B` parameter controls the range: set to `max_edge_weight × 10` as a rule of thumb
-- More `steps` = finer granularity but slower (typically 5-10 is sufficient)
+- Best suited for graphs or grids with hierarchical locality
+- `B` in `KAK-apply` and `KAK-apply-golay` is currently a bound parameter, but the simplified implementation uses frontier control more heavily than metric pruning
+- `max-steps` usually lands in the `5` to `10` range for exploratory runs
+- `kak-apply-quiver-safe` currently prioritizes correctness over aggressive local specialization when the quiver type is not clearly Dynkin-A
 ## Future Direction
 
 The roadmap includes extending the `make-goppa-grid` generator from the unit circle (genus $g=0$) to **Elliptic Curves** (genus $g=1$). This will allow the framework to handle **Periodic Boundary Conditions (PBC)** naturally via Weierstrass $\wp$-functions, providing a unified algebraic alternative to Ewald summation.

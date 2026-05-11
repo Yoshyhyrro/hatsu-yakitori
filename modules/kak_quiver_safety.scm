@@ -136,6 +136,15 @@
   ;;; Frontier Utilities
   ;;; ============================================================
 
+  (define (make-analysis-frontier mode nodes)
+    "Normalize a frontier representation for quiver analysis.
+     stack -> (stack . nodes)
+     queue -> (queue front-list . back-list) with initial back = ()."
+    (case mode
+      ((stack) (cons 'stack nodes))
+      ((queue) (cons 'queue (cons nodes '())))
+      (else (error "Unknown frontier mode" mode))))
+
   (define (frontier-to-list frontier)
     "Convert K-frontier format (mode . data) to list"
     (let ((mode (car frontier))
@@ -194,7 +203,7 @@
       ((dynkin-a) 16.0) ((dynkin-d) 8.0) ((affine-a) 4.0) (else 1.0)))
 
   (define (classify-quiver-type graph-fn representative-nodes)
-    (analyze-frontier-as-quiver (cons 'stack representative-nodes) graph-fn))
+    (analyze-frontier-as-quiver (make-analysis-frontier 'stack representative-nodes) graph-fn))
 
   ;;; ============================================================
   ;;; Physics Simulation Helper Functions
@@ -248,7 +257,7 @@
     (let ((max-steps (quiver-context-steps context))
           (mode (quiver-context-mode context)))
       
-      (let loop ((frontier (cons mode sources)) (step 0))
+      (let loop ((frontier (make-analysis-frontier mode sources)) (step 0))
         (if (or (>= step max-steps) (null? (cdr frontier)))
             grid
             (let* ((q-type (analyze-frontier-as-quiver frontier graph-fn))
@@ -260,6 +269,6 @@
                        (execute-synchronized-step! frontier graph-fn grid step context))
                       (else
                        (execute-sequential-step! frontier graph-fn grid step context)))))
-              (loop (cons mode next-nodes) (+ step 1))))))))
+                  (loop (make-analysis-frontier mode next-nodes) (+ step 1))))))))
 
  ;; end module
