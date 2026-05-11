@@ -39,11 +39,24 @@ jobs:
           git add README.ja.md || true
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Auto-translate README to Japanese"
-          title: "Auto-translate README (ja)"
-          body: "This PR adds/updates README.ja.md generated automatically by CI."
-          base: ${{ github.ref_name }}
-          branch: "auto/translate-readme-${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --cached --quiet; then
+            echo "No translation changes to submit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="auto/translate-readme-${GITHUB_RUN_ID}"
+          git checkout -b "$BRANCH"
+          git commit -m "Auto-translate README to Japanese"
+          git push --set-upstream origin "$BRANCH"
+
+          gh pr create \
+            --title "Auto-translate README (ja)" \
+            --body "This PR adds/updates README.ja.md generated automatically by CI." \
+            --base "$GITHUB_REF_NAME" \
+            --head "$BRANCH"
