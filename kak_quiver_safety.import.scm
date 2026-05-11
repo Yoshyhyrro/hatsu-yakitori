@@ -14,7 +14,18 @@
         (estimate-quiver-speedup . kak_quiver_safety#estimate-quiver-speedup)
         (make-quiver-context . kak_quiver_safety#make-quiver-context)
         (quiver-context-steps . kak_quiver_safety#quiver-context-steps)
-        (quiver-context-mode . kak_quiver_safety#quiver-context-mode))
+        (quiver-context-mode . kak_quiver_safety#quiver-context-mode)
+        (bsd-vertex-height-bound . kak_quiver_safety#bsd-vertex-height-bound)
+        (bsd-arrow-pauli-phase . kak_quiver_safety#bsd-arrow-pauli-phase)
+        (arrow-fv-role . kak_quiver_safety#arrow-fv-role)
+        (pauli-conj-weight . kak_quiver_safety#pauli-conj-weight)
+        (height->bsd-vertex . kak_quiver_safety#height->bsd-vertex)
+        (quiver-banach-adjunction?
+          .
+          kak_quiver_safety#quiver-banach-adjunction?)
+        (discrete-picard-condition?
+          .
+          kak_quiver_safety#discrete-picard-condition?))
       (scheme#list)
       (scheme#list))))
 

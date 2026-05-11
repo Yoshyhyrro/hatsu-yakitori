@@ -87,7 +87,7 @@
       ((0) (values re im))
       ((1) (values im re))
       ((2) (values (- re) (- im)))
-      ((3) (values re (- im)))))
+      (else (values re (- im)))))
 
   ;; §6: discretise real height to nearest BSD vertex
   ;;   ≤ 4/3           → leech
