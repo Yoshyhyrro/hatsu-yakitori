@@ -9,6 +9,7 @@ module Chicken
   , Artifact(..)
   , ArtifactKind(..)
   , artifactKind
+  , objectExtension
   , source
   , mkSource
   , mkObject
@@ -19,6 +20,7 @@ module Chicken
   ) where
 
 import Data.Typeable
+import System.Info (os)
 
 -- ============================================================
 -- Phantom Type for Artifact Kinds
@@ -86,6 +88,10 @@ mkExe path = Artifact path KindExe
 -- | Helper alias for mkSource
 source :: FilePath -> Artifact 'Src
 source = mkSource
+
+-- | Object-file extension varies by platform.
+objectExtension :: String
+objectExtension = if os == "mingw32" then "obj" else "o"
 
 -- ============================================================
 -- Runtime Introspection

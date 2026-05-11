@@ -242,7 +242,7 @@
                                    (hash-table-set! dist neighbor new-dist)
                                    (enqueue! neighbor)))))
                            neighbors))
-                        (loop)))))))))
+                                (loop))))))))))
 
 ;; ============================================================
 ;; Unit Tests

@@ -36,8 +36,8 @@ data CompileInfo (a :: ArtifactType) = CompileInfo
 
 setupCompileRules :: Rules ()
 setupCompileRules = do
-  "dist/unit_*/*.o" %> \out -> compileUnitRule out
-  "dist/obj_*/*.o" %> \out -> compileObjectRule out
+  ("dist/unit_*/*." ++ objectExtension) %> \out -> compileUnitRule out
+  ("dist/obj_*/*." ++ objectExtension) %> \out -> compileObjectRule out
 
 -- ============================================================
 -- Main Detection Logic
@@ -94,7 +94,7 @@ compileUnit :: FilePath -> String -> Action (CompileInfo 'Unit)
 compileUnit src flags = do
   let baseName = takeBaseName (dropExtension src)
   let outDir = "dist" </> "unit_default"
-  let out = outDir </> baseName <.> "o"
+  let out = outDir </> baseName <.> objectExtension
   
   need [src]
   compileToUnit src flags out
@@ -109,7 +109,7 @@ compileObject :: FilePath -> String -> Action (CompileInfo 'Obj)
 compileObject src flags = do
   let baseName = takeBaseName (dropExtension src)
   let outDir = "dist" </> "obj_default"
-  let out = outDir </> baseName <.> "o"
+  let out = outDir </> baseName <.> objectExtension
   
   need [src]
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)

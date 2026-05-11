@@ -1,14 +1,6 @@
 ;;; ============================================================
 ;;; modules/sssp_geometry/sssp_geo_main.scm
 ;;; ============================================================
-
-
-
-(include "machine_constants.scm")
-(include "golay_frontier.scm")
-(include "cartan_utils.scm")
-
-
 (module sssp_geo_main *
   
   (import scheme)
@@ -233,7 +225,7 @@
                                      (hash-table-set! dist neighbor new-dist)
                                      (enqueue! neighbor)))))
                              neighbors))
-                          (loop)))))))))
+                          (loop))))))))))
 
   (define (run-non-happus-test num-trials)
     (printf "~%=== Non-Happus Cascade Test (~a trials) ===~%" num-trials)
@@ -503,10 +495,10 @@
           (cond
             ((equal? command "help")
              (print-usage))
-            
+
             ((equal? command "info")
              (show-info))
-            
+
             ((equal? command "test-morton")
              (if (< (length args) 3)
                  (begin
@@ -519,7 +511,7 @@
                                   10)))
                    (let ((result (run-morton-grid-test width height trials)))
                      (exit (if result 0 1))))))
-            
+
             ((equal? command "test-hypercube")
              (if (< (length args) 2)
                  (begin
@@ -532,20 +524,20 @@
                    (let ((result (run-hypercube-test bits trials)))
                      (exit (if result 0 1))))))
 
-                ((equal? command "test-non-happus")
-                 (let ((trials (if (> (length args) 1)
-                      (string->number (cadr args))
-                      10)))
-                   (let ((result (run-non-happus-test trials)))
-               (exit (if result 0 1)))))
+            ((equal? command "test-non-happus")
+             (let ((trials (if (> (length args) 1)
+                            (string->number (cadr args))
+                            10)))
+              (let ((result (run-non-happus-test trials)))
+                (exit (if result 0 1)))))
 
-                ((equal? command "test-unknown-dual")
-                 (let ((trials (if (> (length args) 1)
-                      (string->number (cadr args))
-                      10)))
-                   (let ((result (run-unknown-dual-test trials)))
-               (exit (if result 0 1)))))
-            
+            ((equal? command "test-unknown-dual")
+             (let ((trials (if (> (length args) 1)
+                            (string->number (cadr args))
+                            10)))
+              (let ((result (run-unknown-dual-test trials)))
+                (exit (if result 0 1)))))
+
             ((equal? command "test-all")
              (let ((trials (if (> (length args) 1)
                               (string->number (cadr args))
@@ -553,12 +545,12 @@
                (printf "~%╔════════════════════════════════════════╗~%")
                (printf "║  SSSP Geometry Full Test Suite        ║~%")
                (printf "╚════════════════════════════════════════╝~%")
-               
+
                (let ((result1 (run-morton-grid-test 32 32 trials))
-                   (result2 (run-hypercube-test 10 trials))
-                   (result3 (run-non-happus-test trials))
-                   (result4 (run-unknown-dual-test trials)))
-                 
+                     (result2 (run-hypercube-test 10 trials))
+                     (result3 (run-non-happus-test trials))
+                     (result4 (run-unknown-dual-test trials)))
+
                  (printf "~%╔════════════════════════════════════════╗~%")
                  (printf "║  Final Results                         ║~%")
                  (printf "╠════════════════════════════════════════╣~%")
@@ -566,14 +558,14 @@
                          (if result1 "PASS" "FAIL"))
                  (printf "║  Hypercube:    ~a                      ║~%"
                          (if result2 "PASS" "FAIL"))
-               (printf "║  Non-Happus:   ~a                      ║~%"
-                 (if result3 "PASS" "FAIL"))
-               (printf "║  Unknown Dual: ~a                      ║~%"
-                 (if result4 "PASS" "FAIL"))
+                 (printf "║  Non-Happus:   ~a                      ║~%"
+                   (if result3 "PASS" "FAIL"))
+                 (printf "║  Unknown Dual: ~a                      ║~%"
+                   (if result4 "PASS" "FAIL"))
                  (printf "╚════════════════════════════════════════╝~%")
-                 
-               (exit (if (and result1 result2 result3 result4) 0 1)))))
-            
+
+                 (exit (if (and result1 result2 result3 result4) 0 1)))))
+
             (else
              (printf "Unknown command: ~a~%" command)
              (print-usage)
