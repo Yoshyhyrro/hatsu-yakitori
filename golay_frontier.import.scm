@@ -11,6 +11,11 @@
         (encode-golay24 . golay_frontier#encode-golay24)
         (decode-golay24 . golay_frontier#decode-golay24)
         (golay-weight . golay_frontier#golay-weight)
+        (golay-valid-weight? . golay_frontier#golay-valid-weight?)
+        (non-happus-dim-profile . golay_frontier#non-happus-dim-profile)
+        (profile-strictly-antitone?
+          .
+          golay_frontier#profile-strictly-antitone?)
         (golay-to-galois-height . golay_frontier#golay-to-galois-height)
         (galois-height-class . golay_frontier#galois-height-class)
         (codeword-to-octad . golay_frontier#codeword-to-octad)

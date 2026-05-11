@@ -20,8 +20,10 @@
    golay24-parity-check
    encode-golay24
    decode-golay24
-   golay-weight
-   
+   golay-weight   ;; --- Lean Invariants ---
+   golay-valid-weight?         ; {0,8,12,16,24} valid orbit classes
+   non-happus-dim-profile      ; antitone collapse (20 10 0)
+   profile-strictly-antitone?  ; antitone predicate   
    ;; --- Galois Height Functions ---
    golay-to-galois-height
    galois-height-class
@@ -81,6 +83,31 @@
           count
           (loop (arithmetic-shift n -1)
                 (+ count (bitwise-and n 1))))))
+
+  ;;; --------------------------------------------------------
+  ;;; Lean invariants (NonHappusMatroid.lean / UnknownDualExploration.lean)
+  ;;; --------------------------------------------------------
+
+  ;; Valid Golay/Witt weight classes: exactly {0, 8, 12, 16, 24}.
+  ;; Derived from NonHappus.lean: valid_golay_weights and
+  ;; Witt octad structure of the Golay[24,12] code.
+  (define (golay-valid-weight? w)
+    "Return #t iff w is a valid Golay/Witt Hamming weight class ∈ {0,8,12,16,24}."
+    (and (member w '(0 8 12 16 24)) #t))
+
+  ;; NonHappus antitone collapse invariant: dimension profile must be
+  ;; strictly decreasing 20 → 10 → 0, mirroring NonHappusMatroid.lean
+  ;; theorem antitone_collapse_20_10_0.
+  (define non-happus-dim-profile '(20 10 0))
+
+  (define (profile-strictly-antitone? profile)
+    "Return #t iff PROFILE is strictly decreasing at every step.
+     Encodes the NonHappus matroid antitone collapse invariant."
+    (let loop ((lst profile))
+      (cond
+        ((or (null? lst) (null? (cdr lst))) #t)
+        ((> (car lst) (cadr lst)) (loop (cdr lst)))
+        (else #f))))
 
   (define (encode-golay24 info-bits)
     "Encode 12-bit info into 24-bit Golay codeword.
@@ -196,19 +223,16 @@
      Returns: (orbit-id orbit-size orbit-name)"
     
     (let ((w (golay-weight codeword)))
+      ;; Lean invariant: weight must be in {0,8,12,16,24}.
+      ;; Codewords with other weights are not valid Golay orbit representatives.
+      (unless (golay-valid-weight? w)
+        (error "golay_frontier: codeword weight outside valid Golay orbit classes {0,8,12,16,24}" w))
       (cond
         ((= w 0)  (list 'orbit-1 1    'trivial))
         ((= w 8)  (list 'orbit-2 759  'octad))
         ((= w 12) (list 'orbit-3 2576 'dodecad))
         ((= w 16) (list 'orbit-4 759  'octad-complement))
-        ((= w 24) (list 'orbit-5 1    'dual-trivial))
-        (else     (list 'orbit-intermediate 
-                        (estimate-orbit-size w)
-                        'intermediate)))))
-
-  (define (estimate-orbit-size weight)
-    "Estimate M₂₄ orbit size from weight (Simplified approximation)."
-    (* weight 100))
+        ((= w 24) (list 'orbit-5 1    'dual-trivial)))))
 
   (define (galois-orbit-size codeword)
     "Get orbit size from Galois/M₂₄ perspective."
@@ -331,17 +355,32 @@
   ;;; ========================================================
 
   (define (frontier-respects-witt-symmetry? config)
-    "Verify: frontier configuration preserves Witt structure."
+    "Verify: frontier configuration preserves Witt structure.
+     Enforces three Lean-derived invariants:
+       1. Weight ∈ {0,8,12,16,24}  (valid Golay orbit classes)
+       2. Mode matches frontier-mode-from-golay (τ-consistency)
+       3. UnknownDual involution: encode(info) round-trips through upper 12 bits"
     (let* ((codeword (adaptive-frontier-codeword config))
            (tau (adaptive-frontier-tau config))
            (mode (adaptive-frontier-mode config))
            (h (adaptive-frontier-galois-height config))
-           
-           (tau-check (= tau (golay-weight codeword)))
+
+           ;; basic consistency
+           (tau-check    (= tau (golay-weight codeword)))
            (height-check (and (>= h 0.0) (<= h galois-height-bound)))
-           (mode-check (eq? mode (frontier-mode-from-golay tau))))
-      
-      (and tau-check height-check mode-check)))
+           (mode-check   (eq? mode (frontier-mode-from-golay tau)))
+
+           ;; Lean: valid Golay weight class {0,8,12,16,24}
+           (weight-class-check (golay-valid-weight? tau))
+
+           ;; Lean: UnknownDual involution — encode is injective on info-bits;
+           ;; the upper-12-bit projection of re-encoding the info portion
+           ;; must equal the original info-bits (negative-branch witness).
+           (info-bits       (arithmetic-shift codeword -12))
+           (recoded         (encode-golay24 info-bits))
+           (involution-check (= (arithmetic-shift recoded -12) info-bits)))
+
+      (and tau-check height-check mode-check weight-class-check involution-check)))
 
   ;;; ========================================================
   ;;; PART 5: Display / Debug (Enhanced)

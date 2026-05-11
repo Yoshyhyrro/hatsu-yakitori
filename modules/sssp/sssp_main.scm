@@ -3,7 +3,7 @@
 ;;; ---------------------------------------------------------------------------
 
 ;; Fix: Import necessary Chicken 5 modules.
-(module sssp_geo_main *
+(module sssp_main *
   (import scheme)
   (import (chicken base)
           (chicken format)
