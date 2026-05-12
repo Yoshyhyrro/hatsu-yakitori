@@ -4,6 +4,8 @@ dist/
 _build/
 _build_test/
 shake/_build/
+shake/Rules/Proof/SExpr.hs
+shake/Rules/Proof/Forth.hs
 .stack-work/
 salmonella-logs/
 salmonella.log
