@@ -372,6 +372,53 @@ theorem directSumPayload_terms (input : FmmInput) (step : FmmStep) :
       (step.cell.sourceIndices.filter (fun idx => idx ≠ input.targetIdx)).map (input.directSumTerm) := by
   rfl
 
+/-- Sum of all near-field contributions carried by one direct-sum payload. -/
+noncomputable def DirectSumPayload.totalContribution (payload : DirectSumPayload) : Potential :=
+  payload.terms.foldl (fun acc term => acc + term.contribution) 0
+
+/-- Apply one direct-sum payload to the accumulated potential while leaving the frontier untouched. -/
+noncomputable def FmmEvalState.applyDirectSum
+    (state : FmmEvalState) (payload : DirectSumPayload) : FmmEvalState :=
+  { state with totalPotential := state.totalPotential + payload.totalContribution }
+
+@[simp]
+theorem applyDirectSum_pendingLevels (state : FmmEvalState) (payload : DirectSumPayload) :
+    (state.applyDirectSum payload).pendingLevels = state.pendingLevels := by
+  rfl
+
+@[simp]
+theorem applyDirectSum_currentLevel? (state : FmmEvalState) (payload : DirectSumPayload) :
+    (state.applyDirectSum payload).currentLevel? = state.currentLevel? := by
+  rfl
+
+@[simp]
+theorem applyDirectSum_frontierMode (state : FmmEvalState) (payload : DirectSumPayload) :
+    (state.applyDirectSum payload).frontierMode = state.frontierMode := by
+  rfl
+
+@[simp]
+theorem applyDirectSum_golayWeight (state : FmmEvalState) (payload : DirectSumPayload) :
+    (state.applyDirectSum payload).golayWeight = state.golayWeight := by
+  rfl
+
+@[simp]
+theorem applyDirectSum_totalPotential (state : FmmEvalState) (payload : DirectSumPayload) :
+    (state.applyDirectSum payload).totalPotential = state.totalPotential + payload.totalContribution := by
+  rfl
+
+theorem applyDirectSum_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {payload : DirectSumPayload}
+    (hstate : FmmEvalState.WellFormed input state) :
+    FmmEvalState.WellFormed input (state.applyDirectSum payload) := by
+  rcases hstate with ⟨hmode, hweight, hpending, hcurrent⟩
+  constructor
+  · simpa [FmmEvalState.applyDirectSum] using hmode
+  constructor
+  · simpa [FmmEvalState.applyDirectSum] using hweight
+  constructor
+  · simpa [FmmEvalState.applyDirectSum] using hpending
+  · simpa [FmmEvalState.applyDirectSum] using hcurrent
+
 /-- Build one structural step by popping the frontier and attaching the
     corresponding hierarchy cell. -/
 noncomputable def FmmInput.step? (input : FmmInput) (state : FmmEvalState) : Option FmmStep :=
@@ -545,6 +592,54 @@ theorem directSumTransition_nextState_wellFormed
   | mk hstep _ _ =>
       exact step?_nextState_wellFormed hstate hstep
 
+/-- One near-field update that adds the direct-sum payload into the accumulated potential. -/
+inductive FmmDirectSumUpdate (input : FmmInput) (state : FmmEvalState) :
+    FmmStep → DirectSumPayload → FmmEvalState → Prop where
+  | mk {step : FmmStep} {payload : DirectSumPayload} {updatedState : FmmEvalState} :
+      FmmDirectSumTransition input state step payload →
+      updatedState = step.nextState.applyDirectSum payload →
+      FmmDirectSumUpdate input state step payload updatedState
+
+theorem step?_directSumUpdate
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step)
+    (hbranch : step.kernelBranch = .directSum) :
+    FmmDirectSumUpdate input state step (input.directSumPayload step)
+      (step.nextState.applyDirectSum (input.directSumPayload step)) := by
+  apply FmmDirectSumUpdate.mk
+  · exact step?_directSumTransition hstep hbranch
+  · rfl
+
+theorem directSumUpdate_totalPotential
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    {payload : DirectSumPayload} {updatedState : FmmEvalState}
+    (hupdate : FmmDirectSumUpdate input state step payload updatedState) :
+    updatedState.totalPotential = step.nextState.totalPotential + payload.totalContribution := by
+  cases hupdate with
+  | mk _ hupdated =>
+      rw [hupdated]
+      simp [FmmEvalState.applyDirectSum]
+
+theorem directSumUpdate_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    {payload : DirectSumPayload} {updatedState : FmmEvalState}
+    (hstate : FmmEvalState.WellFormed input state)
+    (hupdate : FmmDirectSumUpdate input state step payload updatedState) :
+    FmmEvalState.WellFormed input updatedState := by
+  cases hupdate with
+  | mk htrans hupdated =>
+      rw [hupdated]
+      exact applyDirectSum_wellFormed (directSumTransition_nextState_wellFormed hstate htrans)
+
+/-- Placeholder coefficient vectors sized by the requested truncation order. -/
+def zeroCoeffs (order : ℕ) : List Potential :=
+  List.replicate (order + 1) 0
+
+@[simp]
+theorem zeroCoeffs_length (order : ℕ) :
+    (zeroCoeffs order).length = order + 1 := by
+  simp [zeroCoeffs]
+
 /-- Far-field payload shell mirroring the runtime multipole setup data. -/
 structure MultipolePayload where
   sourceIndices : List ℕ
@@ -555,13 +650,25 @@ structure MultipolePayload where
   multipoleCoeffs : List Potential := []
   localCoeffs : List Potential := []
 
+/-- Structural invariants for the far-field payload shell. -/
+def MultipolePayload.WellFormed (payload : MultipolePayload) : Prop :=
+  payload.sourceIndices.length = payload.sourceCharges.length ∧
+  payload.multipoleCoeffs.length = payload.order + 1 ∧
+  payload.localCoeffs.length = payload.order + 1
+
+/-- Runtime far-field evaluation reads the zeroth local coefficient. -/
+noncomputable def MultipolePayload.leadingLocalCoeff (payload : MultipolePayload) : Potential :=
+  payload.localCoeffs.getD 0 0
+
 /-- Gather the far-field payload carried by one step. -/
 noncomputable def FmmInput.multipolePayload (input : FmmInput) (step : FmmStep) : MultipolePayload :=
   { sourceIndices := step.cell.sourceIndices
     sourceCharges := step.cell.sourceIndices.map input.chargeAt
     center := step.center
     order := input.config.order
-    targetPos := input.targetPos }
+    targetPos := input.targetPos
+    multipoleCoeffs := zeroCoeffs input.config.order
+    localCoeffs := zeroCoeffs input.config.order }
 
 @[simp]
 theorem multipolePayload_sourceIndices (input : FmmInput) (step : FmmStep) :
@@ -588,6 +695,29 @@ theorem multipolePayload_targetPos (input : FmmInput) (step : FmmStep) :
     (input.multipolePayload step).targetPos = input.targetPos := by
   rfl
 
+@[simp]
+theorem multipolePayload_multipoleCoeffs_length (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).multipoleCoeffs.length = input.config.order + 1 := by
+  simp [FmmInput.multipolePayload, zeroCoeffs]
+
+@[simp]
+theorem multipolePayload_localCoeffs_length (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).localCoeffs.length = input.config.order + 1 := by
+  simp [FmmInput.multipolePayload, zeroCoeffs]
+
+theorem multipolePayload_wellFormed (input : FmmInput) (step : FmmStep) :
+    MultipolePayload.WellFormed (input.multipolePayload step) := by
+  constructor
+  · simp [FmmInput.multipolePayload]
+  constructor
+  · simp [FmmInput.multipolePayload, zeroCoeffs]
+  · simp [FmmInput.multipolePayload, zeroCoeffs]
+
+@[simp]
+theorem multipolePayload_leadingLocalCoeff (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).leadingLocalCoeff = 0 := by
+  simp [MultipolePayload.leadingLocalCoeff, FmmInput.multipolePayload, zeroCoeffs]
+
 /-- Multipole branch equipped with the explicit far-field payload. -/
 inductive FmmMultipoleTransition (input : FmmInput) (state : FmmEvalState) :
     FmmStep → MultipolePayload → Prop where
@@ -612,6 +742,103 @@ theorem multipoleTransition_nextState_wellFormed
   cases htrans with
   | mk hstep _ _ =>
       exact step?_nextState_wellFormed hstate hstep
+
+theorem multipoleTransition_payload_wellFormed
+  {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
+  (htrans : FmmMultipoleTransition input state step payload) :
+  MultipolePayload.WellFormed payload := by
+  rcases htrans with ⟨hstep, _, hpayload⟩
+  simpa [hpayload] using (multipolePayload_wellFormed input step)
+
+/-- Apply one multipole payload to the accumulated potential via the zeroth local coefficient. -/
+noncomputable def FmmEvalState.applyMultipole
+    (state : FmmEvalState) (payload : MultipolePayload) : FmmEvalState :=
+  { state with totalPotential := state.totalPotential + payload.leadingLocalCoeff }
+
+@[simp]
+theorem applyMultipole_pendingLevels (state : FmmEvalState) (payload : MultipolePayload) :
+    (state.applyMultipole payload).pendingLevels = state.pendingLevels := by
+  rfl
+
+@[simp]
+theorem applyMultipole_currentLevel? (state : FmmEvalState) (payload : MultipolePayload) :
+    (state.applyMultipole payload).currentLevel? = state.currentLevel? := by
+  rfl
+
+@[simp]
+theorem applyMultipole_frontierMode (state : FmmEvalState) (payload : MultipolePayload) :
+    (state.applyMultipole payload).frontierMode = state.frontierMode := by
+  rfl
+
+@[simp]
+theorem applyMultipole_golayWeight (state : FmmEvalState) (payload : MultipolePayload) :
+    (state.applyMultipole payload).golayWeight = state.golayWeight := by
+  rfl
+
+@[simp]
+theorem applyMultipole_totalPotential (state : FmmEvalState) (payload : MultipolePayload) :
+    (state.applyMultipole payload).totalPotential = state.totalPotential + payload.leadingLocalCoeff := by
+  rfl
+
+theorem applyMultipole_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {payload : MultipolePayload}
+    (hstate : FmmEvalState.WellFormed input state) :
+    FmmEvalState.WellFormed input (state.applyMultipole payload) := by
+  rcases hstate with ⟨hmode, hweight, hpending, hcurrent⟩
+  constructor
+  · simpa [FmmEvalState.applyMultipole] using hmode
+  constructor
+  · simpa [FmmEvalState.applyMultipole] using hweight
+  constructor
+  · simpa [FmmEvalState.applyMultipole] using hpending
+  · simpa [FmmEvalState.applyMultipole] using hcurrent
+
+/-- One far-field update that adds the zeroth local coefficient into the accumulated potential. -/
+inductive FmmMultipoleUpdate (input : FmmInput) (state : FmmEvalState) :
+    FmmStep → MultipolePayload → FmmEvalState → Prop where
+  | mk {step : FmmStep} {payload : MultipolePayload} {updatedState : FmmEvalState} :
+      FmmMultipoleTransition input state step payload →
+      updatedState = step.nextState.applyMultipole payload →
+      FmmMultipoleUpdate input state step payload updatedState
+
+theorem step?_multipoleUpdate
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step)
+    (hbranch : step.kernelBranch = .multipole) :
+    FmmMultipoleUpdate input state step (input.multipolePayload step)
+      (step.nextState.applyMultipole (input.multipolePayload step)) := by
+  apply FmmMultipoleUpdate.mk
+  · exact step?_multipoleTransition hstep hbranch
+  · rfl
+
+theorem multipoleUpdate_totalPotential
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    {payload : MultipolePayload} {updatedState : FmmEvalState}
+    (hupdate : FmmMultipoleUpdate input state step payload updatedState) :
+    updatedState.totalPotential = step.nextState.totalPotential + payload.leadingLocalCoeff := by
+  cases hupdate with
+  | mk _ hupdated =>
+      rw [hupdated]
+      simp [FmmEvalState.applyMultipole]
+
+theorem multipoleUpdate_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    {payload : MultipolePayload} {updatedState : FmmEvalState}
+    (hstate : FmmEvalState.WellFormed input state)
+    (hupdate : FmmMultipoleUpdate input state step payload updatedState) :
+    FmmEvalState.WellFormed input updatedState := by
+  cases hupdate with
+  | mk htrans hupdated =>
+      rw [hupdated]
+      exact applyMultipole_wellFormed (multipoleTransition_nextState_wellFormed hstate htrans)
+
+theorem step?_multipoleUpdate_preservesTotalPotential
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+  (_hstep : input.step? state = some step)
+  (_hbranch : step.kernelBranch = .multipole) :
+    (step.nextState.applyMultipole (input.multipolePayload step)).totalPotential =
+      step.nextState.totalPotential := by
+  simp [FmmEvalState.applyMultipole, multipolePayload_leadingLocalCoeff]
 
 /-- Branch-specific semantic shell for one successful FMM step.
     Near-field steps expose a direct-sum branch, while far-field steps expose a multipole branch. -/
