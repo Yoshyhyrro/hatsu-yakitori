@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["406727ba778bc9b4.olean"],
-  "i": "b8f59716a301b828.ilean",
-  "c": "a4ec2b816cc27a32.c"},
+ {"o": ["1330715945085c6c.olean"],
+  "i": "e5cd89578540e296.ilean",
+  "c": "19321171690e43a9.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean c:\\Users\\tyuuw\\.elan\\toolchains\\leanprover--lean4---v4.28.0-rc1\\bin\\lean.exe C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\FMM.lean -o C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\FMM.olean -i C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\lib\\lean\\HatsuYakitori\\FMM.ilean -c C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\FMM.c --setup C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\.lake\\build\\ir\\HatsuYakitori\\FMM.setup.json --json",
@@ -28,7 +28,7 @@
   ["Lean 4.28.0, commit 3b0f2862196c6a8af9eb0025ee650252694013dd",
    "612345b87aa96642"],
   ["C:\\Users\\tyuuw\\Document\\hatsu-yakitori\\dist-proof\\lean4\\HatsuYakitori\\FMM.lean",
-   "5c1c5ef6016b5221"],
+   "1ebd7327c6827238"],
   ["options", "00000000000006bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "bb20da0f7a313dbf"}
+ "depHash": "2d942e986eae5305"}

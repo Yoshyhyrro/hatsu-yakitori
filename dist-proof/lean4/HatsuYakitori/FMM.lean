@@ -109,9 +109,62 @@ noncomputable def FmmInput.cellCenter (input : FmmInput) (cell : FmmCell) : Gopp
       let sum := cell.sourceIndices.foldl (fun acc idx => acc + input.grid.getD idx 0) 0
       sum / (cell.sourceIndices.length : ℂ)
 
+/-- Distance from the target point to a cell center. -/
+noncomputable def FmmInput.cellDistance (input : FmmInput) (cell : FmmCell) : ℝ :=
+  ‖input.targetPos - input.cellCenter cell‖
+
+@[simp]
+theorem cellDistance_nonneg (input : FmmInput) (cell : FmmCell) :
+    0 ≤ input.cellDistance cell := by
+  simp [FmmInput.cellDistance]
+
 /-- Near-field predicate matching the current runtime cutoff style. -/
 noncomputable def FmmInput.isNearField (input : FmmInput) (cell : FmmCell) : Prop :=
-  ‖input.targetPos - input.cellCenter cell‖ < input.config.admissibilityRadius
+  input.cellDistance cell < input.config.admissibilityRadius
+
+/-- Classification of one interaction cell in the current FMM step. -/
+inductive InteractionKind where
+  | nearField
+  | farField
+  deriving DecidableEq, Repr
+
+/-- Runtime branch selected from the geometric near/far classification. -/
+inductive KernelBranch where
+  | directSum
+  | multipole
+  deriving DecidableEq, Repr
+
+/-- Convert the geometric cutoff predicate into an explicit runtime tag. -/
+noncomputable def FmmInput.interactionKind (input : FmmInput) (cell : FmmCell) : InteractionKind := by
+  classical
+  exact if input.isNearField cell then .nearField else .farField
+
+@[simp]
+theorem interactionKind_eq_nearField_iff (input : FmmInput) (cell : FmmCell) :
+    input.interactionKind cell = .nearField ↔ input.isNearField cell := by
+  classical
+  simp [FmmInput.interactionKind]
+
+@[simp]
+theorem interactionKind_eq_farField_iff (input : FmmInput) (cell : FmmCell) :
+    input.interactionKind cell = .farField ↔ ¬ input.isNearField cell := by
+  classical
+  simp [FmmInput.interactionKind]
+
+/-- Near-field cells run the direct summation branch; far-field cells run the multipole branch. -/
+def InteractionKind.toKernelBranch : InteractionKind → KernelBranch
+  | .nearField => .directSum
+  | .farField => .multipole
+
+@[simp]
+theorem toKernelBranch_nearField :
+    InteractionKind.toKernelBranch .nearField = .directSum := by
+  rfl
+
+@[simp]
+theorem toKernelBranch_farField :
+    InteractionKind.toKernelBranch .farField = .multipole := by
+  rfl
 
 /-- Mutable portion of the evaluator state.
     `pendingLevels` models the frontier payload, while `frontierMode` and
@@ -256,17 +309,41 @@ def FmmInput.cellAt? (input : FmmInput) (level : ℕ) : Option FmmCell :=
 structure FmmStep where
   level : ℕ
   cell : FmmCell
+  center : GoppaPoint
+  distance : ℝ
+  interactionKind : InteractionKind
   nextState : FmmEvalState
+
+/-- Derived execution branch for one structural FMM step. -/
+def FmmStep.kernelBranch (step : FmmStep) : KernelBranch :=
+  step.interactionKind.toKernelBranch
+
+@[simp]
+theorem kernelBranch_eq_directSum_iff (step : FmmStep) :
+    step.kernelBranch = .directSum ↔ step.interactionKind = .nearField := by
+  cases h : step.interactionKind <;> simp [FmmStep.kernelBranch, InteractionKind.toKernelBranch, h]
+
+@[simp]
+theorem kernelBranch_eq_multipole_iff (step : FmmStep) :
+    step.kernelBranch = .multipole ↔ step.interactionKind = .farField := by
+  cases h : step.interactionKind <;> simp [FmmStep.kernelBranch, InteractionKind.toKernelBranch, h]
 
 /-- Build one structural step by popping the frontier and attaching the
     corresponding hierarchy cell. -/
-def FmmInput.step? (input : FmmInput) (state : FmmEvalState) : Option FmmStep :=
+noncomputable def FmmInput.step? (input : FmmInput) (state : FmmEvalState) : Option FmmStep :=
   match state.popLevel with
   | (none, _) => none
   | (some level, nextState) =>
       match input.cellAt? level with
       | none => none
-      | some cell => some { level, cell, nextState }
+      | some cell =>
+          some
+            { level
+              cell
+              center := input.cellCenter cell
+              distance := input.cellDistance cell
+              interactionKind := input.interactionKind cell
+              nextState }
 
 theorem step?_level_inBounds
     {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
@@ -306,6 +383,143 @@ theorem step?_cellAt?_eq_some
               simp [FmmInput.step?, hpop, hcell] at hstep
               rcases hstep with rfl
               exact hcell
+
+theorem step?_center_eq
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    step.center = input.cellCenter step.cell := by
+  cases hpop : state.popLevel with
+  | mk popped nextState =>
+      cases popped with
+      | none =>
+          simp [FmmInput.step?, hpop] at hstep
+      | some level =>
+          cases hcell : input.cellAt? level with
+          | none =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+          | some cell =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+              rcases hstep with rfl
+              rfl
+
+theorem step?_distance_eq
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    step.distance = input.cellDistance step.cell := by
+  cases hpop : state.popLevel with
+  | mk popped nextState =>
+      cases popped with
+      | none =>
+          simp [FmmInput.step?, hpop] at hstep
+      | some level =>
+          cases hcell : input.cellAt? level with
+          | none =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+          | some cell =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+              rcases hstep with rfl
+              rfl
+
+theorem step?_interactionKind_eq
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    step.interactionKind = input.interactionKind step.cell := by
+  cases hpop : state.popLevel with
+  | mk popped nextState =>
+      cases popped with
+      | none =>
+          simp [FmmInput.step?, hpop] at hstep
+      | some level =>
+          cases hcell : input.cellAt? level with
+          | none =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+          | some cell =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+              rcases hstep with rfl
+              rfl
+
+theorem step?_kernelBranch_eq_directSum_iff
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    step.kernelBranch = .directSum ↔ input.isNearField step.cell := by
+  rw [kernelBranch_eq_directSum_iff, step?_interactionKind_eq hstep, interactionKind_eq_nearField_iff]
+
+theorem step?_kernelBranch_eq_multipole_iff
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    step.kernelBranch = .multipole ↔ ¬ input.isNearField step.cell := by
+  rw [kernelBranch_eq_multipole_iff, step?_interactionKind_eq hstep, interactionKind_eq_farField_iff]
+
+theorem step?_nextState_eq_popLevel
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    step.nextState = state.popLevel.2 := by
+  cases hpop : state.popLevel with
+  | mk popped nextState =>
+      cases popped with
+      | none =>
+          simp [FmmInput.step?, hpop] at hstep
+      | some level =>
+          cases hcell : input.cellAt? level with
+          | none =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+          | some cell =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+              rcases hstep with rfl
+              rfl
+
+theorem step?_nextState_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstate : FmmEvalState.WellFormed input state)
+    (hstep : input.step? state = some step) :
+    FmmEvalState.WellFormed input step.nextState := by
+  rw [step?_nextState_eq_popLevel hstep]
+  exact popLevel_wellFormed hstate
+
+/-- Branch-specific semantic shell for one successful FMM step.
+    Near-field steps expose a direct-sum branch, while far-field steps expose a multipole branch. -/
+inductive FmmTransition (input : FmmInput) (state : FmmEvalState) : FmmStep → Prop where
+  | directSum {step : FmmStep} :
+      input.step? state = some step →
+      step.kernelBranch = .directSum →
+      step.distance < input.config.admissibilityRadius →
+      FmmTransition input state step
+  | multipole {step : FmmStep} :
+      input.step? state = some step →
+      step.kernelBranch = .multipole →
+      input.config.admissibilityRadius ≤ step.distance →
+      FmmTransition input state step
+
+theorem step?_transition
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    FmmTransition input state step := by
+  by_cases hnear : input.isNearField step.cell
+  · apply FmmTransition.directSum hstep
+    · exact (step?_kernelBranch_eq_directSum_iff hstep).2 hnear
+    · have hdist : input.cellDistance step.cell < input.config.admissibilityRadius := by
+        simpa [FmmInput.isNearField] using hnear
+      rw [step?_distance_eq hstep]
+      exact hdist
+  · apply FmmTransition.multipole hstep
+    · exact (step?_kernelBranch_eq_multipole_iff hstep).2 hnear
+    · have hfar : input.config.admissibilityRadius ≤ input.cellDistance step.cell := by
+        have hnot : ¬ input.cellDistance step.cell < input.config.admissibilityRadius := by
+          simpa [FmmInput.isNearField] using hnear
+        exact le_of_not_gt hnot
+      rw [step?_distance_eq hstep]
+      exact hfar
+
+theorem transition_nextState_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstate : FmmEvalState.WellFormed input state)
+    (htrans : FmmTransition input state step) :
+    FmmEvalState.WellFormed input step.nextState := by
+  cases htrans with
+  | directSum hstep _ _ =>
+      exact step?_nextState_wellFormed hstate hstep
+  | multipole hstep _ _ =>
+      exact step?_nextState_wellFormed hstate hstep
 
 /-- Initial state: every hierarchy level is pending, and no potential has been accumulated. -/
 def initialState (input : FmmInput) : FmmEvalState :=
