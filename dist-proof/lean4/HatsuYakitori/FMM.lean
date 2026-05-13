@@ -303,6 +303,10 @@ def FmmHierarchy.cellAt? : FmmHierarchy → ℕ → Option FmmCell
 def FmmInput.cellAt? (input : FmmInput) (level : ℕ) : Option FmmCell :=
   FmmHierarchy.cellAt? input.hierarchy level
 
+/-- Charge lookup aligned with the runtime `list-ref charges idx`. -/
+noncomputable def FmmInput.chargeAt (input : FmmInput) (idx : ℕ) : Potential :=
+  input.charges.getD idx 0
+
 /-- One structural FMM step after popping the frontier.
     This records which level was selected, which cell it corresponds to,
     and what the frontier state looks like afterwards. -/
@@ -327,6 +331,46 @@ theorem kernelBranch_eq_directSum_iff (step : FmmStep) :
 theorem kernelBranch_eq_multipole_iff (step : FmmStep) :
     step.kernelBranch = .multipole ↔ step.interactionKind = .farField := by
   cases h : step.interactionKind <;> simp [FmmStep.kernelBranch, InteractionKind.toKernelBranch, h]
+
+/-- One direct-sum term from the near-field runtime loop. -/
+structure DirectSumTerm where
+  sourceIdx : ℕ
+  sourcePos : GoppaPoint
+  diff : GoppaPoint
+  charge : Potential
+  contribution : Potential
+
+/-- Near-field payload shell extracted from one successful FMM step. -/
+structure DirectSumPayload where
+  targetPos : GoppaPoint
+  terms : List DirectSumTerm
+
+/-- Build one direct-sum term the same way the runtime loop does. -/
+noncomputable def FmmInput.directSumTerm (input : FmmInput) (sourceIdx : ℕ) : DirectSumTerm :=
+  let sourcePos := input.grid.getD sourceIdx 0
+  let diff := input.targetPos - sourcePos
+  let charge := input.chargeAt sourceIdx
+  let contribution :=
+    if sourceIdx = input.targetIdx then 0 else charge / diff
+  { sourceIdx, sourcePos, diff, charge, contribution }
+
+/-- Gather the near-field payload carried by one step. -/
+noncomputable def FmmInput.directSumPayload (input : FmmInput) (step : FmmStep) : DirectSumPayload :=
+  { targetPos := input.targetPos
+    terms :=
+      (step.cell.sourceIndices.filter (fun idx => idx ≠ input.targetIdx)).map
+        (input.directSumTerm) }
+
+@[simp]
+theorem directSumPayload_targetPos (input : FmmInput) (step : FmmStep) :
+    (input.directSumPayload step).targetPos = input.targetPos := by
+  rfl
+
+@[simp]
+theorem directSumPayload_terms (input : FmmInput) (step : FmmStep) :
+    (input.directSumPayload step).terms =
+      (step.cell.sourceIndices.filter (fun idx => idx ≠ input.targetIdx)).map (input.directSumTerm) := by
+  rfl
 
 /-- Build one structural step by popping the frontier and attaching the
     corresponding hierarchy cell. -/
@@ -475,6 +519,99 @@ theorem step?_nextState_wellFormed
     FmmEvalState.WellFormed input step.nextState := by
   rw [step?_nextState_eq_popLevel hstep]
   exact popLevel_wellFormed hstate
+
+/-- Direct-sum branch equipped with the explicit near-field payload. -/
+inductive FmmDirectSumTransition (input : FmmInput) (state : FmmEvalState) :
+    FmmStep → DirectSumPayload → Prop where
+  | mk {step : FmmStep} {payload : DirectSumPayload} :
+      input.step? state = some step →
+      step.kernelBranch = .directSum →
+      payload = input.directSumPayload step →
+      FmmDirectSumTransition input state step payload
+
+theorem step?_directSumTransition
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step)
+    (hbranch : step.kernelBranch = .directSum) :
+    FmmDirectSumTransition input state step (input.directSumPayload step) := by
+  exact .mk hstep hbranch rfl
+
+theorem directSumTransition_nextState_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : DirectSumPayload}
+    (hstate : FmmEvalState.WellFormed input state)
+    (htrans : FmmDirectSumTransition input state step payload) :
+    FmmEvalState.WellFormed input step.nextState := by
+  cases htrans with
+  | mk hstep _ _ =>
+      exact step?_nextState_wellFormed hstate hstep
+
+/-- Far-field payload shell mirroring the runtime multipole setup data. -/
+structure MultipolePayload where
+  sourceIndices : List ℕ
+  sourceCharges : List Potential
+  center : GoppaPoint
+  order : ℕ
+  targetPos : GoppaPoint
+  multipoleCoeffs : List Potential := []
+  localCoeffs : List Potential := []
+
+/-- Gather the far-field payload carried by one step. -/
+noncomputable def FmmInput.multipolePayload (input : FmmInput) (step : FmmStep) : MultipolePayload :=
+  { sourceIndices := step.cell.sourceIndices
+    sourceCharges := step.cell.sourceIndices.map input.chargeAt
+    center := step.center
+    order := input.config.order
+    targetPos := input.targetPos }
+
+@[simp]
+theorem multipolePayload_sourceIndices (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).sourceIndices = step.cell.sourceIndices := by
+  rfl
+
+@[simp]
+theorem multipolePayload_sourceCharges (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).sourceCharges = step.cell.sourceIndices.map input.chargeAt := by
+  rfl
+
+@[simp]
+theorem multipolePayload_center (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).center = step.center := by
+  rfl
+
+@[simp]
+theorem multipolePayload_order (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).order = input.config.order := by
+  rfl
+
+@[simp]
+theorem multipolePayload_targetPos (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).targetPos = input.targetPos := by
+  rfl
+
+/-- Multipole branch equipped with the explicit far-field payload. -/
+inductive FmmMultipoleTransition (input : FmmInput) (state : FmmEvalState) :
+    FmmStep → MultipolePayload → Prop where
+  | mk {step : FmmStep} {payload : MultipolePayload} :
+      input.step? state = some step →
+      step.kernelBranch = .multipole →
+      payload = input.multipolePayload step →
+      FmmMultipoleTransition input state step payload
+
+theorem step?_multipoleTransition
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step)
+    (hbranch : step.kernelBranch = .multipole) :
+    FmmMultipoleTransition input state step (input.multipolePayload step) := by
+  exact .mk hstep hbranch rfl
+
+theorem multipoleTransition_nextState_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
+    (hstate : FmmEvalState.WellFormed input state)
+    (htrans : FmmMultipoleTransition input state step payload) :
+    FmmEvalState.WellFormed input step.nextState := by
+  cases htrans with
+  | mk hstep _ _ =>
+      exact step?_nextState_wellFormed hstate hstep
 
 /-- Branch-specific semantic shell for one successful FMM step.
     Near-field steps expose a direct-sum branch, while far-field steps expose a multipole branch. -/
