@@ -130,6 +130,183 @@ def FmmEvalState.WellFormed (input : FmmInput) (state : FmmEvalState) : Prop :=
   (∀ level ∈ state.pendingLevels, level < input.hierarchy.length) ∧
   ∀ level, state.currentLevel? = some level → level < input.hierarchy.length
 
+/-- Insert one level into the frontier using the runtime discipline.
+    Stack mode pushes to the front; queue mode appends at the back. -/
+def FmmEvalState.pushLevel (state : FmmEvalState) (level : ℕ) : FmmEvalState :=
+  match state.frontierMode with
+  | .stack => { state with pendingLevels := level :: state.pendingLevels }
+  | .queue => { state with pendingLevels := state.pendingLevels ++ [level] }
+
+/-- Pop the next frontier level and remember it as the current level. -/
+def FmmEvalState.popLevel (state : FmmEvalState) : Option ℕ × FmmEvalState :=
+  match state.pendingLevels with
+  | [] => (none, { state with currentLevel? := none })
+  | level :: rest =>
+      (some level, { state with pendingLevels := rest, currentLevel? := some level })
+
+@[simp]
+theorem pushLevel_currentLevel? (state : FmmEvalState) (level : ℕ) :
+    (state.pushLevel level).currentLevel? = state.currentLevel? := by
+  cases hmode : state.frontierMode <;> simp [FmmEvalState.pushLevel, hmode]
+
+@[simp]
+theorem pushLevel_frontierMode (state : FmmEvalState) (level : ℕ) :
+    (state.pushLevel level).frontierMode = state.frontierMode := by
+  cases hmode : state.frontierMode <;> simp [FmmEvalState.pushLevel, hmode]
+
+@[simp]
+theorem pushLevel_golayWeight (state : FmmEvalState) (level : ℕ) :
+    (state.pushLevel level).golayWeight = state.golayWeight := by
+  cases hmode : state.frontierMode <;> simp [FmmEvalState.pushLevel, hmode]
+
+@[simp]
+theorem popLevel_frontierMode (state : FmmEvalState) :
+    state.popLevel.2.frontierMode = state.frontierMode := by
+  cases hpending : state.pendingLevels <;> simp [FmmEvalState.popLevel, hpending]
+
+@[simp]
+theorem popLevel_golayWeight (state : FmmEvalState) :
+    state.popLevel.2.golayWeight = state.golayWeight := by
+  cases hpending : state.pendingLevels <;> simp [FmmEvalState.popLevel, hpending]
+
+theorem pushLevel_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {level : ℕ}
+    (hstate : FmmEvalState.WellFormed input state)
+    (hlevel : level < input.hierarchy.length) :
+    FmmEvalState.WellFormed input (state.pushLevel level) := by
+  rcases hstate with ⟨hmode, hweight, hpending, hcurrent⟩
+  constructor
+  · rw [pushLevel_frontierMode]
+    exact hmode
+  constructor
+  · rw [pushLevel_golayWeight]
+    exact hweight
+  constructor
+  · intro level' hmem
+    cases hfrontier : state.frontierMode <;> simp [FmmEvalState.pushLevel, hfrontier] at hmem
+    · rcases hmem with rfl | hmem
+      · exact hlevel
+      · exact hpending _ hmem
+    · rcases hmem with hmem | hmem
+      · exact hpending _ hmem
+      · cases hmem
+        exact hlevel
+  · intro level' hcur
+    rw [pushLevel_currentLevel?] at hcur
+    exact hcurrent level' hcur
+
+theorem popLevel_popped_inBounds
+    {input : FmmInput} {state : FmmEvalState} {level : ℕ}
+    (hstate : FmmEvalState.WellFormed input state)
+    (hpop : state.popLevel.1 = some level) :
+    level < input.hierarchy.length := by
+  rcases hstate with ⟨_, _, hpending, _⟩
+  cases hlevels : state.pendingLevels with
+  | nil =>
+      simp [FmmEvalState.popLevel, hlevels] at hpop
+  | cons head tail =>
+      simp [FmmEvalState.popLevel, hlevels] at hpop
+      subst level
+      exact hpending head (by simp [hlevels])
+
+theorem popLevel_wellFormed
+    {input : FmmInput} {state : FmmEvalState}
+    (hstate : FmmEvalState.WellFormed input state) :
+    FmmEvalState.WellFormed input state.popLevel.2 := by
+  rcases hstate with ⟨hmode, hweight, hpending, hcurrent⟩
+  cases hlevels : state.pendingLevels with
+  | nil =>
+      constructor
+      · simpa [FmmEvalState.popLevel, hlevels] using hmode
+      constructor
+      · simpa [FmmEvalState.popLevel, hlevels] using hweight
+      constructor
+      · intro level hmem
+        simp [FmmEvalState.popLevel, hlevels] at hmem
+      · intro level hcur
+        simp [FmmEvalState.popLevel, hlevels] at hcur
+  | cons head tail =>
+      constructor
+      · simpa [FmmEvalState.popLevel, hlevels] using hmode
+      constructor
+      · simpa [FmmEvalState.popLevel, hlevels] using hweight
+      constructor
+      · intro level hmem
+        have hmem' : level ∈ state.pendingLevels := by
+          simpa [FmmEvalState.popLevel, hlevels] using List.mem_cons_of_mem head hmem
+        exact hpending level hmem'
+      · intro level hcur
+        simp [FmmEvalState.popLevel, hlevels] at hcur
+        subst level
+        exact hpending head (by simp [hlevels])
+
+/-- Lookup one cell in the hierarchy by traversal level. -/
+def FmmHierarchy.cellAt? : FmmHierarchy → ℕ → Option FmmCell
+  | [], _ => none
+  | cell :: _, 0 => some cell
+  | _ :: rest, level + 1 => FmmHierarchy.cellAt? rest level
+
+/-- Lookup the hierarchy cell attached to one traversal level. -/
+def FmmInput.cellAt? (input : FmmInput) (level : ℕ) : Option FmmCell :=
+  FmmHierarchy.cellAt? input.hierarchy level
+
+/-- One structural FMM step after popping the frontier.
+    This records which level was selected, which cell it corresponds to,
+    and what the frontier state looks like afterwards. -/
+structure FmmStep where
+  level : ℕ
+  cell : FmmCell
+  nextState : FmmEvalState
+
+/-- Build one structural step by popping the frontier and attaching the
+    corresponding hierarchy cell. -/
+def FmmInput.step? (input : FmmInput) (state : FmmEvalState) : Option FmmStep :=
+  match state.popLevel with
+  | (none, _) => none
+  | (some level, nextState) =>
+      match input.cellAt? level with
+      | none => none
+      | some cell => some { level, cell, nextState }
+
+theorem step?_level_inBounds
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstate : FmmEvalState.WellFormed input state)
+    (hstep : input.step? state = some step) :
+    step.level < input.hierarchy.length := by
+  cases hpop : state.popLevel with
+  | mk popped nextState =>
+      cases popped with
+      | none =>
+          simp [FmmInput.step?, hpop] at hstep
+      | some level =>
+          cases hcell : input.cellAt? level with
+          | none =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+          | some cell =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+              rcases hstep with rfl
+              have hpop' : state.popLevel.1 = some level := by
+                simp [hpop]
+              exact popLevel_popped_inBounds (state := state) hstate hpop'
+
+theorem step?_cellAt?_eq_some
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step) :
+    input.cellAt? step.level = some step.cell := by
+  cases hpop : state.popLevel with
+  | mk popped nextState =>
+      cases popped with
+      | none =>
+          simp [FmmInput.step?, hpop] at hstep
+      | some level =>
+          cases hcell : input.cellAt? level with
+          | none =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+          | some cell =>
+              simp [FmmInput.step?, hpop, hcell] at hstep
+              rcases hstep with rfl
+              exact hcell
+
 /-- Initial state: every hierarchy level is pending, and no potential has been accumulated. -/
 def initialState (input : FmmInput) : FmmEvalState :=
   { pendingLevels := List.range input.hierarchy.length
