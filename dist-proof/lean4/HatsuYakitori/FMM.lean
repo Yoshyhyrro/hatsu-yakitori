@@ -633,11 +633,11 @@ theorem directSumUpdate_wellFormed
 
 /-- Placeholder coefficient vectors sized by the requested truncation order. -/
 def zeroCoeffs (order : ℕ) : List Potential :=
-  List.replicate (order + 1) 0
+  List.replicate order 0
 
 @[simp]
 theorem zeroCoeffs_length (order : ℕ) :
-    (zeroCoeffs order).length = order + 1 := by
+    (zeroCoeffs order).length = order := by
   simp [zeroCoeffs]
 
 /-- Far-field payload shell mirroring the runtime multipole setup data. -/
@@ -653,8 +653,8 @@ structure MultipolePayload where
 /-- Structural invariants for the far-field payload shell. -/
 def MultipolePayload.WellFormed (payload : MultipolePayload) : Prop :=
   payload.sourceIndices.length = payload.sourceCharges.length ∧
-  payload.multipoleCoeffs.length = payload.order + 1 ∧
-  payload.localCoeffs.length = payload.order + 1
+  payload.multipoleCoeffs.length = payload.order ∧
+  payload.localCoeffs.length = payload.order
 
 /-- Runtime far-field evaluation reads the zeroth local coefficient. -/
 noncomputable def MultipolePayload.leadingLocalCoeff (payload : MultipolePayload) : Potential :=
@@ -697,12 +697,12 @@ theorem multipolePayload_targetPos (input : FmmInput) (step : FmmStep) :
 
 @[simp]
 theorem multipolePayload_multipoleCoeffs_length (input : FmmInput) (step : FmmStep) :
-    (input.multipolePayload step).multipoleCoeffs.length = input.config.order + 1 := by
+    (input.multipolePayload step).multipoleCoeffs.length = input.config.order := by
   simp [FmmInput.multipolePayload, zeroCoeffs]
 
 @[simp]
 theorem multipolePayload_localCoeffs_length (input : FmmInput) (step : FmmStep) :
-    (input.multipolePayload step).localCoeffs.length = input.config.order + 1 := by
+    (input.multipolePayload step).localCoeffs.length = input.config.order := by
   simp [FmmInput.multipolePayload, zeroCoeffs]
 
 theorem multipolePayload_wellFormed (input : FmmInput) (step : FmmStep) :
@@ -717,6 +717,26 @@ theorem multipolePayload_wellFormed (input : FmmInput) (step : FmmStep) :
 theorem multipolePayload_leadingLocalCoeff (input : FmmInput) (step : FmmStep) :
     (input.multipolePayload step).leadingLocalCoeff = 0 := by
   simp [MultipolePayload.leadingLocalCoeff, FmmInput.multipolePayload, zeroCoeffs]
+
+/-- Placeholder P2M coefficients matching the runtime vector length. -/
+noncomputable def FmmInput.p2mCoeffs (_input : FmmInput) (payload : MultipolePayload) :
+    List Potential :=
+  zeroCoeffs payload.order
+
+/-- Placeholder M2L coefficients matching the runtime vector length. -/
+noncomputable def FmmInput.m2lCoeffs (_input : FmmInput) (payload : MultipolePayload) :
+    List Potential :=
+  zeroCoeffs payload.order
+
+@[simp]
+theorem p2mCoeffs_length (input : FmmInput) (payload : MultipolePayload) :
+    (input.p2mCoeffs payload).length = payload.order := by
+  simp [FmmInput.p2mCoeffs, zeroCoeffs]
+
+@[simp]
+theorem m2lCoeffs_length (input : FmmInput) (payload : MultipolePayload) :
+    (input.m2lCoeffs payload).length = payload.order := by
+  simp [FmmInput.m2lCoeffs, zeroCoeffs]
 
 /-- Multipole branch equipped with the explicit far-field payload. -/
 inductive FmmMultipoleTransition (input : FmmInput) (state : FmmEvalState) :
@@ -749,6 +769,82 @@ theorem multipoleTransition_payload_wellFormed
   MultipolePayload.WellFormed payload := by
   rcases htrans with ⟨hstep, _, hpayload⟩
   simpa [hpayload] using (multipolePayload_wellFormed input step)
+
+/-- The P2M stage fixes the multipole coefficient vector attached to a far-field payload. -/
+inductive FmmP2MExpansion (input : FmmInput) (state : FmmEvalState) :
+    FmmStep → MultipolePayload → Prop where
+  | mk {step : FmmStep} {payload : MultipolePayload} :
+      FmmMultipoleTransition input state step payload →
+      payload.multipoleCoeffs = input.p2mCoeffs payload →
+      FmmP2MExpansion input state step payload
+
+theorem step?_p2mExpansion
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step)
+    (hbranch : step.kernelBranch = .multipole) :
+    FmmP2MExpansion input state step (input.multipolePayload step) := by
+  apply FmmP2MExpansion.mk
+  · exact step?_multipoleTransition hstep hbranch
+  · rfl
+
+theorem p2mExpansion_nextState_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
+    (hstate : FmmEvalState.WellFormed input state)
+    (hexp : FmmP2MExpansion input state step payload) :
+    FmmEvalState.WellFormed input step.nextState := by
+  cases hexp with
+  | mk htrans _ =>
+      exact multipoleTransition_nextState_wellFormed hstate htrans
+
+theorem p2mExpansion_payload_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
+    (hexp : FmmP2MExpansion input state step payload) :
+    MultipolePayload.WellFormed payload := by
+  cases hexp with
+  | mk htrans _ =>
+      exact multipoleTransition_payload_wellFormed htrans
+
+/-- The M2L stage fixes the translated local coefficient vector. -/
+inductive FmmM2LTranslation (input : FmmInput) (state : FmmEvalState) :
+    FmmStep → MultipolePayload → Prop where
+  | mk {step : FmmStep} {payload : MultipolePayload} :
+      FmmP2MExpansion input state step payload →
+      payload.localCoeffs = input.m2lCoeffs payload →
+      FmmM2LTranslation input state step payload
+
+theorem step?_m2lTranslation
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    (hstep : input.step? state = some step)
+    (hbranch : step.kernelBranch = .multipole) :
+    FmmM2LTranslation input state step (input.multipolePayload step) := by
+  apply FmmM2LTranslation.mk
+  · exact step?_p2mExpansion hstep hbranch
+  · rfl
+
+theorem m2lTranslation_nextState_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
+    (hstate : FmmEvalState.WellFormed input state)
+    (htrans : FmmM2LTranslation input state step payload) :
+    FmmEvalState.WellFormed input step.nextState := by
+  cases htrans with
+  | mk hexp _ =>
+      exact p2mExpansion_nextState_wellFormed hstate hexp
+
+theorem m2lTranslation_payload_wellFormed
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
+    (htrans : FmmM2LTranslation input state step payload) :
+    MultipolePayload.WellFormed payload := by
+  cases htrans with
+  | mk hexp _ =>
+      exact p2mExpansion_payload_wellFormed hexp
+
+theorem m2lTranslation_leadingLocalCoeff_zero
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
+    (htrans : FmmM2LTranslation input state step payload) :
+    payload.leadingLocalCoeff = 0 := by
+  cases htrans with
+  | mk hexp hlocal =>
+    simp [MultipolePayload.leadingLocalCoeff, hlocal, FmmInput.m2lCoeffs, zeroCoeffs]
 
 /-- Apply one multipole payload to the accumulated potential via the zeroth local coefficient. -/
 noncomputable def FmmEvalState.applyMultipole
@@ -797,7 +893,7 @@ theorem applyMultipole_wellFormed
 inductive FmmMultipoleUpdate (input : FmmInput) (state : FmmEvalState) :
     FmmStep → MultipolePayload → FmmEvalState → Prop where
   | mk {step : FmmStep} {payload : MultipolePayload} {updatedState : FmmEvalState} :
-      FmmMultipoleTransition input state step payload →
+      FmmM2LTranslation input state step payload →
       updatedState = step.nextState.applyMultipole payload →
       FmmMultipoleUpdate input state step payload updatedState
 
@@ -808,7 +904,7 @@ theorem step?_multipoleUpdate
     FmmMultipoleUpdate input state step (input.multipolePayload step)
       (step.nextState.applyMultipole (input.multipolePayload step)) := by
   apply FmmMultipoleUpdate.mk
-  · exact step?_multipoleTransition hstep hbranch
+  · exact step?_m2lTranslation hstep hbranch
   · rfl
 
 theorem multipoleUpdate_totalPotential
@@ -830,7 +926,18 @@ theorem multipoleUpdate_wellFormed
   cases hupdate with
   | mk htrans hupdated =>
       rw [hupdated]
-      exact applyMultipole_wellFormed (multipoleTransition_nextState_wellFormed hstate htrans)
+      exact applyMultipole_wellFormed (m2lTranslation_nextState_wellFormed hstate htrans)
+
+theorem multipoleUpdate_preservesTotalPotential
+    {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+    {payload : MultipolePayload} {updatedState : FmmEvalState}
+    (hupdate : FmmMultipoleUpdate input state step payload updatedState) :
+    updatedState.totalPotential = step.nextState.totalPotential := by
+  cases hupdate with
+  | mk htrans hupdated =>
+      rw [hupdated, FmmEvalState.applyMultipole]
+      have hzero := m2lTranslation_leadingLocalCoeff_zero htrans
+      simp [hzero]
 
 theorem step?_multipoleUpdate_preservesTotalPotential
     {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
@@ -838,7 +945,41 @@ theorem step?_multipoleUpdate_preservesTotalPotential
   (_hbranch : step.kernelBranch = .multipole) :
     (step.nextState.applyMultipole (input.multipolePayload step)).totalPotential =
       step.nextState.totalPotential := by
-  simp [FmmEvalState.applyMultipole, multipolePayload_leadingLocalCoeff]
+  exact multipoleUpdate_preservesTotalPotential (step?_multipoleUpdate _hstep _hbranch)
+
+/-- One executable FMM update after extracting a structural step. The payload is
+  hidden behind the branch-specific update relation. -/
+inductive FmmExecution (input : FmmInput) (state : FmmEvalState) :
+  FmmStep → FmmEvalState → Prop where
+  | directSum {step : FmmStep} {payload : DirectSumPayload} {updatedState : FmmEvalState} :
+    FmmDirectSumUpdate input state step payload updatedState →
+    FmmExecution input state step updatedState
+  | multipole {step : FmmStep} {payload : MultipolePayload} {updatedState : FmmEvalState} :
+    FmmMultipoleUpdate input state step payload updatedState →
+    FmmExecution input state step updatedState
+
+theorem step?_execution
+  {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+  (hstep : input.step? state = some step) :
+  ∃ updatedState, FmmExecution input state step updatedState := by
+  cases hbranch : step.kernelBranch with
+  | directSum =>
+    refine ⟨step.nextState.applyDirectSum (input.directSumPayload step), ?_⟩
+    exact .directSum (step?_directSumUpdate hstep hbranch)
+  | multipole =>
+    refine ⟨step.nextState.applyMultipole (input.multipolePayload step), ?_⟩
+    exact .multipole (step?_multipoleUpdate hstep hbranch)
+
+theorem execution_wellFormed
+  {input : FmmInput} {state updatedState : FmmEvalState} {step : FmmStep}
+  (hstate : FmmEvalState.WellFormed input state)
+  (hexec : FmmExecution input state step updatedState) :
+  FmmEvalState.WellFormed input updatedState := by
+  cases hexec with
+  | directSum hupdate =>
+    exact directSumUpdate_wellFormed hstate hupdate
+  | multipole hupdate =>
+    exact multipoleUpdate_wellFormed hstate hupdate
 
 /-- Branch-specific semantic shell for one successful FMM step.
     Near-field steps expose a direct-sum branch, while far-field steps expose a multipole branch. -/

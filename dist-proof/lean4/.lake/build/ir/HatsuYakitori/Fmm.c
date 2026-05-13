@@ -55,7 +55,6 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FmmHier
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_KernelBranch_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_ctorElim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_toCtorIdx(uint8_t);
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprInteractionKind_repr___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprFrontierMode_repr___boxed(lean_object*, lean_object*);
 lean_object* lean_nat_to_int(lean_object*);
@@ -131,7 +130,6 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_initial
 uint8_t lean_nat_dec_le(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_KernelBranch_toCtorIdx___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_KernelBranch_ctorElim___redArg(lean_object*);
-lean_object* lean_nat_add(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKernelBranch_repr___closed__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FmmInput_cellAt_x3f(lean_object*, lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprFrontierMode_repr___closed__4;
@@ -1631,21 +1629,10 @@ return x_2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs(lean_object* x_1) {
 _start:
 {
-lean_object* x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; 
-x_2 = lean_unsigned_to_nat(1u);
-x_3 = lean_nat_add(x_1, x_2);
-x_4 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___closed__0;
-x_5 = l_List_replicateTR___redArg(x_3, x_4);
-return x_5;
-}
-}
-LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___boxed(lean_object* x_1) {
-_start:
-{
-lean_object* x_2; 
-x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs(x_1);
-lean_dec(x_1);
-return x_2;
+lean_object* x_2; lean_object* x_3; 
+x_2 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___closed__0;
+x_3 = l_List_replicateTR___redArg(x_1, x_2);
+return x_3;
 }
 }
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_initialState(lean_object* x_1) {
