@@ -1247,4 +1247,129 @@ theorem smallOracle_ci_gate :
   refine ⟨delta, smallOracle_execution, hobs, htotal, ?_⟩
   exact smallOracle_execution_totalPotential
 
+noncomputable def smallNearOracleInput : FmmInput :=
+  { grid := [1, 2]
+    hierarchy := [{ sourceIndices := [0] }]
+    sources := [0]
+    charges := [1, 0]
+    targetIdx := 1
+    config :=
+      { order := 1
+        admissibilityRadius := 2
+        golayWeight := .w0 } }
+
+def smallNearOracleStep : FmmStep :=
+  { level := 0
+    cell := { sourceIndices := [0] }
+    center := 1
+    distance := 1
+    interactionKind := .nearField
+    nextState :=
+      { pendingLevels := []
+        currentLevel? := some 0
+        totalPotential := 0
+        frontierMode := .stack
+        golayWeight := .w0 } }
+
+noncomputable def smallNearOraclePayload : DirectSumPayload :=
+  smallNearOracleInput.directSumPayload smallNearOracleStep
+
+noncomputable def smallNearOracleUpdatedState : FmmEvalState :=
+  smallNearOracleStep.nextState.applyDirectSum smallNearOraclePayload
+
+@[simp]
+theorem smallNearOracleInput_targetPos :
+    smallNearOracleInput.targetPos = 2 := by
+  simp [smallNearOracleInput, FmmInput.targetPos]
+
+@[simp]
+theorem smallNearOraclePayload_terms :
+    smallNearOraclePayload.terms =
+      [{ sourceIdx := 0, sourcePos := 1, diff := 1, charge := 1, contribution := 1 }] := by
+  norm_num [smallNearOraclePayload, smallNearOracleInput, smallNearOracleStep,
+    FmmInput.targetPos, FmmInput.directSumPayload, FmmInput.directSumTerm,
+    FmmInput.chargeAt]
+
+@[simp]
+theorem smallNearOraclePayload_totalContribution :
+    smallNearOraclePayload.totalContribution = 1 := by
+  norm_num [DirectSumPayload.totalContribution, smallNearOraclePayload,
+    smallNearOracleInput, smallNearOracleStep, FmmInput.targetPos,
+    FmmInput.directSumPayload, FmmInput.directSumTerm, FmmInput.chargeAt]
+
+@[simp]
+theorem smallNearOracle_applyDirectSum_totalPotential :
+    (smallNearOracleStep.nextState.applyDirectSum smallNearOraclePayload).totalPotential = 1 := by
+  norm_num [smallNearOraclePayload, smallNearOracleInput, smallNearOracleStep,
+    FmmEvalState.applyDirectSum, DirectSumPayload.totalContribution,
+    FmmInput.targetPos, FmmInput.directSumPayload, FmmInput.directSumTerm,
+    FmmInput.chargeAt]
+
+@[simp]
+theorem smallNearOracleStep_kernelBranch :
+    smallNearOracleStep.kernelBranch = .directSum := by
+  simp [smallNearOracleStep, FmmStep.kernelBranch, InteractionKind.toKernelBranch]
+
+@[simp]
+theorem smallNearOracle_step? :
+    smallNearOracleInput.step? (initialState smallNearOracleInput) = some smallNearOracleStep := by
+  norm_num [smallNearOracleInput, smallNearOracleStep, initialState,
+    FmmConfig.frontierMode, FrontierMode.ofGolayWeight, FrontierMode.ofTau, GolayWeight.toNat,
+    FmmInput.step?, FmmEvalState.popLevel, FmmInput.cellAt?, FmmHierarchy.cellAt?,
+    FmmInput.targetPos, FmmInput.cellCenter, FmmInput.cellDistance,
+    FmmInput.interactionKind, FmmInput.isNearField]
+
+theorem smallNearOracle_execution :
+    FmmExecution smallNearOracleInput (initialState smallNearOracleInput)
+      smallNearOracleStep smallNearOracleUpdatedState := by
+  simpa [smallNearOracleUpdatedState, smallNearOraclePayload] using
+    (FmmExecution.directSum (step?_directSumUpdate smallNearOracle_step? smallNearOracleStep_kernelBranch) :
+      FmmExecution smallNearOracleInput (initialState smallNearOracleInput) smallNearOracleStep
+        (smallNearOracleStep.nextState.applyDirectSum (smallNearOracleInput.directSumPayload smallNearOracleStep)))
+
+theorem smallNearOracle_execution_totalPotential :
+    smallNearOracleUpdatedState.totalPotential = 1 := by
+  simpa [smallNearOracleUpdatedState] using smallNearOracle_applyDirectSum_totalPotential
+
+theorem smallNearOracle_execution_observesTotalPotential :
+    ∃ delta,
+      FmmExecutionObserves smallNearOracleInput (initialState smallNearOracleInput)
+        smallNearOracleStep smallNearOracleUpdatedState delta ∧
+      smallNearOracleUpdatedState.totalPotential = smallNearOracleStep.nextState.totalPotential + delta := by
+  rcases execution_observesIncrement smallNearOracle_execution with ⟨delta, hobs⟩
+  refine ⟨delta, hobs, ?_⟩
+  exact executionObservation_totalPotential hobs
+
+/-- CI gate for the minimal near-field oracle: the first executable step exists,
+    observes a concrete direct-sum increment, and reaches the expected total potential. -/
+theorem smallNearOracle_ci_gate :
+    ∃ delta,
+      FmmExecution smallNearOracleInput (initialState smallNearOracleInput)
+        smallNearOracleStep smallNearOracleUpdatedState ∧
+      FmmExecutionObserves smallNearOracleInput (initialState smallNearOracleInput)
+        smallNearOracleStep smallNearOracleUpdatedState delta ∧
+      smallNearOracleUpdatedState.totalPotential = smallNearOracleStep.nextState.totalPotential + delta ∧
+      smallNearOracleUpdatedState.totalPotential = 1 := by
+  rcases smallNearOracle_execution_observesTotalPotential with ⟨delta, hobs, htotal⟩
+  refine ⟨delta, smallNearOracle_execution, hobs, htotal, ?_⟩
+  exact smallNearOracle_execution_totalPotential
+
+/-- CI gate covering both minimal branches: one far-field oracle and one near-field oracle. -/
+theorem smallBranchCoverage_ci_gate :
+    (∃ delta,
+      FmmExecution smallOracleInput (initialState smallOracleInput)
+        smallOracleStep smallOracleUpdatedState ∧
+      FmmExecutionObserves smallOracleInput (initialState smallOracleInput)
+        smallOracleStep smallOracleUpdatedState delta ∧
+      smallOracleUpdatedState.totalPotential = smallOracleStep.nextState.totalPotential + delta ∧
+      smallOracleUpdatedState.totalPotential = 1) ∧
+    (∃ delta,
+      FmmExecution smallNearOracleInput (initialState smallNearOracleInput)
+        smallNearOracleStep smallNearOracleUpdatedState ∧
+      FmmExecutionObserves smallNearOracleInput (initialState smallNearOracleInput)
+        smallNearOracleStep smallNearOracleUpdatedState delta ∧
+      smallNearOracleUpdatedState.totalPotential = smallNearOracleStep.nextState.totalPotential + delta ∧
+      smallNearOracleUpdatedState.totalPotential = 1) := by
+  exact ⟨smallOracle_ci_gate, smallNearOracle_ci_gate⟩
+
 end HatsuYakitori.Fmm
