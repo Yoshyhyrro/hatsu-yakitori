@@ -1161,6 +1161,9 @@ def smallOracleStep : FmmStep :=
 noncomputable def smallOraclePayload : MultipolePayload :=
   smallOracleInput.multipolePayload smallOracleStep
 
+noncomputable def smallOracleUpdatedState : FmmEvalState :=
+  smallOracleStep.nextState.applyMultipole smallOraclePayload
+
 @[simp]
 theorem smallOracleInput_targetPos :
     smallOracleInput.targetPos = 2 := by
@@ -1195,5 +1198,39 @@ theorem smallOracle_applyMultipole_totalPotential :
     FmmInput.targetPos, FmmEvalState.applyMultipole,
     MultipolePayload.leadingLocalCoeff, FmmInput.multipolePayload,
     FmmInput.p2mCoeffs, FmmInput.m2lCoeffs, FmmInput.chargeAt]
+
+@[simp]
+theorem smallOracleStep_kernelBranch :
+    smallOracleStep.kernelBranch = .multipole := by
+  simp [smallOracleStep, FmmStep.kernelBranch, InteractionKind.toKernelBranch]
+
+@[simp]
+theorem smallOracle_step? :
+    smallOracleInput.step? (initialState smallOracleInput) = some smallOracleStep := by
+  norm_num [smallOracleInput, smallOracleStep, initialState,
+    FmmConfig.frontierMode, FrontierMode.ofGolayWeight, FrontierMode.ofTau, GolayWeight.toNat,
+    FmmInput.step?, FmmEvalState.popLevel, FmmInput.cellAt?, FmmHierarchy.cellAt?,
+    FmmInput.targetPos, FmmInput.cellCenter, FmmInput.cellDistance,
+    FmmInput.interactionKind, FmmInput.isNearField]
+
+theorem smallOracle_execution :
+    FmmExecution smallOracleInput (initialState smallOracleInput) smallOracleStep smallOracleUpdatedState := by
+  simpa [smallOracleUpdatedState, smallOraclePayload] using
+    (FmmExecution.multipole (step?_multipoleUpdate smallOracle_step? smallOracleStep_kernelBranch) :
+      FmmExecution smallOracleInput (initialState smallOracleInput) smallOracleStep
+        (smallOracleStep.nextState.applyMultipole (smallOracleInput.multipolePayload smallOracleStep)))
+
+theorem smallOracle_execution_totalPotential :
+    smallOracleUpdatedState.totalPotential = 1 := by
+  simpa [smallOracleUpdatedState] using smallOracle_applyMultipole_totalPotential
+
+theorem smallOracle_execution_observesTotalPotential :
+    ∃ delta,
+      FmmExecutionObserves smallOracleInput (initialState smallOracleInput)
+        smallOracleStep smallOracleUpdatedState delta ∧
+      smallOracleUpdatedState.totalPotential = smallOracleStep.nextState.totalPotential + delta := by
+  rcases execution_observesIncrement smallOracle_execution with ⟨delta, hobs⟩
+  refine ⟨delta, hobs, ?_⟩
+  exact executionObservation_totalPotential hobs
 
 end HatsuYakitori.Fmm
