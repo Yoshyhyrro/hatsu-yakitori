@@ -4,10 +4,14 @@ on:
   pull_request:
     paths:
       - 'dist-proof/lean4/**'
+      - 'modules/fmm/**'
+      - 'tests/fmm_tests.scm'
       - '.github/workflows/lean-fmm-gate.yml'
   push:
     paths:
       - 'dist-proof/lean4/**'
+      - 'modules/fmm/**'
+      - 'tests/fmm_tests.scm'
       - '.github/workflows/lean-fmm-gate.yml'
   workflow_dispatch:
 
@@ -38,3 +42,21 @@ jobs:
 
       - name: Build FMM proof gate
         run: lake build HatsuYakitori.FMM
+
+      - name: Build HopfStructure proof target
+        run: lake build HatsuYakitori.HopfStructure
+
+  fmm-runtime-smoke:
+    name: Run FMM Scheme smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Install CHICKEN
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chicken-bin
+
+      - name: Run FMM smoke test
+        run: csi -s tests/fmm_tests.scm
