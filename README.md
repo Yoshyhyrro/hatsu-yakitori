@@ -38,7 +38,15 @@ hatsu-yakitori/
 │   │   └── fmm_on_goppa_grid.scm # The Goppa-FMM implementation
 │   ├── sssp/                    # Single-Source Shortest Path
 │   └── boids/                   # Particle simulation
-└── tools/                       # CLI utilities
+├── tools/
+│   ├── fmm_classroom_rpc.scm    # Self-contained educational near/far RPC demo
+│   └── run_fmm_classroom_rpc.scm # Runnable entry point for the classroom demo
+├── tests/
+│   └── fmm_tests.scm            # Smoke tests (near/far branch coverage)
+└── dist-proof/lean4/            # Lean 4 formal proofs
+    └── HatsuYakitori/
+        ├── FMM.lean              # Proof model of FMM semantics
+        └── HopfStructure.lean   # Hopf algebra structure on Golay weights
 ```
 
 ## Implementation Highlight: Golay-Controlled Frontier
@@ -264,6 +272,41 @@ You can also populate the local build outputs used by the historical workflow:
 cabal run shake -- witt
 ```
 
+## Classroom Demo: One Request, One Response
+
+The `tools/fmm_classroom_rpc.scm` module provides a minimal, dependency-free educational demonstration of the near-vs-far decision that drives the FMM.
+
+```scheme
+;; Run the interactive demo:
+csi -s tools/run_fmm_classroom_rpc.scm
+```
+
+Output:
+```
+=== Tiny FMM Classroom RPC Demo ===
+
+Case 1: near field
+Server response: ((status . ok) (mode . near) (potential . 12.0) ...)
+Explanation: near: target is close, so we add each source one by one.
+
+Case 2: far field
+Server response: ((status . ok) (mode . far) (potential . 1.09...) ...)
+Explanation: far: target is far away, so we replace the group by one cluster.
+```
+
+The module is self-contained (no compiled eggs required) and is designed to be readable by beginners. It exposes a simple `handle-request` function that mirrors the structure of a gRPC-style service: send a request map, receive a response map.
+
+## CI / Formal Verification
+
+The repository uses GitHub Actions for two complementary checks:
+
+| Workflow | What it checks |
+| :--- | :--- |
+| **Lean FMM Gate** (`lean-fmm-gate.yml`) | Builds `HatsuYakitori.FMM` and `HatsuYakitori.HopfStructure` in Lean 4 |
+| **FMM Scheme smoke test** (same workflow) | Runs `csi -s tests/fmm_tests.scm` on Ubuntu with CHICKEN |
+
+The Lean gate proves, at the type level, that both the far-field (multipole) and near-field (direct-sum) branches of FMM update the potential correctly. These proofs live in `dist-proof/lean4/HatsuYakitori/FMM.lean`.
+
 ## Why Use This?
 
 - **Adaptive control**: Golay codewords determine DFS/stack vs BFS/queue behavior
@@ -280,4 +323,6 @@ cabal run shake -- witt
 - `kak-apply-quiver-safe` currently prioritizes correctness over aggressive local specialization when the quiver type is not clearly Dynkin-A
 ## Future Direction
 
-The roadmap includes extending the `make-goppa-grid` generator from the unit circle (genus $g=0$) to **Elliptic Curves** (genus $g=1$). This will allow the framework to handle **Periodic Boundary Conditions (PBC)** naturally via Weierstrass $\wp$-functions, providing a unified algebraic alternative to Ewald summation.
+- Extend the classroom RPC demo to accept JSON over stdin, making the near/far logic callable from any language as a learning exercise.
+- Extend `make-goppa-grid` from the unit circle (genus $g=0$) to **Elliptic Curves** (genus $g=1$) to handle **Periodic Boundary Conditions (PBC)** via Weierstrass $\wp$-functions, providing a unified algebraic alternative to Ewald summation.
+- Repair unrelated Lean modules (`WittFoundation`, `HidaArikiKoikeNotes`) to enable full-library proof CI.

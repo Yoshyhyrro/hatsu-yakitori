@@ -94,6 +94,14 @@ stageSuffix StageOpt1 = ".opt1"
 stageSuffix StageOpt2 = ".opt2"
 stageSuffix StageSBV  = ".sbv"
 
+defaultVerifyStages :: [VerifyStage]
+defaultVerifyStages =
+  [ StageRaw
+  , StageOpt1
+  , StageOpt2
+  , StageSBV
+  ]
+
 -- | Path of IR for a module at a given stage
 -- (stageIRPath is defined above with example-aware directory)
 
@@ -214,7 +222,7 @@ verifyIRStage paths modName stage = do
 -- | Verify all stages for a single module
 verifyModuleStages :: ProofBuildPaths -> String -> Action [(VerifyStage, Either String FilePath)]
 verifyModuleStages paths modName = do
-  forM [minBound .. maxBound] $ \stage -> do
+  forM defaultVerifyStages $ \stage -> do
     res <- case stage of
       StageSBV -> do
         -- SBV verification hook will be provided by SBV_Bridge

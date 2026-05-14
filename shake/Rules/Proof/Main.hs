@@ -9,7 +9,6 @@ import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_)
 import Control.Monad.IO.Class (liftIO)
-import qualified System.Directory as Dir
 
 import Rules.Proof.LLVM_IR as IR
 import Rules.Proof.SBV_Bridge as SBV
