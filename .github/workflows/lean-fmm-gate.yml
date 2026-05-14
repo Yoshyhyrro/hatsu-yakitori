@@ -1,0 +1,40 @@
+name: Lean FMM Gate
+
+on:
+  pull_request:
+    paths:
+      - 'dist-proof/lean4/**'
+      - '.github/workflows/lean-fmm-gate.yml'
+  push:
+    paths:
+      - 'dist-proof/lean4/**'
+      - '.github/workflows/lean-fmm-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lean-fmm-gate:
+    name: Build HatsuYakitori.FMM
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: dist-proof/lean4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Install elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch dependency cache
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Build FMM proof gate
+        run: lake build HatsuYakitori.FMM

@@ -1233,4 +1233,18 @@ theorem smallOracle_execution_observesTotalPotential :
   refine ⟨delta, hobs, ?_⟩
   exact executionObservation_totalPotential hobs
 
+/-- CI gate for the minimal far-field oracle: the first executable step exists,
+    observes a concrete increment, and reaches the expected total potential. -/
+theorem smallOracle_ci_gate :
+    ∃ delta,
+      FmmExecution smallOracleInput (initialState smallOracleInput)
+        smallOracleStep smallOracleUpdatedState ∧
+      FmmExecutionObserves smallOracleInput (initialState smallOracleInput)
+        smallOracleStep smallOracleUpdatedState delta ∧
+      smallOracleUpdatedState.totalPotential = smallOracleStep.nextState.totalPotential + delta ∧
+      smallOracleUpdatedState.totalPotential = 1 := by
+  rcases smallOracle_execution_observesTotalPotential with ⟨delta, hobs, htotal⟩
+  refine ⟨delta, smallOracle_execution, hobs, htotal, ?_⟩
+  exact smallOracle_execution_totalPotential
+
 end HatsuYakitori.Fmm
