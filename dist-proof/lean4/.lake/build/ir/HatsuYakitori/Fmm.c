@@ -27,6 +27,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs__
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprInteractionKind_repr___closed__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKernelBranch_repr___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FrontierMode_ctorElim___redArg___boxed(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__1;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_nearField_elim___redArg___boxed(lean_object*);
 uint8_t lean_nat_dec_le(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprInteractionKind_repr___boxed(lean_object*, lean_object*);
@@ -43,6 +44,7 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FmmInpu
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_nearField_elim___redArg(lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instDecidableEqKernelBranch(uint8_t, uint8_t);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_ctorElim___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FrontierMode_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_nearField_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKernelBranch;
@@ -68,11 +70,14 @@ LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instRep
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_ctorElim(lean_object*, lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FrontierMode_ofNat(lean_object*);
 lean_object* lp_mathlib_Complex_ofReal(lean_object*);
+extern lean_object* lp_mathlib_Real_definition_00___x40_Mathlib_Data_Real_Basic_1279875089____hygCtx___hyg_8_;
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__2;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprInteractionKind;
 lean_object* l_List_replicateTR___redArg(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FmmConfig_tau___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FrontierMode_ctorIdx___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprFrontierMode_repr(uint8_t, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__0;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_toCtorIdx___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKernelBranch_repr(uint8_t, lean_object*);
 lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants_GolayWeight_toNat(uint8_t);
@@ -91,6 +96,7 @@ static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKern
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_InteractionKind_ctorElim___redArg___boxed(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKernelBranch_repr___closed__3;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_KernelBranch_ctorElim___redArg___boxed(lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__3;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FrontierMode_queue_elim(lean_object*, uint8_t, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FrontierMode_queue_elim___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
@@ -118,6 +124,7 @@ LEAN_EXPORT uint8_t lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FmmConfig_fr
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprFrontierMode_repr___closed__5;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FrontierMode_queue_elim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FmmEvalState_pushLevel(lean_object*, lean_object*);
+static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__4;
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_KernelBranch_directSum_elim___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_FmmConfig_tau(lean_object*);
 static lean_object* lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprInteractionKind___closed__0;
@@ -1665,6 +1672,83 @@ lean_dec_ref(x_1);
 return x_2;
 }
 }
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__0() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; lean_object* x_3; 
+x_1 = lean_box(0);
+x_2 = lean_unsigned_to_nat(0u);
+x_3 = lean_alloc_ctor(1, 2, 0);
+lean_ctor_set(x_3, 0, x_2);
+lean_ctor_set(x_3, 1, x_1);
+return x_3;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__1() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lp_mathlib_Real_definition_00___x40_Mathlib_Data_Real_Basic_1279875089____hygCtx___hyg_8_;
+x_2 = lp_mathlib_Complex_ofReal(x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__2() {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lean_unsigned_to_nat(0u);
+x_2 = lean_alloc_ctor(1, 1, 0);
+lean_ctor_set(x_2, 0, x_1);
+return x_2;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__3() {
+_start:
+{
+uint8_t x_1; uint8_t x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; 
+x_1 = 0;
+x_2 = 0;
+x_3 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___closed__0;
+x_4 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__2;
+x_5 = lean_box(0);
+x_6 = lean_alloc_ctor(0, 3, 2);
+lean_ctor_set(x_6, 0, x_5);
+lean_ctor_set(x_6, 1, x_4);
+lean_ctor_set(x_6, 2, x_3);
+lean_ctor_set_uint8(x_6, sizeof(void*)*3, x_2);
+lean_ctor_set_uint8(x_6, sizeof(void*)*3 + 1, x_1);
+return x_6;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__4() {
+_start:
+{
+lean_object* x_1; uint8_t x_2; lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; lean_object* x_7; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__3;
+x_2 = 1;
+x_3 = lp_mathlib_Real_definition_00___x40_Mathlib_Data_Real_Basic_1279875089____hygCtx___hyg_8_;
+x_4 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__1;
+x_5 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__0;
+x_6 = lean_unsigned_to_nat(0u);
+x_7 = lean_alloc_ctor(0, 5, 1);
+lean_ctor_set(x_7, 0, x_6);
+lean_ctor_set(x_7, 1, x_5);
+lean_ctor_set(x_7, 2, x_4);
+lean_ctor_set(x_7, 3, x_3);
+lean_ctor_set(x_7, 4, x_1);
+lean_ctor_set_uint8(x_7, sizeof(void*)*5, x_2);
+return x_7;
+}
+}
+static lean_object* _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep() {
+_start:
+{
+lean_object* x_1; 
+x_1 = lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__4;
+return x_1;
+}
+}
 lean_object* initialize_Init(uint8_t builtin);
 lean_object* initialize_hatsu_x2dyakitori_x2dproof_HatsuYakitori_MachineConstants(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib_Data_Complex_Basic(uint8_t builtin);
@@ -1724,6 +1808,18 @@ lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKernelBranch = _init_lp_
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_instReprKernelBranch);
 lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___closed__0();
 lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_zeroCoeffs___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__0 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__0();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__0);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__1 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__1();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__1);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__2 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__2();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__2);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__3 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__3();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__3);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__4 = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__4();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep___closed__4);
+lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep = _init_lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep();
+lean_mark_persistent(lp_hatsu_x2dyakitori_x2dproof_HatsuYakitori_Fmm_smallOracleStep);
 return lean_io_result_mk_ok(lean_box(0));
 }
 #ifdef __cplusplus

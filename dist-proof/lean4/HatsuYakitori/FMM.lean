@@ -660,15 +660,54 @@ def MultipolePayload.WellFormed (payload : MultipolePayload) : Prop :=
 noncomputable def MultipolePayload.leadingLocalCoeff (payload : MultipolePayload) : Potential :=
   payload.localCoeffs.getD 0 0
 
+/-- P2M coefficients matching the runtime source accumulation. -/
+noncomputable def FmmInput.p2mCoeffs (input : FmmInput) (payload : MultipolePayload) :
+    List Potential :=
+  (List.range payload.order).map fun k =>
+    (payload.sourceIndices.zip payload.sourceCharges).foldl
+      (fun acc source =>
+        let sourcePos := input.grid.getD source.1 0
+        let delta := sourcePos - payload.center
+        acc + source.2 * delta ^ k)
+      0
+
+/-- M2L coefficients matching the runtime binomial translation. -/
+noncomputable def FmmInput.m2lCoeffs (_input : FmmInput) (payload : MultipolePayload) :
+    List Potential :=
+  let zDiff := payload.targetPos - payload.center
+  (List.range payload.order).map fun j =>
+    (List.range payload.order).foldl
+      (fun acc k =>
+        let coeff := payload.multipoleCoeffs.getD k 0
+        let binom : Potential := (Nat.choose (j + k) k : ℂ)
+        let signedBinom := if k % 2 = 0 then binom else -binom
+        let factor := signedBinom / (zDiff ^ (j + k + 1))
+        acc + coeff * factor)
+      0
+
+@[simp]
+theorem p2mCoeffs_length (input : FmmInput) (payload : MultipolePayload) :
+    (input.p2mCoeffs payload).length = payload.order := by
+  simp [FmmInput.p2mCoeffs]
+
+@[simp]
+theorem m2lCoeffs_length (input : FmmInput) (payload : MultipolePayload) :
+    (input.m2lCoeffs payload).length = payload.order := by
+  simp [FmmInput.m2lCoeffs]
+
 /-- Gather the far-field payload carried by one step. -/
 noncomputable def FmmInput.multipolePayload (input : FmmInput) (step : FmmStep) : MultipolePayload :=
-  { sourceIndices := step.cell.sourceIndices
-    sourceCharges := step.cell.sourceIndices.map input.chargeAt
-    center := step.center
-    order := input.config.order
-    targetPos := input.targetPos
-    multipoleCoeffs := zeroCoeffs input.config.order
-    localCoeffs := zeroCoeffs input.config.order }
+  let basePayload : MultipolePayload :=
+    { sourceIndices := step.cell.sourceIndices
+      sourceCharges := step.cell.sourceIndices.map input.chargeAt
+      center := step.center
+      order := input.config.order
+      targetPos := input.targetPos
+      multipoleCoeffs := zeroCoeffs input.config.order
+      localCoeffs := zeroCoeffs input.config.order }
+  let p2mPayload : MultipolePayload :=
+    { basePayload with multipoleCoeffs := input.p2mCoeffs basePayload }
+  { p2mPayload with localCoeffs := input.m2lCoeffs p2mPayload }
 
 @[simp]
 theorem multipolePayload_sourceIndices (input : FmmInput) (step : FmmStep) :
@@ -714,29 +753,22 @@ theorem multipolePayload_wellFormed (input : FmmInput) (step : FmmStep) :
   · simp [FmmInput.multipolePayload, zeroCoeffs]
 
 @[simp]
-theorem multipolePayload_leadingLocalCoeff (input : FmmInput) (step : FmmStep) :
-    (input.multipolePayload step).leadingLocalCoeff = 0 := by
-  simp [MultipolePayload.leadingLocalCoeff, FmmInput.multipolePayload, zeroCoeffs]
-
-/-- Placeholder P2M coefficients matching the runtime vector length. -/
-noncomputable def FmmInput.p2mCoeffs (_input : FmmInput) (payload : MultipolePayload) :
-    List Potential :=
-  zeroCoeffs payload.order
-
-/-- Placeholder M2L coefficients matching the runtime vector length. -/
-noncomputable def FmmInput.m2lCoeffs (_input : FmmInput) (payload : MultipolePayload) :
-    List Potential :=
-  zeroCoeffs payload.order
+theorem multipolePayload_multipoleCoeffs_eq_p2mCoeffs (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).multipoleCoeffs =
+      input.p2mCoeffs (input.multipolePayload step) := by
+  simp [FmmInput.multipolePayload, FmmInput.p2mCoeffs, FmmInput.m2lCoeffs]
 
 @[simp]
-theorem p2mCoeffs_length (input : FmmInput) (payload : MultipolePayload) :
-    (input.p2mCoeffs payload).length = payload.order := by
-  simp [FmmInput.p2mCoeffs, zeroCoeffs]
+theorem multipolePayload_localCoeffs_eq_m2lCoeffs (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).localCoeffs =
+      input.m2lCoeffs (input.multipolePayload step) := by
+  simp [FmmInput.multipolePayload, FmmInput.p2mCoeffs, FmmInput.m2lCoeffs]
 
 @[simp]
-theorem m2lCoeffs_length (input : FmmInput) (payload : MultipolePayload) :
-    (input.m2lCoeffs payload).length = payload.order := by
-  simp [FmmInput.m2lCoeffs, zeroCoeffs]
+theorem multipolePayload_leadingLocalCoeff_eq_m2lHead (input : FmmInput) (step : FmmStep) :
+    (input.multipolePayload step).leadingLocalCoeff =
+      (input.m2lCoeffs (input.multipolePayload step)).getD 0 0 := by
+  simp [MultipolePayload.leadingLocalCoeff]
 
 /-- Multipole branch equipped with the explicit far-field payload. -/
 inductive FmmMultipoleTransition (input : FmmInput) (state : FmmEvalState) :
@@ -785,7 +817,7 @@ theorem step?_p2mExpansion
     FmmP2MExpansion input state step (input.multipolePayload step) := by
   apply FmmP2MExpansion.mk
   · exact step?_multipoleTransition hstep hbranch
-  · rfl
+  · exact multipolePayload_multipoleCoeffs_eq_p2mCoeffs input step
 
 theorem p2mExpansion_nextState_wellFormed
     {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
@@ -819,7 +851,7 @@ theorem step?_m2lTranslation
     FmmM2LTranslation input state step (input.multipolePayload step) := by
   apply FmmM2LTranslation.mk
   · exact step?_p2mExpansion hstep hbranch
-  · rfl
+  · exact multipolePayload_localCoeffs_eq_m2lCoeffs input step
 
 theorem m2lTranslation_nextState_wellFormed
     {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
@@ -838,13 +870,13 @@ theorem m2lTranslation_payload_wellFormed
   | mk hexp _ =>
       exact p2mExpansion_payload_wellFormed hexp
 
-theorem m2lTranslation_leadingLocalCoeff_zero
+theorem m2lTranslation_leadingLocalCoeff_eq_m2lHead
     {input : FmmInput} {state : FmmEvalState} {step : FmmStep} {payload : MultipolePayload}
     (htrans : FmmM2LTranslation input state step payload) :
-    payload.leadingLocalCoeff = 0 := by
+    payload.leadingLocalCoeff = (input.m2lCoeffs payload).getD 0 0 := by
   cases htrans with
   | mk hexp hlocal =>
-    simp [MultipolePayload.leadingLocalCoeff, hlocal, FmmInput.m2lCoeffs, zeroCoeffs]
+    simp [MultipolePayload.leadingLocalCoeff, hlocal]
 
 /-- Apply one multipole payload to the accumulated potential via the zeroth local coefficient. -/
 noncomputable def FmmEvalState.applyMultipole
@@ -928,24 +960,26 @@ theorem multipoleUpdate_wellFormed
       rw [hupdated]
       exact applyMultipole_wellFormed (m2lTranslation_nextState_wellFormed hstate htrans)
 
-theorem multipoleUpdate_preservesTotalPotential
+theorem multipoleUpdate_addsLeadingM2LHead
     {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
     {payload : MultipolePayload} {updatedState : FmmEvalState}
     (hupdate : FmmMultipoleUpdate input state step payload updatedState) :
-    updatedState.totalPotential = step.nextState.totalPotential := by
+    updatedState.totalPotential =
+      step.nextState.totalPotential + (input.m2lCoeffs payload).getD 0 0 := by
   cases hupdate with
   | mk htrans hupdated =>
       rw [hupdated, FmmEvalState.applyMultipole]
-      have hzero := m2lTranslation_leadingLocalCoeff_zero htrans
-      simp [hzero]
+      have hhead := m2lTranslation_leadingLocalCoeff_eq_m2lHead htrans
+      simp [hhead]
 
-theorem step?_multipoleUpdate_preservesTotalPotential
+theorem step?_multipoleUpdate_addsLeadingM2LHead
     {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
   (_hstep : input.step? state = some step)
   (_hbranch : step.kernelBranch = .multipole) :
     (step.nextState.applyMultipole (input.multipolePayload step)).totalPotential =
-      step.nextState.totalPotential := by
-  exact multipoleUpdate_preservesTotalPotential (step?_multipoleUpdate _hstep _hbranch)
+      step.nextState.totalPotential +
+        (input.m2lCoeffs (input.multipolePayload step)).getD 0 0 := by
+  exact multipoleUpdate_addsLeadingM2LHead (step?_multipoleUpdate _hstep _hbranch)
 
 /-- One executable FMM update after extracting a structural step. The payload is
   hidden behind the branch-specific update relation. -/
@@ -957,6 +991,16 @@ inductive FmmExecution (input : FmmInput) (state : FmmEvalState) :
   | multipole {step : FmmStep} {payload : MultipolePayload} {updatedState : FmmEvalState} :
     FmmMultipoleUpdate input state step payload updatedState →
     FmmExecution input state step updatedState
+
+/-- Observable change in `totalPotential` contributed by one executable FMM step. -/
+inductive FmmExecutionObserves (input : FmmInput) (state : FmmEvalState) :
+    FmmStep → FmmEvalState → Potential → Prop where
+  | directSum {step : FmmStep} {payload : DirectSumPayload} {updatedState : FmmEvalState} :
+      FmmDirectSumUpdate input state step payload updatedState →
+      FmmExecutionObserves input state step updatedState payload.totalContribution
+  | multipole {step : FmmStep} {payload : MultipolePayload} {updatedState : FmmEvalState} :
+      FmmMultipoleUpdate input state step payload updatedState →
+      FmmExecutionObserves input state step updatedState ((input.m2lCoeffs payload).getD 0 0)
 
 theorem step?_execution
   {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
@@ -980,6 +1024,37 @@ theorem execution_wellFormed
     exact directSumUpdate_wellFormed hstate hupdate
   | multipole hupdate =>
     exact multipoleUpdate_wellFormed hstate hupdate
+
+theorem execution_observesIncrement
+  {input : FmmInput} {state updatedState : FmmEvalState} {step : FmmStep}
+  (hexec : FmmExecution input state step updatedState) :
+  ∃ delta, FmmExecutionObserves input state step updatedState delta := by
+  cases hexec with
+  | directSum hupdate =>
+    exact ⟨_, .directSum hupdate⟩
+  | multipole hupdate =>
+    exact ⟨_, .multipole hupdate⟩
+
+theorem executionObservation_totalPotential
+  {input : FmmInput} {state updatedState : FmmEvalState} {step : FmmStep} {delta : Potential}
+  (hobs : FmmExecutionObserves input state step updatedState delta) :
+  updatedState.totalPotential = step.nextState.totalPotential + delta := by
+  cases hobs with
+  | directSum hupdate =>
+    exact directSumUpdate_totalPotential hupdate
+  | multipole hupdate =>
+    exact multipoleUpdate_addsLeadingM2LHead hupdate
+
+theorem step?_execution_observesTotalPotential
+  {input : FmmInput} {state : FmmEvalState} {step : FmmStep}
+  (hstep : input.step? state = some step) :
+  ∃ updatedState delta,
+    FmmExecution input state step updatedState ∧
+    FmmExecutionObserves input state step updatedState delta ∧
+    updatedState.totalPotential = step.nextState.totalPotential + delta := by
+  rcases step?_execution hstep with ⟨updatedState, hexec⟩
+  rcases execution_observesIncrement hexec with ⟨delta, hobs⟩
+  exact ⟨updatedState, delta, hexec, hobs, executionObservation_totalPotential hobs⟩
 
 /-- Branch-specific semantic shell for one successful FMM step.
     Near-field steps expose a direct-sum branch, while far-field steps expose a multipole branch. -/
@@ -1058,5 +1133,67 @@ theorem initialState_wellFormed (input : FmmInput) :
     simpa [initialState] using List.mem_range.mp hlevel
   · intro level hlevel
     simp [initialState] at hlevel
+
+noncomputable def smallOracleInput : FmmInput :=
+  { grid := [1, 2]
+    hierarchy := [{ sourceIndices := [0] }]
+    sources := [0]
+    charges := [1, 0]
+    targetIdx := 1
+    config :=
+      { order := 1
+        admissibilityRadius := (1 : ℝ) / 2
+        golayWeight := .w0 } }
+
+def smallOracleStep : FmmStep :=
+  { level := 0
+    cell := { sourceIndices := [0] }
+    center := 1
+    distance := 1
+    interactionKind := .farField
+    nextState :=
+      { pendingLevels := []
+        currentLevel? := some 0
+        totalPotential := 0
+        frontierMode := .stack
+        golayWeight := .w0 } }
+
+noncomputable def smallOraclePayload : MultipolePayload :=
+  smallOracleInput.multipolePayload smallOracleStep
+
+@[simp]
+theorem smallOracleInput_targetPos :
+    smallOracleInput.targetPos = 2 := by
+  simp [smallOracleInput, FmmInput.targetPos]
+
+@[simp]
+theorem smallOraclePayload_multipoleCoeffs :
+    smallOraclePayload.multipoleCoeffs = [1] := by
+  norm_num [smallOraclePayload, smallOracleInput, smallOracleStep,
+    FmmInput.targetPos, FmmInput.multipolePayload, FmmInput.p2mCoeffs,
+    FmmInput.m2lCoeffs, FmmInput.chargeAt]
+
+@[simp]
+theorem smallOraclePayload_localCoeffs :
+    smallOraclePayload.localCoeffs = [1] := by
+  norm_num [smallOraclePayload, smallOracleInput, smallOracleStep,
+    FmmInput.targetPos, FmmInput.multipolePayload, FmmInput.p2mCoeffs,
+    FmmInput.m2lCoeffs, FmmInput.chargeAt]
+
+@[simp]
+theorem smallOraclePayload_leadingLocalCoeff :
+    smallOraclePayload.leadingLocalCoeff = 1 := by
+  norm_num [smallOraclePayload, smallOracleInput, smallOracleStep,
+    FmmInput.targetPos, MultipolePayload.leadingLocalCoeff,
+    FmmInput.multipolePayload, FmmInput.p2mCoeffs, FmmInput.m2lCoeffs,
+    FmmInput.chargeAt]
+
+@[simp]
+theorem smallOracle_applyMultipole_totalPotential :
+    (smallOracleStep.nextState.applyMultipole smallOraclePayload).totalPotential = 1 := by
+  norm_num [smallOraclePayload, smallOracleInput, smallOracleStep,
+    FmmInput.targetPos, FmmEvalState.applyMultipole,
+    MultipolePayload.leadingLocalCoeff, FmmInput.multipolePayload,
+    FmmInput.p2mCoeffs, FmmInput.m2lCoeffs, FmmInput.chargeAt]
 
 end HatsuYakitori.Fmm
