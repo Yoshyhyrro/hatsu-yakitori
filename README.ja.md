@@ -38,12 +38,20 @@ hatsu-yakitori/
 │   │   └── fmm_on_goppa_grid.scm # The Goppa-FMM implementation
 │   ├── sssp/                    # Single-Source Shortest Path
 │   └── boids/                   # Particle simulation
-└── tools/                       # CLI utilities
+├── tools/
+│   ├── fmm_classroom_rpc.scm    # Self-contained educational near/far RPC demo
+│   └── run_fmm_classroom_rpc.scm # Runnable entry point for the classroom demo
+├── tests/
+│   └── fmm_tests.scm            # Smoke tests (near/far branch coverage)
+└── dist-proof/lean4/            # Lean 4 formal proofs
+    └── HatsuYakitori/
+        ├── FMM.lean              # Proof model of FMM semantics
+        └── HopfStructure.lean   # Hopf algebra structure on Golay weights
 ```
 
 ## 実装のハイライト: Golay が管理するフロンティア
 
-フレームワークの核となるのは **Adaptive Frontier** です。ハードコードされたヒューリスティックの代わりに、シミュレーション戦略は Golay コードのプロパティによって決定されます。
+フレームワークのカーネルは **Adaptive Frontier** です。ハードコードされたヒューリスティックの代わりに、シミュレーション戦略は Golay コードのプロパティによって決定されます。
 
 - **低重み (τ < 12)**: 低エントロピー/ノイズを意味します → **DFS (スタック)** モードで深く正確な局所補正を行います。
 - **高重み (τ ≥ 12)**: グローバルな多極ベースのスイープの高エントロピー → **BFS (キュー)** モードを意味します。
@@ -116,7 +124,7 @@ hatsu-yakitori/
 - `machine_constants` — 数値定数、ビット ユーティリティ、ガロア高さヘルパー
 - `golay_frontier` — リーン導出不変条件を使用した Golay[24,12] フロンティア制御
 - `kak_decomposition` — KAK トラバーサル コアと Golay 制御の最短パス ラッパー
-- `kak_quiver_safety` — 矢筒分類、パウリ位相ロジック、および DirectedBanachQuiver 不変量
+- `kak_quiver_safety` — quiver 分類、Pauli 位相ロジック、および DirectedBanachQuiver 不変量
 - `kak_physics_core` — quiver-safe 物理ループで使用される Yee-grid 更新カーネル
 
 ### ソースチェックアウトからビルドする
@@ -135,7 +143,7 @@ chicken-install
 
 ### Windows ノート
 
-Windows では、生成されたインストール/ビルド スクリプトは `cmd.exe` を介して実行されるため、ランタイム `PATH` には実際の `gcc.exe` および `cp.exe` バイナリが含まれている必要があります。次の設定は、このリポジトリで動作することがわかっています。
+Windows では、生成されたインストール/ビルド スクリプトは `cmd.exe` 経由で実行されるため、ランタイム `PATH` には実際の `gcc.exe` および `cp.exe` バイナリが含まれている必要があります。次の設定は、このリポジトリで動作することがわかっています。
 
 ```powershell
 $env:Path = 'C:\msys64\ucrt64\bin;C:\msys64\usr\bin;C:\tools\chicken\bin;' + $env:Path
@@ -226,7 +234,7 @@ chicken-install -n
 
 ### 4. Quiver-safe 物理ループ
 
-Yee-grid ステッピングの場合は、`kak_physics_core` と `kak_quiver_safety` を組み合わせます。
+Yee-grid ステッピングの場合、`kak_physics_core` と `kak_quiver_safety` を組み合わせます。
 
 ```scheme
 (import kak_physics_core kak_quiver_safety)
@@ -263,6 +271,40 @@ cabal run shake -- clean
 cabal run shake -- witt
 ```
 
+## 教室でのデモ: 1 つのリクエスト、1 つの応答
+
+「tools/fmm_classroom_rpc.scm」モジュールは、FMM を駆動する近いか遠いかの決定を示す、依存関係のない最小限の教育用デモンストレーションを提供します。
+
+```scheme
+;; Run the interactive demo:
+csi -s tools/run_fmm_classroom_rpc.scm
+```
+
+出力：```
+=== Tiny FMM Classroom RPC Demo ===
+
+Case 1: near field
+Server response: ((status . ok) (mode . near) (potential . 12.0) ...)
+Explanation: near: target is close, so we add each source one by one.
+
+Case 2: far field
+Server response: ((status . ok) (mode . far) (potential . 1.09...) ...)
+Explanation: far: target is far away, so we replace the group by one cluster.
+```
+
+このモジュールは自己完結型 (コンパイルされた卵は必要ありません) で、初心者でも読みやすいように設計されています。これは、gRPC スタイルのサービスの構造を反映する単純な `handle-request` 関数を公開します。つまり、リクエスト マップを送信し、レスポンス マップを受信します。
+
+## CI / 正式な検証
+
+リポジトリは、GitHub Actions を使用して 2 つの補完的なチェックを行います。
+
+|ワークフロー |チェック内容 |
+|:--- |:--- |
+|**リーン FMM ゲート** (`lean-fmm-gate.yml`) |Lean 4 で「HatsuYakitori.FMM」と「HopfStructure」をビルドする |
+|**FMM スキームの煙テスト** (同じワークフロー) |CHICKEN | を使用して Ubuntu 上で `csi -s testing/fmm_tests.scm` を実行します。
+
+リーン ゲートは、FMM のファーフィールド (多極) ブランチとニアフィールド (直接和) ブランチの両方がポテンシャルを正しく更新することを型レベルで証明します。これらの証明は `dist-proof/lean4/HatsuYakitori/FMM.lean` にあります。
+
 ## これを使用する理由
 
 - **適応制御**: Golay コードワードが DFS/スタックと BFS/キューの動作を決定します
@@ -279,4 +321,6 @@ cabal run shake -- witt
 - `kak-apply-quiver-safe` は現在、quiver タイプが明らかに Dynkin-A でない場合、積極的なローカル特殊化よりも正確さを優先します。
 ## 今後の方向性
 
-ロードマップには、`make-goppa-grid` ジェネレーターを単位円 (属 $g=0$) から **楕円曲線** (属 $g=1$) まで拡張することが含まれています。これにより、フレームワークは Weierstrass $\wp$ 関数を介して **周期境界条件 (PBC)** を自然に処理できるようになり、Ewald 総和に代わる統一された代数が提供されます。
+- 教室用 RPC デモを拡張して、stdin 経由で JSON を受け入れ、学習演習として任意の言語から Near/Far ロジックを呼び出せるようにします。
+- `make-goppa-grid` を単位円 (genus $g=0$) から **楕円曲線** (g​​enus $g=1$) に拡張し、Weierstrass $\wp$ 関数を介して **周期境界条件 (PBC)** を処理し、Ewald 総和に代わる統一された代数を提供します。
+- 無関係なリーン モジュール (`WittFoundation`、`HidaArikiKoikeNotes`) を修復して、完全なライブラリ証明 CI を有効にします。
