@@ -37,7 +37,7 @@ The core innovation is the adaptive switching between traversal modes based on t
 
 - **Kernel:** Complex-valued Multipole-to-Local (M2L) translations using binomial coefficients (`nCk`) and factorial weighting.
 - **Grid Generation:** `make-goppa-grid` generates coordinates using trigonometric mapping of finite field elements.
-- **Adaptive Control:** The `demo-cartan-golay` function showcases the engine's ability to switch search strategies dynamically based on the entropy of the particle distribution.
+- **Adaptive Control:** The `demo-cartan-fmm` function showcases the engine's ability to switch search strategies dynamically based on the entropy of the particle distribution.
 
 ## Applications
 - **Accelerator Physics:** Space-charge effect simulations with non-Maxwellian distributions.

@@ -58,12 +58,12 @@ The kernel of the framework is the **Adaptive Frontier**. Instead of hardcoded h
 
 ### Code Excerpt (`modules/fmm/fmm_on_goppa_grid.scm`)
 
-The interaction loop delegates flow control to the Golay frontier:
+The interaction loop delegates flow control to the frontier policy:
 
 ```scheme
-;; Inside cartan-fmm-evaluate-golay
+;; Inside cartan-fmm-evaluate
 (let loop ()
-  ;; Pop next task based on Golay-determined strategy (Stack vs Queue)
+  ;; Pop next task based on the policy-determined strategy (Stack vs Queue)
   (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
     (when level-idx
       (set! frontier updated-frontier)
