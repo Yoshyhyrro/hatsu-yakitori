@@ -61,6 +61,12 @@ jobs:
       - name: Check packaging environment
         run: stack exec shake -- fmm-release-check-env
 
+      - name: Build staged package tree
+        run: stack exec shake -- fmm-release-stage
+
+      - name: Inspect staged package tree
+        run: find dist/fmm-release -type f | sort
+
       - name: Build Debian package
         run: stack exec shake -- deb-fmm
 
