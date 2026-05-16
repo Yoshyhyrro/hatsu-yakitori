@@ -4,11 +4,12 @@ module Rules.DebFMM
   ( debFmmRules
   ) where
 
-import Control.Monad (unless)
+import Control.Monad (forM_, unless)
 import Control.Monad.IO.Class (liftIO)
 import Development.Shake
 import Development.Shake.Command (cmd_)
 import Development.Shake.FilePath
+import System.IO (hClose, openTempFile)
 import qualified System.Directory as Dir
 import System.Info (os)
 
@@ -35,13 +36,23 @@ debFmmRules cfg coreFiles = do
     let binDir = stageRoot </> "usr" </> "bin"
     let controlDir = stageRoot </> "DEBIAN"
     let docDir = stageRoot </> "usr" </> "share" </> "doc" </> debPackageName
+    let binPath = binDir </> debBinaryName
+    let controlPath = controlDir </> "control"
+    let copyrightPath = docDir </> "copyright"
+    let readmePath = docDir </> "README.Debian"
     liftIO $ Dir.createDirectoryIfMissing True binDir
     liftIO $ Dir.createDirectoryIfMissing True controlDir
     liftIO $ Dir.createDirectoryIfMissing True docDir
-    copyFile' (getPath exe) (binDir </> debBinaryName)
-    copyFile' "LICENSE" (docDir </> "copyright")
-    writeFileChanged (docDir </> "README.Debian") releaseReadme
-    writeFileChanged (controlDir </> "control") controlFileContents
+    copyFile' (getPath exe) binPath
+    copyFile' "LICENSE" copyrightPath
+    writeFileChanged readmePath releaseReadme
+    writeFileChanged controlPath controlFileContents
+    normalizeStagePermissions controlDir
+      [ binPath
+      , controlPath
+      , copyrightPath
+      , readmePath
+      ]
     putNormal $ "staged FMM Debian tree under: " ++ stageRoot
 
   phony "deb-fmm" $ do
@@ -50,9 +61,10 @@ debFmmRules cfg coreFiles = do
     dpkgDebFound <- liftIO $ hasExecutable "dpkg-deb"
     unless dpkgDebFound $
       fail "dpkg-deb not found in PATH. Install dpkg-dev on the Linux runner before building deb-fmm."
+    packageRoot <- preparePackageRoot cfg
     let outFile = bcDistDir cfg </> debPackageFileName
     liftIO $ Dir.createDirectoryIfMissing True (bcDistDir cfg)
-    cmd_ ("dpkg-deb" :: String) ["--build", releaseStageRoot cfg, outFile]
+    cmd_ ("dpkg-deb" :: String) ["--build", packageRoot, outFile]
     putNormal $ "built Debian package: " ++ outFile
 
 fmmReleaseModule :: [FilePath] -> Module
@@ -117,3 +129,44 @@ releaseReadme = unlines
   , "Future changes will add the stable CLI surface, the C ABI shared library,"
   , "and richer self-check and capability reporting modes."
   ]
+
+normalizeStagePermissions :: FilePath -> [FilePath] -> Action ()
+normalizeStagePermissions controlDir payloadFiles = do
+  cmd_ ("chmod" :: String) ["0755", controlDir]
+  forM_ payloadFiles $ \path -> do
+    let mode
+          | takeFileName path == debBinaryName = "0755"
+          | otherwise = "0644"
+    cmd_ ("chmod" :: String) [mode, path]
+
+preparePackageRoot :: BuildConfig -> Action FilePath
+preparePackageRoot cfg = do
+  let sourceRoot = releaseStageRoot cfg
+  tempBase <- liftIO Dir.getTemporaryDirectory
+  tempRoot <- liftIO $ do
+    (tempPath, tempHandle) <- openTempFile tempBase (debPackageName ++ "-pkgroot-")
+    hClose tempHandle
+    Dir.removeFile tempPath
+    Dir.createDirectory tempPath
+    pure tempPath
+  let binDir = tempRoot </> "usr" </> "bin"
+  let controlDir = tempRoot </> "DEBIAN"
+  let docDir = tempRoot </> "usr" </> "share" </> "doc" </> debPackageName
+  let binPath = binDir </> debBinaryName
+  let controlPath = controlDir </> "control"
+  let copyrightPath = docDir </> "copyright"
+  let readmePath = docDir </> "README.Debian"
+  liftIO $ Dir.createDirectoryIfMissing True binDir
+  liftIO $ Dir.createDirectoryIfMissing True controlDir
+  liftIO $ Dir.createDirectoryIfMissing True docDir
+  copyFile' (sourceRoot </> "usr" </> "bin" </> debBinaryName) binPath
+  copyFile' (sourceRoot </> "DEBIAN" </> "control") controlPath
+  copyFile' (sourceRoot </> "usr" </> "share" </> "doc" </> debPackageName </> "copyright") copyrightPath
+  copyFile' (sourceRoot </> "usr" </> "share" </> "doc" </> debPackageName </> "README.Debian") readmePath
+  normalizeStagePermissions controlDir
+    [ binPath
+    , controlPath
+    , copyrightPath
+    , readmePath
+    ]
+  pure tempRoot
