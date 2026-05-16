@@ -2,6 +2,8 @@ name: Translate README
 
 on:
   push:
+    tags-ignore:
+      - '*'
     paths:
       - 'README.md'
   workflow_dispatch:

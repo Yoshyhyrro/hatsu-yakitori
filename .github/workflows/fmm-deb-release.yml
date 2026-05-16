@@ -108,6 +108,7 @@ jobs:
       - name: Upload package to GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           mapfile -t debs < <(find release-assets -type f -name '*.deb' | sort)
           if [ "${#debs[@]}" -eq 0 ]; then
@@ -116,5 +117,5 @@ jobs:
           fi
 
           tag="${GITHUB_REF_NAME}"
-          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --title "$tag" --generate-notes
-          gh release upload "$tag" "${debs[@]}" --clobber
+          gh release view "$tag" --repo "$GH_REPO" >/dev/null 2>&1 || gh release create "$tag" --repo "$GH_REPO" --title "$tag" --generate-notes
+          gh release upload "$tag" "${debs[@]}" --repo "$GH_REPO" --clobber

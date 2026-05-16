@@ -13,6 +13,8 @@ on:
       - 'stack.yaml'
       - 'tests/fmm_tests.scm'
   push:
+    tags-ignore:
+      - '*'
     paths:
       - '.github/workflows/ci.yml'
       - 'core/**'
