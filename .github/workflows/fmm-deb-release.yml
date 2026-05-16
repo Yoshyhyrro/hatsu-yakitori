@@ -52,6 +52,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential chicken-bin dpkg-dev haskell-stack
 
+      - name: Install CHICKEN egg dependencies
+        run: sudo chicken-install srfi-1 srfi-69
+
+      - name: Verify CHICKEN toolchain
+        run: |
+          which csc
+          csc -version
+          chicken-status srfi-1 srfi-69
+
       - name: Verify Stack
         run: stack --version
 
