@@ -18,8 +18,8 @@ on:
       - feature/fmm_classroom_rpc_actions
       - 'release/**'
     tags:
+      # Keep Debian spin-off releases separate from the main egg v* releases.
       - 'fmm-v*'
-      - 'v*'
     paths:
       - '.github/workflows/fmm-deb-release.yml'
       - 'LICENSE'
