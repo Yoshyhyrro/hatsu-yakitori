@@ -14,7 +14,6 @@
           (chicken flonum)
           srfi-1
           srfi-69
-          srfi-133
           (except golay_frontier adaptive-frontier-push adaptive-frontier-pop))
 
   ;; ------------------------------------------------------------------
@@ -57,6 +56,9 @@
   
   (define (nCk n k)
     (/ (fact n) (* (fact k) (fact (- n k)))))
+
+  (define (append-vectors left right)
+    (list->vector (append (vector->list left) (vector->list right))))
 
   ;; ------------------------------------------------------------------
   ;; Frontier Operations
@@ -175,7 +177,7 @@
     "Evaluate potential at target-idx using FMM driven by Golay Frontier."
     
     (let* ((base-frontier (make-adaptive-frontier golay-info-bits))
-           (frontier (vector-append base-frontier (vector (make-stack))))
+          (frontier (append-vectors base-frontier (vector (make-stack))))
            (target-pos (local-parameter grid target-idx))
            (total-potential (cons 0.0 0.0)))
       

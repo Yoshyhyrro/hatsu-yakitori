@@ -36,6 +36,7 @@ executables:
       - Salmonella
       - SourceIO
       - Rules.Compile
+      - Rules.DebFMM
       - Rules.GC
       - Rules.Link
       - Rules.MEEP
