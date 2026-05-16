@@ -208,56 +208,58 @@
   (define (cartan-fmm-evaluate grid hierarchy sources charges target-idx order frontier-info-bits)
     "Evaluate potential at target-idx using FMM with a local frontier policy."
 
-    (let* ((base-frontier (make-adaptive-frontier frontier-info-bits))
-           (frontier (append-vectors base-frontier (vector (make-stack))))
-           (target-pos (local-parameter grid target-idx))
-           (total-potential (cons 0.0 0.0)))
+        (let* ((frontier (make-adaptive-frontier frontier-info-bits))
+               (target-pos (local-parameter grid target-idx))
+               (total-potential (cons 0.0 0.0)))
 
-      (print-frontier-info base-frontier)
+          (vector-set! frontier 4
+                       (if (eq? (adaptive-frontier-mode frontier) 'stack)
+                           (make-stack)
+                           (make-queue)))
+
+          (print-frontier-info frontier)
 
       ;; レベルをフロンティアに追加
-      (let ((num-levels (vector-length hierarchy)))
-        (do ((i 0 (+ i 1))) ((= i num-levels))
-          (set! frontier (adaptive-frontier-push frontier i))))
+         (let ((num-levels (vector-length hierarchy)))
+           (do ((i 0 (+ i 1))) ((= i num-levels))
+             (set! frontier (adaptive-frontier-push frontier i))))
 
       ;; フロンティア処理ループ
-      (let loop ()
-        (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
-          (when level-idx
-            (set! frontier updated-frontier)
+         (let loop ()
+           (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
+             (when level-idx
+               (set! frontier updated-frontier)
 
-            (let ((cell-indices (vector-ref hierarchy level-idx)))
-              (unless (null? cell-indices)
-                (let* ((level-center (calculate-geometric-center grid cell-indices))
-                       (dist (c-abs (c-sub target-pos level-center)))
-                       (is-near-field (< dist fmm-default-near-field-cutoff)))
+               (let ((cell-indices (vector-ref hierarchy level-idx)))
+                 (unless (null? cell-indices)
+                   (let* ((level-center (calculate-geometric-center grid cell-indices))
+                          (dist (c-abs (c-sub target-pos level-center)))
+                          (is-near-field (< dist fmm-default-near-field-cutoff)))
 
-                  (cond
-                   ;; Near Field: Direct Sum
-                   (is-near-field
-                    (for-each
-                     (lambda (src-idx)
-                       (unless (= src-idx target-idx)
-                         (let* ((src-pos (local-parameter grid src-idx))
-                                (diff (c-sub target-pos src-pos))
-                                (q (list-ref charges src-idx))
-                                (val (c-div (cons q 0.0) diff)))
-                           (set! total-potential (c-add total-potential val)))))
-                     cell-indices))
+                     (cond
+                      ;; Near Field: Direct Sum
+                      (is-near-field
+                       (for-each
+                        (lambda (src-idx)
+                          (unless (= src-idx target-idx)
+                            (let* ((src-pos (local-parameter grid src-idx))
+                                   (diff (c-sub target-pos src-pos))
+                                   (q (list-ref charges src-idx))
+                                   (val (c-div (cons q 0.0) diff)))
+                              (set! total-potential (c-add total-potential val)))))
+                        cell-indices))
 
-                   ;; Far Field: Multipole Expansion
-                   (else
-                    (let ((M (p2m-kernel grid cell-indices
-                                         (map (lambda (x) (list-ref charges x)) cell-indices)
-                                         level-center order)))
-                      (let ((L (m2l-translation M level-center target-pos order)))
-                        (set! total-potential (c-add total-potential (vector-ref L 0))))))))))
+                      ;; Far Field: Multipole Expansion
+                      (else
+                       (let ((M (p2m-kernel grid cell-indices
+                                            (map (lambda (x) (list-ref charges x)) cell-indices)
+                                            level-center order)))
+                         (let ((L (m2l-translation M level-center target-pos order)))
+                           (set! total-potential (c-add total-potential (vector-ref L 0))))))))))
 
-            (loop))))
+               (loop))))
 
-      total-potential))
-
-  (define cartan-fmm-evaluate-golay cartan-fmm-evaluate)
+         total-potential))
 
   ;; ------------------------------------------------------------------
   ;; Demo
@@ -288,5 +290,3 @@
         (printf "Result Potential: ~a + ~ai\n" (car res2) (cdr res2)))
 
       (printf "\n(Processing order differs based on Golay weight)\n")))
-
-  (define demo-cartan-golay demo-cartan-fmm)

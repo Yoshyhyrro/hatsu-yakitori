@@ -163,8 +163,7 @@
                (let ((value (parse-nonnegative-integer arg (require-value arg rest))))
                  (loop (cddr rest) (config-set config 'target-index value))))
 
-              ((or (string=? arg "--frontier-bits")
-                   (string=? arg "--golay-bits"))
+              ((string=? arg "--frontier-bits")
                (let ((value (parse-nonnegative-integer arg (require-value arg rest))))
                  (loop (cddr rest) (config-set config 'frontier-bits value))))
 
@@ -311,8 +310,8 @@
                             (make-hierarchy grid-size)))
              (target-index (modulo (config-ref config 'target-index) grid-size))
              (order (effective-order config))
-               (frontier-bits (config-ref config 'frontier-bits)))
-             (values 'file path grid hierarchy sources charges target-index order frontier-bits))))
+             (frontier-bits (config-ref config 'frontier-bits)))
+            (values 'file path grid hierarchy sources charges target-index order frontier-bits))))
 
   (define (approximate-memory-bytes grid-size order cell-count)
     (let ((grid-bytes (* grid-size 16))

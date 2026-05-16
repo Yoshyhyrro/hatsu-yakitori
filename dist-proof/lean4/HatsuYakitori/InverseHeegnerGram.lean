@@ -514,6 +514,13 @@ theorem obsVec_matches_obsΦ :
     if obsΦ w = (0 : ZMod 5) then 0 else 1 := by
   intro w; cases w <;> simp [obsVec, obsΦ, RudvalisWeight.toNat] <;> decide
 
+/-- The obstruction vector `obsVec` is the integer lift of `obsΦ`.
+    Reducing the distinguished coordinate of `obsVec` modulo 5 recovers
+    the obstruction function from `ObstructionGoppa`. -/
+theorem obsVec_mod_five_eq_obsΦ (w : RudvalisWeight) :
+    (((obsVec ⟨w.toNat, by cases w <;> decide⟩ : ℤ) : ZMod 5)) = obsΦ w := by
+  cases w <;> simp [obsVec, obsΦ, RudvalisWeight.toNat]
+
 /-- The full coherence: the Gram matrix connects all four source modules.
     - Kernel (1-dim) ↔ leech vertex ↔ holonomy vanishing (RudvalisCarabiner)
     - Rank (6) ↔ code length ↔ Hamming weight of obsΦ (ObstructionGoppa)

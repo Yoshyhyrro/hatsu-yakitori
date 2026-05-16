@@ -1,22 +1,20 @@
 ;; module/fmm/fmm_on_goppa_grid.scm
 
-(module fmm_on_goppa_grid *
+(module fmm_on_goppa_grid
   (make-goppa-grid
    local-parameter
-  calculate-geometric-center
-  fmm-default-near-field-cutoff
-  cartan-fmm-evaluate
-   cartan-fmm-evaluate-golay
-  demo-cartan-fmm
-  demo-cartan-golay)
+   calculate-geometric-center
+   fmm-default-near-field-cutoff
+   cartan-fmm-evaluate
+   demo-cartan-fmm)
 
   (import (scheme)
           (chicken base)
       (chicken bitwise)
-          (chicken format)
-          (chicken sort)
-          (chicken flonum)
-          srfi-1
+      (chicken format)
+      (chicken sort)
+      (chicken flonum)
+      srfi-1
       srfi-69)
 
-        (include "modules/fmm/fmm_kernel_impl.scm"))
+  (include "modules/fmm/fmm_kernel_impl.scm"))
