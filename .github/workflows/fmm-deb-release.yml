@@ -16,6 +16,7 @@ on:
     branches:
       - main
       - feature/fmm_classroom_rpc_actions
+      - 'release/**'
     tags:
       - 'fmm-v*'
       - 'v*'
