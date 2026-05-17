@@ -49,6 +49,7 @@ hatsu-yakitori.install.sh
 # Local debug helpers
 core/gf_test.scm
 core/golay_frontier_tmp_debug.scm
+dist-proof/lean4/.lake/
 dist-proof/lean4/.tmp_*.lean
 dist-proof/lean4/HatsuYakitori/_test_*.lean
 tools/read_forms.scm
