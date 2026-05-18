@@ -131,6 +131,11 @@ jobs:
       pages: write
       id-token: write
     steps:
+      - name: Checkout source branch for Pages UI assets
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        with:
+          path: site-src
+
       - name: Checkout gh-pages branch
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         with:
@@ -142,6 +147,13 @@ jobs:
         with:
           name: hatsu-fmm-deb
           path: deb-artifact
+
+      - name: Sync Pages UI assets
+        run: |
+          cp site-src/pages/index.html apt-repo/index.html
+          cp site-src/pages/styles.css apt-repo/styles.css
+          cp site-src/pages/app.js apt-repo/app.js
+          cp site-src/pages/.nojekyll apt-repo/.nojekyll
 
       - name: Import GPG key
         run: |
