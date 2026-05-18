@@ -12,7 +12,7 @@
 |:--- |:--- |
 |**グリッド/スペース** |代数曲線上の点 (約数) |
 |**潜在的なフィールド** |有理関数・微分形式 |
-|**多極拡張** |ローランシリーズ（主要部品）のポイント |
+|**多極の拡張** |ローランシリーズ（主要部品）のポイント |
 |**拡張センター** |ローカルパラメータ $t$ / 基底の変更 |
 |**特異点** |関数の極 |
 |**適応階層** |除数の次数/種数の制約 |
@@ -38,24 +38,32 @@ hatsu-yakitori/
 │   │   └── fmm_on_goppa_grid.scm # The Goppa-FMM implementation
 │   ├── sssp/                    # Single-Source Shortest Path
 │   └── boids/                   # Particle simulation
-└── tools/                       # CLI utilities
+├── tools/
+│   ├── fmm_classroom_rpc.scm    # Self-contained educational near/far RPC demo
+│   └── run_fmm_classroom_rpc.scm # Runnable entry point for the classroom demo
+├── tests/
+│   └── fmm_tests.scm            # Smoke tests (near/far branch coverage)
+└── dist-proof/lean4/            # Lean 4 formal proofs
+    └── HatsuYakitori/
+        ├── FMM.lean              # Proof model of FMM semantics
+        └── HopfStructure.lean   # Hopf algebra structure on Golay weights
 ```
 
 ## 実装のハイライト: Golay が管理するフロンティア
 
-フレームワークの核となるのは **Adaptive Frontier** です。ハードコードされたヒューリスティックの代わりに、シミュレーション戦略は Golay コードのプロパティによって決定されます。
+フレームワークのカーネルは **Adaptive Frontier** です。ハードコードされたヒューリスティックの代わりに、シミュレーション戦略は Golay コードのプロパティによって決定されます。
 
 - **低重み (τ < 12)**: 低エントロピー/ノイズを意味します → **DFS (スタック)** モードで深く正確な局所補正を行います。
 - **高重み (τ ≥ 12)**: グローバルな多極ベースのスイープの高エントロピー → **BFS (キュー)** モードを意味します。
 
 ### コードの抜粋 (`modules/fmm/fmm_on_goppa_grid.scm`)
 
-インタラクション ループは、フロー制御を Golay フロンティアに委任します。
+インタラクション ループは、フロー制御をフロンティア ポリシーに委任します。
 
 ```scheme
-;; Inside cartan-fmm-evaluate-golay
+;; Inside cartan-fmm-evaluate
 (let loop ()
-  ;; Pop next task based on Golay-determined strategy (Stack vs Queue)
+  ;; Pop next task based on the policy-determined strategy (Stack vs Queue)
   (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
     (when level-idx
       (set! frontier updated-frontier)
@@ -116,7 +124,7 @@ hatsu-yakitori/
 - `machine_constants` — 数値定数、ビット ユーティリティ、ガロア高さヘルパー
 - `golay_frontier` — リーン導出不変条件を使用した Golay[24,12] フロンティア制御
 - `kak_decomposition` — KAK トラバーサル コアと Golay 制御の最短パス ラッパー
-- `kak_quiver_safety` — 矢筒分類、パウリ位相ロジック、および DirectedBanachQuiver 不変量
+- `kak_quiver_safety` — quiver 分類、Pauli 位相ロジック、および DirectedBanachQuiver 不変量
 - `kak_physics_core` — quiver-safe 物理ループで使用される Yee-grid 更新カーネル
 
 ### ソースチェックアウトからビルドする
@@ -135,7 +143,7 @@ chicken-install
 
 ### Windows ノート
 
-Windows では、生成されたインストール/ビルド スクリプトは `cmd.exe` を介して実行されるため、ランタイム `PATH` には実際の `gcc.exe` および `cp.exe` バイナリが含まれている必要があります。次の設定は、このリポジトリで動作することがわかっています。
+Windows では、生成されたインストール/ビルド スクリプトは `cmd.exe` 経由で実行されるため、ランタイム `PATH` には実際の `gcc.exe` および `cp.exe` バイナリが含まれている必要があります。次の設定は、このリポジトリで動作することがわかっています。
 
 ```powershell
 $env:Path = 'C:\msys64\ucrt64\bin;C:\msys64\usr\bin;C:\tools\chicken\bin;' + $env:Path
@@ -145,6 +153,74 @@ $env:CHICKEN_REPOSITORY_PATH = "$env:LOCALAPPDATA\chicken-user-repo\11;C:\tools\
 chicken-install srfi-1 srfi-69 srfi-95 srfi-4 srfi-133 records
 chicken-install -n
 ```
+
+## クイック FMM CLI
+
+Linux の場合、スタンドアロン FMM CLI は別の `fmm-v*` リリース ラインとしても公開されています。GitHub Releases から 1 つの `.deb` をインストールするか、GitHub Pages がサポートする APT リポジトリを追加することができます。この README には短いパスが記載されています。Wiki には、より長いウォークスルーが掲載されています。
+
+### APT リポジトリ
+
+```bash
+curl -fsSL https://yoshyhyrro.github.io/hatsu-yakitori/public.asc \
+  | gpg --dearmor \
+  | sudo tee /usr/share/keyrings/hatsu-yakitori-archive-keyring.gpg >/dev/null
+
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/hatsu-yakitori-archive-keyring.gpg] https://yoshyhyrro.github.io/hatsu-yakitori stable main" \
+  | sudo tee /etc/apt/sources.list.d/hatsu-yakitori.list >/dev/null
+
+sudo apt update
+sudo apt install hatsu-fmm
+```
+
+リポジトリ署名キーは `gh-pages/public.asc` で公開され、`https://yoshyhyrro.github.io/hatsu-akitori/public.asc` でミラーリングされます。
+
+### .deb の直接インストール
+
+```bash
+curl -LO https://github.com/Yoshyhyrro/hatsu-yakitori/releases/download/fmm-v0.4.1/hatsu-fmm_0.0.1_amd64.deb
+sudo apt install ./hatsu-fmm_0.0.1_amd64.deb
+
+hatsu-fmm --check-env
+hatsu-fmm --check
+hatsu-fmm --list-caps
+```
+
+### 一般的な実行
+
+```bash
+hatsu-fmm --help
+hatsu-fmm --dry-run --grid-size 1000000 -p 12
+hatsu-fmm --input examples/fmm/sample_problem.scm --benchmark --iterations 5
+hatsu-fmm --benchmark --grid-size 4096 --iterations 5
+```
+
+### モード
+
+|モード |何をするのか |一般的な使用法 |
+|:--- |:--- |:--- |
+|`--ヘルプ` |CLI の使用法と例を出力します |スイッチの簡単なリマインダー |
+|`--check-env` |カーネルのインポートを検証し、マシン定数を報告します。インストール後の最初のコマンド |
+|`--チェック` |定数、グリッド生成、階層生成、および 1 つの合成評価に対して軽量のセルフチェックを実行します。新しいマシンまたは CI ランナーでのスモーク テスト |
+|`--list-caps` |パッケージ化された機能の表面を印刷します。このリリース スライスに含まれる内容を確認する |
+|`--ドライラン` |オプションを解析し、完全なワークロードを行わずに計画された評価をレポートします。大規模な実行を実行する前に健全性チェックを行う |
+|`--ベンチマーク` |タイミングの評価を繰り返します |グリッドのサイズ、順序、または入力ファイルを比較する |
+|`--トピックを説明します` |既知のランタイム トピックまたは制限事項の説明を出力します。報告されたコードまたは動作を調査する |
+
+### 主なオプション
+
+|オプション |意味 |デフォルト/メモ |
+|:--- |:--- |:--- |
+|`-p`、`--precision INT` |有効多極次数にマッピングされた精度目標 |`8` |
+|`--order INT` |明示的な多極次数オーバーライド |`8` |
+|`-t`、`--threads INT` |要求されたワーカー数 |解析されましたが、現在のランタイムは依然として `1` に戻ります。
+|`--θ FLOAT` |近い/遠い分離の許容性のヒント |インターフェイスの安定性のために受け入れられます。現在のカーネルは依然として固定カットオフ `0.5` を使用しています。
+|`--input PATH` |ファイルから 1 つの Scheme 問題フォームを読み取ります。省略した場合、CLI は総合的な問題を生成します。
+|`--grid-size INT` |生成された入力のパーティクル数 |`64` |
+|`--target-index INT` |生成されたグリッド内のターゲット パーティクル インデックス |`0` |
+|`--frontier-bits INT` |トラバーサル動作の選択に使用される Golay 制御のフロンティア ビット |`0` |
+|`--反復回数 INT` |ベンチマークモードでの繰り返し回数 |`3` |
+
+`--input` ファイルには、`(grid ...)` とオプションの `(charges ...)`、`(sources ...)`、および `(hierarchy ...)` を含む最上位の Scheme フォームが 1 つだけ含まれている必要があります。動作サンプルは [examples/fmm/sample_problem.scm](examples/fmm/sample_problem.scm) に含まれています。
 
 ## REPL の使用法
 
@@ -170,7 +246,7 @@ chicken-install -n
 一般的な使用法:
 
 - `make-adaptive-frontier` は、エンコードされた Golay ワードから `stack` または `queue` を選択します
-- `frontier- respects-witt-symmetry?` は、現在の実装で使用されているリーン派生の不変式をチェックします。
+- `frontier- respects-witt-symmetry?` は、現在の実装で使用されているリーン派生の不変条件をチェックします
 - `print-galois-interpretation` は、対応する M24 軌道クラスと高さの解釈を出力します。
 
 ### 2. 喉制御によるカラスの最短経路
@@ -226,7 +302,7 @@ chicken-install -n
 
 ### 4. Quiver-safe 物理ループ
 
-Yee-grid ステッピングの場合は、`kak_physics_core` と `kak_quiver_safety` を組み合わせます。
+Yee-grid ステッピングの場合、`kak_physics_core` と `kak_quiver_safety` を組み合わせます。
 
 ```scheme
 (import kak_physics_core kak_quiver_safety)
@@ -263,6 +339,40 @@ cabal run shake -- clean
 cabal run shake -- witt
 ```
 
+## 教室でのデモ: 1 つのリクエスト、1 つの応答
+
+「tools/fmm_classroom_rpc.scm」モジュールは、FMM を駆動する近いか遠いかの決定を示す、依存関係のない最小限の教育用デモンストレーションを提供します。
+
+```scheme
+;; Run the interactive demo:
+csi -s tools/run_fmm_classroom_rpc.scm
+```
+
+出力：```
+=== Tiny FMM Classroom RPC Demo ===
+
+Case 1: near field
+Server response: ((status . ok) (mode . near) (potential . 12.0) ...)
+Explanation: near: target is close, so we add each source one by one.
+
+Case 2: far field
+Server response: ((status . ok) (mode . far) (potential . 1.09...) ...)
+Explanation: far: target is far away, so we replace the group by one cluster.
+```
+
+このモジュールは自己完結型 (コンパイルされた卵は必要ありません) で、初心者でも読みやすいように設計されています。これは、gRPC スタイルのサービスの構造を反映する単純な `handle-request` 関数を公開します。つまり、リクエスト マップを送信し、レスポンス マップを受信します。
+
+## CI / 正式な検証
+
+リポジトリは、GitHub Actions を使用して 2 つの補完的なチェックを行います。
+
+|ワークフロー |チェック内容 |
+|:--- |:--- |
+|**リーン FMM ゲート** (`lean-fmm-gate.yml`) |Lean 4 で「HatsuYakitori.FMM」と「HopfStructure」をビルドする |
+|**FMM スキームの煙テスト** (同じワークフロー) |CHICKEN | を使用して Ubuntu 上で `csi -s testing/fmm_tests.scm` を実行します。
+
+リーン ゲートは、FMM のファーフィールド (多極) ブランチとニアフィールド (直接和) ブランチの両方がポテンシャルを正しく更新することを型レベルで証明します。これらの証明は `dist-proof/lean4/HatsuYakitori/FMM.lean` にあります。
+
 ## これを使用する理由
 
 - **適応制御**: Golay コードワードが DFS/スタックと BFS/キューの動作を決定します
@@ -279,4 +389,6 @@ cabal run shake -- witt
 - `kak-apply-quiver-safe` は現在、quiver タイプが明らかに Dynkin-A でない場合、積極的なローカル特殊化よりも正確さを優先します。
 ## 今後の方向性
 
-ロードマップには、`make-goppa-grid` ジェネレーターを単位円 (属 $g=0$) から **楕円曲線** (属 $g=1$) まで拡張することが含まれています。これにより、フレームワークは Weierstrass $\wp$ 関数を介して **周期境界条件 (PBC)** を自然に処理できるようになり、Ewald 総和に代わる統一された代数が提供されます。
+- 教室用 RPC デモを拡張して、stdin 経由で JSON を受け入れ、学習演習として任意の言語から Near/Far ロジックを呼び出せるようにします。
+- `make-goppa-grid` を単位円 (genus $g=0$) から **楕円曲線** (g​​enus $g=1$) に拡張し、Weierstrass $\wp$ 関数を介して **周期境界条件 (PBC)** を処理し、Ewald 総和に代わる統一された代数を提供します。
+- 無関係なリーン モジュール (`WittFoundation`、`HidaArikiKoikeNotes`) を修復して、完全なライブラリ証明 CI を有効にします。
