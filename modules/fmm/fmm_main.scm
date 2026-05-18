@@ -28,8 +28,43 @@
   (define default-frontier-bits 0)
   (define default-benchmark-iterations 3)
 
+  ;;; --- module-level diagnostic state ---
+  (define current-step-prefix "")
+  (define fatal-hook (make-parameter #f))
+  (define log-port-param (make-parameter #f))
+  (define quiet-param (make-parameter #f))
+
   (define (report level code message)
-    (printf "~a[~a]: ~a~%" level code message))
+    (let* ((effective-code
+            (if (string=? current-step-prefix "")
+                code
+                (string-append current-step-prefix "/" code)))
+           (line (sprintf "~a[~a]: ~a" level effective-code message)))
+      (unless (and (quiet-param)
+                   (or (string=? level "INFO")
+                       (string=? level "NOTE")
+                       (string=? level "HELP")))
+        (printf "~a~%" line))
+      (when (log-port-param)
+        (fprintf (log-port-param) "~a~%" line))))
+
+  (define (subline-emit line)
+    (unless (quiet-param) (printf "~a~%" line))
+    (when (log-port-param) (fprintf (log-port-param) "~a~%" line)))
+
+  (define (subline-help text)
+    (subline-emit (sprintf "  = help: ~a" text)))
+
+  (define (subline-note text)
+    (subline-emit (sprintf "  = note: ~a" text)))
+
+  (define (subline-seealso text)
+    (subline-emit (sprintf "  = see also: ~a" text)))
+
+  (define (subline-location path)
+    (let ((line (sprintf "  --> ~a" path)))
+      (printf "~a~%" line)
+      (when (log-port-param) (fprintf (log-port-param) "~a~%" line))))
 
   (define (info code message)
     (report "INFO" code message))
@@ -42,7 +77,16 @@
 
   (define (fatal code message)
     (report "ERROR" code message)
-    (exit 1))
+    (cond
+      ((fatal-hook) => (lambda (hook) (hook)))
+      (else (exit 1))))
+
+  (define (fatal-at path code message)
+    (report "ERROR" code message)
+    (subline-location path)
+    (cond
+      ((fatal-hook) => (lambda (hook) (hook)))
+      (else (exit 1))))
 
   (define (make-default-config)
     (list (cons 'mode 'compute)
@@ -55,7 +99,11 @@
           (cons 'target-index default-target-index)
           (cons 'frontier-bits default-frontier-bits)
           (cons 'benchmark-iterations default-benchmark-iterations)
-          (cons 'explain-topic #f)))
+          (cons 'explain-topic #f)
+          (cons 'quiet #f)
+          (cons 'verbose #f)
+          (cons 'log-file #f)
+          (cons 'job-path #f)))
 
   (define (config-ref config key)
     (let ((entry (assq key config)))
@@ -105,6 +153,17 @@
       (if (number? value)
           value
           (fatal "CLI_PARSE" (sprintf "Option ~a expects a real number, got ~a" option raw)))))
+
+  (define (apply-preset config name)
+    (cond
+      ((string=? name "conservative")
+       (config-set (config-set (config-set config 'precision 4) 'order 4) 'frontier-bits 0))
+      ((string=? name "balanced")
+       config)
+      ((string=? name "aggressive")
+       (config-set (config-set (config-set config 'precision 16) 'order 16) 'frontier-bits #xFFF))
+      (else
+       (fatal "CLI_PRESET" (sprintf "Unknown preset ~a; use conservative, balanced, or aggressive." name)))))
 
   (define (parse-args args)
     (let loop ((rest args) (config (make-default-config)))
@@ -171,6 +230,24 @@
                (let ((value (parse-positive-integer arg (require-value arg rest))))
                  (loop (cddr rest) (config-set config 'benchmark-iterations value))))
 
+              ((or (string=? arg "-q") (string=? arg "--quiet"))
+               (loop (cdr rest) (config-set config 'quiet #t)))
+
+              ((or (string=? arg "-v") (string=? arg "--verbose"))
+               (loop (cdr rest) (config-set config 'verbose #t)))
+
+              ((string=? arg "--preset")
+               (let ((name (require-value arg rest)))
+                 (loop (cddr rest) (apply-preset config name))))
+
+              ((string=? arg "--log-file")
+               (let ((path (require-value arg rest)))
+                 (loop (cddr rest) (config-set config 'log-file path))))
+
+              ((string=? arg "--job")
+               (let ((path (require-value arg rest)))
+                 (loop (cddr rest) (config-set (set-mode config 'job) 'job-path path))))
+
               (else
                (fatal "CLI_UNKNOWN" (sprintf "Unknown argument: ~a" arg))))))))
 
@@ -207,11 +284,11 @@
         (entry
          (if (problem-entry? entry)
              (cadr entry)
-             (fatal "INPUT_FORMAT"
-                    (sprintf "Input file ~a has a malformed entry for ~a. Use (key value)." path key))))
+             (fatal-at path "INPUT_FORMAT"
+                       (sprintf "malformed entry for ~a; expected (key value)" key))))
         (required?
-         (fatal "INPUT_FORMAT"
-                (sprintf "Input file ~a is missing required field ~a." path key)))
+         (fatal-at path "INPUT_FORMAT"
+                   (sprintf "missing required field ~a" key)))
         (else #f))))
 
   (define (normalize-point raw path)
@@ -227,8 +304,8 @@
             (number? (cadr raw)))
        (cons (car raw) (cadr raw)))
       (else
-       (fatal "INPUT_FORMAT"
-              (sprintf "Input file ~a has an invalid grid point ~a. Use (x . y) or (x y)." path raw)))))
+       (fatal-at path "INPUT_FORMAT"
+                 (sprintf "invalid grid point ~a; use (x . y) or (x y)" raw)))))
 
   (define (normalize-grid raw path)
     (let ((points (sequence->list raw)))
@@ -236,10 +313,8 @@
           (let ((grid (list->vector (map (lambda (point) (normalize-point point path)) points))))
             (if (> (vector-length grid) 0)
                 grid
-                (fatal "INPUT_FORMAT"
-                       (sprintf "Input file ~a must provide at least one grid point." path))))
-          (fatal "INPUT_FORMAT"
-                 (sprintf "Input file ~a field grid must be a list or vector of points." path)))))
+                (fatal-at path "INPUT_FORMAT" "grid must have at least one grid point")))
+          (fatal-at path "INPUT_FORMAT" "field grid must be a list or vector of (x y) or (x . y) points"))))
 
   (define (normalize-number-sequence raw path field-name expected-length)
     (let ((values (sequence->list raw)))
@@ -247,10 +322,10 @@
           (if (and (= (length values) expected-length)
                    (every number? values))
               values
-              (fatal "INPUT_FORMAT"
-                     (sprintf "Input file ~a field ~a must be a numeric list or vector of length ~a." path field-name expected-length)))
-          (fatal "INPUT_FORMAT"
-                 (sprintf "Input file ~a field ~a must be a list or vector." path field-name)))))
+              (fatal-at path "INPUT_FORMAT"
+                        (sprintf "field ~a must be a numeric list/vector of length ~a" field-name expected-length)))
+          (fatal-at path "INPUT_FORMAT"
+                    (sprintf "field ~a must be a list or vector" field-name)))))
 
   (define (normalize-index-sequence raw path field-name limit)
     (let ((values (sequence->list raw)))
@@ -259,12 +334,12 @@
             (for-each
              (lambda (value)
                (unless (and (integer? value) (>= value 0) (< value limit))
-                 (fatal "INPUT_FORMAT"
-                        (sprintf "Input file ~a field ~a contains out-of-range index ~a." path field-name value))))
+                 (fatal-at path "INPUT_FORMAT"
+                           (sprintf "field ~a contains out-of-range index ~a (limit ~a)" field-name value limit))))
              values)
             values)
-          (fatal "INPUT_FORMAT"
-                 (sprintf "Input file ~a field ~a must be a list or vector." path field-name)))))
+          (fatal-at path "INPUT_FORMAT"
+                    (sprintf "field ~a must be a list or vector" field-name)))))
 
   (define (normalize-hierarchy raw path grid-size)
     (let ((cells (sequence->list raw)))
@@ -272,28 +347,26 @@
           (list->vector
            (map (lambda (cell) (normalize-index-sequence cell path 'hierarchy grid-size))
                 cells))
-          (fatal "INPUT_FORMAT"
-                 (sprintf "Input file ~a field hierarchy must be a list or vector of cells." path)))))
+          (fatal-at path "INPUT_FORMAT" "field hierarchy must be a list or vector of index-list cells"))))
 
   (define (read-problem-form path)
     (handle-exceptions exn
-      (fatal "INPUT_IO" (sprintf "Unable to read input file ~a: ~a" path exn))
+      (fatal-at path "INPUT_IO" (sprintf "unable to read file: ~a" exn))
       (with-input-from-file path
         (lambda ()
           (let ((form (read)))
             (if (eof-object? form)
-                (fatal "INPUT_FORMAT" (sprintf "Input file ~a is empty." path))
+                (fatal-at path "INPUT_FORMAT" "file contains no forms")
                 (let ((extra (read)))
                   (if (eof-object? extra)
                       form
-                      (fatal "INPUT_FORMAT"
-                             (sprintf "Input file ~a must contain exactly one top-level form." path))))))))))
+                      (fatal-at path "INPUT_FORMAT"
+                                "file must contain exactly one top-level form")))))))))
 
   (define (load-problem-from-file config path)
     (let* ((raw-data (read-problem-form path)))
       (unless (and (list? raw-data) (every problem-entry? raw-data))
-        (fatal "INPUT_FORMAT"
-               (sprintf "Input file ~a must be an association list of (key value) entries." path)))
+        (fatal-at path "INPUT_FORMAT" "top-level form must be an association list of (key value) entries"))
       (let* ((grid (normalize-grid (problem-field raw-data 'grid path #t) path))
              (grid-size (vector-length grid))
              (charges-raw (problem-field raw-data 'charges path #f))
@@ -327,17 +400,23 @@
           (order (config-ref config 'order)))
       (when (> requested-threads 1)
         (note "THREADS001"
-              (sprintf "Requested ~a threads; current runtime executes with 1 thread." requested-threads)))
+              (sprintf "requested ~a threads; current runtime executes with 1 thread." requested-threads))
+        (subline-help "pass --threads 1 to suppress this note")
+        (subline-note "multi-thread execution is not available in this release slice"))
       (when (> precision order)
         (note "PRECISION001"
-              (sprintf "Precision target ~a was mapped to effective order ~a." precision (effective-order config))))
+              (sprintf "precision target ~a was mapped to effective order ~a." precision (effective-order config)))
+        (subline-help (sprintf "pass --order ~a explicitly to skip precision mapping" (effective-order config))))
       (when (not (= theta fmm-default-near-field-cutoff))
         (note "THETA001"
-          (sprintf "--theta is accepted for interface stability; the current kernel still evaluates with the built-in cutoff ~a." fmm-default-near-field-cutoff)))))
+          (sprintf "--theta ~a accepted; kernel evaluates with built-in cutoff ~a." theta fmm-default-near-field-cutoff))
+        (subline-note "theta-driven cutoff is planned for a future release slice")
+        (subline-note (sprintf "current fixed near-field cutoff is ~a" fmm-default-near-field-cutoff)))))
 
   (define (print-usage)
     (help-line "USAGE" "hatsu-fmm [mode] [options]")
-    (help-line "MODES" "--help, --check-env, --list-caps, --dry-run, --benchmark, --check, --explain TOPIC")
+    (help-line "MODES" "--help, --check-env, --list-caps, --dry-run, --benchmark, --check, --explain TOPIC, --job PATH")
+    (subline-note "only one mode may be given per invocation; --job runs multiple steps from a job file")
     (help-line "OPTIONS" "-p, --precision INT    Accuracy target mapped to effective order")
     (help-line "OPTIONS" "-t, --threads INT      Requested worker count; current runtime falls back to 1")
     (help-line "OPTIONS" "--theta FLOAT          Requested admissibility hint; current kernel uses a fixed cutoff")
@@ -347,10 +426,18 @@
     (help-line "OPTIONS" "--target-index INT     Target particle index inside the generated grid")
     (help-line "OPTIONS" "--frontier-bits INT    Frontier policy bits for traversal behavior")
     (help-line "OPTIONS" "--iterations INT       Benchmark repetitions")
+    (help-line "OPTIONS" "-q, --quiet            Suppress INFO and NOTE output; ERROR lines are always shown")
+    (help-line "OPTIONS" "-v, --verbose          Reserved; currently a no-op")
+    (help-line "OPTIONS" "--preset NAME          Apply a named option group: conservative, balanced, aggressive")
+    (subline-note "individual option flags override --preset values")
+    (help-line "OPTIONS" "--log-file PATH        Append all diagnostic output to PATH in addition to stdout")
+    (help-line "OPTIONS" "--job PATH             Run a multi-step job from an S-expression job file")
     (help-line "EXAMPLES" "hatsu-fmm --dry-run --grid-size 1000000 -p 12")
     (help-line "EXAMPLES" "hatsu-fmm --input examples/fmm/sample_problem.scm --benchmark --iterations 5")
     (help-line "EXAMPLES" "hatsu-fmm --benchmark --grid-size 4096 --iterations 5")
     (help-line "EXAMPLES" "hatsu-fmm --check")
+    (help-line "EXAMPLES" "hatsu-fmm --preset aggressive --benchmark --grid-size 4096")
+    (help-line "EXAMPLES" "hatsu-fmm --job examples/fmm/sample_job.scm")
     (note "INPUT001" "Without --input, the CLI falls back to a generated synthetic problem."))
 
   (define (run-check-env)
@@ -516,43 +603,162 @@
   (define (run-explain topic)
     (cond
       ((or (string=? topic "input") (string=? topic "FMM-INPUT"))
-       (info "EXPLAIN" "Input files are single Scheme forms containing (grid VALUE) and optional (charges VALUE), (sources VALUE), and (hierarchy VALUE). Lists or vectors are accepted for sequence values."))
+       (info "EXPLAIN" "Input files are single Scheme forms containing (grid VALUE) and optional (charges VALUE), (sources VALUE), and (hierarchy VALUE). Lists or vectors are accepted for sequence values.")
+       (subline-seealso "--explain check  (validates a file end-to-end)"))
       ((or (string=? topic "precision") (string=? topic "FMM-PRECISION"))
-       (info "EXPLAIN" "Precision is an accuracy target in this CLI slice. The runtime maps it to effective-order = max(order, precision)."))
+       (info "EXPLAIN" "Precision is an accuracy target in this CLI slice. The runtime maps it to effective-order = max(order, precision).")
+       (subline-seealso "--explain threads  (similar stub-vs-future gap)"))
       ((or (string=? topic "threads") (string=? topic "FMM-THREADS"))
-       (info "EXPLAIN" "Threads are accepted for interface stability. The current runtime remains single-threaded and emits a NOTE when a larger value is requested."))
+       (info "EXPLAIN" "Threads are accepted for interface stability. The current runtime remains single-threaded and emits a NOTE when a larger value is requested.")
+       (subline-seealso "--explain precision  (also a stub-capable option)"))
       ((or (string=? topic "theta") (string=? topic "FMM-THETA"))
-       (info "EXPLAIN" (sprintf "Theta is recorded in the CLI today, but the current evaluator still uses the fixed near-field cutoff ~a from the kernel." fmm-default-near-field-cutoff)))
+       (info "EXPLAIN" (sprintf "Theta is recorded in the CLI today, but the current evaluator still uses the fixed near-field cutoff ~a from the kernel." fmm-default-near-field-cutoff))
+       (subline-note (sprintf "fixed cutoff value: ~a" fmm-default-near-field-cutoff))
+       (subline-seealso "--explain dry-run  (inspect effective parameters without running)"))
       ((or (string=? topic "benchmark") (string=? topic "FMM-BENCHMARK"))
-       (info "EXPLAIN" "Benchmark mode measures the current generated-input runtime. It is a system probe, not a claim about external physics workloads."))
+       (info "EXPLAIN" "Benchmark mode measures the current generated-input runtime. It is a system probe, not a claim about external physics workloads.")
+       (subline-seealso "--explain dry-run  (payload estimate without evaluation)"))
       ((or (string=? topic "dry-run") (string=? topic "FMM-DRYRUN"))
-       (info "EXPLAIN" "Dry-run estimates the payload size and generated workload shape without executing the evaluator."))
+       (info "EXPLAIN" "Dry-run estimates the payload size and generated workload shape without executing the evaluator.")
+       (subline-seealso "--explain benchmark  (actually run and time the evaluator)"))
       ((or (string=? topic "check") (string=? topic "FMM-CHECK"))
-       (info "EXPLAIN" "Check mode is a lightweight self-diagnosis: imports, constants, grid generation, hierarchy generation, and one synthetic evaluation."))
+       (info "EXPLAIN" "Check mode is a lightweight self-diagnosis: imports, constants, grid generation, hierarchy generation, and one synthetic evaluation.")
+       (subline-seealso "--explain input  (input file format)"))
+      ((or (string=? topic "job") (string=? topic "FMM-JOB"))
+       (info "EXPLAIN" "Job mode reads an S-expression file containing (job \"name\" (step \"name\" field ...) ...) and runs each step sequentially.")
+       (subline-note "step fields: mode, grid-size, precision, order, theta, threads, iterations, input, target-index, frontier-bits")
+       (subline-seealso "--help  (full option list including --job PATH)"))
       (else
        (fatal "EXPLAIN_UNKNOWN"
-              (sprintf "Unknown explain topic: ~a. Try input, precision, threads, theta, benchmark, dry-run, or check." topic)))))
+              (sprintf "Unknown explain topic: ~a. Try input, precision, threads, theta, benchmark, dry-run, check, or job." topic)))))
+
+  ;;; --- JCL job file support ---
+
+  (define (parse-job-step global-config spec path)
+    (unless (and (list? spec)
+                 (>= (length spec) 2)
+                 (eq? (car spec) 'step)
+                 (string? (cadr spec)))
+      (fatal "JOB_FORMAT"
+             (sprintf "Job file ~a has a malformed step; expected (step \"name\" field ...)" path)))
+    (let* ((step-name (cadr spec))
+           (fields (cddr spec)))
+      (let loop ((fields fields) (cfg (make-default-config)))
+        (if (null? fields)
+            (cons step-name cfg)
+            (let ((field (car fields)))
+              (unless (and (list? field) (= (length field) 2) (symbol? (car field)))
+                (fatal "JOB_FIELD"
+                       (sprintf "Job step ~a in ~a has a malformed field; expected (key value)" step-name path)))
+              (let ((key (car field))
+                    (val (cadr field)))
+                (loop (cdr fields)
+                      (case key
+                        ((mode)
+                         (let ((m (if (symbol? val) val (string->symbol val))))
+                           (case m
+                             ((compute dry-run benchmark check check-env list-caps explain)
+                              (config-set cfg 'mode m))
+                             (else
+                              (fatal "JOB_MODE"
+                                     (sprintf "Step ~a in ~a: unknown mode ~a" step-name path m))))))
+                        ((grid-size)     (config-set cfg 'grid-size val))
+                        ((precision)     (config-set cfg 'precision val))
+                        ((order)         (config-set cfg 'order val))
+                        ((theta)         (config-set cfg 'theta val))
+                        ((threads)       (config-set cfg 'threads val))
+                        ((iterations)    (config-set cfg 'benchmark-iterations val))
+                        ((input)         (config-set cfg 'input-path val))
+                        ((target-index)  (config-set cfg 'target-index val))
+                        ((frontier-bits) (config-set cfg 'frontier-bits val))
+                        (else
+                         (fatal "JOB_FIELD"
+                                (sprintf "Step ~a in ~a: unknown field ~a" step-name path key)))))))))))
+
+  (define (load-job-from-file global-config path)
+    (let ((raw (handle-exceptions exn
+                 (fatal "JOB_IO" (sprintf "Unable to read job file ~a: ~a" path exn))
+                 (with-input-from-file path
+                   (lambda ()
+                     (let ((form (read)))
+                       (if (eof-object? form)
+                           (fatal "JOB_FORMAT" (sprintf "Job file ~a is empty" path))
+                           form)))))))
+      (unless (and (list? raw)
+                   (>= (length raw) 2)
+                   (eq? (car raw) 'job)
+                   (string? (cadr raw)))
+        (fatal "JOB_FORMAT"
+               (sprintf "Job file ~a must start with (job \"name\" (step ...) ...)" path)))
+      (let* ((job-name (cadr raw))
+             (step-specs (cddr raw)))
+        (when (null? step-specs)
+          (fatal "JOB_FORMAT" (sprintf "Job ~a in ~a has no steps" job-name path)))
+        (cons job-name
+              (map (lambda (spec) (parse-job-step global-config spec path)) step-specs)))))
+
+  (define (run-job global-config)
+    (let* ((job-path (config-ref global-config 'job-path))
+           (job-data (load-job-from-file global-config job-path))
+           (job-name (car job-data))
+           (step-list (cdr job-data))
+           (total (length step-list))
+           (failed 0))
+      (info "JOB001" (sprintf "starting job=~a steps=~a" job-name total))
+      (for-each
+       (lambda (step-pair)
+         (let* ((step-name (car step-pair))
+                (step-config (cdr step-pair))
+                (ok #t))
+           (call-with-current-continuation
+            (lambda (bail)
+              (dynamic-wind
+               (lambda () (set! current-step-prefix step-name))
+               (lambda ()
+                 (parameterize ((fatal-hook (lambda ()
+                                              (set! ok #f)
+                                              (bail #f))))
+                   (case (config-ref step-config 'mode)
+                     ((compute)    (run-compute step-config))
+                     ((dry-run)    (run-dry-run step-config))
+                     ((benchmark)  (run-benchmark step-config))
+                     ((check)      (run-self-check step-config))
+                     ((check-env)  (run-check-env))
+                     ((list-caps)  (run-list-caps))
+                     ((explain)    (run-explain (config-ref step-config 'explain-topic)))
+                     (else
+                      (fatal "JOB_MODE"
+                             (sprintf "Step ~a requested unsupported mode ~a"
+                                      step-name (config-ref step-config 'mode)))))))
+               (lambda () (set! current-step-prefix "")))))
+           (unless ok (set! failed (+ failed 1)))))
+       step-list)
+      (info "JOB002" (sprintf "job=~a completed steps=~a failed=~a" job-name total failed))
+      (exit (if (= failed 0) 0 1))))
 
   (define (main args)
     (let ((config (if (null? args)
                       (set-mode (make-default-config) 'help)
                       (parse-args args))))
-      (case (config-ref config 'mode)
-        ((help)
-         (print-usage))
-        ((check-env)
-         (run-check-env))
-        ((list-caps)
-         (run-list-caps))
-        ((dry-run)
-         (run-dry-run config))
-        ((benchmark)
-         (run-benchmark config))
-        ((check)
-         (run-self-check config))
-        ((explain)
-         (run-explain (config-ref config 'explain-topic)))
-        (else
-         (run-compute config)))))
+      (let* ((log-file-path (config-ref config 'log-file))
+             (log-port (and log-file-path
+                            (open-output-file log-file-path #:append #t))))
+        (parameterize ((quiet-param (config-ref config 'quiet))
+                       (log-port-param log-port))
+          (dynamic-wind
+           (lambda () #f)
+           (lambda ()
+             (case (config-ref config 'mode)
+               ((help)      (print-usage))
+               ((check-env) (run-check-env))
+               ((list-caps) (run-list-caps))
+               ((dry-run)   (run-dry-run config))
+               ((benchmark) (run-benchmark config))
+               ((check)     (run-self-check config))
+               ((explain)   (run-explain (config-ref config 'explain-topic)))
+               ((job)       (run-job config))
+               (else        (run-compute config))))
+           (lambda ()
+             (when log-port (close-output-port log-port))))))))
 
   (main (command-line-arguments)))
