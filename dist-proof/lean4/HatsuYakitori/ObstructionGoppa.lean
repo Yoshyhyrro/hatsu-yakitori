@@ -75,6 +75,9 @@ section ObstructionFunction
     - obsΦ(P) = phantomIndicator(P) mod 5
     - Values: (1,1,1,0,1,1,1) over the 7 weights
 
+  Cross-reference: `InverseHeegnerGram.obsVec_mod_five_eq_obsΦ` shows that
+  the Gram-side vector `obsVec` reduces modulo 5 to this same function.
+
     The zero at r3 (self-dual midpoint) is the geometric origin of
     the MDS failure: d = 1 < n − k + 1. -/
 def obsΦ : RudvalisWeight → ZMod 5

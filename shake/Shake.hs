@@ -17,6 +17,7 @@ import qualified Rules.Proof.Main as Proof
 import qualified Rules.Proof.LLVM_IR as ProofLLVM
 import qualified Rules.Proof.SBV_Bridge as SBV
 import qualified Rules.Quadcopter as Quadcopter
+import qualified Rules.Wasm as Wasm
 
 -- ============================================================
 -- Module Definitions
@@ -143,6 +144,10 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         -- Test
         phony ("test-" ++ mName) $ 
             Pipeline.testModule m cfg
+        
+        -- Wasm
+        phony ("wasm-" ++ mName) $
+            Wasm.buildWasm m cfg
         
         -- Alias
         phony mName $ need ["build-" ++ mName]
