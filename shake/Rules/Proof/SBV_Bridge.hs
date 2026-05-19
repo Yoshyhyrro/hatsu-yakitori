@@ -17,6 +17,7 @@ import qualified System.Directory as Dir
 import System.Process (readProcessWithExitCode)
 import System.Exit (ExitCode(..))
 import Control.Monad (when)
+import System.Info (os)
 
 -- | SBV verification specification
 data SBVSpec = SBVSpec
@@ -168,5 +169,20 @@ verifySBVSpec specPath spec = do
 compileSBVToSo :: FilePath -> FilePath -> Action ()
 compileSBVToSo hsPath soPath = do
   liftIO $ putStrLn $ "[SBV] Compiling to shared library: " ++ soPath
-  -- Note: This is a very basic compilation command. In practice, you may need to include additional flags or link against specific libraries depending on the content of the SBV spec and its dependencies.
-  cmd "ghc" ["-dynamic", "-fPIC", "-shared", "-O2", "-o", soPath, hsPath]
+  -- On Windows, building a Unix-style .so typically fails because GHC's
+  -- dynamic libraries may not be available. Skip attempting to build
+  -- .so on Windows and advise using WSL or building on a Unix host.
+  if os == "mingw32"
+    then do
+      let dllPath = dropExtension soPath <.> "dll"
+      liftIO $ putStrLn $ "[SBV] Detected Windows; skipping .so build. (Would target: " ++ dllPath ++ ")"
+      liftIO $ putStrLn "[SBV] To build a shared library on Windows either:"
+      liftIO $ putStrLn "  - build inside WSL/Linux, or"
+      liftIO $ putStrLn "  - install GHC dynamic libraries and the SBV package for dynamic linking."
+      return ()
+    else do
+      (exitCode, out, err) <- liftIO $ readProcessWithExitCode "stack" ["exec","--","ghc","-dynamic","-fPIC","-shared","-O2","-o", soPath, hsPath] ""
+      liftIO $ putStrLn out
+      liftIO $ putStrLn err
+      when (exitCode /= ExitSuccess) $
+        fail $ "[SBV] ghc failed to compile " ++ hsPath ++ " -> " ++ soPath
