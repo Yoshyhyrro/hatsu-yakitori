@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hatsu Yakitori Packages</title>
+    <meta
+      name="description"
+      content="GitHub Pages landing page for the hatsu-fmm Debian package feed and the CHICKEN Scheme source-based installation flow."
+    >
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="backdrop" aria-hidden="true">
+      <div class="orb orb-one"></div>
+      <div class="orb orb-two"></div>
+      <div class="grid-mask"></div>
+    </div>
+
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Hatsu Yakitori package surface</p>
+        <h1>One Pages site, two install tracks.</h1>
+        <p class="lede">
+          Use the Debian feed when you want the standalone FMM CLI on Linux,
+          or stay in the CHICKEN Scheme world when you want the full egg and
+          module surface from source.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button button-primary" href="#apt">Open the Debian path</a>
+          <a class="button button-secondary" href="#chicken">Open the CHICKEN path</a>
+          <a class="button button-ghost" href="https://github.com/Yoshyhyrro/hatsu-yakitori">GitHub repository</a>
+        </div>
+
+        <div class="hero-status">
+          <span class="status-pill">APT metadata on GitHub Pages</span>
+          <span class="status-pill">Signed with published public key</span>
+          <span class="status-pill">CHICKEN egg metadata in-tree</span>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="panel panel-accent" id="apt">
+          <div class="panel-header">
+            <p class="kicker">Debian / Linux CLI</p>
+            <h2>Install hatsu-fmm from the APT repository</h2>
+          </div>
+
+          <p class="panel-copy">
+            This path is for the packaged FMM CLI. Add the Pages-backed
+            repository, trust the published signing key, then install the
+            binary package with apt.
+          </p>
+
+          <div class="code-toolbar">
+            <span class="code-label">APT setup</span>
+            <button class="copy-button" data-copy-target="apt-setup">Copy</button>
+          </div>
+          <pre class="code-block"><code id="apt-setup">curl -fsSL https://yoshyhyrro.github.io/hatsu-yakitori/public.asc \
+  | gpg --dearmor \
+  | sudo tee /usr/share/keyrings/hatsu-yakitori-archive-keyring.gpg &gt;/dev/null
+
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/hatsu-yakitori-archive-keyring.gpg] https://yoshyhyrro.github.io/hatsu-yakitori stable main" \
+  | sudo tee /etc/apt/sources.list.d/hatsu-yakitori.list &gt;/dev/null
+
+sudo apt update
+sudo apt install hatsu-fmm</code></pre>
+
+          <div class="link-cluster">
+            <a href="public.asc">Download public.asc</a>
+            <a href="dists/stable/InRelease">Open InRelease</a>
+            <a href="dists/stable/main/binary-amd64/Packages">Open Packages index</a>
+            <a href="pool/main/">Browse package pool</a>
+          </div>
+
+          <div class="subpanel-grid">
+            <article class="subpanel">
+              <p class="kicker">Single file install</p>
+              <h3>Prefer one .deb and done?</h3>
+              <div class="code-toolbar">
+                <span class="code-label">Direct release install</span>
+                <button class="copy-button" data-copy-target="deb-install">Copy</button>
+              </div>
+              <pre class="code-block compact"><code id="deb-install">curl -LO https://github.com/Yoshyhyrro/hatsu-yakitori/releases/latest/download/hatsu-fmm_0.0.1_amd64.deb
+sudo apt install ./hatsu-fmm_0.0.1_amd64.deb</code></pre>
+              <a class="inline-link" href="https://github.com/Yoshyhyrro/hatsu-yakitori/releases">Browse release assets</a>
+            </article>
+
+            <article class="subpanel">
+              <p class="kicker">First smoke checks</p>
+              <h3>Quick sanity pass after install</h3>
+              <div class="code-toolbar">
+                <span class="code-label">CLI smoke commands</span>
+                <button class="copy-button" data-copy-target="apt-smoke">Copy</button>
+              </div>
+              <pre class="code-block compact"><code id="apt-smoke">hatsu-fmm --check-env
+hatsu-fmm --check
+hatsu-fmm --list-caps</code></pre>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel panel-neutral" id="chicken">
+          <div class="panel-header">
+            <p class="kicker">CHICKEN Scheme / source checkout</p>
+            <h2>Use the egg metadata and full module set</h2>
+          </div>
+
+          <p class="panel-copy">
+            This path keeps you in the Scheme toolchain. It is the right fit
+            when you want extensions such as machine_constants,
+            golay_frontier, kak_decomposition, kak_quiver_safety, or the FMM
+            modules directly from source.
+          </p>
+
+          <div class="code-toolbar">
+            <span class="code-label">Source checkout install</span>
+            <button class="copy-button" data-copy-target="chicken-install">Copy</button>
+          </div>
+          <pre class="code-block"><code id="chicken-install">git clone https://github.com/Yoshyhyrro/hatsu-yakitori.git
+cd hatsu-yakitori
+chicken-install srfi-1 srfi-69 srfi-95 srfi-4 srfi-133 records
+chicken-install -n</code></pre>
+
+          <div class="link-cluster">
+            <a href="https://github.com/Yoshyhyrro/hatsu-yakitori/blob/main/hatsu-yakitori.egg">Open hatsu-yakitori.egg</a>
+            <a href="https://github.com/Yoshyhyrro/hatsu-yakitori/blob/main/README.md">Read the full README</a>
+            <a href="https://github.com/Yoshyhyrro/hatsu-yakitori/tree/main/core">Browse core modules</a>
+            <a href="https://github.com/Yoshyhyrro/hatsu-yakitori/tree/main/modules">Browse application modules</a>
+          </div>
+
+          <div class="module-table-wrap">
+            <table class="module-table">
+              <thead>
+                <tr>
+                  <th>Surface</th>
+                  <th>What you get</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Core math + coding tools</td>
+                  <td>machine_constants, golay_frontier, cartan_utils, witt_foundation</td>
+                </tr>
+                <tr>
+                  <td>KAK / quiver stack</td>
+                  <td>kak_decomposition, kak_quiver_safety, kak_physics_core, kak_optimization</td>
+                </tr>
+                <tr>
+                  <td>Application modules</td>
+                  <td>fmm_on_goppa_grid, fmm_main, boids, sssp_main, sssp_geo_main</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel panel-split" id="compare">
+          <div class="panel-header">
+            <p class="kicker">Choose the channel</p>
+            <h2>Debian package vs CHICKEN source flow</h2>
+          </div>
+
+          <div class="compare-grid">
+            <article class="compare-card">
+              <h3>APT / .deb</h3>
+              <p>
+                Best when you want a clean Linux install of the standalone
+                hatsu-fmm CLI with signed metadata and a predictable apt story.
+              </p>
+            </article>
+            <article class="compare-card">
+              <h3>CHICKEN egg / checkout</h3>
+              <p>
+                Best when you want the wider module surface, Scheme-level
+                experimentation, or to build directly from the repository.
+              </p>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <p>
+          The Pages branch serves both signed APT metadata and a human-facing
+          landing page. The public key lives at
+          <a href="public.asc">public.asc</a>.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

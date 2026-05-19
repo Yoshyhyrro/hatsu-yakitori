@@ -36,11 +36,13 @@ executables:
       - Salmonella
       - SourceIO
       - Rules.Compile
+      - Rules.DebFMM
       - Rules.GC
       - Rules.Link
       - Rules.MEEP
       - Rules.Quadcopter
       - Rules.StandardToplevel
+      - Rules.Wasm
       - Rules.Proof.LLVM_IR
       - Rules.Proof.Lean4
       - Rules.Proof.Main

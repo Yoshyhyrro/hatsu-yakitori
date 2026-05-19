@@ -45,7 +45,7 @@
     (csc-options "-O3" "-d0" "-I" "core" "-I" "modules"))
 
   ;; Subsystems (Applications/Modules)
-  (extension module.fmm.fmm-goppa
+  (extension fmm_on_goppa_grid
     (source "modules/fmm/fmm_on_goppa_grid.scm")
     (csc-options "-O3" "-d0" "-I" "core" "-I" "modules"))
   (extension fmm_main

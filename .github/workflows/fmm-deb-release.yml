@@ -1,0 +1,210 @@
+name: FMM Debian Release
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/fmm-deb-release.yml'
+      - 'LICENSE'
+      - 'core/**'
+      - 'modules/fmm/**'
+      - 'package.yaml'
+      - 'hatsu-yakitori.cabal'
+      - 'shake/**'
+      - 'stack.yaml'
+      - 'tests/fmm_tests.scm'
+  push:
+    branches:
+      - main
+      - 'hotfix/**'
+      - feature/fmm_classroom_rpc_actions
+      - 'release/**'
+    tags:
+      # Keep Debian spin-off releases separate from the main egg v* releases.
+      - 'fmm-v*'
+    paths:
+      - '.github/workflows/fmm-deb-release.yml'
+      - 'LICENSE'
+      - 'core/**'
+      - 'modules/fmm/**'
+      - 'package.yaml'
+      - 'hatsu-yakitori.cabal'
+      - 'shake/**'
+      - 'stack.yaml'
+      - 'tests/fmm_tests.scm'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-deb:
+    name: Build FMM .deb
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Guard docs against hardcoded FMM release tags
+        run: |
+          set -euo pipefail
+
+          offenders="$(grep -nE 'fmm-v[0-9]+(\.[0-9]+)*' README.md pages/index.html || true)"
+          if [ -n "$offenders" ]; then
+            echo "Hardcoded fmm-v* tag found in docs. Use releases/latest/download instead:"
+            echo "$offenders"
+            exit 1
+          fi
+
+          for file in README.md pages/index.html; do
+            if ! grep -q 'releases/latest/download/hatsu-fmm_' "$file"; then
+              echo "Expected releases/latest/download URL not found in $file"
+              exit 1
+            fi
+          done
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential chicken-bin dpkg-dev apt-utils gnupg haskell-stack
+
+      - name: Install CHICKEN egg dependencies
+        run: sudo chicken-install srfi-1 srfi-69
+
+      - name: Verify CHICKEN toolchain
+        run: |
+          which csc
+          csc -version
+          chicken-status srfi-1 srfi-69
+
+      - name: Verify Stack
+        run: stack --version
+
+      - name: Build local shake executable
+        run: stack build hatsu-yakitori:exe:shake
+
+      - name: Check packaging environment
+        run: stack exec shake -- fmm-release-check-env
+
+      - name: Build staged package tree
+        run: stack exec shake -- fmm-release-stage
+
+      - name: Inspect staged package tree
+        run: find dist/fmm-release -type f | sort
+
+      - name: Build Debian package
+        run: stack exec shake -- deb-fmm
+
+      - name: Inspect packaged outputs
+        run: find dist -type f | sort
+
+      - name: Upload Debian artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: hatsu-fmm-deb
+          path: |
+            dist/*.deb
+            dist/fmm-release/pkgroot/**
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish .deb to GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-deb
+    if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download Debian artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: hatsu-fmm-deb
+          path: release-assets
+
+      - name: Upload package to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mapfile -t debs < <(find release-assets -type f -name '*.deb' | sort)
+          if [ "${#debs[@]}" -eq 0 ]; then
+            echo "No .deb artifact found to publish."
+            exit 1
+          fi
+
+          tag="${GITHUB_REF_NAME}"
+          gh release view "$tag" --repo "$GH_REPO" >/dev/null 2>&1 || gh release create "$tag" --repo "$GH_REPO" --title "$tag" --generate-notes
+          gh release upload "$tag" "${debs[@]}" --repo "$GH_REPO" --clobber
+
+  publish-apt-repo:
+    name: Publish APT repository to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build-deb
+    if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/release/fmm-deb-ci')
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout source branch for Pages UI assets
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        with:
+          path: site-src
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        with:
+          ref: gh-pages
+          path: apt-repo
+
+      - name: Download .deb artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: hatsu-fmm-deb
+          path: deb-artifact
+
+      - name: Sync Pages UI assets
+        run: |
+          cp site-src/pages/index.html apt-repo/index.html
+          cp site-src/pages/styles.css apt-repo/styles.css
+          cp site-src/pages/app.js apt-repo/app.js
+          cp site-src/pages/.nojekyll apt-repo/.nojekyll
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.APT_GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "${{ secrets.APT_GPG_PRIVATE_KEY }}" | gpg --batch --import --import-options import-show
+
+      - name: Build APT repo structure
+        run: |
+          set -euo pipefail
+          REPO=apt-repo
+          POOL=$REPO/pool/main
+          DISTS=$REPO/dists/stable/main/binary-amd64
+
+          mkdir -p "$POOL" "$DISTS"
+
+          cp deb-artifact/*.deb "$POOL"/
+
+          cd apt-repo
+          dpkg-scanpackages pool/main /dev/null > dists/stable/main/binary-amd64/Packages
+          gzip -k -f dists/stable/main/binary-amd64/Packages
+
+          apt-ftparchive release dists/stable > dists/stable/Release
+
+          gpg --batch --yes --armor --detach-sign \
+            -o dists/stable/Release.gpg dists/stable/Release
+          gpg --batch --yes --clearsign \
+            -o dists/stable/InRelease dists/stable/Release
+
+      - name: Push to gh-pages
+        run: |
+          cd apt-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "apt: update repository [ci skip]"
+          git push

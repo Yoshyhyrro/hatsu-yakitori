@@ -120,16 +120,36 @@ extractDeclareUses content =
 --   Keeps parenthesized groups like "(chicken base)" as a single dependency token.
 extractImports :: String -> [String]
 extractImports content =
-  nub $ concatMap parseImportLine (lines content)
+  nub $ collectImports (lines content)
   where
-    parseImportLine line
-      | "import" `isInfixOf` line =
-          case dropWhile (/= 'i') line of
-            xs | "import" `isPrefixOf` xs ->
-                  let after = drop (length ("import" :: String)) xs
-                  in filter (not . null) (tokenizeImportArgs after)
-               | otherwise -> []
-      | otherwise = []
+    collectImports [] = []
+    collectImports (line:rest)
+      | Just importStart <- trimToImport line =
+          let (importLines, remaining) = takeImportForm [importStart] (parenDelta importStart) rest
+              fullForm = unlines (reverse importLines)
+              after = dropWhile isSpace $ drop (length ("(import" :: String)) fullForm
+          in filter (not . null) (tokenizeImportArgs after) ++ collectImports remaining
+      | otherwise = collectImports rest
+
+    trimToImport :: String -> Maybe String
+    trimToImport line =
+      case dropWhile isSpace line of
+        xs | "(import" `isPrefixOf` xs -> Just xs
+        _ -> Nothing
+
+    takeImportForm :: [String] -> Int -> [String] -> ([String], [String])
+    takeImportForm acc balance remaining
+      | balance <= 0 = (acc, remaining)
+      | otherwise =
+          case remaining of
+            [] -> (acc, [])
+            (next:rest') -> takeImportForm (next : acc) (balance + parenDelta next) rest'
+
+    parenDelta :: String -> Int
+    parenDelta line = count '(' line - count ')' line
+
+    count :: Char -> String -> Int
+    count c = length . filter (== c)
 
 -- | Tokenize the arguments of an (import ...) form, preserving (...) groups.
 --   Example: " (chicken base) srfi-1 machine_constants)"

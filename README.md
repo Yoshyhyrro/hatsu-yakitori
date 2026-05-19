@@ -58,12 +58,12 @@ The kernel of the framework is the **Adaptive Frontier**. Instead of hardcoded h
 
 ### Code Excerpt (`modules/fmm/fmm_on_goppa_grid.scm`)
 
-The interaction loop delegates flow control to the Golay frontier:
+The interaction loop delegates flow control to the frontier policy:
 
 ```scheme
-;; Inside cartan-fmm-evaluate-golay
+;; Inside cartan-fmm-evaluate
 (let loop ()
-  ;; Pop next task based on Golay-determined strategy (Stack vs Queue)
+  ;; Pop next task based on the policy-determined strategy (Stack vs Queue)
   (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
     (when level-idx
       (set! frontier updated-frontier)
@@ -154,6 +154,76 @@ $env:CHICKEN_REPOSITORY_PATH = "$env:LOCALAPPDATA\chicken-user-repo\11;C:\tools\
 chicken-install srfi-1 srfi-69 srfi-95 srfi-4 srfi-133 records
 chicken-install -n
 ```
+
+## Quick FMM CLI
+
+For Linux, the standalone FMM CLI is also published as a separate `fmm-v*` release line. You can either install a single `.deb` from GitHub Releases or add the GitHub Pages-backed APT repository. This README keeps the short path; the wiki carries the longer walkthrough.
+
+### APT Repository
+
+```bash
+curl -fsSL https://yoshyhyrro.github.io/hatsu-yakitori/public.asc \
+  | gpg --dearmor \
+  | sudo tee /usr/share/keyrings/hatsu-yakitori-archive-keyring.gpg >/dev/null
+
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/hatsu-yakitori-archive-keyring.gpg] https://yoshyhyrro.github.io/hatsu-yakitori stable main" \
+  | sudo tee /etc/apt/sources.list.d/hatsu-yakitori.list >/dev/null
+
+sudo apt update
+sudo apt install hatsu-fmm
+```
+
+The repository signing key is published at `gh-pages/public.asc` and mirrored at `https://yoshyhyrro.github.io/hatsu-yakitori/public.asc`.
+
+### Direct .deb Install
+
+```bash
+curl -LO https://github.com/Yoshyhyrro/hatsu-yakitori/releases/latest/download/hatsu-fmm_0.0.1_amd64.deb
+sudo apt install ./hatsu-fmm_0.0.1_amd64.deb
+
+hatsu-fmm --check-env
+hatsu-fmm --check
+hatsu-fmm --list-caps
+```
+
+This URL intentionally uses `releases/latest/download` so the command follows the latest `fmm-v*` tag without manual edits.
+
+### Common Runs
+
+```bash
+hatsu-fmm --help
+hatsu-fmm --dry-run --grid-size 1000000 -p 12
+hatsu-fmm --input examples/fmm/sample_problem.scm --benchmark --iterations 5
+hatsu-fmm --benchmark --grid-size 4096 --iterations 5
+```
+
+### Modes
+
+| Mode | What it does | Typical use |
+| :--- | :--- | :--- |
+| `--help` | Prints CLI usage and examples | Quick reminder of switches |
+| `--check-env` | Verifies kernel import and reports machine constants | First command after install |
+| `--check` | Runs a lightweight self-check over constants, grid generation, hierarchy generation, and one synthetic evaluation | Smoke test on a fresh machine or CI runner |
+| `--list-caps` | Prints the packaged capability surface | Confirm what this release slice includes |
+| `--dry-run` | Parses options and reports the planned evaluation without a full workload | Sanity-check a large run before executing it |
+| `--benchmark` | Repeats evaluation for timing | Compare grid sizes, orders, or input files |
+| `--explain TOPIC` | Prints an explanation for a known runtime topic or limitation | Investigate a reported code or behavior |
+
+### Main Options
+
+| Option | Meaning | Default / note |
+| :--- | :--- | :--- |
+| `-p`, `--precision INT` | Accuracy target mapped to an effective multipole order | `8` |
+| `--order INT` | Explicit multipole order override | `8` |
+| `-t`, `--threads INT` | Requested worker count | Parsed, but the current runtime still falls back to `1` |
+| `--theta FLOAT` | Admissibility hint for near/far separation | Accepted for interface stability; the current kernel still uses the fixed cutoff `0.5` |
+| `--input PATH` | Reads one Scheme problem form from a file | If omitted, the CLI generates a synthetic problem |
+| `--grid-size INT` | Particle count for generated input | `64` |
+| `--target-index INT` | Target particle index inside the generated grid | `0` |
+| `--frontier-bits INT` | Golay-controlled frontier bits used to choose traversal behavior | `0` |
+| `--iterations INT` | Number of repetitions in benchmark mode | `3` |
+
+The `--input` file must contain exactly one top-level Scheme form with `(grid ...)` and optional `(charges ...)`, `(sources ...)`, and `(hierarchy ...)`. A working sample is included at [examples/fmm/sample_problem.scm](examples/fmm/sample_problem.scm).
 
 ## REPL Usage
 

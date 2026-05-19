@@ -200,7 +200,7 @@ compileAndLink srcs flags outPath = do
   let objs = map Compile.ciArtifact compileInfos
   
   putInfo $ "[Pipeline] Linking " ++ show (length objs) ++ " objects"
-  Link.linkWithDeps objs [] outPath
+  Link.linkWithDeps objs allDeps outPath
 
 -- ============================================================
 -- GC-Optimized Compile-and-Link
