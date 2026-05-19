@@ -48,6 +48,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
 
+      - name: Guard docs against hardcoded FMM release tags
+        run: |
+          set -euo pipefail
+
+          offenders="$(grep -nE 'fmm-v[0-9]+(\.[0-9]+)*' README.md pages/index.html || true)"
+          if [ -n "$offenders" ]; then
+            echo "Hardcoded fmm-v* tag found in docs. Use releases/latest/download instead:"
+            echo "$offenders"
+            exit 1
+          fi
+
+          for file in README.md pages/index.html; do
+            if ! grep -q 'releases/latest/download/hatsu-fmm_' "$file"; then
+              echo "Expected releases/latest/download URL not found in $file"
+              exit 1
+            fi
+          done
+
       - name: Install system dependencies
         run: |
           sudo apt-get update

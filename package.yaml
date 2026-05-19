@@ -42,6 +42,7 @@ executables:
       - Rules.MEEP
       - Rules.Quadcopter
       - Rules.StandardToplevel
+      - Rules.Wasm
       - Rules.Proof.LLVM_IR
       - Rules.Proof.Lean4
       - Rules.Proof.Main

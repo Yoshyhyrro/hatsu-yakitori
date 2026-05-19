@@ -178,13 +178,15 @@ The repository signing key is published at `gh-pages/public.asc` and mirrored at
 ### Direct .deb Install
 
 ```bash
-curl -LO https://github.com/Yoshyhyrro/hatsu-yakitori/releases/download/fmm-v0.4.1/hatsu-fmm_0.0.1_amd64.deb
+curl -LO https://github.com/Yoshyhyrro/hatsu-yakitori/releases/latest/download/hatsu-fmm_0.0.1_amd64.deb
 sudo apt install ./hatsu-fmm_0.0.1_amd64.deb
 
 hatsu-fmm --check-env
 hatsu-fmm --check
 hatsu-fmm --list-caps
 ```
+
+This URL intentionally uses `releases/latest/download` so the command follows the latest `fmm-v*` tag without manual edits.
 
 ### Common Runs
 

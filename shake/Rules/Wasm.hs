@@ -80,4 +80,4 @@ buildWasm modDef cfg = do
   putInfo $ "[WASM: emcc] Compiling WebAssembly: " ++ cFile
   -- By outputting .js, emcc usually generates the corresponding .wasm as well
   -- Using cflags is required to resolve includes like chicken.h
-  cmd_ "emcc" cflags cFile "-s" "WASM=1" "-o" jsFile
+  cmd_ ("emcc" :: String) (cflags ++ [cFile, "-s", "WASM=1", "-o", jsFile])
