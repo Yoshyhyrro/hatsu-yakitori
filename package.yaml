@@ -24,6 +24,7 @@ executables:
       - bytestring
       - binary
       - hashable
+      - sbv
     ghc-options:
       - -fplugin=Polysemy.Plugin
       - -threaded
