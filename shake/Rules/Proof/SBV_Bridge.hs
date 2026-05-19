@@ -6,6 +6,7 @@ module Rules.Proof.SBV_Bridge
   , generateSBVSpec
   , verifySBVSpec
   , checkSBVEnvironment
+  , compileSBVToSo 
   ) where
 
 import Development.Shake
@@ -160,3 +161,12 @@ verifySBVSpec specPath spec = do
         Nothing -> do
           liftIO $ putStrLn "SBV execution skipped: neither runghc nor stack found in PATH"
           return False
+
+-- | ------------------------------------------------------------------
+-- | Compile the SBV spec to a shared library (.so) for potential dynamic loading by Haskell or C code.
+-- | ------------------------------------------------------------------
+compileSBVToSo :: FilePath -> FilePath -> Action ()
+compileSBVToSo hsPath soPath = do
+  liftIO $ putStrLn $ "[SBV] Compiling to shared library: " ++ soPath
+  -- Note: This is a very basic compilation command. In practice, you may need to include additional flags or link against specific libraries depending on the content of the SBV spec and its dependencies.
+  cmd "ghc" ["-dynamic", "-fPIC", "-shared", "-O2", "-o", soPath, hsPath]

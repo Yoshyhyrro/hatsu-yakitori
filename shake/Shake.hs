@@ -17,6 +17,7 @@ import qualified Rules.Proof.Main as Proof
 import qualified Rules.Proof.LLVM_IR as ProofLLVM
 import qualified Rules.Proof.SBV_Bridge as SBV
 import qualified Rules.Quadcopter as Quadcopter
+import qualified Rules.Wasm as Wasm
 
 -- ============================================================
 -- Module Definitions
@@ -144,6 +145,34 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         phony ("test-" ++ mName) $ 
             Pipeline.testModule m cfg
         
+        -- Wasm
+        phony ("wasm-" ++ mName) $
+            Wasm.buildWasm m cfg
+
+        -- ========================================================
+        -- 新規追加: SBV検証コードから共有ライブラリ (.so) を生成する
+        -- ========================================================
+        phony ("sbv-so-" ++ mName) $ do
+            let hsPath = bcBuildDir cfg </> "sbv_specs" </> (mName ++ ".hs")
+            let soPath = bcBuildDir cfg </> "sbv_specs" </> ("lib" ++ mName ++ "_sbv.so")
+            
+            -- 出力先ディレクトリの確保
+            liftIO $ Dir.createDirectoryIfMissing True (takeDirectory hsPath)
+
+            -- モジュール情報からSpecを定義
+            let spec = SBV.SBVSpec 
+                    { SBV.sbvModuleName = mName
+                    , SBV.sbvBitWidth   = 64
+                    , SBV.sbvInvariants = ["-- Guarantee constraints for " ++ mName]
+                    }
+            
+            -- Haskellコードの生成
+            SBV.generateSBVSpec spec hsPath
+            
+            -- then compile to .so
+            SBV.compileSBVToSo hsPath soPath
+            putNormal $ "\n[SUCCESS] Created SBV shared library for " ++ mName ++ " at:\n  " ++ soPath
+        
         -- Alias
         phony mName $ need ["build-" ++ mName]
         
@@ -174,6 +203,10 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
     phony "build" $ need ["build-" ++ modName m | m <- allModules]
     phony "test-all" $ need ["test-" ++ modName m | m <- allModules]
     phony "test" $ need ["test-all"]
+
+    -- All SBV .so variants (一括で全部の.soを作るコマンド)
+    phony "sbv-so-all" $ 
+        need ["sbv-so-" ++ modName m | m <- allModules]
     
     -- All GC variants
     phony "gc-all" $ 
