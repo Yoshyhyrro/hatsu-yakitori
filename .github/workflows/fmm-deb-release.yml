@@ -17,6 +17,7 @@ on:
       - main
       - 'hotfix/**'
       - feature/fmm_classroom_rpc_actions
+      - feature/example/input_HDF5_fmm-deb-ci
       - 'release/**'
     tags:
       # Keep Debian spin-off releases separate from the main egg v* releases.
