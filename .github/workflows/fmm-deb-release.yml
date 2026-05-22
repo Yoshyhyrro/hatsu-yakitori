@@ -32,6 +32,19 @@ on:
       - 'stack.yaml'
       - 'tests/fmm_tests.scm'
   workflow_dispatch:
+    inputs:
+      deb_version:
+        description: 'Optional package version to build (overrides tag)'
+        required: false
+        default: ''
+      deb_arch:
+        description: 'Target Debian architecture (amd64, arm64)'
+        required: false
+        default: 'amd64'
+      deb_package_name:
+        description: 'Debian package name (defaults to hatsu-fmm)'
+        required: false
+        default: 'hatsu-fmm'
 
 permissions:
   contents: read
@@ -69,7 +82,37 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential chicken-bin dpkg-dev apt-utils gnupg haskell-stack
+          sudo apt-get install -y build-essential chicken-bin dpkg-dev apt-utils gnupg haskell-stack libhdf5-dev hdf5-tools
+
+      - name: Determine DEB_VERSION/DEB_ARCH/DEB_PACKAGE_NAME
+        run: |
+          set -euo pipefail
+          # Use explicit workflow input if provided
+          if [ -n "${{ github.event.inputs.deb_version || '' }}" ]; then
+            echo "DEB_VERSION=${{ github.event.inputs.deb_version }}" >> $GITHUB_ENV
+          else
+            tag="${GITHUB_REF_NAME:-}"
+            if [[ "$tag" == fmm-v* ]]; then
+              ver="${tag#fmm-v}"
+              echo "DEB_VERSION=${ver}" >> $GITHUB_ENV
+            else
+              echo "DEB_VERSION=0.0.1" >> $GITHUB_ENV
+            fi
+          fi
+
+          # Architecture
+          if [ -n "${{ github.event.inputs.deb_arch || '' }}" ]; then
+            echo "DEB_ARCH=${{ github.event.inputs.deb_arch }}" >> $GITHUB_ENV
+          else
+            echo "DEB_ARCH=amd64" >> $GITHUB_ENV
+          fi
+
+          # Package name
+          if [ -n "${{ github.event.inputs.deb_package_name || '' }}" ]; then
+            echo "DEB_PACKAGE_NAME=${{ github.event.inputs.deb_package_name }}" >> $GITHUB_ENV
+          else
+            echo "DEB_PACKAGE_NAME=hatsu-fmm" >> $GITHUB_ENV
+          fi
 
       - name: Install CHICKEN egg dependencies
         run: sudo chicken-install srfi-1 srfi-69
