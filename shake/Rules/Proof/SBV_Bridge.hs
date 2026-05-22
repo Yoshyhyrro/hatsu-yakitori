@@ -142,21 +142,36 @@ verifySBVSpec specPath spec = do
   when (not (isJust z3 || isJust cvc5)) $
     liftIO $ putStrLn "Warning: No SMT solver (z3/cvc5) found in PATH; SBV proofs may fail or be inconclusive."
 
-  runghcPath <- liftIO $ Dir.findExecutable "runghc"
-  case runghcPath of
-    Just r -> do
-      (exitCode, stdout, stderr) <- liftIO $ readProcessWithExitCode r [specPath] ""
-      liftIO $ putStrLn stdout
-      liftIO $ putStrLn stderr
-      return (exitCode == ExitSuccess)
+  stackPath <- liftIO $ Dir.findExecutable "stack"
+  case stackPath of
+    Just s -> do
+      liftIO $ putStrLn "[SBV] Using stack runghc --package sbv"
+      (exitCode, out, err) <- liftIO $ readProcessWithExitCode s ["runghc","--package","sbv",specPath] ""
+      liftIO $ putStrLn out
+      liftIO $ putStrLn err
+      if exitCode == ExitSuccess
+        then return True
+        else do
+          liftIO $ putStrLn $ "[SBV] stack runghc failed: " ++ show exitCode ++ "; attempting runghc fallback."
+          runghcPath <- liftIO $ Dir.findExecutable "runghc"
+          case runghcPath of
+            Just r -> do
+              (exitCode2, out2, err2) <- liftIO $ readProcessWithExitCode r [specPath] ""
+              liftIO $ putStrLn out2
+              liftIO $ putStrLn err2
+              return (exitCode2 == ExitSuccess)
+            Nothing -> do
+              liftIO $ putStrLn "SBV execution failed and runghc not available for fallback."
+              return False
     Nothing -> do
-      stackPath <- liftIO $ Dir.findExecutable "stack"
-      case stackPath of
-        Just s -> do
-          (exitCode, stdout, stderr) <- liftIO $ readProcessWithExitCode s ["exec","--","runghc",specPath] ""
-          liftIO $ putStrLn stdout
-          liftIO $ putStrLn stderr
+      liftIO $ putStrLn "[SBV] 'stack' not found; trying runghc..."
+      runghcPath <- liftIO $ Dir.findExecutable "runghc"
+      case runghcPath of
+        Just r -> do
+          (exitCode, out, err) <- liftIO $ readProcessWithExitCode r [specPath] ""
+          liftIO $ putStrLn out
+          liftIO $ putStrLn err
           return (exitCode == ExitSuccess)
         Nothing -> do
-          liftIO $ putStrLn "SBV execution skipped: neither runghc nor stack found in PATH"
+          liftIO $ putStrLn "SBV execution skipped: neither stack nor runghc found in PATH"
           return False
