@@ -1,12 +1,12 @@
 Package: hatsu-fmm
-Version: 0.0.1
+Version: 0.4.8
 Architecture: amd64
 Maintainer: Yoshihiro Hasegawa <je-suis-1oeuf-devautour@proton.me>
-Filename: pool/main/hatsu-fmm_0.0.1_amd64.deb
-Size: 404954
-MD5sum: 54d1ccfba3ab50b759f1a733cf411102
-SHA1: b422d900edbe7703edbd7f0616ba032acc7ced7a
-SHA256: 546fbd40890d677fa7e09903e8718c872b565c4100f645b6b4c237709989c6ea
+Filename: pool/main/hatsu-fmm_0.4.8_amd64.deb
+Size: 404956
+MD5sum: a40e106d3719c9efd011720a5ebee983
+SHA1: f45cb1c3dd79f91ba0fbea4cfd7f0ebf9ab917d0
+SHA256: 37642ea88b3ffcb4873b57b33b206aea80ee08a61b13d2a95c4e581b6f0aa024
 Section: science
 Priority: optional
 Description: Standalone Fast Multipole Method release for HatsuYakitori
