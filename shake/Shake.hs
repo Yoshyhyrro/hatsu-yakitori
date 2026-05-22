@@ -126,92 +126,92 @@ main = do
         -- Implemented in shake/Rules/Proof
         Proof.setupProofPhonies hdf5Opt
 
-    -- Verify example-only modules (separate from core verification)
-    phony "verify-examples" $ do
-        let paths = ProofLLVM.defaultProofBuildPaths
-        res <- ProofLLVM.verifyExampleModules paths
-        putNormal $ "verify-examples completed: " ++ show (map fst res)
+        -- Verify example-only modules (separate from core verification)
+        phony "verify-examples" $ do
+            let paths = ProofLLVM.defaultProofBuildPaths
+            res <- ProofLLVM.verifyExampleModules paths
+            putNormal $ "verify-examples completed: " ++ show (map fst res)
 
-    -- Check SBV runtime environment (runghc/stack + z3/cvc5)
-    phony "sbv-check-env" $ do
-        env <- SBV.checkSBVEnvironment
-        putNormal "SBV Environment:"
-        forM_ env $ \(n,ok) -> putNormal $ "  " ++ n ++ ": " ++ (if ok then "found" else "missing")
+        -- Check SBV runtime environment (runghc/stack + z3/cvc5)
+        phony "sbv-check-env" $ do
+            env <- SBV.checkSBVEnvironment
+            putNormal "SBV Environment:"
+            forM_ env $ \(n,ok) -> putNormal $ "  " ++ n ++ ": " ++ (if ok then "found" else "missing")
 
-    -- Example-specific rules (quadcopter example)
-    Quadcopter.quadcopterRules defaultCfg
-    HDF5.hdf5Rules defaultCfg
-    DebFMM.debFmmRules defaultCfg coreFiles
+        -- Example-specific rules (quadcopter example)
+        Quadcopter.quadcopterRules defaultCfg
+        HDF5.hdf5Rules defaultCfg
+        DebFMM.debFmmRules defaultCfg coreFiles
 
-    forM_ allModules $ \m -> do
-        let mName = modName m
-        let cfg = if mName == "witt-validator" then wittCfg else defaultCfg
-        
-        -- Standard build
-        phony ("build-" ++ mName) $ 
-            buildModule m cfg >> return ()
-        
-        -- Test
-        phony ("test-" ++ mName) $ 
-            Pipeline.testModule m cfg
-        
-        -- Wasm
-        phony ("wasm-" ++ mName) $
-            Wasm.buildWasm m cfg
-        
-        -- Alias
-        phony mName $ need ["build-" ++ mName]
-        
-        -- GC variants (not for special modules)
-        unless (modIsSpecial m) $ do
+        forM_ allModules $ \m -> do
+            let mName = modName m
+            let cfg = if mName == "witt-validator" then wittCfg else defaultCfg
             
-            -- GC auto-select
-            phony ("gc-" ++ mName) $ 
-                gcOptimizedModule m cfg >> return ()
+            -- Standard build
+            phony ("build-" ++ mName) $ 
+                buildModule m cfg >> return ()
             
-            -- GC with specific strategies
-            phony ("gc-gomory-" ++ mName) $ 
-                gcOptimizedModuleWith GC.GomoryHu m cfg >> return ()
+            -- Test
+            phony ("test-" ++ mName) $ 
+                Pipeline.testModule m cfg
             
-            phony ("gc-ultrametric-" ++ mName) $ 
-                gcOptimizedModuleWith GC.Ultrametric m cfg >> return ()
+            -- Wasm
+            phony ("wasm-" ++ mName) $
+                Wasm.buildWasm m cfg
             
-            phony ("gc-connes-" ++ mName) $ 
-                gcOptimizedModuleWith GC.ConnesKreimer m cfg >> return ()
-    
-    -- ============================================================
-    -- Meta-targets
-    -- ============================================================
-    
-    phony "witt" $ need ["build-witt-validator"]
-    phony "test-witt" $ need ["test-witt-validator"]
-    
-    phony "build" $ need ["build-" ++ modName m | m <- allModules]
-    phony "test-all" $ need ["test-" ++ modName m | m <- allModules]
-    phony "test" $ need ["test-all"]
-    
-    -- All GC variants
-    phony "gc-all" $ 
-        need ["gc-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    phony "gc-gomory-all" $ 
-        need ["gc-gomory-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    phony "gc-ultrametric-all" $ 
-        need ["gc-ultrametric-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    phony "gc-connes-all" $ 
-        need ["gc-connes-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    -- ============================================================
-    -- Cleanup
-    -- ============================================================
-    
-    phony "clean" $ Clean.cleanAll
-    phony "clean-build" $ Clean.cleanBuild
-    phony "clean-tests" $ Clean.cleanTests
-    phony "clean-artifacts" $ Clean.cleanArtifacts
-    phony "clean-cache" $ Clean.cleanCache
-    phony "distclean" $ do
-        Clean.cleanAll
-        putInfo "Removed all generated files and caches"
+            -- Alias
+            phony mName $ need ["build-" ++ mName]
+            
+            -- GC variants (not for special modules)
+            unless (modIsSpecial m) $ do
+                
+                -- GC auto-select
+                phony ("gc-" ++ mName) $ 
+                    gcOptimizedModule m cfg >> return ()
+                
+                -- GC with specific strategies
+                phony ("gc-gomory-" ++ mName) $ 
+                    gcOptimizedModuleWith GC.GomoryHu m cfg >> return ()
+                
+                phony ("gc-ultrametric-" ++ mName) $ 
+                    gcOptimizedModuleWith GC.Ultrametric m cfg >> return ()
+                
+                phony ("gc-connes-" ++ mName) $ 
+                    gcOptimizedModuleWith GC.ConnesKreimer m cfg >> return ()
+        
+        -- ============================================================
+        -- Meta-targets
+        -- ============================================================
+        
+        phony "witt" $ need ["build-witt-validator"]
+        phony "test-witt" $ need ["test-witt-validator"]
+        
+        phony "build" $ need ["build-" ++ modName m | m <- allModules]
+        phony "test-all" $ need ["test-" ++ modName m | m <- allModules]
+        phony "test" $ need ["test-all"]
+        
+        -- All GC variants
+        phony "gc-all" $ 
+            need ["gc-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+        
+        phony "gc-gomory-all" $ 
+            need ["gc-gomory-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+        
+        phony "gc-ultrametric-all" $ 
+            need ["gc-ultrametric-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+        
+        phony "gc-connes-all" $ 
+            need ["gc-connes-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+        
+        -- ============================================================
+        -- Cleanup
+        -- ============================================================
+        
+        phony "clean" $ Clean.cleanAll
+        phony "clean-build" $ Clean.cleanBuild
+        phony "clean-tests" $ Clean.cleanTests
+        phony "clean-artifacts" $ Clean.cleanArtifacts
+        phony "clean-cache" $ Clean.cleanCache
+        phony "distclean" $ do
+            Clean.cleanAll
+            putInfo "Removed all generated files and caches"
