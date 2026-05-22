@@ -12,6 +12,7 @@ import Development.Shake.FilePath
 import System.IO (hClose, openTempFile)
 import qualified System.Directory as Dir
 import System.Info (os)
+import System.Environment (lookupEnv)
 
 import Chicken (getPath)
 import Pipeline (BuildConfig(..), Module, buildModule, regularModule)
@@ -101,22 +102,20 @@ debPackageName = "hatsu-fmm"
 debBinaryName :: FilePath
 debBinaryName = "hatsu-fmm"
 
-debVersion :: String
-debVersion = "0.0.1"
+-- Read an environment variable with a fallback default
+getEnvDefault :: String -> String -> IO String
+getEnvDefault key def = do
+  m <- lookupEnv key
+  pure $ maybe def id m
 
-debArchitecture :: String
-debArchitecture = "amd64"
-
-debPackageFileName :: FilePath
-debPackageFileName = debPackageName ++ "_" ++ debVersion ++ "_" ++ debArchitecture <.> "deb"
-
-controlFileContents :: String
-controlFileContents = unlines
-  [ "Package: " ++ debPackageName
-  , "Version: " ++ debVersion
+-- Construct control file contents dynamically using env overrides
+controlFileContentsFor :: String -> String -> String -> String
+controlFileContentsFor pkgName version arch = unlines
+  [ "Package: " ++ pkgName
+  , "Version: " ++ version
   , "Section: science"
   , "Priority: optional"
-  , "Architecture: " ++ debArchitecture
+  , "Architecture: " ++ arch
   , "Maintainer: Yoshihiro Hasegawa <je-suis-1oeuf-devautour@proton.me>"
   , "Description: Standalone Fast Multipole Method release for HatsuYakitori"
   ]

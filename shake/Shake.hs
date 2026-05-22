@@ -18,6 +18,7 @@ import qualified Rules.Proof.LLVM_IR as ProofLLVM
 import qualified Rules.Proof.SBV_Bridge as SBV
 import qualified Rules.Quadcopter as Quadcopter
 import qualified Rules.Wasm as Wasm
+import qualified Rules.HDF5 as HDF5
 
 -- ============================================================
 -- Module Definitions
@@ -131,6 +132,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
 
     -- Example-specific rules (quadcopter example)
     Quadcopter.quadcopterRules defaultCfg
+    HDF5.hdf5Rules defaultCfg
     DebFMM.debFmmRules defaultCfg coreFiles
 
     forM_ allModules $ \m -> do
