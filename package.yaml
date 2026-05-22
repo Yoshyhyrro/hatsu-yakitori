@@ -39,7 +39,7 @@ executables:
       - Rules.DebFMM
       - Rules.GC
       - Rules.Link
-    - Rules.HDF5
+      - Rules.HDF5
       - Rules.MEEP
       - Rules.Quadcopter
       - Rules.StandardToplevel

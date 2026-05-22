@@ -9,6 +9,7 @@ import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_)
 import Control.Monad.IO.Class (liftIO)
+import qualified System.Directory as Dir
 
 import Rules.Proof.LLVM_IR as IR
 import Rules.Proof.SBV_Bridge as SBV
@@ -72,4 +73,18 @@ setupProofPhonies = do
 
   -- Alias "lean" -> "lean4"
   phony "lean" $ need ["lean4"]
+
+  -- One-off SBV invocation for the FMM module (convenience target)
+  phony "sbv-so-fmm" $ do
+    let paths = IR.defaultProofBuildPaths
+    let modName = "fmm"
+    let specPath = proofBuildRoot paths </> "sbv" </> ("SBV_" ++ modName <.> "hs")
+    liftIO $ Dir.createDirectoryIfMissing True (takeDirectory specPath)
+    putInfo $ "[sbv-so-fmm] Generating SBV spec: " ++ specPath
+    SBV.generateSBVSpec (SBV.SBVSpec modName 64 []) specPath
+    putInfo "[sbv-so-fmm] Running SBV verification..."
+    ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
+    if ok
+      then putNormal "[sbv-so-fmm] SBV verification PASS"
+      else fail "[sbv-so-fmm] SBV verification FAIL"
 
