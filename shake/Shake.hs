@@ -19,6 +19,7 @@ import qualified Rules.Proof.SBV_Bridge as SBV
 import qualified Rules.Quadcopter as Quadcopter
 import qualified Rules.Wasm as Wasm
 import qualified Rules.HDF5 as HDF5
+import System.Environment (getArgs, withArgs)
 
 -- ============================================================
 -- Module Definitions
@@ -109,14 +110,21 @@ gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 -- ============================================================
 
 main :: IO ()
-main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
-    GC.gcRule
+main = do
+    -- Extract custom `--hdf5 FILE` option; remaining args are for Shake
+    allArgs <- getArgs
+    let (hdf5Opt, shakeArgsList) = case allArgs of
+            ("--hdf5":fp:xs) -> (Just fp, xs)
+            _ -> (Nothing, allArgs)
 
-    -- Proof phony targets and rules
-    -- Registers commands like `verify-core-ir` and `find-broken-stage`
-    -- which focus verification on `core/` modules and their LLVM IR stages.
-    -- Implemented in shake/Rules/Proof
-    Proof.setupProofPhonies
+    withArgs shakeArgsList $ shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
+        GC.gcRule
+
+        -- Proof phony targets and rules
+        -- Registers commands like `verify-core-ir` and `find-broken-stage`
+        -- which focus verification on `core/` modules and their LLVM IR stages.
+        -- Implemented in shake/Rules/Proof
+        Proof.setupProofPhonies hdf5Opt
 
     -- Verify example-only modules (separate from core verification)
     phony "verify-examples" $ do

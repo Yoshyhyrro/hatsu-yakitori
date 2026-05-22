@@ -22,6 +22,7 @@ data SBVSpec = SBVSpec
   { sbvModuleName :: String
   , sbvBitWidth   :: Int
   , sbvInvariants :: [String]
+  , sbvInputs     :: [FilePath]
   } deriving (Show, Eq)
 
 -- | Generate a minimal SBV spec file for a core module
@@ -92,22 +93,25 @@ generateSBVSpec spec outPath = do
     else do
       -- Fallback: original placeholder generator
       let header = [ "-- Auto-generated SBV spec for " ++ sbvModuleName spec
-                   , "module Main where"
-                   , ""
-                   , "import Data.SBV"
-                   , "import System.Exit (exitSuccess, exitFailure)"
-                   , "import Control.Monad (unless)"
-                   , ""
-                   , "-- Bit width: " ++ show (sbvBitWidth spec)
-                   , "type Word = SWord" ++ show (sbvBitWidth spec)
-                   , ""
-                   , "-- Invariants to verify:" ]
+           , "module Main where"
+           , ""
+           , "import Data.SBV"
+           , "import System.Environment (getArgs)"
+           , "import System.Exit (exitSuccess, exitFailure)"
+           , "import Control.Monad (unless)"
+           , ""
+           , "-- Bit width: " ++ show (sbvBitWidth spec)
+           , "type Word = SWord" ++ show (sbvBitWidth spec)
+           , ""
+           , "-- Invariants to verify:" ]
       let body = (map ("-- * " ++) (sbvInvariants spec)) ++
                  [ ""
                  , "-- Placeholder main: replace with actual SBV proofs for invariants"
                  , "main :: IO ()"
                  , "main = do"
-                 , "  putStrLn \"SBV RUN: placeholder (no invariants implemented)\""
+                 , "  args <- getArgs"
+                 , "  let maybeHdf5 = case args of { (x:_) -> Just x; _ -> Nothing }"
+                 , "  putStrLn $ \"SBV RUN: placeholder (no invariants implemented); HDF5=\" ++ show maybeHdf5"
                  , "  -- If invariants were present, run SBV proofs here and call exitFailure on counterexample"
                  , "  exitSuccess"
                  ]
@@ -146,7 +150,8 @@ verifySBVSpec specPath spec = do
   case stackPath of
     Just s -> do
       liftIO $ putStrLn "[SBV] Using stack runghc --package sbv"
-      (exitCode, out, err) <- liftIO $ readProcessWithExitCode s ["runghc","--package","sbv",specPath] ""
+      let args = ["runghc","--package","sbv",specPath] ++ sbvInputs spec
+      (exitCode, out, err) <- liftIO $ readProcessWithExitCode s args ""
       liftIO $ putStrLn out
       liftIO $ putStrLn err
       if exitCode == ExitSuccess
@@ -156,7 +161,8 @@ verifySBVSpec specPath spec = do
           runghcPath <- liftIO $ Dir.findExecutable "runghc"
           case runghcPath of
             Just r -> do
-              (exitCode2, out2, err2) <- liftIO $ readProcessWithExitCode r [specPath] ""
+              let args2 = specPath : sbvInputs spec
+              (exitCode2, out2, err2) <- liftIO $ readProcessWithExitCode r args2 ""
               liftIO $ putStrLn out2
               liftIO $ putStrLn err2
               return (exitCode2 == ExitSuccess)
@@ -168,7 +174,8 @@ verifySBVSpec specPath spec = do
       runghcPath <- liftIO $ Dir.findExecutable "runghc"
       case runghcPath of
         Just r -> do
-          (exitCode, out, err) <- liftIO $ readProcessWithExitCode r [specPath] ""
+          let args3 = specPath : sbvInputs spec
+          (exitCode, out, err) <- liftIO $ readProcessWithExitCode r args3 ""
           liftIO $ putStrLn out
           liftIO $ putStrLn err
           return (exitCode == ExitSuccess)

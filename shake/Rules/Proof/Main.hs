@@ -16,8 +16,8 @@ import Rules.Proof.SBV_Bridge as SBV
 import qualified Rules.Proof.Lean4 as Lean4
 
 -- | Register phony targets for proof verification
-setupProofPhonies :: Rules ()
-setupProofPhonies = do
+setupProofPhonies :: Maybe FilePath -> Rules ()
+setupProofPhonies maybeHdf5 = do
   -- Lean4 proof targets
   phony "lean4" $ do
     let leanDir = proofDistRoot IR.defaultProofBuildPaths </> "lean4"
@@ -81,9 +81,12 @@ setupProofPhonies = do
     let specPath = proofBuildRoot paths </> "sbv" </> ("SBV_" ++ modName <.> "hs")
     liftIO $ Dir.createDirectoryIfMissing True (takeDirectory specPath)
     putInfo $ "[sbv-so-fmm] Generating SBV spec: " ++ specPath
-    SBV.generateSBVSpec (SBV.SBVSpec modName 64 []) specPath
+    let inputs = case maybeHdf5 of
+                   Just p -> [p]
+                   Nothing -> []
+    SBV.generateSBVSpec (SBV.SBVSpec modName 64 [] inputs) specPath
     putInfo "[sbv-so-fmm] Running SBV verification..."
-    ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
+    ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [] inputs)
     if ok
       then putNormal "[sbv-so-fmm] SBV verification PASS"
       else fail "[sbv-so-fmm] SBV verification FAIL"
