@@ -150,6 +150,8 @@ verifySBVSpec specPath spec = do
   case stackPath of
     Just s -> do
       liftIO $ putStrLn "[SBV] Using stack runghc --package sbv"
+      -- Append any `sbvInputs` (e.g. HDF5 file paths provided via --hdf5)
+      -- to the invocation so the generated spec can access them via `getArgs`.
       let args = ["runghc","--package","sbv",specPath] ++ sbvInputs spec
       (exitCode, out, err) <- liftIO $ readProcessWithExitCode s args ""
       liftIO $ putStrLn out
@@ -161,6 +163,9 @@ verifySBVSpec specPath spec = do
           runghcPath <- liftIO $ Dir.findExecutable "runghc"
           case runghcPath of
             Just r -> do
+              -- Fallback runghc invocation: pass spec path followed by any
+              -- inputs collected in `sbvInputs` so runtime getArgs receives
+              -- the same file list (HDF5 paths, etc.).
               let args2 = specPath : sbvInputs spec
               (exitCode2, out2, err2) <- liftIO $ readProcessWithExitCode r args2 ""
               liftIO $ putStrLn out2
@@ -174,6 +179,7 @@ verifySBVSpec specPath spec = do
       runghcPath <- liftIO $ Dir.findExecutable "runghc"
       case runghcPath of
         Just r -> do
+          -- Direct runghc path: pass spec path and append `sbvInputs`.
           let args3 = specPath : sbvInputs spec
           (exitCode, out, err) <- liftIO $ readProcessWithExitCode r args3 ""
           liftIO $ putStrLn out

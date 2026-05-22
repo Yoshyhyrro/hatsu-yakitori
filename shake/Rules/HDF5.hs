@@ -18,6 +18,18 @@ import Pipeline (BuildConfig)
 -- into `build/hdf5/<name>.json` (plain text for now). This uses the
 -- external `h5dump` tool if available; it's a lightweight first step to
 -- accept HDF5 inputs from the Shake build graph.
+--
+-- Notes:
+-- * Dependency: the rule calls the external `h5dump` program (provided
+--   by the `hdf5-tools` package on Debian/Ubuntu; headers available from
+--   `libhdf5-dev`). Install these on CI or developer machines if you
+--   plan to use `hdf5-scan` or pass `--hdf5 FILE` to Shake.
+-- * Output: for an input `data/<name>.h5` the rule produces
+--   `build/hdf5/<name>.json` containing the `h5dump -H` output. This is a
+--   lightweight, human-readable representation used by proof/SBV flows.
+-- * Failure mode: if `h5dump` is not available or returns a non-zero
+--   exit code the rule prints stderr and fails the build so the user can
+--   install the required system package.
 hdf5Rules :: BuildConfig -> Rules ()
 hdf5Rules _cfg = do
   -- Convert HDF5 input files under `data/` to an artifact under build/hdf5

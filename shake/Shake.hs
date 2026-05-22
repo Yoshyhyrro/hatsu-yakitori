@@ -111,9 +111,15 @@ gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 
 main :: IO ()
 main = do
-    -- Extract custom `--hdf5 FILE` option; remaining args are for Shake
-    allArgs <- getArgs
-    let (hdf5Opt, shakeArgsList) = case allArgs of
+        -- Extract custom `--hdf5 FILE` option; remaining args are for Shake.
+        -- Usage examples:
+        --   cabal run shake -- --hdf5 data/example.h5 sbv-so-fmm
+        --   cabal run shake -- hdf5-scan
+        -- The provided file (if any) is forwarded to proof phony targets via
+        -- `Proof.setupProofPhonies` so generated SBV specs can receive HDF5
+        -- inputs at runtime.
+        allArgs <- getArgs
+        let (hdf5Opt, shakeArgsList) = case allArgs of
             ("--hdf5":fp:xs) -> (Just fp, xs)
             _ -> (Nothing, allArgs)
 

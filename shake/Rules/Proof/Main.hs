@@ -81,9 +81,13 @@ setupProofPhonies maybeHdf5 = do
     let specPath = proofBuildRoot paths </> "sbv" </> ("SBV_" ++ modName <.> "hs")
     liftIO $ Dir.createDirectoryIfMissing True (takeDirectory specPath)
     putInfo $ "[sbv-so-fmm] Generating SBV spec: " ++ specPath
+    -- If an HDF5 file was provided via the top-level `--hdf5` option, forward
+    -- it as a runtime argument to the generated SBV program. The `sbvInputs`
+    -- list is appended to the invocation used to execute the generated spec,
+    -- so the SBV program can inspect or load HDF5 data at runtime.
     let inputs = case maybeHdf5 of
-                   Just p -> [p]
-                   Nothing -> []
+             Just p -> [p]
+             Nothing -> []
     SBV.generateSBVSpec (SBV.SBVSpec modName 64 [] inputs) specPath
     putInfo "[sbv-so-fmm] Running SBV verification..."
     ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [] inputs)

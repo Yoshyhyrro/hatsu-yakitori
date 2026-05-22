@@ -120,6 +120,18 @@ The interaction loop delegates flow control to the frontier policy:
 - Eggs: `srfi-1`, `srfi-69`, `srfi-95`, `srfi-4`, `srfi-133`
 - Optional: [GHC + cabal-install](https://www.haskell.org/cabal/) for the Shake-based build pipeline
 
+- Optional (HDF5 support): `h5dump` (provided by the `hdf5-tools` package
+  on Debian/Ubuntu; development headers from `libhdf5-dev`). The Shake
+  HDF5 rules (`hdf5-scan`) and the `--hdf5 FILE` option used by proof/SBV
+  flows require `h5dump`. On Debian/Ubuntu install with:
+
+```bash
+sudo apt install libhdf5-dev hdf5-tools
+```
+
+The release CI also installs these packages so HDF5-enabled runs succeed
+on Ubuntu-based runners (see [.github/workflows/fmm-deb-release.yml](.github/workflows/fmm-deb-release.yml#L82-L88)).
+
 The main public modules exposed by this egg are:
 
 - `machine_constants` — numeric constants, bit utilities, Galois-height helpers
@@ -220,6 +232,7 @@ hatsu-fmm --benchmark --grid-size 4096 --iterations 5
 | `--input PATH` | Reads one Scheme problem form from a file | If omitted, the CLI generates a synthetic problem |
 | `--grid-size INT` | Particle count for generated input | `64` |
 | `--target-index INT` | Target particle index inside the generated grid | `0` |
+| `--hdf5 FILE` | Provide an HDF5 input file to forward to proof/SBV targets; also used by `hdf5-scan` | none |
 | `--frontier-bits INT` | Golay-controlled frontier bits used to choose traversal behavior | `0` |
 | `--iterations INT` | Number of repetitions in benchmark mode | `3` |
 
@@ -341,6 +354,23 @@ You can also populate the local build outputs used by the historical workflow:
 ```bash
 cabal run shake -- witt
 ```
+
+Additional Shake examples (HDF5)
+
+```bash
+# Generate JSON header dumps from data/*.h5
+cabal run shake -- hdf5-scan
+
+# Run SBV proof with a given HDF5 file (file is passed to the generated SBV program)
+cabal run shake -- --hdf5 data/example.h5 sbv-so-fmm
+# or with stack
+stack exec shake -- --hdf5 data/example.h5 sbv-so-fmm
+```
+
+Expected outputs / behaviour:
+
+- Output files: `build/hdf5/<name>.json` — contains the `h5dump -H` header output for `data/<name>.h5`.
+- If `h5dump` is missing or fails, the Shake rule prints stderr and fails; install `hdf5-tools` on Debian/Ubuntu.
 
 ## Classroom Demo: One Request, One Response
 
