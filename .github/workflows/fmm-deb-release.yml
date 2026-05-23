@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/fmm-deb-release.yml'
+      - 'examples/fmm/**'
       - 'LICENSE'
       - 'core/**'
       - 'modules/fmm/**'
@@ -24,6 +25,7 @@ on:
       - 'fmm-v*'
     paths:
       - '.github/workflows/fmm-deb-release.yml'
+      - 'examples/fmm/**'
       - 'LICENSE'
       - 'core/**'
       - 'modules/fmm/**'
@@ -142,6 +144,19 @@ jobs:
       - name: Build Debian package
         run: stack exec shake -- deb-fmm
 
+      - name: Run SBV proof with mock HDF5
+        # hdf5-tools is installed in the environment, so we can check for h5dump and run the proof with a mock HDF5 file if it exists.
+        # Warning is emitted if the mock HDF5 file is missing, but the proof will still run without it (JCL philosophy).
+        run: |
+          H5="examples/fmm/plasma_landau_mock.h5"
+          if [ -f "$H5" ]; then
+            echo "info[HYK002N]: running sbv-so-fmm with --hdf5 $H5"
+            stack exec shake -- --hdf5 "$H5" sbv-so-fmm
+          else
+            echo "warning[HYK001W]: $H5 not found; running sbv-so-fmm without HDF5 input"
+            stack exec shake -- sbv-so-fmm
+          fi
+
       - name: Inspect packaged outputs
         run: find dist -type f | sort
 
@@ -251,4 +266,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --quiet || git commit -m "apt: update repository [ci skip]"
-          git push
+          git push origin gh-pages

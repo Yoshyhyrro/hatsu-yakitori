@@ -6,6 +6,7 @@ on:
       - '.github/workflows/ci.yml'
       - 'core/**'
       - 'dist-proof/lean4/**'
+      - 'examples/fmm/**'
       - 'modules/**'
       - 'package.yaml'
       - 'hatsu-yakitori.cabal'
@@ -19,6 +20,7 @@ on:
       - '.github/workflows/ci.yml'
       - 'core/**'
       - 'dist-proof/lean4/**'
+      - 'examples/fmm/**'
       - 'modules/**'
       - 'package.yaml'
       - 'hatsu-yakitori.cabal'
@@ -73,12 +75,31 @@ jobs:
       - name: Install CHICKEN egg dependencies
         run: sudo chicken-install srfi-1 srfi-69
 
+      - name: Install HDF5 tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y hdf5-tools
+
       - name: Verify CHICKEN toolchain
         run: |
           which csc
           csc -version
           chicken-status srfi-1 srfi-69
 
+      - name: Check mock HDF5 integrity
+        run: |
+          H5="examples/fmm/plasma_landau_mock.h5"
+          if [ ! -f "$H5" ]; then
+            echo "error[HYK001W]: examples/fmm/plasma_landau_mock.h5 not found"
+            echo "   = note: regenerate with: python examples/fmm/gen_mock_plasma.py $H5"
+            exit 1
+          fi
+          h5dump -H "$H5" | grep -q "goppa_grid" || {
+            echo "error[HYK004E]: HDF5 file exists but goppa_grid group is missing"
+            exit 1
+          }
+          echo "info[HYK005I]: HDF5 mock file OK"
+          h5dump -H "$H5"
+
       - name: Run FMM smoke test
         run: csi -s tests/fmm_tests.scm
-
