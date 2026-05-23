@@ -18,6 +18,10 @@ import qualified Rules.Proof.LLVM_IR as ProofLLVM
 import qualified Rules.Proof.SBV_Bridge as SBV
 import qualified Rules.Quadcopter as Quadcopter
 import qualified Rules.Wasm as Wasm
+import qualified Rules.HDF5 as HDF5
+import System.Environment (getArgs, withArgs)
+import System.IO (hSetEncoding, stdout, stderr, utf8)
+import qualified Diag
 
 -- ============================================================
 -- Module Definitions
@@ -108,100 +112,78 @@ gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 -- ============================================================
 
 main :: IO ()
-main = shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
-    GC.gcRule
+main = do
+    -- Windows console encoding fix for UTF-8 diagnostics
+    hSetEncoding stdout utf8
+    hSetEncoding stderr utf8
 
-    -- Proof phony targets and rules
-    -- Registers commands like `verify-core-ir` and `find-broken-stage`
-    -- which focus verification on `core/` modules and their LLVM IR stages.
-    -- Implemented in shake/Rules/Proof
-    Proof.setupProofPhonies
+    -- --hdf5 FILE that may be passed to SBV targets; parse it out of the args and remove it before passing to Shake
+    -- Usage examples:
+    --   stack exec shake -- --hdf5 examples/fmm/plasma_landau_mock.h5 sbv-so-fmm
+    --   stack exec shake -- hdf5-scan
+    allArgs <- getArgs
+    let parseHdf5 args = case args of
+          ("--hdf5":fp:xs) -> (Just fp, xs)
+          _                -> (Nothing, args)
+    let (hdf5Opt, shakeArgsList) = parseHdf5 allArgs
 
-    -- Verify example-only modules (separate from core verification)
-    phony "verify-examples" $ do
-        let paths = ProofLLVM.defaultProofBuildPaths
-        res <- ProofLLVM.verifyExampleModules paths
-        putNormal $ "verify-examples completed: " ++ show (map fst res)
+    -- HDF5 diagnostics (Warning/Note continue, Error only halt)
+    diags <- Diag.checkHdf5 hdf5Opt
+    Diag.summarize diags
 
-    -- Check SBV runtime environment (runghc/stack + z3/cvc5)
-    phony "sbv-check-env" $ do
-        env <- SBV.checkSBVEnvironment
-        putNormal "SBV Environment:"
-        forM_ env $ \(n,ok) -> putNormal $ "  " ++ n ++ ": " ++ (if ok then "found" else "missing")
+    withArgs shakeArgsList $ shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
+        GC.gcRule
 
-    -- Example-specific rules (quadcopter example)
-    Quadcopter.quadcopterRules defaultCfg
-    DebFMM.debFmmRules defaultCfg coreFiles
+        Proof.setupProofPhonies hdf5Opt
 
-    forM_ allModules $ \m -> do
-        let mName = modName m
-        let cfg = if mName == "witt-validator" then wittCfg else defaultCfg
-        
-        -- Standard build
-        phony ("build-" ++ mName) $ 
-            buildModule m cfg >> return ()
-        
-        -- Test
-        phony ("test-" ++ mName) $ 
-            Pipeline.testModule m cfg
-        
-        -- Wasm
-        phony ("wasm-" ++ mName) $
-            Wasm.buildWasm m cfg
-        
-        -- Alias
-        phony mName $ need ["build-" ++ mName]
-        
-        -- GC variants (not for special modules)
-        unless (modIsSpecial m) $ do
-            
-            -- GC auto-select
-            phony ("gc-" ++ mName) $ 
-                gcOptimizedModule m cfg >> return ()
-            
-            -- GC with specific strategies
-            phony ("gc-gomory-" ++ mName) $ 
-                gcOptimizedModuleWith GC.GomoryHu m cfg >> return ()
-            
-            phony ("gc-ultrametric-" ++ mName) $ 
-                gcOptimizedModuleWith GC.Ultrametric m cfg >> return ()
-            
-            phony ("gc-connes-" ++ mName) $ 
-                gcOptimizedModuleWith GC.ConnesKreimer m cfg >> return ()
-    
-    -- ============================================================
-    -- Meta-targets
-    -- ============================================================
-    
-    phony "witt" $ need ["build-witt-validator"]
-    phony "test-witt" $ need ["test-witt-validator"]
-    
-    phony "build" $ need ["build-" ++ modName m | m <- allModules]
-    phony "test-all" $ need ["test-" ++ modName m | m <- allModules]
-    phony "test" $ need ["test-all"]
-    
-    -- All GC variants
-    phony "gc-all" $ 
-        need ["gc-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    phony "gc-gomory-all" $ 
-        need ["gc-gomory-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    phony "gc-ultrametric-all" $ 
-        need ["gc-ultrametric-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    phony "gc-connes-all" $ 
-        need ["gc-connes-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-    
-    -- ============================================================
-    -- Cleanup
-    -- ============================================================
-    
-    phony "clean" $ Clean.cleanAll
-    phony "clean-build" $ Clean.cleanBuild
-    phony "clean-tests" $ Clean.cleanTests
-    phony "clean-artifacts" $ Clean.cleanArtifacts
-    phony "clean-cache" $ Clean.cleanCache
-    phony "distclean" $ do
-        Clean.cleanAll
-        putInfo "Removed all generated files and caches"
+        phony "verify-examples" $ do
+            let paths = ProofLLVM.defaultProofBuildPaths
+            res <- ProofLLVM.verifyExampleModules paths
+            putNormal $ "verify-examples completed: " ++ show (map fst res)
+
+        phony "sbv-check-env" $ do
+            env <- SBV.checkSBVEnvironment
+            putNormal "SBV Environment:"
+            forM_ env $ \(n,ok) ->
+                putNormal $ "  " ++ n ++ ": " ++ (if ok then "found" else "missing")
+
+        Quadcopter.quadcopterRules defaultCfg
+        HDF5.hdf5Rules defaultCfg
+        DebFMM.debFmmRules defaultCfg coreFiles
+
+        forM_ allModules $ \m -> do
+            let mName = modName m
+            let cfg   = if mName == "witt-validator" then wittCfg else defaultCfg
+
+            phony ("build-" ++ mName) $ buildModule m cfg >> return ()
+            phony ("test-"  ++ mName) $ Pipeline.testModule m cfg
+            phony ("wasm-"  ++ mName) $ Wasm.buildWasm m cfg
+            phony mName               $ need ["build-" ++ mName]
+
+            unless (modIsSpecial m) $ do
+                phony ("gc-"            ++ mName) $ gcOptimizedModule           m cfg >> return ()
+                phony ("gc-gomory-"     ++ mName) $ gcOptimizedModuleWith GC.GomoryHu    m cfg >> return ()
+                phony ("gc-ultrametric-"++ mName) $ gcOptimizedModuleWith GC.Ultrametric m cfg >> return ()
+                phony ("gc-connes-"     ++ mName) $ gcOptimizedModuleWith GC.ConnesKreimer m cfg >> return ()
+
+        -- Meta-targets
+        phony "witt"     $ need ["build-witt-validator"]
+        phony "test-witt"$ need ["test-witt-validator"]
+        phony "build"    $ need ["build-" ++ modName m | m <- allModules]
+        phony "test-all" $ need ["test-"  ++ modName m | m <- allModules]
+        phony "test"     $ need ["test-all"]
+
+        phony "gc-all"            $ need ["gc-"             ++ modName m | m <- allModules, not (modIsSpecial m)]
+        phony "gc-gomory-all"     $ need ["gc-gomory-"      ++ modName m | m <- allModules, not (modIsSpecial m)]
+        phony "gc-ultrametric-all"$ need ["gc-ultrametric-" ++ modName m | m <- allModules, not (modIsSpecial m)]
+        phony "gc-connes-all"     $ need ["gc-connes-"      ++ modName m | m <- allModules, not (modIsSpecial m)]
+
+        -- Cleanup
+        phony "clean"         $ Clean.cleanAll
+        phony "clean-build"   $ Clean.cleanBuild
+        phony "clean-tests"   $ Clean.cleanTests
+        phony "clean-artifacts"$ Clean.cleanArtifacts
+        phony "clean-cache"   $ Clean.cleanCache
+        phony "distclean"     $ do
+            Clean.cleanAll
+            putInfo "Removed all generated files and caches"

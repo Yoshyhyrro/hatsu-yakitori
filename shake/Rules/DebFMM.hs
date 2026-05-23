@@ -12,6 +12,7 @@ import Development.Shake.FilePath
 import System.IO (hClose, openTempFile)
 import qualified System.Directory as Dir
 import System.Info (os)
+import System.Environment (lookupEnv)
 
 import Chicken (getPath)
 import Pipeline (BuildConfig(..), Module, buildModule, regularModule)
@@ -32,10 +33,15 @@ debFmmRules cfg coreFiles = do
   phony "fmm-release-stage" $ do
     ensureLinuxHost
     exe <- buildModule (fmmReleaseModule coreFiles) cfg
+    -- Allow environment overrides for package name / version / arch
+    pkgName <- liftIO $ getEnvDefault "DEB_PACKAGE_NAME" debPackageName
+    version <- liftIO $ getEnvDefault "DEB_VERSION" "0.0.1"
+    arch <- liftIO $ getEnvDefault "DEB_ARCH" "amd64"
+
     let stageRoot = releaseStageRoot cfg
     let binDir = stageRoot </> "usr" </> "bin"
     let controlDir = stageRoot </> "DEBIAN"
-    let docDir = stageRoot </> "usr" </> "share" </> "doc" </> debPackageName
+    let docDir = stageRoot </> "usr" </> "share" </> "doc" </> pkgName
     let binPath = binDir </> debBinaryName
     let controlPath = controlDir </> "control"
     let copyrightPath = docDir </> "copyright"
@@ -46,7 +52,7 @@ debFmmRules cfg coreFiles = do
     copyFile' (getPath exe) binPath
     copyFile' "LICENSE" copyrightPath
     writeFileChanged readmePath releaseReadme
-    writeFileChanged controlPath controlFileContents
+    writeFileChanged controlPath (controlFileContentsFor pkgName version arch)
     normalizeStagePermissions controlDir
       [ binPath
       , controlPath
@@ -62,7 +68,10 @@ debFmmRules cfg coreFiles = do
     unless dpkgDebFound $
       fail "dpkg-deb not found in PATH. Install dpkg-dev on the Linux runner before building deb-fmm."
     packageRoot <- preparePackageRoot cfg
-    let outFile = bcDistDir cfg </> debPackageFileName
+    pkgName <- liftIO $ getEnvDefault "DEB_PACKAGE_NAME" debPackageName
+    version <- liftIO $ getEnvDefault "DEB_VERSION" "0.0.1"
+    arch <- liftIO $ getEnvDefault "DEB_ARCH" "amd64"
+    let outFile = bcDistDir cfg </> (pkgName ++ "_" ++ version ++ "_" ++ arch <.> "deb")
     liftIO $ Dir.createDirectoryIfMissing True (bcDistDir cfg)
     cmd_ ("dpkg-deb" :: String) ["--build", packageRoot, outFile]
     putNormal $ "built Debian package: " ++ outFile
@@ -101,22 +110,20 @@ debPackageName = "hatsu-fmm"
 debBinaryName :: FilePath
 debBinaryName = "hatsu-fmm"
 
-debVersion :: String
-debVersion = "0.0.1"
+-- Read an environment variable with a fallback default
+getEnvDefault :: String -> String -> IO String
+getEnvDefault key def = do
+  m <- lookupEnv key
+  pure $ maybe def id m
 
-debArchitecture :: String
-debArchitecture = "amd64"
-
-debPackageFileName :: FilePath
-debPackageFileName = debPackageName ++ "_" ++ debVersion ++ "_" ++ debArchitecture <.> "deb"
-
-controlFileContents :: String
-controlFileContents = unlines
-  [ "Package: " ++ debPackageName
-  , "Version: " ++ debVersion
+-- Construct control file contents dynamically using env overrides
+controlFileContentsFor :: String -> String -> String -> String
+controlFileContentsFor pkgName version arch = unlines
+  [ "Package: " ++ pkgName
+  , "Version: " ++ version
   , "Section: science"
   , "Priority: optional"
-  , "Architecture: " ++ debArchitecture
+  , "Architecture: " ++ arch
   , "Maintainer: Yoshihiro Hasegawa <je-suis-1oeuf-devautour@proton.me>"
   , "Description: Standalone Fast Multipole Method release for HatsuYakitori"
   ]
@@ -149,9 +156,10 @@ preparePackageRoot cfg = do
     Dir.removeFile tempPath
     Dir.createDirectory tempPath
     pure tempPath
+  pkgName <- liftIO $ getEnvDefault "DEB_PACKAGE_NAME" debPackageName
   let binDir = tempRoot </> "usr" </> "bin"
   let controlDir = tempRoot </> "DEBIAN"
-  let docDir = tempRoot </> "usr" </> "share" </> "doc" </> debPackageName
+  let docDir = tempRoot </> "usr" </> "share" </> "doc" </> pkgName
   let binPath = binDir </> debBinaryName
   let controlPath = controlDir </> "control"
   let copyrightPath = docDir </> "copyright"
@@ -161,8 +169,8 @@ preparePackageRoot cfg = do
   liftIO $ Dir.createDirectoryIfMissing True docDir
   copyFile' (sourceRoot </> "usr" </> "bin" </> debBinaryName) binPath
   copyFile' (sourceRoot </> "DEBIAN" </> "control") controlPath
-  copyFile' (sourceRoot </> "usr" </> "share" </> "doc" </> debPackageName </> "copyright") copyrightPath
-  copyFile' (sourceRoot </> "usr" </> "share" </> "doc" </> debPackageName </> "README.Debian") readmePath
+  copyFile' (sourceRoot </> "usr" </> "share" </> "doc" </> pkgName </> "copyright") copyrightPath
+  copyFile' (sourceRoot </> "usr" </> "share" </> "doc" </> pkgName </> "README.Debian") readmePath
   normalizeStagePermissions controlDir
     [ binPath
     , controlPath

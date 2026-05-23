@@ -231,14 +231,14 @@ verifyModuleStages paths modName = do
         if not exists
           then do
             liftIO $ Dir.createDirectoryIfMissing True (takeDirectory specPath)
-            SBV.generateSBVSpec (SBV.SBVSpec modName 64 []) specPath
+            SBV.generateSBVSpec (SBV.SBVSpec modName 64 [] []) specPath
             writeFile' (verifyResultPath paths modName stage) "SBV spec auto-generated"
-            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
+            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [] [])
             if ok
               then do writeFile' (verifyResultPath paths modName stage) "SBV PASS"; return (stage, Right (verifyResultPath paths modName stage))
               else do writeFile' (verifyResultPath paths modName stage) "SBV FAIL"; return (stage, Left "SBV verification failed")
           else do
-            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [])
+            ok <- SBV.verifySBVSpec specPath (SBV.SBVSpec modName 64 [] [])
             if ok
               then do writeFile' (verifyResultPath paths modName stage) "SBV PASS"; return (stage, Right (verifyResultPath paths modName stage))
               else do writeFile' (verifyResultPath paths modName stage) "SBV FAIL"; return (stage, Left "SBV verification failed")
