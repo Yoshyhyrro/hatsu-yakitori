@@ -58,3 +58,5 @@ tests/run.scm
 #Unpublished patent
 examples/AES-128 SubBytes via Galois Height Function
 examples/Berkovich_Flow_Codes
+# Local wiki clone — do not embed into main repo
+.wiki-temp/
