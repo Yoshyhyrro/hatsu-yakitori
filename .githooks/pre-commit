@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Prevent committing files under .wiki-temp
+staged_files=$(git diff --cached --name-only) || staged_files=""
+if printf "%s\n" "$staged_files" | grep -q '\.wiki-temp'; then
+  echo "ERROR: Attempting to commit files under '.wiki-temp' which is disallowed."
+  echo "Remove the files from staging (git reset <file>) or add to .gitignore first."
+  exit 1
+fi
+# Safety: if repository already contains tracked .wiki-temp entries, show them
+if git ls-files --stage | grep -q '\.wiki-temp'; then
+  echo "ERROR: Repository contains tracked '.wiki-temp' files. Please remove them before committing."
+  git ls-files --stage | grep '\.wiki-temp' || true
+  exit 1
+fi
+exit 0

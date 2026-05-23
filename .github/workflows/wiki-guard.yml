@@ -1,0 +1,31 @@
+name: Wiki guard - block embedded wiki clones
+on:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fail if repository contains tracked .wiki-temp paths
+        run: |
+          set -e
+          echo "Checking for tracked .wiki-temp files..."
+          tracked=$(git ls-files | grep -E '(^|/)\.wiki-temp(/|$)' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error file=.:: Repository contains tracked files under .wiki-temp:"
+            echo "$tracked"
+            exit 1
+          fi
+          # Check for gitlink/submodule-style entries referencing .wiki-temp
+          if git ls-files --stage | grep -q '^160000' && git ls-files --stage | grep -q '\.wiki-temp'; then
+            echo "::error file=.:: Repository contains gitlink/submodule entry for .wiki-temp"
+            git ls-files --stage | grep '\.wiki-temp' || true
+            exit 1
+          fi
