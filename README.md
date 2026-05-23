@@ -214,25 +214,38 @@ hatsu-fmm --benchmark --grid-size 4096 --iterations 5
 | Mode | What it does | Typical use |
 | :--- | :--- | :--- |
 | `--help` | Prints CLI usage and examples | Quick reminder of switches |
-| `--check-env` | Verifies kernel import and reports machine constants | First command after install |
-| `--check` | Runs a lightweight self-check over constants, grid generation, hierarchy generation, and one synthetic evaluation | Smoke test on a fresh machine or CI runner |
+| `--check-env` | Verifies kernel import and reports machine constants | First command after install or after environment changes |
+| `--check` | Runs a lightweight self-check (constants, grid and hierarchy generation, one synthetic evaluation) | Smoke test on a fresh machine or CI runner |
 | `--list-caps` | Prints the packaged capability surface | Confirm what this release slice includes |
 | `--dry-run` | Parses options and reports the planned evaluation without a full workload | Sanity-check a large run before executing it |
-| `--benchmark` | Repeats evaluation for timing | Compare grid sizes, orders, or input files |
+| `--benchmark` | Repeats evaluation for timing | Compare grid sizes, multipole orders, or input files |
 | `--explain TOPIC` | Prints an explanation for a known runtime topic or limitation | Investigate a reported code or behavior |
+
+#### Shake / Proof targets
+
+Some verification and data tasks are exposed as Shake phony targets (run via `cabal run shake -- <target>` or `stack exec shake -- <target>`). Notable examples:
+
+- `hdf5-scan`: inspect HDF5 files (e.g. `examples/fmm/*.h5`) and produce `build/hdf5/<name>.json` containing `h5dump -H` header output.
+- `sbv-so-fmm`: generate an SBV specification for the FMM proof harness and run the SMT-backed check. This target requires an SMT solver (`z3`, `cvc5`, etc.) in `PATH` when verification runs.
+
+To forward an HDF5 dataset into the SBV program, pass `--hdf5 <file>` before the target name. Example:
+
+```bash
+stack exec shake -- --hdf5 examples/fmm/plasma_landau_mock.h5 sbv-so-fmm
+```
 
 ### Main Options
 
 | Option | Meaning | Default / note |
 | :--- | :--- | :--- |
-| `-p`, `--precision INT` | Accuracy target mapped to an effective multipole order | `8` |
-| `--order INT` | Explicit multipole order override | `8` |
-| `-t`, `--threads INT` | Requested worker count | Parsed, but the current runtime still falls back to `1` |
-| `--theta FLOAT` | Admissibility hint for near/far separation | Accepted for interface stability; the current kernel still uses the fixed cutoff `0.5` |
+| `-p`, `--precision INT` | Accuracy target mapped to an effective multipole order (affects computational cost) | `8` |
+| `--order INT` | Explicit multipole order override (overrides `--precision` mapping) | `8` |
+| `-t`, `--threads INT` | Requested worker count | Best-effort; some platforms or kernels currently fall back to `1` |
+| `--theta FLOAT` | Admissibility hint for near/far separation | Interface accepted; this build uses cutoff `0.5` by default |
 | `--input PATH` | Reads one Scheme problem form from a file | If omitted, the CLI generates a synthetic problem |
-| `--grid-size INT` | Particle count for generated input | `64` |
+| `--grid-size INT` | Particle count for generated input (when generating synthetic problems) | `64` |
 | `--target-index INT` | Target particle index inside the generated grid | `0` |
-| `--hdf5 FILE` | Provide an HDF5 input file to forward to proof/SBV targets; also used by `hdf5-scan` | none |
+| `--hdf5 FILE` | Provide an HDF5 input file to forward to proof/SBV targets; also used by the Shake `hdf5-scan` rule to produce JSON headers | none |
 | `--frontier-bits INT` | Golay-controlled frontier bits used to choose traversal behavior | `0` |
 | `--iterations INT` | Number of repetitions in benchmark mode | `3` |
 
@@ -358,13 +371,14 @@ cabal run shake -- witt
 Additional Shake examples (HDF5)
 
 ```bash
-# Generate JSON header dumps from data/*.h5
+# Generate JSON header dumps from HDF5 files under the repository (e.g. examples/fmm)
 cabal run shake -- hdf5-scan
 
-# Run SBV proof with a given HDF5 file (file is passed to the generated SBV program)
-cabal run shake -- --hdf5 data/example.h5 sbv-so-fmm
+# Run SBV proof with a given HDF5 file (the file is forwarded to the generated SBV program)
+# Example: use the included sample HDF5 in this repo
+cabal run shake -- --hdf5 examples/fmm/plasma_landau_mock.h5 sbv-so-fmm
 # or with stack
-stack exec shake -- --hdf5 data/example.h5 sbv-so-fmm
+stack exec shake -- --hdf5 examples/fmm/plasma_landau_mock.h5 sbv-so-fmm
 ```
 
 Expected outputs / behaviour:
@@ -409,11 +423,15 @@ The Lean gate proves, at the type level, that both the far-field (multipole) and
 
 ## Why Use This?
 
-- **Adaptive control**: Golay codewords determine DFS/stack vs BFS/queue behavior
-- **Lean-backed invariants**: current frontier and quiver modules enforce Non-Happus, Golay/Witt, and DirectedBanachQuiver constraints
-- **Bounded traversal**: the KAK layer exposes explicit iteration bounds and frontier shape
-- **Flexible graph input**: shortest-path routines accept either hash tables or association lists
-- **Physics integration**: the same frontier logic can drive Yee-grid stepping and quiver-safe local updates
+This project is designed for research, reproducible verification, and teaching. It combines an experimental algebraic formulation of the Fast Multipole Method with a Shake-based verification pipeline so you can both prototype numerics and exercise formal checks.
+
+- **Formal and SMT-backed checks**: Lean proofs for core invariants are complemented by SBV/SMT verification (via Shake targets) for executable properties and numeric-spec consistency.
+- **Reproducible experiments**: `hdf5-scan`, `sbv-so-fmm`, and the included HDF5 samples let you run the same benchmarks and checks locally or on CI.
+- **Algebraic FMM**: the Goppa-grid representation exposes alternative multipole bases, translation operators, and opportunities to explore periodic/elliptic boundary schemes.
+- **Research + teaching friendly**: modular CHICKEN eggs and a small classroom RPC demo make the core ideas accessible for lectures and lab exercises.
+- **Practical control**: Golay-driven frontier policies provide an interpretable knob for traversal behavior and bounded exploration via the KAK layer.
+
+Note: HDF5 integration is intended for forwarding real datasets into the proof/verification flow. Use `--hdf5 <file>` to forward a dataset to SBV targets or run `hdf5-scan` to produce JSON header dumps for inspection.
 
 ## Performance Notes
 

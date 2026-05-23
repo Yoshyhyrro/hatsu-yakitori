@@ -113,20 +113,21 @@ gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 
 main :: IO ()
 main = do
-    -- Windows の stdout/stderr を UTF-8 に固定 (Shake が出力する文字のため)
+    -- Windows console encoding fix for UTF-8 diagnostics
     hSetEncoding stdout utf8
     hSetEncoding stderr utf8
 
-    -- --hdf5 FILE を先に抜き出し、残りを Shake に渡す
-    -- 使用例:
+    -- --hdf5 FILE that may be passed to SBV targets; parse it out of the args and remove it before passing to Shake
+    -- Usage examples:
     --   stack exec shake -- --hdf5 examples/fmm/plasma_landau_mock.h5 sbv-so-fmm
     --   stack exec shake -- hdf5-scan
     allArgs <- getArgs
-    let (hdf5Opt, shakeArgsList) = case allArgs of
+    let parseHdf5 args = case args of
           ("--hdf5":fp:xs) -> (Just fp, xs)
-          _                -> (Nothing, allArgs)
+          _                -> (Nothing, args)
+    let (hdf5Opt, shakeArgsList) = parseHdf5 allArgs
 
-    -- HDF5 診断 (Warning/Note は続行、Error のみ halt)
+    -- HDF5 diagnostics (Warning/Note continue, Error only halt)
     diags <- Diag.checkHdf5 hdf5Opt
     Diag.summarize diags
 

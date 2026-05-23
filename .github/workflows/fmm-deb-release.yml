@@ -39,7 +39,7 @@ on:
       deb_version:
         description: 'Optional package version to build (overrides tag)'
         required: false
-        default: ''
+        default: '0.4.9'
       deb_arch:
         description: 'Target Debian architecture (amd64, arm64)'
         required: false
@@ -99,7 +99,7 @@ jobs:
               ver="${tag#fmm-v}"
               echo "DEB_VERSION=${ver}" >> $GITHUB_ENV
             else
-              echo "DEB_VERSION=0.0.1" >> $GITHUB_ENV
+              echo "DEB_VERSION=0.4.9" >> $GITHUB_ENV
             fi
           fi
 
