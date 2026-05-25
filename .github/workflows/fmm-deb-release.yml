@@ -149,12 +149,23 @@ jobs:
         # Warning is emitted if the mock HDF5 file is missing, but the proof will still run without it (JCL philosophy).
         run: |
           H5="examples/fmm/plasma_landau_mock.h5"
+          echo "MOCK_H5=$H5" >> "$GITHUB_ENV"
           if [ -f "$H5" ]; then
             echo "info[HYK002N]: running sbv-so-fmm with --hdf5 $H5"
             stack exec shake -- --hdf5 "$H5" sbv-so-fmm
           else
             echo "warning[HYK001W]: $H5 not found; running sbv-so-fmm without HDF5 input"
             stack exec shake -- sbv-so-fmm
+          fi
+
+      - name: Run Flang verify with mock HDF5
+        run: |
+          if [ -f "$MOCK_H5" ]; then
+            echo "info[HYK009N]: running flang-verify with --hdf5 $MOCK_H5"
+            stack exec shake -- --hdf5 "$MOCK_H5" --flang-src src/fortran flang-verify
+          else
+            echo "warning[HYK006W]: $MOCK_H5 not found; running flang-verify without HDF5 input"
+            stack exec shake -- --flang-src src/fortran flang-verify
           fi
 
       - name: Inspect packaged outputs

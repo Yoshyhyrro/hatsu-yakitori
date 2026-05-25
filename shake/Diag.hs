@@ -1,6 +1,6 @@
 -- shake/Diag.hs
 --
--- module Diag provides a simple diagnostic system for the Shake build. It defines a Diag type with severity levels (Error, Warning, Note, Info) and codes for categorization. The emit function prints diagnostics in a structured format, and summarize will exit with failure if any Error is present. The checkHdf5 function checks the --hdf5 option and emits appropriate diagnostics without halting the build on warnings (following JCL philosophy).
+-- module Diag provides a simple diagnostic system for the Shake build. It defines a Diag type with severity levels (Error, Warning, Note, Info) and codes for categorization. The emit function prints diagnostics in a structured format, and summarize will exit with failure if any Error is present. The checkHdf5 function checks the --hdf5 option and emits appropriate diagnostics without halting the build on warnings (following JCL philosophy). DiagCodes HYK006W-HYK010I are reserved for the Flang/Fortran pipeline (Rules.Proof.Flang).
 --   rustc like diagnostics with labels and notes
 --   SBCL like summary with counts of warnings and errors, and exitFailure if any error is present
 --   JCL  philosophy of "Error only halts, Warning/Note continue" is followed in checkHdf5 where it emits warnings for missing files or tools but does not halt the build, allowing the user to fix issues while still getting feedback.
@@ -20,13 +20,22 @@ import qualified System.Directory as Dir
 
 -- ----------------------------------------------------------------
 --  code for categorizing diagnostics; these are used in the label and can be searched for in CI logs. The convention is HYK (Hatsu Yakitori) + 3-digit code + severity letter (E/W/N/I).
+--    HYK001-005  HDF5 pipeline  (checkHdf5)
+--    HYK006-010  Flang/Fortran  (Rules.Proof.Flang.checkFlangSrc)
 -- ----------------------------------------------------------------
 data DiagCode
+  -- ---- HDF5 (checkHdf5) ----------------------------------------
   = HYK001W   -- --hdf5  is missing at parse time (Warning)
   | HYK002N   -- --hdf5  is present at parse time (Note)
   | HYK003W   -- h5dump not found in PATH (Warning)
   | HYK004E   -- --hdf5 requires a non-empty file path (Error)
   | HYK005I   -- HDF5 input not supplied (Info)
+  -- ---- Flang / Fortran (checkFlangSrc in Rules.Proof.Flang) -----
+  | HYK006W   -- flang not found in PATH (Warning)
+  | HYK007E   -- --flang-src requires a non-empty directory path (Error)
+  | HYK008W   -- --flang-src directory not found at parse time (Warning)
+  | HYK009N   -- --flang-src directory found; Fortran targets enabled (Note)
+  | HYK010I   -- no --flang-src supplied; Flang targets skipped (Info)
   deriving (Show, Eq)
 
 -- ----------------------------------------------------------------

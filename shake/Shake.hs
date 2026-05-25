@@ -7,6 +7,7 @@ module Main where
 import Development.Shake
 import Development.Shake.FilePath
 import Control.Monad (forM_, unless)
+import Control.Monad.IO.Class (liftIO)
 import qualified System.Directory as Dir
 
 import Pipeline
@@ -16,6 +17,7 @@ import qualified Rules.DebFMM as DebFMM
 import qualified Rules.Proof.Main as Proof
 import qualified Rules.Proof.LLVM_IR as ProofLLVM
 import qualified Rules.Proof.SBV_Bridge as SBV
+import qualified Rules.Proof.Flang as Flang
 import qualified Rules.Quadcopter as Quadcopter
 import qualified Rules.Wasm as Wasm
 import qualified Rules.HDF5 as HDF5
@@ -117,19 +119,27 @@ main = do
     hSetEncoding stdout utf8
     hSetEncoding stderr utf8
 
-    -- --hdf5 FILE that may be passed to SBV targets; parse it out of the args and remove it before passing to Shake
+    -- --hdf5 FILE and --flang-src DIR may be passed before the Shake target;
+    -- parse them out and remove them so Shake never sees unknown flags.
     -- Usage examples:
     --   stack exec shake -- --hdf5 examples/fmm/plasma_landau_mock.h5 sbv-so-fmm
-    --   stack exec shake -- hdf5-scan
+    --   stack exec shake -- --flang-src src/fortran flang-verify
+    --   stack exec shake -- --hdf5 data/foo.h5 --flang-src src/fortran flang-verify
     allArgs <- getArgs
     let parseHdf5 args = case args of
           ("--hdf5":fp:xs) -> (Just fp, xs)
           _                -> (Nothing, args)
-    let (hdf5Opt, shakeArgsList) = parseHdf5 allArgs
+    let parseFlangSrc args = case args of
+          ("--flang-src":dir:xs) -> (Just dir, xs)
+          _                      -> (Nothing, args)
+    let (hdf5Opt,     args1)         = parseHdf5    allArgs
+    let (flangSrcOpt, shakeArgsList) = parseFlangSrc args1
 
-    -- HDF5 diagnostics (Warning/Note continue, Error only halt)
-    diags <- Diag.checkHdf5 hdf5Opt
-    Diag.summarize diags
+    -- Diagnostics: run all option checks upfront, summarize once.
+    -- Warning/Note continue; only Error triggers exitFailure via summarize.
+    hdf5Diags  <- Diag.checkHdf5         hdf5Opt
+    flangDiags <- Flang.checkFlangSrc flangSrcOpt
+    Diag.summarize (hdf5Diags ++ flangDiags)
 
     withArgs shakeArgsList $ shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
         GC.gcRule
@@ -146,6 +156,24 @@ main = do
             putNormal "SBV Environment:"
             forM_ env $ \(n,ok) ->
                 putNormal $ "  " ++ n ++ ": " ++ (if ok then "found" else "missing")
+
+        -- Fortran -> LLVM IR via flang (requires --flang-src DIR at startup)
+        phony "flang-verify" $ do
+            case flangSrcOpt of
+              Nothing -> putNormal "flang-verify: no --flang-src DIR supplied; pass --flang-src before the target name"
+              Just srcDir -> do
+                  let paths = Flang.defaultFlangBuildPaths
+                  res <- Flang.verifyFlangModules paths srcDir
+                  forM_ res $ \(m, r) -> putNormal $
+                      "  " ++ m ++ ": " ++ either ("FAIL: " ++) ("OK: " ++) r
+
+        phony "flang-check-env" $ do
+            flangFound <- liftIO $ Dir.findExecutable "flang"
+            optFound   <- liftIO $ Dir.findExecutable "opt"
+            putNormal "Flang Environment:"
+            putNormal $ "  flang: " ++ maybe "missing" (const "found") flangFound
+            putNormal $ "  opt:   " ++ maybe "missing" (const "found") optFound
+            putNormal $ "  --flang-src: " ++ maybe "(not supplied)" id flangSrcOpt
 
         Quadcopter.quadcopterRules defaultCfg
         HDF5.hdf5Rules defaultCfg
