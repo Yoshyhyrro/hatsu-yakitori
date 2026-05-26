@@ -59,3 +59,22 @@ executables:
 
 
 github: Yoshyhyrro/hatsu-yakitori
+
+tests:
+  flang-dhall-spec:
+    main: FlangDhallSpec.hs
+    source-dirs:
+      - tests
+      - shake
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - base
+      - hspec
+      - dhall
+      - text
+      - bytestring
+      - containers
+      - async
