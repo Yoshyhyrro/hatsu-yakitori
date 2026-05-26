@@ -157,10 +157,16 @@ jobs:
           name: ci-debug-marker-flang-dhall-emit
           path: ci-debug-marker.txt
 
-      - name: Setup GHC and Stack
-        uses: haskell-actions/setup@cd0d9bdd65b20557f41bea4dbe43d0b5fbbfe553
-        with:
-          ghc-version: '9.6.6'
+      - name: Setup GHC and Stack (manual)
+        run: |
+          # Ensure stack is available (it is pre-installed on ubuntu-latest)
+          if ! command -v stack &> /dev/null; then
+            echo "Stack not found, installing..."
+            curl -sSL https://get.haskellstack.org/ | sh
+          fi
+          
+          # Instruct Stack to setup GHC based on your stack.yaml resolver
+          stack setup
 
       - name: Build shake target (non-interactive)
         run: |
