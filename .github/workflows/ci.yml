@@ -120,7 +120,7 @@ jobs:
       - name: Setup GHC and Stack
         uses: haskell/actions/setup@v1
         with:
-          ghc: '9.6.6'
+          ghc-version: '9.6.6'
 
       - name: Build shake target (non-interactive)
         run: |
