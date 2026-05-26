@@ -36,6 +36,11 @@ data DiagCode
   | HYK008W   -- --flang-src directory not found at parse time (Warning)
   | HYK009N   -- --flang-src directory found; Fortran targets enabled (Note)
   | HYK010I   -- no --flang-src supplied; Flang targets skipped (Info)
+  -- ---- Flang Dhall / Mock diagnostics -------------------------
+  | HYK011E   -- Flang Dhall: Error-level gap (Error)
+  | HYK011W   -- Flang Dhall: Warning-level gap (Warning)
+  | HYK011N   -- Flang Dhall: Note-level gap (Note)
+  | HYK011I   -- Flang Dhall: Info-level gap (Info)
   deriving (Show, Eq)
 
 -- ----------------------------------------------------------------

@@ -28,6 +28,7 @@ executables:
       - binary
       - hashable
       - sbv
+      - dhall
     ghc-options:
       - -fplugin=Polysemy.Plugin
       - -threaded
@@ -51,6 +52,7 @@ executables:
       - Rules.StandardToplevel
       - Rules.Wasm
       - Rules.Proof.LLVM_IR
+      - Rules.Proof.FlangDhall
       - Rules.Proof.Lean4
       - Rules.Proof.Main
       - Rules.Proof.SBV_Bridge

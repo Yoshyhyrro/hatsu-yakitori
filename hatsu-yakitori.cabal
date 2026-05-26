@@ -42,6 +42,7 @@ executable shake
       Rules.StandardToplevel
       Rules.Wasm
       Rules.Proof.LLVM_IR
+      Rules.Proof.FlangDhall
       Rules.Proof.Lean4
       Rules.Proof.Main
       Rules.Proof.SBV_Bridge
@@ -54,6 +55,7 @@ executable shake
     , binary
     , bytestring
     , containers
+    , dhall
     , directory
     , extra
     , filepath
