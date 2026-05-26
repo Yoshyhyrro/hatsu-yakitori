@@ -157,6 +157,28 @@ jobs:
           name: ci-debug-marker-flang-dhall-emit
           path: ci-debug-marker.txt
 
+      - name: Install LLVM 17 and Flang
+        run: |
+          # apt.llvm.org から公式のインストールスクリプトを取得してLLVM 17を導入
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 17 all
+          
+          # flang-17 が必要な場合は追加でインストールを試行
+          sudo apt-get install -y flang-17 || echo "flang-17 is already installed or unavailable"
+          
+          # インストールされた LLVM 17 ツールチェーンを PATH に追加
+          echo "/usr/lib/llvm-17/bin" >> $GITHUB_PATH
+
+      - name: Verify LLVM 17 Installation
+        run: |
+          clang-17 --version
+          if command -v flang-17 &> /dev/null; then
+            flang-17 --version
+          else
+            echo "flang-17 not found, but LLVM 17 core is installed."
+          fi
+
       - name: Setup GHC and Stack (manual)
         run: |
           # Ensure stack is available (it is pre-installed on ubuntu-latest)
