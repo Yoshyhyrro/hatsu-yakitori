@@ -45,6 +45,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+      - name: "Debug: write run marker"
+        run: |
+          echo "CI_RUN_ID=$GITHUB_RUN_ID" > ci-debug-marker.txt
+          echo "JOB=$GITHUB_JOB" >> ci-debug-marker.txt
+          date >> ci-debug-marker.txt
+
+      - name: Upload ci-debug-marker
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-debug-marker-lean-fmm-gate
+          path: ci-debug-marker.txt
 
       - name: Install elan
         run: |
@@ -68,6 +80,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+      - name: "Debug: write run marker"
+        run: |
+          echo "CI_RUN_ID=$GITHUB_RUN_ID" > ci-debug-marker.txt
+          echo "JOB=$GITHUB_JOB" >> ci-debug-marker.txt
+          date >> ci-debug-marker.txt
+
+      - name: Upload ci-debug-marker
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-debug-marker-fmm-runtime-smoke
+          path: ci-debug-marker.txt
 
       - name: Install CHICKEN
         run: |
@@ -118,6 +142,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+      - name: "Debug: write run marker"
+        run: |
+          echo "CI_RUN_ID=$GITHUB_RUN_ID" > ci-debug-marker.txt
+          echo "JOB=$GITHUB_JOB" >> ci-debug-marker.txt
+          date >> ci-debug-marker.txt
+
+      - name: Upload ci-debug-marker
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-debug-marker-flang-dhall-emit
+          path: ci-debug-marker.txt
 
       - name: Setup GHC and Stack
         uses: haskell/actions/setup@77e8db13129474e08c7c1ea3887d12491cc60cf2
