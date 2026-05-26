@@ -108,3 +108,37 @@ jobs:
 
       - name: Run FMM smoke test
         run: csi -s tests/fmm_tests.scm
+
+  flang-dhall-emit:
+    name: Emit Flang Dhall Diags
+    runs-on: ubuntu-latest
+    needs: fmm-runtime-smoke
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Setup GHC and Stack
+        uses: haskell/actions/setup@v1
+        with:
+          ghc: '9.6.6'
+
+      - name: Build shake target (non-interactive)
+        run: |
+          stack build :shake --no-terminal --color never
+
+      - name: Run flang-dhall-emit and save output
+        run: |
+          stack exec -- shake flang-dhall-emit | tee flang-dhall-output.txt
+
+      - name: Upload flang-dhall-output artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flang-dhall-output
+          path: flang-dhall-output.txt
+
+      - name: Fail on missing HYK011 diag
+        run: |
+          if ! grep -q "HYK011" flang-dhall-output.txt; then
+            echo "error[HYK011E]: Expected HYK011 diag not found in flang-dhall-output.txt"
+            exit 1
+          fi
