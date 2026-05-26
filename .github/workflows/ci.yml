@@ -159,15 +159,15 @@ jobs:
 
       - name: Install LLVM 17 and Flang
         run: |
-          # apt.llvm.org から公式のインストールスクリプトを取得してLLVM 17を導入
+          # apt.llvm.org provides llvm-17 and flang-17 packages for Ubuntu; install via their script which handles repository setup and installation
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 17 all
           
-          # flang-17 が必要な場合は追加でインストールを試行
+          # flang-17 which may be provided by the llvm-17 package or may require separate installation depending on the distribution; attempt to install but ignore failure if it's not available
           sudo apt-get install -y flang-17 || echo "flang-17 is already installed or unavailable"
           
-          # インストールされた LLVM 17 ツールチェーンを PATH に追加
+          # installation paths for llvm-17 binaries (clang-17, flang-17 if available) should be in /usr/lib/llvm-17/bin; add to PATH for CI steps
           echo "/usr/lib/llvm-17/bin" >> $GITHUB_PATH
 
       - name: Verify LLVM 17 Installation
