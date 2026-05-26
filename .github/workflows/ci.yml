@@ -13,6 +13,7 @@ on:
       - 'shake/**'
       - 'stack.yaml'
       - 'tests/fmm_tests.scm'
+      - 'tests/**'
   push:
     tags-ignore:
       - '*'
@@ -27,6 +28,7 @@ on:
       - 'shake/**'
       - 'stack.yaml'
       - 'tests/fmm_tests.scm'
+      - 'tests/**'
   workflow_dispatch:
 
 permissions:
