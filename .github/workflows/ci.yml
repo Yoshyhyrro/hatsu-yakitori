@@ -53,7 +53,7 @@ jobs:
 
       - name: Upload ci-debug-marker
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ci-debug-marker-lean-fmm-gate
           path: ci-debug-marker.txt
@@ -88,7 +88,7 @@ jobs:
 
       - name: Upload ci-debug-marker
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ci-debug-marker-fmm-runtime-smoke
           path: ci-debug-marker.txt
@@ -150,13 +150,13 @@ jobs:
 
       - name: Upload ci-debug-marker
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ci-debug-marker-flang-dhall-emit
           path: ci-debug-marker.txt
 
       - name: Setup GHC and Stack
-        uses: haskell/actions/setup@77e8db13129474e08c7c1ea3887d12491cc60cf2
+        uses: haskell-actions/setup@cd0d9bdd65b20557f41bea4dbe43d0b5fbbfe553
         with:
           ghc-version: '9.6.6'
 
