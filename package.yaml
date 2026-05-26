@@ -29,6 +29,7 @@ executables:
       - hashable
       - sbv
       - dhall
+      - text
     ghc-options:
       - -fplugin=Polysemy.Plugin
       - -threaded

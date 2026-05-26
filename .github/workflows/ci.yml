@@ -179,26 +179,7 @@ jobs:
             echo "flang-17 not found, but LLVM 17 core is installed."
           fi
 
-      - name: Ensure 'text' dependency is defined
-        run: |
-          # package.yamlがある場合、shakeターゲットまたは依存関係に 'text' を追加
-          if [ -f "package.yaml" ]; then
-            echo "package.yaml detected. Appending 'text' dependency..."
-            # package.yamlのグローバルなdependencies配下、またはshake実行ファイル配下にtextを追加
-            # 単純かつ確実にするため、yamlのトップレベルのdependencies配下にtextを追記します。
-            # YAMLのトップレベルにある dependencies: ブロックにインデントして挿入
-            sed -i '/^dependencies:/a \  - text' package.yaml
-            # また、各実行ファイルターゲット（shake等）のdependenciesにも追加
-            sed -i '/shake:/,/^[^ ]/ { /dependencies:/a \      - text\n      - text-2.0.2' package.yaml } || true
-          fi
-
-          # hatsu-yakitori.cabalを直接編集し、executable shake または共通ビルド依存に追加
-          if [ -f "hatsu-yakitori.cabal" ]; then
-            echo "hatsu-yakitori.cabal detected. Injecting 'text' dependency into shake target..."
-            # executable shake の build-depends ブロックを特定し、そこに text を流し込む
-            # Cabalファイル内の build-depends: の後ろに text を差し込む
-            sed -i 's/build-depends:/build-depends: text,/g' hatsu-yakitori.cabal
-          fi
+      # 'text' dependency is managed in source (package.yaml / .cabal); CI no longer attempts sed edits.
 
       - name: Setup GHC and Stack (manual)
         run: |
