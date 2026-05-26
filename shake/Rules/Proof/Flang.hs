@@ -50,6 +50,7 @@ data FlangBuildPaths = FlangBuildPaths
   { flangBuildRoot :: FilePath  -- ^ scratch dir for intermediate files
   , flangDistRoot  :: FilePath  -- ^ distribution root for final artifacts
   , flangIRDir     :: FilePath  -- ^ destination for emitted .ll files
+  , flangModulesDir :: FilePath -- ^ directory for compiled .mod files
   } deriving (Show, Eq)
 
 -- | Default layout: dist-flang/ mirrors dist-proof/ from LLVM_IR.
@@ -58,12 +59,17 @@ defaultFlangBuildPaths = FlangBuildPaths
   { flangBuildRoot = "_build_flang"
   , flangDistRoot  = "dist-flang"
   , flangIRDir     = "dist-flang/llvm-ir"
+  , flangModulesDir = "_build_flang/modules"
   }
 
 -- | Derive the LLVM IR output path for a Fortran module (by base name).
-flangIrOutputPath :: FlangBuildPaths -> String -> FilePath
-flangIrOutputPath paths modName =
-  flangIRDir paths </> modName <.> "ll"
+-- | Derive the LLVM IR output path for a Fortran source file, preserving
+-- relative directory hierarchy from the provided source root when used.
+flangIrOutputPath :: FlangBuildPaths -> FilePath -> FilePath -> FilePath
+flangIrOutputPath paths srcRoot srcFile =
+  let rel = makeRelative srcRoot srcFile
+      relNoExt = dropExtension rel
+  in flangIRDir paths </> relNoExt <.> "ll"
 
 -- | Ensure all Flang-specific directories exist before rules run.
 ensureFlangDirs :: FlangBuildPaths -> Action ()
@@ -71,6 +77,7 @@ ensureFlangDirs paths = liftIO $ mapM_ (Dir.createDirectoryIfMissing True)
   [ flangBuildRoot paths
   , flangDistRoot  paths
   , flangIRDir     paths
+  , flangModulesDir paths
   ]
 
 -- ----------------------------------------------------------------
@@ -170,11 +177,11 @@ discoverFortranSources root = do
 -- The output path is derived from the source base name via flangIrOutputPath.
 compileFortranToIR
   :: FlangBuildPaths
+  -> FilePath                        -- ^ root of Fortran source tree (for relative paths)
   -> FilePath                        -- ^ path to .f90 / .f95 / ... source
   -> Action (Either String FilePath)
-compileFortranToIR paths src = do
-  let modName = takeBaseName src
-  let out     = flangIrOutputPath paths modName
+compileFortranToIR paths srcRoot src = do
+  let out = flangIrOutputPath paths srcRoot src
   liftIO $ Dir.createDirectoryIfMissing True (takeDirectory out)
 
   flangFound <- liftIO $ Dir.findExecutable "flang"
@@ -182,8 +189,14 @@ compileFortranToIR paths src = do
     Nothing ->
       return $ Left "flang not found in PATH; install LLVM Flang (see HYK006W)"
     Just flangExe -> do
-      r <- liftIO $ try (cmd_ flangExe [ "-S", "-emit-llvm", "-o", out, src ])
-             :: Action (Either SomeException ())
+      -- Module dir flag to keep .mod files isolated
+      let moduleFlag = ["-module-dir", flangModulesDir paths]
+      -- If source uses uppercase extension (preprocessing expected), enable CPP
+      let ext = takeExtension src
+      let useCPP = any (`elem` ext) ['A'..'Z']
+      let cppFlag = if useCPP then ["-cpp"] else []
+      let args = ["-S", "-emit-llvm", "-o", out] ++ moduleFlag ++ cppFlag ++ [src]
+      r <- liftIO $ try (cmd_ flangExe args) :: Action (Either SomeException ())
       case r of
         Right ()                  -> return (Right out)
         Left (e :: SomeException) -> return $ Left ("flang compilation failed: " ++ show e)
@@ -227,7 +240,7 @@ verifyFlangModules paths srcDir = do
   srcs <- liftIO $ discoverFortranSources srcDir
   forM srcs $ \src -> do
     let modName = takeBaseName src
-    eIR <- compileFortranToIR paths src
+    eIR <- compileFortranToIR paths srcDir src
     result <- case eIR of
       Left  err -> return (Left err)
       Right ir  -> verifyFlangIR ir

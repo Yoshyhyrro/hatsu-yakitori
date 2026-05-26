@@ -6,6 +6,9 @@ author: Yoshihiro Hasegawa
 maintainer: je-suis-1oeuf-devautour@proton.me
 license: BSD3
 
+data-files:
+  - shake/mock_test/mlir/flang.dhall
+
 executables:
   shake:
     main: Shake.hs
@@ -32,6 +35,8 @@ executables:
       - -with-rtsopts=-N
     other-modules:
       - Chicken
+      - Diag
+      - Rules.Proof.Flang
       - Clean
       - Pipeline
       - Salmonella

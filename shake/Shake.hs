@@ -175,6 +175,17 @@ main = do
             putNormal $ "  opt:   " ++ maybe "missing" (const "found") optFound
             putNormal $ "  --flang-src: " ++ maybe "(not supplied)" id flangSrcOpt
 
+        -- Mock: display the Dhall-based Flang mock test configuration.
+        phony "flang-mock" $ do
+            let dhallPath = "shake/mock_test/mlir/flang.dhall"
+            exists <- liftIO $ Dir.doesFileExist dhallPath
+            if not exists
+              then putNormal $ dhallPath ++ " not found"
+              else do
+                content <- liftIO $ readFile dhallPath
+                putNormal "flang.dhall (mock test):"
+                putNormal content
+
         Quadcopter.quadcopterRules defaultCfg
         HDF5.hdf5Rules defaultCfg
         DebFMM.debFmmRules defaultCfg coreFiles
