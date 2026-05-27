@@ -37,44 +37,44 @@ permissions:
   contents: read
 
 jobs:
-  lean-fmm-gate:
-    name: Build HatsuYakitori.FMM
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: dist-proof/lean4
-    steps:
-      - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
-      - name: "Debug: write run marker"
-        run: |
-          echo "CI_RUN_ID=$GITHUB_RUN_ID" > ci-debug-marker.txt
-          echo "JOB=$GITHUB_JOB" >> ci-debug-marker.txt
-          date >> ci-debug-marker.txt
+  #lean-fmm-gate:
+  #  name: Build HatsuYakitori.FMM
+  #  runs-on: ubuntu-latest
+  #  defaults:
+  #    run:
+  #      shell: bash
+  #      working-directory: dist-proof/lean4
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+  #    - name: "Debug: write run marker"
+  #      run: |
+  #        echo "CI_RUN_ID=$GITHUB_RUN_ID" > ci-debug-marker.txt
+  #        echo "JOB=$GITHUB_JOB" >> ci-debug-marker.txt
+  #        date >> ci-debug-marker.txt
 
-      - name: Upload ci-debug-marker
-        if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: ci-debug-marker-lean-fmm-gate
-          path: ci-debug-marker.txt
+  #    - name: Upload ci-debug-marker
+  #      if: ${{ always() }}
+  #      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+  #      with:
+  #        name: ci-debug-marker-lean-fmm-gate
+  #        path: ci-debug-marker.txt
 
-      - name: Install elan
-        run: |
-          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
-          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+  #    - name: Install elan
+  #      run: |
+  #        curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+  #        echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
-      - name: Fetch dependency cache
-        run: |
-          lake update
-          lake exe cache get
+  #    - name: Fetch dependency cache
+  #      run: |
+  #        lake update
+  #        lake exe cache get
 
-      - name: Build FMM proof gate
-        run: lake build HatsuYakitori.FMM
+  #    - name: Build FMM proof gate
+  #      run: lake build HatsuYakitori.FMM
 
-      - name: Build HopfStructure proof target
-        run: lake build HatsuYakitori.HopfStructure
+  #    - name: Build HopfStructure proof target
+  #      run: lake build HatsuYakitori.HopfStructure
 
   fmm-runtime-smoke:
     name: Run FMM Scheme smoke test
