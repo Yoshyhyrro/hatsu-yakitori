@@ -16,11 +16,11 @@ import Diag
 -- Dhall-side types
 data SeverityD = Error | Warning | Note | Info
   deriving (Show, Generic)
-instance Dhall.Interpret SeverityD
+instance Dhall.FromDhall SeverityD
 
 data GapCategory = DependencyResolution | PipelineAsymmetry | PathCollision | Preprocessing
   deriving (Show, Generic)
-instance Dhall.Interpret GapCategory
+instance Dhall.FromDhall GapCategory
 
 data Gap = Gap
   { category :: GapCategory
@@ -31,7 +31,7 @@ data Gap = Gap
   , technicalImpact :: Text
   , proposedRemedy :: Text
   } deriving (Show, Generic)
-instance Dhall.Interpret Gap
+instance Dhall.FromDhall Gap
 
 -- | Parse the Dhall file and return the list of gaps.
 parseFlangGaps :: FilePath -> IO [Gap]

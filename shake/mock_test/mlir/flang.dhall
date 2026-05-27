@@ -63,6 +63,15 @@ let buildRoot   = "_build_flang"
 let distIR      = "dist-flang/llvm-ir"
 let distModules = "dist-flang/modules"
 
+-- Test/example constants (inspired by NonHappusMatroid examples)
+let constants =
+    { petersenVertexCount = 10
+    , petersenEdgeCount   = 15
+    , petersenComponents  = 1
+    , petersenCycleRank   = 6
+    , petersenJacobiDim   = 20
+    }
+
 -- ── Gap definitions ──────────────────────────────────────────────────────────
 
 let gaps : List Gap =
@@ -242,6 +251,7 @@ in  { meta =
                       gaps
                   )
               )
+        , constants = constants
         }
     , gaps = gaps
     }
