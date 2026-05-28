@@ -95,7 +95,7 @@ Unchanged. GitHub Actions workflows, Shake build configs, and HDF5 scripts can s
 
 - [ ] Post LICENSE_NOTICE.md to repository
 - [ ] Update README.md with migration callout
-- [ ] Tag last BSD release (e.g., `v0.4.9`)
+- [ ] Tag last BSD release (e.g., `v0.4.5`)
 
 ### Phase 2: Prepare (Before v0.5.0-rc)
 
@@ -145,7 +145,7 @@ Formal verification contributions to `dist-proof/lean4/HatsuYakitori/` must be:
 ### Q: Can I still use v0.4.x under BSD 3-Clause?
 
 **A:** Yes. All v0.4.x releases remain under BSD 3-Clause in perpetuity. You can:
-- Use v0.4.9 unchanged in proprietary projects
+- Use v0.4.5 unchanged in proprietary projects
 - Fork v0.4.x and maintain your own BSD branch
 - Mix v0.4.x (BSD) code with v0.5.0+ (MPL 2.0) in a larger work (aggregate license)
 
@@ -172,13 +172,32 @@ My proprietary app
 - MPL 2.0's explicit patent clause is valuable in compiler contexts
 - Flang-specific modules can remain MPL 2.0 or adopt a compatible dual-license (e.g., MPL 2.0 + Apache 2.0)
 
-Initial Flang support (planned for v0.5.x) will be:
+Flang support is being integrated into the proof/build pipeline. The architecture mirrors the existing LLVM IR proof structure but extends it for Fortran→LLVM IR compilation:
+
 ```
-src/flang/
-├── fmm_fortran_binding.f90  → MPL 2.0
-├── cartan_glue.scm          → MPL 2.0
-└── BUILD.md                 → MPL 2.0 + notes
+dist-proof/llvm-ir/modules/flang/
+├── Rules/Proof/Flang.hs              → MPL 2.0
+│   ├── FlangBuildPaths (directory layout)
+│   ├── Fortran source discovery (.f90, .f95, .f03, .f08, legacy .f/.for)
+│   ├── compileFortranToIR (flang -S -emit-llvm pipeline)
+│   └── verifyFlangIR (opt -passes=verify integrity check)
+│
+├── Rules/Proof/FlangDhall.hs          → MPL 2.0
+│   ├── Gap diagnostics (Dhall configuration)
+│   ├── Dependency resolution tracking
+│   └── Pipeline asymmetry detection
+│
+├── Build flow:
+│   _build_flang/                      (scratch intermediate files)
+│   ├── modules/                       (compiled .mod files)
+│   └── *.f90 → *.ll                   (intermediate LLVM IR)
+│
+└── dist-flang/
+    └── llvm-ir/                       (final LLVM IR output)
+        └── *.ll                       (distributed IR modules)
 ```
+
+All Flang-related source files, build rules, and generated IR artifacts in this tree are **MPL 2.0**. Fortran source files provided as input by users retain their original license; only the proof infrastructure and compiled IR are subject to MPL 2.0.
 
 ### Q: Can I use this in academic / research work?
 
