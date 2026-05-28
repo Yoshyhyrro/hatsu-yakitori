@@ -95,7 +95,7 @@ Unchanged. GitHub Actions workflows, Shake build configs, and HDF5 scripts can s
 
 - [ ] Post LICENSE_NOTICE.md to repository
 - [ ] Update README.md with migration callout
-- [ ] Tag last BSD release (e.g., `v0.4.5`)
+- [ ] Tag last BSD release (e.g., `v0.4.9`)
 
 ### Phase 2: Prepare (Before v0.5.0-rc)
 
@@ -145,7 +145,7 @@ Formal verification contributions to `dist-proof/lean4/HatsuYakitori/` must be:
 ### Q: Can I still use v0.4.x under BSD 3-Clause?
 
 **A:** Yes. All v0.4.x releases remain under BSD 3-Clause in perpetuity. You can:
-- Use v0.4.5 unchanged in proprietary projects
+- Use v0.4.9 unchanged in proprietary projects
 - Fork v0.4.x and maintain your own BSD branch
 - Mix v0.4.x (BSD) code with v0.5.0+ (MPL 2.0) in a larger work (aggregate license)
 
