@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module FlangDhallSpec (main, spec) where
 
 import Test.Hspec

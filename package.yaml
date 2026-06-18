@@ -30,6 +30,7 @@ executables:
       - sbv
       - dhall
       - text
+      - with-utf8
     ghc-options:
       - -fplugin=Polysemy.Plugin
       - -threaded
@@ -76,6 +77,7 @@ tests:
       - hspec
       - dhall
       - text
+      - with-utf8
       - bytestring
       - containers
       - async
