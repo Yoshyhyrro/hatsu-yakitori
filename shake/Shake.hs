@@ -195,7 +195,7 @@ main = do
                 then putNormal $ dhallPath ++ " not found"
                 else do
                     diags <- liftIO $ FlangDhall.emitGapsAsDiagIO dhallPath
-                    putNormal $ "flang-dhall-emit: emitted " ++ show (length diags) ++ " diag(s)"
+                    putNormal $ FlangDhall.formatFlangDiagSummary diags
 
         Quadcopter.quadcopterRules defaultCfg
         HDF5.hdf5Rules defaultCfg

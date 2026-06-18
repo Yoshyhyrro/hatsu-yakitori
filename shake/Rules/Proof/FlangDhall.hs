@@ -4,9 +4,11 @@
 
 module Rules.Proof.FlangDhall
   ( emitGapsAsDiagIO
+  , formatFlangDiagSummary
   , parseFlangGaps
   ) where
 
+import Data.List (intercalate)
 import GHC.Generics (Generic)
 import qualified Dhall
 import Data.Text (Text)
@@ -41,6 +43,17 @@ parseFlangGaps fp =
         '/' : _ -> fp
         _       -> "./" ++ fp
   in Dhall.input Dhall.auto (T.pack dhallImport)
+
+formatFlangDiagSummary :: [Diag] -> String
+formatFlangDiagSummary diags =
+  let codes = map (show . diagCode) diags
+      codeSummary = case codes of
+        [] -> "none"
+        _  -> intercalate ", " codes
+  in "flang-dhall-emit: emitted "
+      ++ show (length diags)
+      ++ " diag(s); codes: "
+      ++ codeSummary
 
 -- | Convert Gap -> Diag and emit them via Diag.emit. Returns the emitted Diag list.
 emitGapsAsDiagIO :: FilePath -> IO [Diag]
