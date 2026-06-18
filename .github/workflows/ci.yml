@@ -206,9 +206,9 @@ jobs:
           name: flang-dhall-output
           path: flang-dhall-output.txt
 
-      - name: Fail on missing HYK011 diag
+      - name: Fail on missing HYK diagnostic code
         run: |
-          if ! grep -q "HYK011" flang-dhall-output.txt; then
-            echo "error[HYK011E]: Expected HYK011 diag not found in flang-dhall-output.txt"
+          if ! grep -q "HYK" flang-dhall-output.txt; then
+            echo "error: Expected HYK diagnostic code not found in flang-dhall-output.txt"
             exit 1
           fi

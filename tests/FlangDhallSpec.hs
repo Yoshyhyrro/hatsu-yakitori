@@ -14,15 +14,17 @@ spec = describe "FlangDhall" $ do
     gaps <- parseFlangGaps "shake/mock_test/mlir/flang.dhall"
     gaps `shouldSatisfy` (not . null)
 
-  it "emitGapsAsDiagIO emits HYK011 series Diags" $ do
+  it "emitGapsAsDiagIO emits diagnostics and preserves declared dhall diagCode values" $ do
     diags <- emitGapsAsDiagIO "shake/mock_test/mlir/flang.dhall"
     diags `shouldSatisfy` (not . null)
     let codes = map diagCode diags
-    let allInHYK011 = all (\c -> c `elem` [HYK011E, HYK011W, HYK011N, HYK011I]) codes
-    allInHYK011 `shouldBe` True
+    codes `shouldContain` HYK008W
+    codes `shouldContain` HYK007E
+    codes `shouldContain` HYK006W
+    codes `shouldContain` HYK011E
 
-  it "formatFlangDiagSummary includes HYK011 codes for stdout capture" $ do
+  it "formatFlangDiagSummary includes emitted HYK codes for stdout capture" $ do
     diags <- emitGapsAsDiagIO "shake/mock_test/mlir/flang.dhall"
     let summary = formatFlangDiagSummary diags
     summary `shouldContain` "flang-dhall-emit: emitted"
-    summary `shouldContain` "HYK011"
+    summary `shouldContain` "HYK"

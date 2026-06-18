@@ -94,10 +94,11 @@ let gaps : List Gap =
     , remedy =
         { immediate =
             "Compile all sources sequentially (nJobs 1) as a short-term guard."
-        , proper = Some
+        , proper = Some (
             "Parse USE/MODULE declarations (analogous to extractDeclareUses "
             ++ "in Compile.hs) and express compile order via Shake `need` "
             ++ "on the corresponding .mod outputs."
+          )
         }
     }
 
@@ -120,10 +121,11 @@ let gaps : List Gap =
         { immediate =
             "cd into " ++ buildRoot ++ " before invoking flang so "
             ++ ".mod files land there."
-        , proper = Some
+        , proper = Some (
             "Add \"-module-dir " ++ distModules ++ "\" (flang-new) "
             ++ "or \"-module\" (classic flang) to compileFortranToIR args; "
             ++ "create " ++ distModules ++ " in ensureFlangDirs."
+          )
         }
     }
 
@@ -147,9 +149,10 @@ let gaps : List Gap =
         ++ "will go undetected."
     , remedy =
         { immediate = "Document the gap; no workaround changes correctness."
-        , proper = Some
+        , proper = Some (
             "Port VerifyStage (StageRaw, StageOpt1, StageOpt2) from "
             ++ "LLVM_IR.hs into Flang.hs; thread through verifyFlangModules."
+          )
         }
     }
 
@@ -175,9 +178,10 @@ let gaps : List Gap =
     , remedy =
         { immediate =
             "None; depends on FLG-003 landing first."
-        , proper = Some
+        , proper = Some (
             "Introduce StageSBV in Flang.hs; add a flang-sbv phony target "
             ++ "in Shake.hs that wires verifyFlangModules -> SBV_Bridge."
+          )
         }
     }
 
@@ -201,10 +205,11 @@ let gaps : List Gap =
         { immediate =
             "Enforce unique base names as a precondition check "
             ++ "in discoverFortranSources; abort with HYK007E on collision."
-        , proper = Some
+        , proper = Some (
             "Compute output path as "
             ++ distIR ++ "/<makeRelative srcRoot src>.ll "
             ++ "preserving the full relative hierarchy."
+          )
         }
     }
 
@@ -227,10 +232,11 @@ let gaps : List Gap =
         { immediate =
             "Filter uppercase extensions out of isFortranSource "
             ++ "until CPP support is wired in."
-        , proper = Some
+        , proper = Some (
             "Detect uppercase extension in compileFortranToIR and "
             ++ "prepend \"-cpp\" (flang-new) or \"-Mpreprocess\" "
             ++ "(classic flang) to the argument list."
+          )
         }
     }
   ]
