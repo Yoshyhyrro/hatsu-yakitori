@@ -35,7 +35,12 @@ instance Dhall.FromDhall Gap
 
 -- | Parse the Dhall file and return the list of gaps.
 parseFlangGaps :: FilePath -> IO [Gap]
-parseFlangGaps fp = Dhall.input Dhall.auto (T.pack fp)
+parseFlangGaps fp =
+  let dhallImport = case fp of
+        '.' : _ -> fp
+        '/' : _ -> fp
+        _       -> "./" ++ fp
+  in Dhall.input Dhall.auto (T.pack dhallImport)
 
 -- | Convert Gap -> Diag and emit them via Diag.emit. Returns the emitted Diag list.
 emitGapsAsDiagIO :: FilePath -> IO [Diag]
