@@ -1,5 +1,6 @@
 # Build artifacts
 build/
+build.log
 dist/
 _build/
 _build_test/
@@ -60,3 +61,12 @@ examples/AES-128 SubBytes via Galois Height Function
 examples/Berkovich_Flow_Codes
 # Local wiki clone — do not embed into main repo
 .wiki-temp/
+
+# others
+run-26429335317.log
+scripts/README.md
+scripts/install-dhall.ps1
+scripts/install-dhall.sh
+scripts/run-flang-mock.ps1
+scripts/run-flang-mock.sh
+shake/mock_test/mlir/logs_70913094857/
