@@ -13,8 +13,8 @@ import GHC.Generics (Generic)
 import qualified Dhall
 import Data.Text (Text)
 import qualified Data.Text as T
-import Diag
-
+import Diag hiding (diagCode)
+import qualified Diag as D
 -- Dhall-side types
 data SeverityD = Error | Warning | Note | Info
   deriving (Show, Generic)
@@ -65,7 +65,7 @@ parseFlangGaps fp =
 
 formatFlangDiagSummary :: [Diag] -> String
 formatFlangDiagSummary diags =
-  let codes = map (show . diagCode) diags
+  let codes = map (show . D.diagCode) diags
       codeSummary = case codes of
         [] -> "none"
         _  -> intercalate ", " codes
