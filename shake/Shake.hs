@@ -176,26 +176,26 @@ main = do
             putNormal $ "  opt:   " ++ maybe "missing" (const "found") optFound
             putNormal $ "  --flang-src: " ++ maybe "(not supplied)" id flangSrcOpt
 
-                -- Mock: display the Dhall-based Flang mock test configuration.
-                phony "flang-mock" $ do
-                        let dhallPath = "shake/mock_test/mlir/flang.dhall"
-                        exists <- liftIO $ Dir.doesFileExist dhallPath
-                        if not exists
-                            then putNormal $ dhallPath ++ " not found"
-                            else do
-                                content <- liftIO $ readFile dhallPath
-                                putNormal "flang.dhall (mock test):"
-                                putNormal content
+        -- Mock: display the Dhall-based Flang mock test configuration.
+        phony "flang-mock" $ do
+            let dhallPath = "shake/mock_test/mlir/flang.dhall"
+            exists <- liftIO $ Dir.doesFileExist dhallPath
+            if not exists
+                then putNormal $ dhallPath ++ " not found"
+                else do
+                    content <- liftIO $ readFile dhallPath
+                    putNormal "flang.dhall (mock test):"
+                    putNormal content
 
-                -- Parse Dhall mock and emit Diag entries
-                phony "flang-dhall-emit" $ do
-                        let dhallPath = "shake/mock_test/mlir/flang.dhall"
-                        exists <- liftIO $ Dir.doesFileExist dhallPath
-                        if not exists
-                            then putNormal $ dhallPath ++ " not found"
-                            else do
-                                diags <- liftIO $ FlangDhall.emitGapsAsDiagIO dhallPath
-                                putNormal $ "flang-dhall-emit: emitted " ++ show (length diags) ++ " diag(s)"
+        -- Parse Dhall mock and emit Diag entries
+        phony "flang-dhall-emit" $ do
+            let dhallPath = "shake/mock_test/mlir/flang.dhall"
+            exists <- liftIO $ Dir.doesFileExist dhallPath
+            if not exists
+                then putNormal $ dhallPath ++ " not found"
+                else do
+                    diags <- liftIO $ FlangDhall.emitGapsAsDiagIO dhallPath
+                    putNormal $ "flang-dhall-emit: emitted " ++ show (length diags) ++ " diag(s)"
 
         Quadcopter.quadcopterRules defaultCfg
         HDF5.hdf5Rules defaultCfg
