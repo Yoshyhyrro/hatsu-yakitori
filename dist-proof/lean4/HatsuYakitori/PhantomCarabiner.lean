@@ -8,6 +8,7 @@ import HatsuYakitori.YangBaxterBanach
 import Mathlib.Data.Complex.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Star.Basic
+import Mathlib.FieldTheory.Finite.GaloisField
 
 /-!
 # PhantomCarabiner: Complex-Weight Carabiner with Verschiebung and Θ-Link
@@ -365,222 +366,89 @@ lemma theta_link_im_neg_of_height (n : ℕ) (hn : c.weight.re = n) :
 
 end ThirdChernShadow
 
-/-! ## §9  Golay folding strategy via `suffices` and `absurd`
+/-! ## §9  Exponential state spaces via `𝔽₂`-extensions
 
-This section provides the formal bridge between the SMT `golay_dual_transform`
-(idx ↦ 24 - idx) and the complex-weight `complement` (w ↦ 6 - conj w).
-Both operations are involutions that halve the effective search depth when
-verifying cohomological descent for `canonical_chain`.
+This section illustrates, purely algebraically, the same "exponential state
+space, then fold by symmetry" phenomenon that motivated the discrete folding
+strategy used elsewhere in this project. Earlier revisions of this file
+borrowed a register-machine/stack-machine SMT bridge (`canonical_chain`,
+`Scheme`, `realize`, `collapse`) to make that point; that bridge has been
+factored out to `HatsuYakitori.RegisterStackMachine`, so that models-of-
+computation content stays separate from the complex-analytic `ComplexCarabiner`
+story told here. What remains needs nothing beyond
+`Mathlib.FieldTheory.Finite.GaloisField`.
+
+`F₂ := GaloisField 2 1` is the field with two elements — the residue field of
+the `p = 2` Witt vectors that `verschiebung` (§2) is already modelled on.
+Adjoining a degree-`50` extension gives `F₂_50`, a field with `2 ^ 50`
+elements: an explicit, fully algebraic witness of exponential blow-up, in
+place of the earlier `canonical_chain`-based one (which bounded a search
+space by `2 ^ 17 = 131072`).
 
 **Key insight (folding)**:
-For any `n : ℕ` with `n ≤ 24`, the `canonical_chain n` is isomorphic to
-`canonical_chain (24 - n)` via the Golay dual transformation on indices.
-Therefore, proving a property at depth `17` is equivalent to proving it at
-depth `7`. This reduces the exponential blow-up from `2^18` to `2^8`.
+`Nat.card F₂_50 = 2 ^ 50 = (2 ^ 25) ^ 2`, i.e. the size-`2 ^ 50` state space
+is literally the square of a size-`2 ^ 25` one (`card_F₂_50_eq_sq`). This is
+the same exponent-halving idea as the old `foldDepth`, now witnessed by
+`pow_mul` rather than an SMT/register-stack-machine bridge.
 
-**Connection to SMT v13**:
-The `canonical_chain` definition in `let_collapse_v13.smt2` uses a recursive
-`Fibration` where the bound index is a coordinate. The Golay dual transform
-swaps coordinates `idx ↦ (24 - idx) % 24`, which induces the isomorphism
-proved here.
+**Connection to F-crystals**:
+The Witt vectors `W(𝔽₂)` carry a Frobenius endomorphism `F` and a Verschiebung
+`V` satisfying `F ∘ V = V ∘ F = (multiplication by p = 2)` — the same `V`
+that `verschiebung` above is named after. An *F-crystal* is (roughly) a
+finite free `W(k)`-module equipped with a Frobenius-semilinear endomorphism,
+arising from the crystalline cohomology of a smooth proper variety over a
+perfect field `k` of characteristic `p`; taking `k` to be `𝔽₂` or a finite
+extension of it, as here, is the simplest nontrivial case. This file does
+not attempt to formalize F-crystals themselves — see the reference below for
+background reading.
+
+## Main definitions
+
+* `F₂` — the field with two elements, `GaloisField 2 1`.
+* `F₂_50` — the degree-`50` extension `GaloisField 2 50`, with `2 ^ 50`
+  elements.
+
+## Main results
+
+* `card_F₂_50` — the exponential blow-up: `Nat.card F₂_50 = 2 ^ 50`.
+* `card_F₂_50_eq_sq` — the algebraic folding fact: `2 ^ 50 = (2 ^ 25) ^ 2`.
 
 ## References
 
-- `NonHappusMatroid.lean` — `cascadeDimProfile` strict decrease 20 → 10 → 0.
-- `HopfStructure.lean` — `GolayWeight.complement` and antipode involution.
-- `AnabelianSketch.lean` — M₂₄ cusp stabilizer and BSD quotient bridge.
+* MathOverflow, [*F-crystals from crystalline cohomology*](https://mathoverflow.net/questions/462197/f-crystals-from-crystalline-cohomology)
+  — background on F-crystals arising from crystalline cohomology; there is
+  not much other online material on this specific construction.
+* `HatsuYakitori/RegisterStackMachine.lean` — the register/stack-machine SMT
+  bridge and `foldDepth`-based folding strategy formerly in this section.
 -/
 
-section GolayFolding
+section GaloisFieldWitness
 
-open MachineConstants
+/-- `2` is prime; required to form `GaloisField 2 n`. -/
+instance : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
 
-variable {P : ℕ → Prop}
+/-- `F₂`, the field with two elements — the `p = 2` residue field that
+    `verschiebung` (§2) is modelled on. -/
+abbrev F₂ : Type := GaloisField 2 1
 
-/-- The real-part projection of the complement is analogous to the Golay
-    dual transform: both are involutive reflections. -/
-lemma complement_as_golay_dual (c : ComplexCarabiner) :
-    complement (complement c) = c := by
-  ext
-  · rw [complement_involutive]
-  · simp [complement]
+/-- `F₂` has exactly two elements. -/
+theorem card_F₂ : Nat.card F₂ = 2 := by
+  show Nat.card (GaloisField 2 1) = 2
+  rw [GaloisField.card 2 1 (by norm_num), pow_one]
 
-/-! ### Folded depth and Golay symmetry -/
+/-- The exponential witness: the degree-`50` extension of `F₂`. -/
+abbrev F₂_50 : Type := GaloisField 2 50
 
-/-- The folded depth: maps `n` to the interval `[0, 12]` by reflection
-    across the midpoint 12. This is the combinatorial core of the
-    SMT `folded_depth` optimization. -/
-def foldDepth (n : ℕ) : ℕ := if n ≤ 12 then n else 24 - n
+/-- **The exponential blow-up**: `F₂_50` has `2 ^ 50` elements. -/
+theorem card_F₂_50 : Nat.card F₂_50 = 2 ^ 50 := by
+  show Nat.card (GaloisField 2 50) = 2 ^ 50
+  exact GaloisField.card 2 50 (by norm_num)
 
-lemma foldDepth_le_12 (n : ℕ) : foldDepth n ≤ 12 := by
-  unfold foldDepth
-  split <;> (try norm_num <;> omega)
+/-- **Folding**: the `2 ^ 50`-size witness is the square of a `2 ^ 25`-size
+    one — the algebraic analogue of the old `foldDepth` exponent-halving. -/
+theorem card_F₂_50_eq_sq : Nat.card F₂_50 = (2 ^ 25) ^ 2 := by
+  norm_num [card_F₂_50]
 
-@[simp] lemma foldDepth_self (n : ℕ) (h : n ≤ 12) : foldDepth n = n := by
-  simp [foldDepth, h]
-
-@[simp] lemma foldDepth_complement (n : ℕ) : foldDepth (24 - n) = foldDepth n := by
-  unfold foldDepth
-  split_ifs with h
-  · have h' : 24 - n ≥ 12 := by omega
-    simp [h', foldDepth]
-    omega
-  · have h' : 24 - n ≤ 12 := by omega
-    simp [h', foldDepth]
-    omega
-
-/-- The Golay dual transformation on indices is an involution.
-    This matches the SMT definition: `golay_dual_transform x = (24 - x) % 24`.
-    The proof uses integer modulus arithmetic. -/
-@[simp]
-theorem golay_dual_transform_involution (idx : ℤ) :
-    let g (x : ℤ) := (24 - x) % 24
-    g (g idx) = idx % 24 := by
-  intro g
-  simp [g]
-  have h1 : (24 - idx) % 24 = (24 - (idx % 24)) % 24 := by
-    rw [Int.emod_def, Int.emod_def]
-    ring
-  rw [h1]
-  by_cases hz : idx % 24 = 0
-  · simp [hz]
-  · have hpos : 0 < idx % 24 ∧ idx % 24 < 24 := by
-      apply Int.emod_pos_of_pos
-      exact hz
-    rw [Int.emod_eq_of_lt (by omega) (by omega)]
-    omega
-
-/-- The `foldDepth` function is idempotent: reflecting twice returns the
-    same value. This is the discrete analogue of `complement_involutive`
-    in the complex-weight setting. -/
-@[simp]
-lemma foldDepth_idempotent (n : ℕ) :
-    foldDepth (foldDepth n) = foldDepth n := by
-  unfold foldDepth
-  split_ifs with h
-  · simp [foldDepth, h]
-  · have h' : 24 - n ≤ 12 := by omega
-    simp [foldDepth, h']
-
-/-! ### Isomorphism between folded chains -/
-
-/-- Axiom (to be proven in concrete SMT encoding):
-    The `canonical_chain n` and `canonical_chain (foldDepth n)` are
-    isomorphic under the Golay dual transform on fibration indices.
-    This is the mathematical core of the folding optimization. -/
-axiom canonical_chain_golay_iso (n : ℕ) :
-    canonical_chain n ≅ canonical_chain (foldDepth n)
-
-/-- Isomorphisms of schemes preserve their `realize` semantics under
-    any environment. This is a fundamental property of the AST realization. -/
-axiom iso_preserves_realize {s t : Scheme} (h : s ≅ t) (env : Array Int Int) :
-    realize s env = realize t env
-
-/-- The `collapse` operation is functorial: it preserves scheme isomorphisms.
-    This follows from structural recursion on the `Scheme` datatype. -/
-axiom collapse_preserves_iso {s t : Scheme} (h : s ≅ t) :
-    collapse s ≅ collapse t
-
-/-! ### Folding proofs via `suffices` -/
-
-/-- **Folding theorem (via `suffices`)**:
-    To prove cohomological descent at depth `n`, it suffices to prove it at
-    depth `foldDepth n`. This reduces the verification effort by roughly
-    half when `n > 12`.
-
-    Proof uses `suffices` to replace the goal with the folded version,
-    then applies the Golay isomorphism to transport the equality back. -/
-theorem suffices_fold_descent (n : ℕ)
-    (h_folded : ∀ env, realize (canonical_chain (foldDepth n)) env =
-                       realize (collapse (canonical_chain (foldDepth n))) env)
-    : ∀ env, realize (canonical_chain n) env =
-              realize (collapse (canonical_chain n)) env := by
-  intro env
-  have iso_n := canonical_chain_golay_iso n
-  have iso_collapse_n : collapse (canonical_chain n) ≅
-                        collapse (canonical_chain (foldDepth n)) := by
-    exact collapse_preserves_iso iso_n
-  rw [iso_preserves_realize iso_n env,
-      iso_preserves_realize iso_collapse_n env]
-  exact h_folded env
-
-/-- **Folding theorem (via `absurd`)**:
-    Contrapositive version: if descent fails at depth `n`, then it must also
-    fail at depth `foldDepth n`. Since the latter is known to hold (for
-    small depths), the former cannot fail.
-
-    This formulation is useful when the SMT solver returns `SAT` unexpectedly:
-    it allows us to derive a contradiction from the folded symmetry. -/
-theorem absurd_fold_descent (n : ℕ)
-    (h_folded : ∀ env, realize (canonical_chain (foldDepth n)) env =
-                       realize (collapse (canonical_chain (foldDepth n))) env)
-    : ∀ env, realize (canonical_chain n) env =
-              realize (collapse (canonical_chain n)) env := by
-  intro env
-  by_contra h_not
-  have h_neq : realize (canonical_chain n) env ≠
-               realize (collapse (canonical_chain n)) env := h_not
-  have iso_n := canonical_chain_golay_iso n
-  have iso_collapse_n : collapse (canonical_chain n) ≅
-                        collapse (canonical_chain (foldDepth n)) :=
-    collapse_preserves_iso iso_n
-  have h_neq_folded : realize (canonical_chain (foldDepth n)) env ≠
-                      realize (collapse (canonical_chain (foldDepth n))) env := by
-    rw [← iso_preserves_realize iso_n env,
-        ← iso_preserves_realize iso_collapse_n env] at h_neq
-    exact h_neq
-  exact absurd (h_folded env) h_neq_folded
-
-/-! ### Specialization to depth 17 -/
-
-/-- **Depth-17 reduction to depth-7**:
-    Since `foldDepth 17 = 7`, proving descent at depth 7 is sufficient for
-    depth 17. This is the key optimization for the SMT verifier, reducing
-    the search space from 2^18 to 2^8. -/
-theorem suffices_17_from_7
-    (h7 : ∀ env, realize (canonical_chain 7) env =
-                 realize (collapse (canonical_chain 7)) env)
-    : ∀ env, realize (canonical_chain 17) env =
-              realize (collapse (canonical_chain 17)) env := by
-  suffices h_folded : ∀ env,
-      realize (canonical_chain (foldDepth 17)) env =
-      realize (collapse (canonical_chain (foldDepth 17))) env from
-    suffices_fold_descent 17 h_folded
-  rw [show foldDepth 17 = 7 by unfold foldDepth; norm_num]
-  exact h7
-
-/-- **Depth-17 absurd version**:
-    If descent were to fail at depth 17, it would also fail at depth 7.
-    Since depth 7 is verifiable in the SMT solver without timeout,
-    this gives a contradiction. -/
-theorem absurd_17_from_7
-    (h7 : ∀ env, realize (canonical_chain 7) env =
-                 realize (collapse (canonical_chain 7)) env)
-    : ∀ env, realize (canonical_chain 17) env =
-              realize (collapse (canonical_chain 17)) env := by
-  rw [show foldDepth 17 = 7 by unfold foldDepth; norm_num]
-  exact absurd_fold_descent 17 h7
-
-/-! ### SMT Bridge: Folded exponential size -/
-
-/-- The degree of `canonical_chain (foldDepth n)` is bounded by `2^(foldDepth n)`.
-    This is the folded version of `canonical_chain_degree_2_pow_minus_1`. -/
-lemma folded_degree_bound (n : ℕ) :
-    degree (canonical_chain (foldDepth n)) ≤ 2 ^ (foldDepth n) := by
-  apply canonical_chain_degree_lt
-  exact foldDepth_le_12 n
-
-/-- At depth 17, the folded degree bound is `2^7 = 128`, which is tractable
-    for the SMT solver. The original bound at depth 17 would be `2^17 = 131072`,
-    well beyond the timeout limit. -/
-lemma folded_17_degree_bound :
-    degree (canonical_chain (foldDepth 17)) ≤ 128 := by
-  have h : foldDepth 17 = 7 := by unfold foldDepth; norm_num
-  rw [h]
-  have h_bound := folded_degree_bound 17
-  rw [h] at h_bound
-  exact h_bound
-
-end GolayFolding
+end GaloisFieldWitness
 
 end HatsuYakitori.PhantomCarabiner
