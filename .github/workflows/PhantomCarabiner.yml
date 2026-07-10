@@ -1,4 +1,33 @@
 name: PhantomCarabiner
 
 
-on
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/PhantomCarabiner.yml'
+      - 'dist-proof/lean4/HatsuYakitori/**'
+  push:
+    branches:
+      - feature/example/output_flang←smt2_theory
+
+jobs:
+  build-deb:
+    name: Build PhantomCarabiner
+    runs-on: ubuntu-latest
+    
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        
+        - name: Set up Lean 4
+          uses: leanprover/setup-lean@v2
+          with:
+            lean-version: 4.3.1
+            elan-version: latest
+            elan-channel: stable
+            lake-package-directory: dist-proof/lean4
+        
+        - name: Build Specific Lean File
+          run: |
+            cd dist-proof/lean4/HatsuYakitori
+            lake build PhantomCarabiner
