@@ -238,14 +238,32 @@ def Route.complement (r : Route) : Route :=
 /-- The complement of an ascending route is ascending. -/
 theorem Route.complement_ascending_is_ascending (r : Route)
     (h : r.isAscending) : r.complement.isAscending := by
-  unfold Route.isAscending Route.complement at *
-  rw [List.pairwise_map, List.pairwise_reverse]
+  unfold Route.complement
+  -- For any list l, isAscending (reverse l) ↔ isDescending l
+  have rev_asc : ∀ l, isAscending l.reverse ↔ isDescending l := by
+    intro l
+    unfold isAscending isDescending
+    simp [List.pairwise_reverse]
+    constructor
+    · intro h'
+      apply List.Pairwise.imp _ h'
+      intro a b hab
+      exact hab
+    · intro h'
+      apply List.Pairwise.imp _ h'
+      intro a b hab
+      exact hab
+  rw [rev_asc]
+  -- Goal: isDescending (map complement r)
+  unfold isDescending
+  rw [List.pairwise_map]
+  -- Goal: Pairwise (fun a b => (complement a).height ≥ (complement b).height) r
   apply List.Pairwise.imp _ h
   intro a b hab
-  dsimp
-  have ha := a.height_add_complement
-  have hb := b.height_add_complement
-  linarith
+  -- hab : a.height ≤ b.height
+  simp only [Carabiner.height_add_complement]
+  -- K - a.height ≥ K - b.height ↔ a.height ≤ b.height
+  omega
   -- Strategy: reverse flips the order; complement flips the height
   -- (h → 8-h), so both flips cancel out and ≤ remains ≤.
 
