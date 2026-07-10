@@ -625,4 +625,34 @@ lemma theta_link_im_neg_of_height (n : ℕ) (hn : c.weight.re = n) :
 
 end ThirdChernShadow
 
+/-! ## §9  Golay duality bridge -/
+
+section GolayBridge
+
+/-- The Golay dual transform on indices (mod 24) is an involution.
+    This mirrors the `complement` involution on `ComplexCarabiner`. -/
+@[simp]
+theorem golay_dual_transform_involution (idx : ℤ) :
+    let g x := (24 - x) % 24
+    g (g idx) = idx := by
+  simp [g]
+  have h : (24 - idx) % 24 = (24 - (idx % 24)) % 24 := by
+    rw [Int.emod_def, Int.emod_def]; ring
+  rw [h]
+  have h2 : (24 - ((24 - (idx % 24)) % 24)) % 24 = idx % 24 := by
+    by_cases hz : (idx % 24 = 0)
+    · simp [hz]
+    · have hpos : 0 < idx % 24 ∧ idx % 24 < 24 := by
+        apply Int.emod_pos_of_pos; exact hz
+      rw [Int.emod_eq_of_lt (by omega) (by omega)]
+      omega
+  exact Int.emod_eq_of_lt (by omega) (by omega) ▸ h2
+
+/-- The real-part projection of the complement is analogous to the Golay
+    dual transform: both are involutive reflections. -/
+lemma complement_as_golay_dual (c : ComplexCarabiner) :
+    c.complement.complement = c := complement_involutive c
+
+end GolayBridge
+
 end HatsuYakitori.PhantomCarabiner
