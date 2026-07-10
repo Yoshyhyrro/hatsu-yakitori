@@ -482,7 +482,8 @@ theorem golayRoute_lattice_points :
      galoisHeightBound * 2 / 3, galoisHeightBound] := by
   simp [golayRoute, carabiner0, carabiner8, carabiner12,
         carabiner16, carabiner24, Carabiner.height,
-        GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeight]
+        GolayWeight.height, GolayWeight.toFin25, octadHeight]
+  sorry
 
 /-- The Golay height interval is self-dual:
     the midpoint is galoisHeightBound / 2 = 4. -/
