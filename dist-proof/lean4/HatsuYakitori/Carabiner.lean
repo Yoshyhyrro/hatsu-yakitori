@@ -147,7 +147,7 @@ theorem carabiner_height_injective (c₁ c₂ : Carabiner) :
     have h' : c₁.weight.height = c₂.weight.height := h
     cases hw₁ : c₁.weight <;> cases hw₂ : c₂.weight <;>
       simp_all [GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeightBound] <;>
-      revert h' <;> norm_num
+      norm_num
   · intro h
     simp [Carabiner.height, h]
 
