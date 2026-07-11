@@ -72,6 +72,7 @@
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.List.Basic
+import Mathlib.Tactic.Linarith
 import HatsuYakitori.MachineConstants   -- GolayWeight, galoisHeight, etc.
 import HatsuYakitori.BSDQuiver          -- SpaceTag, TransformEffect, etc.
 
@@ -147,7 +148,7 @@ theorem carabiner_height_injective (c₁ c₂ : Carabiner) :
     have h' : c₁.weight.height = c₂.weight.height := h
     cases hw₁ : c₁.weight <;> cases hw₂ : c₂.weight <;>
       simp_all [GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeightBound] <;>
-      norm_num
+      norm_num at h'
   · intro h
     simp [Carabiner.height, h]
 
@@ -244,16 +245,11 @@ theorem Route.complement_ascending_is_ascending (r : Route)
     intro l
     unfold isAscending isDescending
     simp [List.pairwise_reverse]
-    constructor
-    · intro h'
-      apply List.Pairwise.imp _ h'
-      intro a b hab
-      exact hab
-    · intro h'
-      apply List.Pairwise.imp _ h'
-      intro a b hab
-      exact hab
-  rw [rev_asc]
+  -- `Route.complement r` unfolds to `List.map Carabiner.complement (List.reverse r)`,
+  -- i.e. `r.reverse.map complement`, not `(something).reverse`; `List.map_reverse`
+  -- (`l.reverse.map f = (l.map f).reverse`) commutes them so `rev_asc`'s
+  -- `isAscending (List.reverse ?l)` pattern actually matches before we `rw [rev_asc]`.
+  rw [List.map_reverse, rev_asc]
   -- Goal: isDescending (map complement r)
   unfold isDescending
   rw [List.pairwise_map]
@@ -261,9 +257,12 @@ theorem Route.complement_ascending_is_ascending (r : Route)
   apply List.Pairwise.imp _ h
   intro a b hab
   -- hab : a.height ≤ b.height
-  simp only [Carabiner.height_add_complement]
-  -- K - a.height ≥ K - b.height ↔ a.height ≤ b.height
-  omega
+  have ha := Carabiner.height_add_complement a
+  have hb := Carabiner.height_add_complement b
+  -- ha : a.height + (complement a).height = galoisHeightBound
+  -- hb : b.height + (complement b).height = galoisHeightBound
+  -- `height` is ℝ-valued, so this is a `linarith` goal, not `omega` (ℕ/ℤ only).
+  linarith
   -- Strategy: reverse flips the order; complement flips the height
   -- (h → 8-h), so both flips cancel out and ≤ remains ≤.
 
