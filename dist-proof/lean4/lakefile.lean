@@ -4,6 +4,13 @@ open Lake DSL
 package «hatsu-yakitori-proof» where
   version := v!"0.1.0"
 
+  leanOptions := #[
+    ⟨`pp.explicit, true⟩,
+    ⟨`pp.universes, true⟩,
+    ⟨`diagnostics, true⟩,
+    ⟨`trace.Meta.SynthInstance, true⟩
+  ]
+
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
