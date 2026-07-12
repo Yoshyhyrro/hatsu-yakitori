@@ -10,7 +10,7 @@ package «hatsu-yakitori-proof» where
     ⟨`pp.analyze, true⟩,
     ⟨`pp.coercions, true⟩,
     ⟨`diagnostics, true⟩,
-    ⟨`trace.Meta.SynthInstance, true⟩
+    ⟨`weak.trace.Meta.synthInstance, true⟩
   ]
 
 require mathlib from git
