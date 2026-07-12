@@ -7,8 +7,7 @@ package «hatsu-yakitori-proof» where
   leanOptions := #[
     ⟨`diagnostics, true⟩,
     ⟨`pp.proofs, false⟩,
-    ⟨`pp.motives, false⟩,
-    ⟨`pp.maxSteps, 500⟩,
+    ⟨`pp.deepTerms, false⟩,
     ⟨`synthInstance.maxHeartbeats, 3000⟩
   ]
 
