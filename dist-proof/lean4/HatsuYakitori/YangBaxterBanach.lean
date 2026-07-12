@@ -340,15 +340,9 @@ def braidCohomologyRank {d : ℕ} (_n : ℕ) (_yb : YangBaxterOperator d) : ℕ 
   -- The rank is the dimension of the Selmer vertex
   Module.rank ℝ rep.at_selmer |>.toNat
 
-theorem braid_cohomology_bounds_selmer
-    (spiral : SpiralRotation)
-    (_disc : Int) (_hdisc : _disc < 0)
-    (_p : ℕ) (_hp : Nat.Prime _p) :
-    let u := spiralToSpectralParam spiral
-    let yb := spectralRMatrix u
-    braidCohomologyRank 24 yb ≤ 24 := by
-  unfold braidCohomologyRank
-  unfold HatsuYakitori.BSDQuiver.sig_to_representation
+theorem braid_cohomology_bounds_selmer ... := by
+  dsimp [braidCohomologyRank]
+  simp [HatsuYakitori.BSDQuiver.sig_to_representation]
   rw [Module.rank_self ℝ]
   norm_num
 
