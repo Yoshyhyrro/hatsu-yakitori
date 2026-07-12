@@ -7,6 +7,8 @@ package «hatsu-yakitori-proof» where
   leanOptions := #[
     ⟨`pp.explicit, true⟩,
     ⟨`pp.universes, true⟩,
+    ⟨`pp.analyze, true⟩,
+    ⟨`pp.coercions, true⟩,
     ⟨`diagnostics, true⟩,
     ⟨`trace.Meta.SynthInstance, true⟩
   ]
