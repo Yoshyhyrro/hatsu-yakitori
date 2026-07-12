@@ -347,9 +347,12 @@ theorem braid_cohomology_bounds_selmer
     let u := spiralToSpectralParam spiral
     let yb := spectralRMatrix u
     braidCohomologyRank 24 yb ≤ 24 := by
-  simp [braidCohomologyRank, HatsuYakitori.BSDQuiver.sig_to_representation]
-  rw [rank_self ℝ]
-  norm_num
+  dsimp [braidCohomologyRank]
+  simp [HatsuYakitori.BSDQuiver.sig_to_representation]
+  suffices Module.rank ℝ ℝ = 1 by
+    rw [this]
+    norm_num
+  exact Module.rank_self ℝ
 
 -- ===================================================================
 -- § 11. Putting It Together: Pattern Matching Transition
