@@ -6,6 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import HatsuYakitori.MachineConstants
 import HatsuYakitori.PAdicMellin
 import HatsuYakitori.BSDQuiver
+import Mathlib.LinearAlgebra.Dimension.Basic
 
 /-!
 # Yang-Baxter Operators on Banach Schemes
@@ -346,9 +347,9 @@ theorem braid_cohomology_bounds_selmer
     let u := spiralToSpectralParam spiral
     let yb := spectralRMatrix u
     braidCohomologyRank 24 yb ≤ 24 := by
-  -- In sig_to_representation, at_selmer is ℝ, so its rank is 1.
-  -- 1 ≤ 24 is trivial.
-  simp [braidCohomologyRank, HatsuYakitori.BSDQuiver.sig_to_representation]
+  rw [braidCohomologyRank, HatsuYakitori.BSDQuiver.sig_to_representation]
+  rw [rank_self ℝ]
+  norm_num
 
 -- ===================================================================
 -- § 11. Putting It Together: Pattern Matching Transition
