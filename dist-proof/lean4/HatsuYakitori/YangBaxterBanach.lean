@@ -353,9 +353,7 @@ theorem braid_cohomology_bounds_selmer
     let yb := spectralRMatrix u
     braidCohomologyRank 24 yb ≤ 24 := by
   unfold braidCohomologyRank
-  dsimp only [HatsuYakitori.BSDQuiver.sig_to_representation]
-  simp only [HatsuYakitori.BSDQuiver.sig_to_representation]
-  -- Now Lean can successfully rewrite the dimension via your new lemma
+  dsimp only
   rw [rank_at_selmer_eq_one]
   norm_num
 
