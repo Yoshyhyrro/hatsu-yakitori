@@ -302,15 +302,15 @@ lemma weightNormSq_eq (c : ComplexCarabiner) :
 
 /-- `theta_link` preserves the squared modulus. -/
 @[simp]
-theorem theta_link_preserves_normSq :
+theorem theta_link_preserves_normSq (c : ComplexCarabiner) :
     (theta_link c).weightNormSq = c.weightNormSq := by
-  simp [weightNormSq, theta_link, Complex.normSq_mul, Complex.normSq_neg, Complex.normSq_I]
-
+  dsimp [weightNormSq, theta_link]
+  ring
 /-- `verschiebung` scales the squared modulus by `1/4`. -/
 @[simp]
-theorem verschiebung_normSq :
+theorem verschiebung_normSq (c : ComplexCarabiner) :
     (verschiebung c).weightNormSq = c.weightNormSq / 4 := by
-  simp [weightNormSq, verschiebung, Complex.normSq_div, Complex.normSq_ofNat]
+  dsimp [weightNormSq, verschiebung]
   ring
 
 theorem theta_link_four_normSq :
