@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yoshihiro Hasegawa
 -/
 
+
 import Mathlib.Algebra.Quaternion
 import Mathlib.RingTheory.LittleWedderburn
 
@@ -61,12 +62,22 @@ open Quaternion
 namespace HatsuYakitori.QuaternionCarabiner
 
 /-- `QuaternionAlgebra` does not come with `DecidableEq` in mathlib; derive it here
-so that the claims below can be checked by `decide`. -/
+so that the claims below can be checked by `decide`. We deliberately avoid `cases`
+on `x y : ℍ[ZMod 2]`: since `Quaternion R` is a `def` for `QuaternionAlgebra R (-1) 0 (-1)`
+rather than an `abbrev`, the equation compiler behind `cases` unfolds it and produces
+terms typed as the bare `QuaternionAlgebra`, which then fails to match the (still
+wrapped) `ℍ[ZMod 2]` expected elsewhere. Going through the field projections
+(`.re`/`.imI`/`.imJ`/`.imK`) and the dedicated `Quaternion.ext` lemma — which mathlib
+itself uses for exactly this reason (see `Quaternion.ext`, restated from
+`QuaternionAlgebra.ext` for the `ℍ[R]` notation) — keeps everything at the `ℍ[R]`
+type throughout. -/
 instance : DecidableEq ℍ[ZMod 2] := fun x y => by
-  cases x
-  cases y
-  simp only [QuaternionAlgebra.mk.injEq]
-  infer_instance
+  refine decidable_of_iff
+    (x.re = y.re ∧ x.imI = y.imI ∧ x.imJ = y.imJ ∧ x.imK = y.imK) ⟨?_, ?_⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    exact Quaternion.ext h1 h2 h3 h4
+  · rintro rfl
+    exact ⟨rfl, rfl, rfl, rfl⟩
 
 /-- The element `1 + i` of `ℍ[ZMod 2]`: real part `1`, `i`-coefficient `1`,
 `j`- and `k`-coefficients `0`. -/
