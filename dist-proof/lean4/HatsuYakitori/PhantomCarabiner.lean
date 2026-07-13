@@ -307,7 +307,7 @@ theorem theta_link_preserves_normSq (c : ComplexCarabiner) :
   dsimp [weightNormSq, theta_link]
   simp [Complex.neg_re, Complex.neg_im, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
   ring
-
+  apply?
 
 /-- `verschiebung` scales the squared modulus by `1/4`. -/
 @[simp]
@@ -316,6 +316,7 @@ theorem verschiebung_normSq (c : ComplexCarabiner) :
   dsimp [weightNormSq, verschiebung]
   simp [Complex.mul_re, Complex.mul_im]
   ring
+  apply?
 
 theorem theta_link_four_normSq :
     (theta_link (theta_link (theta_link (theta_link c)))).weightNormSq = c.weightNormSq := by
