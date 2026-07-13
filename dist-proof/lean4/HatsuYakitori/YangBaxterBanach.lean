@@ -348,8 +348,9 @@ theorem braid_cohomology_bounds_selmer
     let yb := spectralRMatrix u
     braidCohomologyRank 24 yb ≤ 24 := by
   unfold braidCohomologyRank
-  unfold HatsuYakitori.BSDQuiver.sig_to_representation
-  rw [CommSemiring.rank_self ℝ]
+  dsimp [HatsuYakitori.BSDQuiver.sig_to_representation]
+  simp only [HatsuYakitori.BSDQuiver.sig_to_representation]
+  rw [Module.rank_self ℝ]
   norm_num
 
 -- ===================================================================
