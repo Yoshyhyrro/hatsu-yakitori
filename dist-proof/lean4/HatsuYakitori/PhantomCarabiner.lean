@@ -59,7 +59,7 @@ def ComplexCarabiner.weightNormSq (c : ComplexCarabiner) : ℝ :=
 /-- **Complement** of a phantom carabiner: reflect across the critical midpoint `3`.
     The map `w ↦ 6 − conj(w)` combines complex conjugation and reflection across `h = 3`. -/
 def complement (c : ComplexCarabiner) : ComplexCarabiner :=
-  { weight := 6 - Complex.conj c.weight
+  { weight := 6 - star c.weight
     phase  := c.phase }
 
 /-- **Verschiebung** of a phantom carabiner: halve the weight.
@@ -307,7 +307,6 @@ theorem theta_link_preserves_normSq (c : ComplexCarabiner) :
   dsimp [weightNormSq, theta_link]
   simp [Complex.neg_re, Complex.neg_im, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
   ring
-  apply?
 
 /-- `verschiebung` scales the squared modulus by `1/4`. -/
 @[simp]
@@ -316,7 +315,6 @@ theorem verschiebung_normSq (c : ComplexCarabiner) :
   dsimp [weightNormSq, verschiebung]
   simp [Complex.mul_re, Complex.mul_im]
   ring
-  apply?
 
 theorem theta_link_four_normSq :
     (theta_link (theta_link (theta_link (theta_link c)))).weightNormSq = c.weightNormSq := by
@@ -355,8 +353,8 @@ theorem theta_link_iterate_normSq (n : ℕ) :
 theorem complement_berryPhase_of_real (hr : c.weight.re = 3) (hi : c.weight.im = 0) :
     berryPhaseAngle (complement c) = 0 := by
   simp only [berryPhaseAngle, complement]
-  have hcompw : (6 : ℂ) - Complex.conj c.weight = (3 : ℂ) := by
-    have : Complex.conj c.weight = (3 : ℂ) := by
+  have hcompw : (6 : ℂ) - star c.weight = (3 : ℂ) := by
+    have : star c.weight = (3 : ℂ) := by
       apply Complex.ext <;> simp [hr, hi]
     rw [this]; ring
   rw [hcompw]
