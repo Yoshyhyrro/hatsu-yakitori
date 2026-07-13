@@ -35,4 +35,5 @@ jobs:
             cd dist-proof/lean4
             lake clean
             lake update
+            lake build Hatsuyakitori.QuaternionCarabiner
             lake build HatsuYakitori.PhantomCarabiner
