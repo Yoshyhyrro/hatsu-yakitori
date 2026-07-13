@@ -6,6 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import HatsuYakitori.Carabiner
 import HatsuYakitori.YangBaxterBanach
 import Mathlib.Data.Complex.Basic
+import Mathlib.Logic.Function.Iterate
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Star.Basic
 import Mathlib.FieldTheory.Finite.GaloisField
@@ -32,6 +33,11 @@ complex evaluation point. The weight is a genuine element of `ℂ`:
 -/
 
 namespace HatsuYakitori.PhantomCarabiner
+
+/-! ## §0 Preliminaries and Helpers -/
+
+lemma I_mul_I_eq_neg_one : Complex.I * Complex.I = -1 := by
+  rw [← sq, Complex.I_sq]
 
 /-! ## §1 Structure -/
 
