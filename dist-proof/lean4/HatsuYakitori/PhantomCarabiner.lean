@@ -314,7 +314,7 @@ theorem theta_link_preserves_normSq (c : ComplexCarabiner) :
 theorem verschiebung_normSq (c : ComplexCarabiner) :
     (verschiebung c).weightNormSq = c.weightNormSq / 4 := by
   dsimp [weightNormSq, verschiebung]
-  simp [Complex.ofNat_re, Complex.ofNat_im]
+  simp [Complex.mul_re, Complex.mul_im]
   ring
 
 theorem theta_link_four_normSq :
