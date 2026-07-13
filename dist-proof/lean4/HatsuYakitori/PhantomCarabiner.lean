@@ -7,6 +7,7 @@ import HatsuYakitori.Carabiner
 import HatsuYakitori.YangBaxterBanach
 import Mathlib.Data.Complex.Basic
 import Mathlib.Logic.Function.Iterate
+import Mathlib.Data.Nat.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Star.Basic
 import Mathlib.FieldTheory.Finite.GaloisField
@@ -48,6 +49,10 @@ lemma I_mul_I_eq_neg_one : Complex.I * Complex.I = -1 := by
 structure ComplexCarabiner where
   weight : ℂ
   phase  : ℕ := 4
+
+def ComplexCarabiner.weightNormSq (c : ComplexCarabiner) : ℝ :=
+  c.weight.re * c.weight.re + c.weight.im * c.weight.im
+
 
 /-! ## §2 Core operations -/
 
