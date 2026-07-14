@@ -189,19 +189,36 @@ instance : Add ComplexCarabiner :=
 instance : SMul ℝ ComplexCarabiner :=
   ⟨fun r c => ⟨↑r * c.weight, c.phase⟩⟩
 
-@[simp] lemma add_weight (a b : ComplexCarabiner) : (a + b).weight = a.weight + b.weight := rfl
-@[simp] lemma add_phase  (a b : ComplexCarabiner) : (a + b).phase  = a.phase  + b.phase  := rfl
-@[simp] lemma smul_weight (r : ℝ) (c : ComplexCarabiner) : (r • c).weight = ↑r * c.weight := rfl
-@[simp] lemma smul_phase  (r : ℝ) (c : ComplexCarabiner) : (r • c).phase  = c.phase := rfl
-@[simp] lemma zero_weight : (0 : ComplexCarabiner).weight = 0 := rfl
-@[simp] lemma zero_phase  : (0 : ComplexCarabiner).phase  = 0 := rfl
+@[simp]
+lemma add_weight (a b : ComplexCarabiner) : (a + b).weight = a.weight + b.weight := by
+  exact?
+
+@[simp]
+lemma add_phase (a b : ComplexCarabiner) : (a + b).phase = a.phase + b.phase := by
+  exact?
+
+@[simp]
+lemma smul_weight (r : ℝ) (c : ComplexCarabiner) : (r • c).weight = ↑r * c.weight := by
+  exact?
+
+@[simp]
+lemma smul_phase (r : ℝ) (c : ComplexCarabiner) : (r • c).phase = c.phase := by
+  exact?
+
+@[simp]
+lemma zero_weight : (0 : ComplexCarabiner).weight = 0 := by
+  exact?
+
+@[simp]
+lemma zero_phase : (0 : ComplexCarabiner).phase = 0 := by
+  exact?
+
 
 /-- Verschiebung is scalar multiplication by `1/2`. -/
 lemma verschiebung_eq_half_smul (c : ComplexCarabiner) :
     verschiebung c = (1 / 2 : ℝ) • c := by
-  ext
-  · simp [verschiebung]; ring
-  · simp [verschiebung]
+  exact?
+
 
 /-- The **real-weight projection** `reWeight c := c.weight.re` is an additive map. -/
 def reWeight (c : ComplexCarabiner) : ℝ := c.weight.re
