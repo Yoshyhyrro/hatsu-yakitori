@@ -51,9 +51,6 @@ structure ComplexCarabiner where
   weight : ℂ
   phase  : ℕ := 4
 
-def ComplexCarabiner.weightNormSq (c : ComplexCarabiner) : ℝ :=
-  c.weight.re * c.weight.re + c.weight.im * c.weight.im
-
 
 /-! ## §2 Core operations -/
 
@@ -117,7 +114,7 @@ lemma theta_link_re : (theta_link c).weight.re = c.weight.im := by
 /-- The Θ-link sends the imaginary part (obstruction) to the negated real part. -/
 @[simp]
 lemma theta_link_im : (theta_link c).weight.im = -c.weight.re := by
-  simp [theta_link, Complex.mul_im, Complex.neg_re, Complex.neg_im, Complex.I_re, Complex.I_im]
+  simp [theta_link, Complex.mul_im, Complex.neg_im, Complex.I_re, Complex.I_im]
 
 end Projections
 
@@ -136,7 +133,7 @@ theorem complement_involutive : (complement (complement c)).weight = c.weight :=
 @[simp]
 theorem theta_link_pow_two : (theta_link (theta_link c)).weight = -c.weight := by
   simp only [theta_link]
-  have h : Complex.I * Complex.I = -1 := Complex.I_sq
+  have h : Complex.I * Complex.I = -1 := I_mul_I_eq_neg_one
   linear_combination c.weight * h
 
 /-- The Θ-link is a 4-cycle: four applications return the original weight. -/
@@ -158,24 +155,24 @@ theorem complement_theta_link_comm :
 
 /-- Iterated Verschiebung scales the weight by `1 / 2^n`. -/
 lemma verschiebung_iterate (n : ℕ) :
-    (Function.iterate verschiebung n c).weight = c.weight / 2 ^ n := by
+    (verschiebung^[n] c).weight = c.weight / 2 ^ n := by
   induction n with
   | zero => simp
   | succ n ih =>
-    rw [Function.iterate_succ', Function.comp]
-    have hv : (verschiebung (Function.iterate verschiebung n c)).weight =
-        (Function.iterate verschiebung n c).weight / 2 := by
+    rw [Function.iterate_succ_apply']
+    have hv : (verschiebung (verschiebung^[n] c)).weight =
+        (verschiebung^[n] c).weight / 2 := by
       simp [verschiebung]
     rw [hv, ih]
     ring
 
 /-- The real part after `n` Verschiebung steps equals `c.weight.re / 2^n`. -/
 lemma verschiebung_iterate_re (n : ℕ) :
-    (Function.iterate verschiebung n c).weight.re = c.weight.re / 2 ^ n := by
+    (verschiebung^[n] c).weight.re = c.weight.re / 2 ^ n := by
   induction n with
   | zero => simp
   | succ n ih =>
-    rw [Function.iterate_succ', Function.comp, verschiebung_re, ih]
+    rw [Function.iterate_succ_apply', verschiebung_re, ih]
     ring
 
 end Composition
@@ -203,7 +200,7 @@ instance : SMul ℝ ComplexCarabiner :=
 lemma verschiebung_eq_half_smul (c : ComplexCarabiner) :
     verschiebung c = (1 / 2 : ℝ) • c := by
   ext
-  · simp [verschiebung]; push_cast; ring
+  · simp [verschiebung]; ring
   · simp [verschiebung]
 
 /-- The **real-weight projection** `reWeight c := c.weight.re` is an additive map. -/
@@ -327,7 +324,7 @@ theorem theta_link_holonomy_z4 :
   intro c; simp [theta_link_pow_four]
 
 /-- `verschiebung` does not change the Berry phase angle. -/
-theorem verschiebung_berryPhaseAngle_eq (hw : c.weight ≠ 0) :
+theorem verschiebung_berryPhaseAngle_eq (_hw : c.weight ≠ 0) :
     berryPhaseAngle (verschiebung c) = berryPhaseAngle c := by
   simp only [berryPhaseAngle, verschiebung]
   rw [show c.weight / 2 = c.weight * ((2 : ℝ)⁻¹ : ℝ) from by push_cast; ring]
@@ -344,11 +341,11 @@ theorem real_weight_berryPhase_eq_zero (hr : 0 < c.weight.re) (hi : c.weight.im 
 
 /-- The **Chen–Berry depth bound**. -/
 theorem theta_link_iterate_normSq (n : ℕ) :
-    (Function.iterate theta_link n c).weightNormSq = c.weightNormSq := by
+    (theta_link^[n] c).weightNormSq = c.weightNormSq := by
   induction n with
   | zero => simp
   | succ n ih =>
-    rw [Function.iterate_succ', Function.comp, theta_link_preserves_normSq, ih]
+    rw [Function.iterate_succ_apply', theta_link_preserves_normSq, ih]
 
 /-- The **complement reversal of Berry phase**. -/
 theorem complement_berryPhase_of_real (hr : c.weight.re = 3) (hi : c.weight.im = 0) :
