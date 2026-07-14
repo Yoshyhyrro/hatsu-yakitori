@@ -75,7 +75,7 @@ instance : DecidableEq ℍ[ZMod 2] := fun x y => by
   refine decidable_of_iff
     (x.re = y.re ∧ x.imI = y.imI ∧ x.imJ = y.imJ ∧ x.imK = y.imK) ⟨?_, ?_⟩
   · rintro ⟨h1, h2, h3, h4⟩
-    exact Quaternion.ext h1 h2 h3 h4
+    exact Quaternion.ext x y h1 h2 h3 h4
   · rintro rfl
     exact ⟨rfl, rfl, rfl, rfl⟩
 
