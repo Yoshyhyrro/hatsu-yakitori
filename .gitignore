@@ -2,6 +2,7 @@
 build/
 build.log
 dist/
+dist-proof/lean4/.lake
 _build/
 _build_test/
 shake/_build/
