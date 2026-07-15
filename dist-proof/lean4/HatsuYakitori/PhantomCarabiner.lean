@@ -51,6 +51,9 @@ structure ComplexCarabiner where
   weight : ℂ
   phase  : ℕ := 4
 
+def ComplexCarabiner.weightNormSq (c : ComplexCarabiner) : ℝ :=
+  c.weight.re * c.weight.re + c.weight.im * c.weight.im
+
 
 /-! ## §2 Core operations -/
 
@@ -296,7 +299,8 @@ noncomputable def weightNormSq (c : ComplexCarabiner) : ℝ :=
 @[simp]
 lemma weightNormSq_eq (c : ComplexCarabiner) :
     c.weightNormSq = c.weight.re ^ 2 + c.weight.im ^ 2 := by
-  simp [weightNormSq, Complex.normSq_apply, sq]
+  unfold ComplexCarabiner.weightNormSq
+  ring
 
 /-- `theta_link` preserves the squared modulus. -/
 @[simp]
