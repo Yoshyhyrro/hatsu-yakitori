@@ -32,6 +32,27 @@ Wedderburn" theorem) forces every finite domain to be a field, and `ℍ[ZMod 2]`
 visibly non-commutative (`i * j ≠ j * i` in the usual quaternion relations), so it
 cannot possibly be one. `wittElement` is the concrete witness of that obstruction.
 
+## Why the norm degenerates: definite vs. indefinite, elliptic vs. hyperbolic
+
+Mathlib's `NoZeroDivisors ℍ[R]` / `IsDomain ℍ[R]` / `DivisionRing ℍ[R]` instances all
+live in a `section` requiring `[LinearOrder R] [IsStrictOrderedRing R]` (they are
+proved via `normSq a = 0 → a = 0`, a "sum of squares vanishes only at zero" argument
+that needs positivity). `ZMod 2` cannot be linearly ordered at all — no finite field
+can — so those instances simply never apply to `ℍ[ZMod 2]`, regardless of which
+`(a, b, c)` one picks; `isDomain_quaternion_rat` below shows the same construction
+*is* a domain over `ℚ`, where the order does exist. This is the algebraic shadow of
+the classical dichotomy between the (positive-definite-norm) Hamilton quaternions
+`ℍ` and the (indefinite-norm) split quaternions `ℍₛ`, which is itself the composition-
+algebra shadow of the distinction between elliptic and hyperbolic differential
+operators (definite vs. indefinite principal symbol; Clifford algebras of definite
+vs. indefinite quadratic forms). Mathlib already has the precise bridge for this:
+`CliffordAlgebraQuaternion.equiv : CliffordAlgebra (Q c₁ c₂) ≃ₐ[R] ℍ[R, c₁, 0, c₂]`
+in `Mathlib.LinearAlgebra.CliffordAlgebra.Equivs` produces *both* `ℍ` and `ℍₛ` from
+the same construction, just by choosing the signature of `Q`. Building that bridge
+out (or any quiver-style mechanism for moving between the two regimes) is future
+work, not attempted here — this file only records the `ℚ`-vs-`ZMod 2` contrast that
+motivated noticing the connection.
+
 ## Main definitions
 
 * `wittElement : ℍ[ZMod 2]` — the element `1 + i`.
@@ -42,19 +63,25 @@ cannot possibly be one. `wittElement` is the concrete witness of that obstructio
 * `normSq_wittElement` — `normSq wittElement = 0` (it is an isotropic vector).
 * `wittElement_mul_self` — `wittElement * wittElement = 0` (hence nilpotent).
 * `not_isDomain` — `ℍ[ZMod 2]` is not an integral domain.
+* `isDomain_quaternion_rat` — by contrast, `ℍ[ℚ]` *is* one: same construction, but
+  `ℚ` carries the order that `normSq_eq_zero` needs.
 * `normSq_mul'` — the composition-algebra property, spelled out explicitly.
 
 ## Implementation notes
 
-Everything is proved by `decide`, using that `ℍ[ZMod 2]` has exactly `2^4 = 16`
-elements. Mathlib does not provide `DecidableEq` for `QuaternionAlgebra` out of the
-box, so a local instance is derived first.
+Everything about `ℍ[ZMod 2]` is proved by `decide`, using that it has exactly
+`2^4 = 16` elements. Mathlib does not provide `DecidableEq` for `QuaternionAlgebra`
+out of the box, so a local instance is derived first. `isDomain_quaternion_rat`
+needs no such work — it is exactly mathlib's general `[LinearOrderedField R]`
+instance, specialized to `R = ℚ`.
 
 ## References
 
 * `Mathlib.Algebra.Quaternion` — `QuaternionAlgebra`, `ℍ[R]`, `normSq`.
 * `Mathlib.RingTheory.LittleWedderburn` — `Finite.isDomain_to_isField`, the reason a
   non-commutative finite ring such as this one can never be a domain.
+* `Mathlib.LinearAlgebra.CliffordAlgebra.Equivs` — `CliffordAlgebraQuaternion.equiv`,
+  the `ℍ`/`ℍₛ` bridge mentioned above.
 -/
 
 open Quaternion
@@ -104,6 +131,12 @@ theorem not_isDomain : ¬ IsDomain ℍ[ZMod 2] := by
   haveI := h
   rcases mul_eq_zero.mp wittElement_mul_self with h0 | h0 <;>
     exact wittElement_ne_zero h0
+
+/-- By contrast, the *same* construction over `ℚ` — which carries the linear order
+that `normSq_eq_zero` needs — genuinely is a domain. This is mathlib's general
+`[LinearOrderedField R] → IsDomain ℍ[R]` instance, specialized here to make the
+`ℚ`-vs-`ZMod 2` contrast explicit. -/
+theorem isDomain_quaternion_rat : IsDomain ℍ[ℚ] := inferInstance
 
 /-- The defining composition-algebra property, spelled out for this norm form:
 `normSq` is multiplicative. (This already holds in mathlib for any `ℍ[R]`, as
