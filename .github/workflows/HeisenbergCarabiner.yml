@@ -7,7 +7,7 @@ on:
       - 'dist-proof/lean4/**'
   push:
     branches:
-      - feature/example/output_flang←smt2_theory
+      - feature/HeisenbergCarabiner
 
 jobs:
   build-deb:

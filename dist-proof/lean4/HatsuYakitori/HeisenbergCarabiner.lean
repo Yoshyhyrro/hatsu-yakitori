@@ -8,6 +8,8 @@ Date      : 2026-07-16
 import Mathlib.Combinatorics.Quiver.Basic
 import Mathlib.Algebra.Category.ModuleCat.Basic
 import Mathlib.RingTheory.Nilpotent.Basic
+import Mathlib.Data.ZMod.Basic
+import Mathlib.CategoryTheory.Endomorphism
 
 /-!
 # HeisenbergCarabiner: the Jordan quiver and a single unipotent generator
