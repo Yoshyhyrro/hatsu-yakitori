@@ -3,7 +3,7 @@ name: HeisenbergCarabiner
 on:
   pull_request:
     paths:
-      - '.github/workflows/PhantomCarabiner.yml'
+      - '.github/workflows/HeisenbergCarabiner.yml'
       - 'dist-proof/lean4/**'
   push:
     branches:
