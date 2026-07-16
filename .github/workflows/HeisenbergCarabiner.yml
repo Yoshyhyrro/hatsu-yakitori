@@ -1,5 +1,4 @@
-name: PhantomCarabiner
-
+name: HeisenbergCarabiner
 
 on:
   pull_request:
