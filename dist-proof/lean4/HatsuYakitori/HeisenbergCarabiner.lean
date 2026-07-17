@@ -102,10 +102,17 @@ noncomputable def QuiverRep.unipotent {q : ℕ} [Fact (Nat.Prime q)] {V : Type*}
     (Module.End (ZMod q) V)ˣ :=
   r.is_nilpotent.isUnit_one_add.unit
 
-/--
+
 -- Check if `IsNilpotent` works with `CategoryTheory.End` in `ModuleCat`.
--/
 example (V : ModuleCat (ZMod 2)) (f : CategoryTheory.End V) : Prop :=
   IsNilpotent f
+
+-- Verify the elaboration of the Lie bracket for endomorphisms.
+-- This anticipates the introduction of the second generator `g`.
+
+example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMod q) V]
+    (f g : Module.End (ZMod q) V) : Module.End (ZMod q) V :=
+  -- Evaluate the commutator of the given endomorphisms.
+  ⁅f, g⁆
 
 end HatsuYakitori.HeisenbergCarabiner
