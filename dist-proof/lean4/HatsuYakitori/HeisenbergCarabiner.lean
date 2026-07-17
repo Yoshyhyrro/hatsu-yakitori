@@ -234,7 +234,5 @@ lemma unipotent_commutator_eq (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] 
     let Z := ⁅f, g⁆
     (1 + f) * (1 + g) - (1 + g) * (1 + f) = Z := by
   dsimp
-  -- Apply the library search tactic to inspect available distributive ring lemmas.
-  apply?
   sorry
 end HatsuYakitori.HeisenbergCarabiner
