@@ -131,11 +131,10 @@ example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMo
   exact r.is_nilpotent
 
 
-/--
 -- Generalize the quiver representation to an arbitrary ring `R`.
 -- This refactoring accommodates representations over algebras such as Biquaternions,
 -- bypassing the characteristic `q` limitation of `ZMod q`.
--/
+
 structure QuiverRepGeneral (R : Type*) [Ring R] (V : Type*)
     [AddCommGroup V] [Module R V] where
   /-- The endomorphism corresponding to the single loop of the Jordan quiver. -/
