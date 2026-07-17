@@ -137,9 +137,22 @@ example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMo
 
 structure QuiverRepGeneral (R : Type*) [Ring R] (V : Type*)
     [AddCommGroup V] [Module R V] where
-  /-- The endomorphism corresponding to the single loop of the Jordan quiver. -/
+  -- The endomorphism corresponding to the single loop of the Jordan quiver.
   f : Module.End R V
-  /-- The nilpotency constraint ensuring the identity addition yields a unipotent element. -/
+  -- The nilpotency constraint ensuring the identity addition yields a unipotent element.
   is_nilpotent : IsNilpotent f
+
+/-
+-- Verify that the relations for a 2-step nilpotent Heisenberg Lie algebra
+-- can be expressed over `QuiverRepGeneral`.
+-- This tracks two generators `f, g` whose commutator `z` commutes with both.
+-/
+example (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] [Module R V]
+    (rep_f rep_g : QuiverRepGeneral R V) : Prop :=
+  let f := rep_f.f
+  let g := rep_g.f
+  let z := ⁅f, g⁆
+  -- The commutator `z` must commute with both `f` and `g`.
+  ⁅f, z⁆ = 0 ∧ ⁅g, z⁆ = 0
 
 end HatsuYakitori.HeisenbergCarabiner
