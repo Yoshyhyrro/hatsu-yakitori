@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-deb:
-    name: Build PhantomCarabiner
+    name: Build HeisenbergCarabiner
     runs-on: ubuntu-latest
     
     steps:
