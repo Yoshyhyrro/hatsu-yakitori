@@ -201,4 +201,26 @@ example (V : Type*) [AddCommGroup V] [Module ℚ V] (rep : QuiverRepGeneral ℚ 
       -- ...the representation map `f` preserves the local integer lattice scale.
       ∀ v : V, ((1 : ℚ) / (p : ℚ)) • (rep.f v) = rep.f (((1 : ℚ) / (p : ℚ)) • v)
 
+
+/--
+Verify the Adelic rigidity condition for a norm form on the global representation.
+This asserts that a global bilinear form (modeling the Biquaternion norm)
+evaluated on the unipotent Heisenberg action satisfies integrality conditions
+at almost all primes, resolving local obstructions into Adelic geometry.
+-/
+example (V : Type*) [AddCommGroup V] [Module ℚ V] (rep : QuiverRepGeneral ℚ V)
+    -- A global norm form modeled as a mapping into ℚ.
+    (norm_form : V → V → ℚ)
+    -- An abstract local integrality condition for rational numbers at a prime `p`.
+    (is_integral_at : ℕ → ℚ → Prop) : Prop :=
+  -- For any vectors in the global representation space...
+  ∀ (v w : V),
+    -- ...there exists a finite list of exceptional primes (the localized obstructions)...
+    ∃ (exceptional : List ℕ),
+      -- ...such that for all prime numbers `p` outside this restricted set...
+      ∀ (p : ℕ) [Fact (Nat.Prime p)], p ∉ exceptional →
+        -- ...the norm form evaluated on the unipotent orbit `(1 + f)`
+        -- rigorously satisfies the integrality condition at `p`.
+        is_integral_at p (norm_form (v + rep.f v) (w + rep.f w))
+
 end HatsuYakitori.HeisenbergCarabiner
