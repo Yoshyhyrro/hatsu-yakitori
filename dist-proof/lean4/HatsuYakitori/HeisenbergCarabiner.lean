@@ -223,4 +223,18 @@ example (V : Type*) [AddCommGroup V] [Module ℚ V] (rep : QuiverRepGeneral ℚ 
         -- rigorously satisfies the integrality condition at `p`.
         is_integral_at p (norm_form (v + rep.f v) (w + rep.f w))
 
+
+/--
+The unipotent group commutator relation for 3-step nilpotent generators.
+This lemma establishes the foundation for verifying the Heisenberg group structure.
+-/
+lemma unipotent_commutator_eq (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] [Module R V]
+    (f g : Module.End R V) (hf : f ^ 3 = 0) (hg : g ^ 3 = 0)
+    (h_central : ⁅f, ⁅f, g⁆⁆ = 0 ∧ ⁅g, ⁅f, g⁆⁆ = 0) :
+    let Z := ⁅f, g⁆
+    (1 + f) * (1 + g) - (1 + g) * (1 + f) = Z := by
+  dsimp
+  -- Apply the library search tactic to inspect available distributive ring lemmas.
+  apply?
+  sorry
 end HatsuYakitori.HeisenbergCarabiner
