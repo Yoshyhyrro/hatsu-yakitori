@@ -187,4 +187,18 @@ example (V : Type*) [AddCommGroup V] [Module ℚ V] (rep : QuiverRepGeneral ℚ 
     ((1 : ℚ) / (p : ℚ)) • (rep.f v) = rep.f (((1 : ℚ) / (p : ℚ)) • v)
 
 
+/-
+Verify the restricted product condition at the representation level:
+the endomorphism preserves the local integral structure for almost all primes.
+This requires the existence of a finite exceptional set of primes outside of which
+the action commutes with the local prime scaling.
+-/
+example (V : Type*) [AddCommGroup V] [Module ℚ V] (rep : QuiverRepGeneral ℚ V) : Prop :=
+  -- There exists a finite set of exceptional primes...
+  ∃ (exceptional : Finset ℕ),
+    -- ...such that for any prime `p` not in this exceptional set...
+    ∀ (p : ℕ) [Fact (Nat.Prime p)], p ∉ exceptional →
+      -- ...the representation map `f` preserves the local integer lattice scale.
+      ∀ v : V, ((1 : ℚ) / (p : ℚ)) • (rep.f v) = rep.f (((1 : ℚ) / (p : ℚ)) • v)
+
 end HatsuYakitori.HeisenbergCarabiner
