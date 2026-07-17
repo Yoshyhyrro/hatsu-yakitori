@@ -9,6 +9,8 @@ import Mathlib.Combinatorics.Quiver.Basic
 import Mathlib.RingTheory.Nilpotent.Basic
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Algebra.Module.LinearMap.End
+import Mathlib.CategoryTheory.Category.Basic
+import Mathlib.Algebra.Category.ModuleCat.Basic
 
 /-!
 # HeisenbergCarabiner: the Jordan quiver and a single unipotent generator
@@ -99,5 +101,11 @@ noncomputable def QuiverRep.unipotent {q : ℕ} [Fact (Nat.Prime q)] {V : Type*}
     [AddCommGroup V] [Module (ZMod q) V] (r : QuiverRep q V) :
     (Module.End (ZMod q) V)ˣ :=
   r.is_nilpotent.isUnit_one_add.unit
+
+/--
+-- Check if `IsNilpotent` works with `CategoryTheory.End` in `ModuleCat`.
+-/
+example (V : ModuleCat (ZMod 2)) (f : CategoryTheory.End V) : Prop :=
+  IsNilpotent f
 
 end HatsuYakitori.HeisenbergCarabiner
