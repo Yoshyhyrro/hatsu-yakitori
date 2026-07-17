@@ -115,4 +115,32 @@ example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMo
   -- Evaluate the commutator of the given endomorphisms.
   ⁅f, g⁆
 
+-- Assert the existence of a nilpotency degree for the endomorphism `f`.
+example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMod q) V]
+    (r : QuiverRep q V) : ∃ (n : ℕ), r.f ^ n = 0 := by
+  -- Discharge the goal using the provided nilpotency hypothesis.
+  exact r.is_nilpotent
+
+-- Validate that subtracting the identity from the unipotent element
+-- recovers a nilpotent endomorphism.
+example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMod q) V]
+    (r : QuiverRep q V) : IsNilpotent (r.unipotent.val - 1) := by
+  -- Reduce the expression to the underlying nilpotent endomorphism.
+  simp [QuiverRep.unipotent]
+  -- Satisfy the resulting constraint with the representation's hypothesis.
+  exact r.is_nilpotent
+
+
+/--
+-- Generalize the quiver representation to an arbitrary ring `R`.
+-- This refactoring accommodates representations over algebras such as Biquaternions,
+-- bypassing the characteristic `q` limitation of `ZMod q`.
+-/
+structure QuiverRepGeneral (R : Type*) [Ring R] (V : Type*)
+    [AddCommGroup V] [Module R V] where
+  /-- The endomorphism corresponding to the single loop of the Jordan quiver. -/
+  f : Module.End R V
+  /-- The nilpotency constraint ensuring the identity addition yields a unipotent element. -/
+  is_nilpotent : IsNilpotent f
+
 end HatsuYakitori.HeisenbergCarabiner
