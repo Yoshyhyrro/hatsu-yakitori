@@ -102,13 +102,13 @@ noncomputable def QuiverRep.unipotent {q : ℕ} [Fact (Nat.Prime q)] {V : Type*}
     (Module.End (ZMod q) V)ˣ :=
   r.is_nilpotent.isUnit_one_add.unit
 
-/--
+/-
 -- Check if `IsNilpotent` works with `CategoryTheory.End` in `ModuleCat`.
 -/
 example (V : ModuleCat (ZMod 2)) (f : CategoryTheory.End V) : Prop :=
   IsNilpotent f
 
-/--
+/-
 -- Verify the elaboration of the Lie bracket for endomorphisms.
 -- This anticipates the introduction of the second generator `g`.
 -/
@@ -117,7 +117,7 @@ example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMo
   -- Evaluate the commutator of the given endomorphisms.
   ⁅f, g⁆
 
-/--
+/-
 -- Assert the existence of a nilpotency degree for the endomorphism `f`.
 -/
 example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMod q) V]
@@ -125,7 +125,7 @@ example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMo
   -- Discharge the goal using the provided nilpotency hypothesis.
   exact r.is_nilpotent
 
-/--
+/-
 -- Validate that subtracting the identity from the unipotent element
 -- recovers a nilpotent endomorphism.
 -/
@@ -136,7 +136,7 @@ example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMo
   -- Satisfy the resulting constraint with the representation's hypothesis.
   exact r.is_nilpotent
 
-/--
+/-
 -- Generalize the quiver representation to an arbitrary ring `R`.
 -- This refactoring accommodates representations over algebras such as Biquaternions,
 -- bypassing the characteristic `q` limitation of `ZMod q`.
@@ -148,7 +148,7 @@ structure QuiverRepGeneral (R : Type*) [Ring R] (V : Type*)
   /-- The nilpotency constraint ensuring the identity addition yields a unipotent element. -/
   is_nilpotent : IsNilpotent f
 
-/--
+/-
 -- Verify that the relations for a 2-step nilpotent Heisenberg Lie algebra
 -- can be expressed over `QuiverRepGeneral`.
 -- This tracks two generators `f, g` whose commutator `z` commutes with both.
@@ -161,7 +161,7 @@ example (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] [Module R V]
   -- The commutator `z` must commute with both `f` and `g`.
   ⁅f, z⁆ = 0 ∧ ⁅g, z⁆ = 0
 
-/--
+/-
 -- Verify the expansion of the product of two unipotent-like elements.
 -- This ensures the ring-algebraic calculation `(1 + f) * (1 + g)`
 -- correctly yields the Heisenberg-like term `1 + f + g + f * g`.
@@ -171,5 +171,20 @@ example (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] [Module R V]
     (1 + rep_f.f) * (1 + rep_g.f) = 1 + rep_f.f + rep_g.f + rep_f.f * rep_g.f := by
   -- Expand the ring multiplication terms manually using distributivity and associativity.
   simp [add_mul, mul_add, add_assoc]
+
+
+/-
+Evaluate the local integrality of a representation under a restricted family of primes.
+This models the restricted product condition where elements are integral
+at almost all localized sectors of the representation space.
+-/
+example (V : Type*) [AddCommGroup V] [Module ℚ V] (rep : QuiverRepGeneral ℚ V)
+    (primes : List ℕ) (_ : ∀ p ∈ primes, Nat.Prime p) : Prop :=
+  -- Require that the endomorphism preserves a specific integral structure
+  -- across the designated local prime sectors.
+  ∀ p ∈ primes, ∀ v : V,
+    -- Cast `p` to `ℚ` explicitly to ensure proper division and scalar multiplication.
+    ((1 : ℚ) / (p : ℚ)) • (rep.f v) = rep.f (((1 : ℚ) / (p : ℚ)) • v)
+
 
 end HatsuYakitori.HeisenbergCarabiner
