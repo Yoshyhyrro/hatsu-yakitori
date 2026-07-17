@@ -202,7 +202,7 @@ example (V : Type*) [AddCommGroup V] [Module ℚ V] (rep : QuiverRepGeneral ℚ 
       ∀ v : V, ((1 : ℚ) / (p : ℚ)) • (rep.f v) = rep.f (((1 : ℚ) / (p : ℚ)) • v)
 
 
-/--
+/-
 Verify the Adelic rigidity condition for a norm form on the global representation.
 This asserts that a global bilinear form (modeling the Biquaternion norm)
 evaluated on the unipotent Heisenberg action satisfies integrality conditions
@@ -237,4 +237,30 @@ lemma unipotent_commutator_eq (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] 
   -- Apply the library search tactic to inspect available distributive ring lemmas.
   apply?
   sorry
+
+/-
+Encapsulates the cohomological rigidity condition for the Heisenberg representation.
+Models the Ext^1_H(ρ, ρ) = 0 condition by asserting that any 1-cocycle
+(infinitesimal deformation) over the endomorphism algebra is a coboundary
+(an inner derivation), forcing the local moduli space to be a single point.
+-/
+lemma cohomological_rigidity_implies_locked_moduli
+    (R : Type*) [CommRing R] (V : Type*) [AddCommGroup V] [Module R V]
+    -- Ext^1(ρ, ρ) = 0 modeled as: all derivations on End(V) are inner.
+    (ext_one_vanishes : ∀ (d : Module.End R V → Module.End R V),
+      (∀ x y, d (x * y) = d x * y + x * d y) →
+      ∃ (a : Module.End R V), ∀ x, d x = a * x - x * a) :
+    -- If the above holds, any deformation `d` evaluated at our Heisenberg generators `f, g`
+    -- is strictly structurally locked by internal conjugation (Rigidity).
+    ∀ (d : Module.End R V → Module.End R V)
+      (_ : ∀ x y, d (x * y) = d x * y + x * d y)
+      (f g : Module.End R V),
+      ∃ (a : Module.End R V), d f = a * f - f * a ∧ d g = a * g - g * a := by
+  -- Introduce the arbitrary deformation and its derivation property.
+  intro d h_der f g
+  -- Extract the inner conjugation element guaranteed by the vanishing of Ext^1.
+  obtain ⟨a, ha⟩ := ext_one_vanishes d h_der
+  -- Satisfy the locked moduli constraints for the specific generators.
+  exact ⟨a, ha f, ha g⟩
+
 end HatsuYakitori.HeisenbergCarabiner
