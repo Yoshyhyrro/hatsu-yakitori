@@ -2,7 +2,7 @@
 Copyright (c) 2026 hatsu-yakitori contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors   : Yoshihiro Hasegawa
-Date      : 2026-07-16
+Date      : 2026-07-17
 -/
 
 import Mathlib.Combinatorics.Quiver.Basic
@@ -102,27 +102,33 @@ noncomputable def QuiverRep.unipotent {q : ℕ} [Fact (Nat.Prime q)] {V : Type*}
     (Module.End (ZMod q) V)ˣ :=
   r.is_nilpotent.isUnit_one_add.unit
 
-
+/--
 -- Check if `IsNilpotent` works with `CategoryTheory.End` in `ModuleCat`.
+-/
 example (V : ModuleCat (ZMod 2)) (f : CategoryTheory.End V) : Prop :=
   IsNilpotent f
 
+/--
 -- Verify the elaboration of the Lie bracket for endomorphisms.
 -- This anticipates the introduction of the second generator `g`.
-
+-/
 example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMod q) V]
     (f g : Module.End (ZMod q) V) : Module.End (ZMod q) V :=
   -- Evaluate the commutator of the given endomorphisms.
   ⁅f, g⁆
 
+/--
 -- Assert the existence of a nilpotency degree for the endomorphism `f`.
+-/
 example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMod q) V]
     (r : QuiverRep q V) : ∃ (n : ℕ), r.f ^ n = 0 := by
   -- Discharge the goal using the provided nilpotency hypothesis.
   exact r.is_nilpotent
 
+/--
 -- Validate that subtracting the identity from the unipotent element
 -- recovers a nilpotent endomorphism.
+-/
 example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMod q) V]
     (r : QuiverRep q V) : IsNilpotent (r.unipotent.val - 1) := by
   -- Reduce the expression to the underlying nilpotent endomorphism.
@@ -130,19 +136,19 @@ example {q : ℕ} [Fact (Nat.Prime q)] {V : Type*} [AddCommGroup V] [Module (ZMo
   -- Satisfy the resulting constraint with the representation's hypothesis.
   exact r.is_nilpotent
 
-
+/--
 -- Generalize the quiver representation to an arbitrary ring `R`.
 -- This refactoring accommodates representations over algebras such as Biquaternions,
 -- bypassing the characteristic `q` limitation of `ZMod q`.
-
+-/
 structure QuiverRepGeneral (R : Type*) [Ring R] (V : Type*)
     [AddCommGroup V] [Module R V] where
-  -- The endomorphism corresponding to the single loop of the Jordan quiver.
+  /-- The endomorphism corresponding to the single loop of the Jordan quiver. -/
   f : Module.End R V
-  -- The nilpotency constraint ensuring the identity addition yields a unipotent element.
+  /-- The nilpotency constraint ensuring the identity addition yields a unipotent element. -/
   is_nilpotent : IsNilpotent f
 
-/-
+/--
 -- Verify that the relations for a 2-step nilpotent Heisenberg Lie algebra
 -- can be expressed over `QuiverRepGeneral`.
 -- This tracks two generators `f, g` whose commutator `z` commutes with both.
@@ -154,5 +160,16 @@ example (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] [Module R V]
   let z := ⁅f, g⁆
   -- The commutator `z` must commute with both `f` and `g`.
   ⁅f, z⁆ = 0 ∧ ⁅g, z⁆ = 0
+
+/--
+-- Verify the expansion of the product of two unipotent-like elements.
+-- This ensures the ring-algebraic calculation `(1 + f) * (1 + g)`
+-- correctly yields the Heisenberg-like term `1 + f + g + f * g`.
+-/
+example (R : Type*) [Ring R] (V : Type*) [AddCommGroup V] [Module R V]
+    (rep_f rep_g : QuiverRepGeneral R V) :
+    (1 + rep_f.f) * (1 + rep_g.f) = 1 + rep_f.f + rep_g.f + rep_f.f * rep_g.f := by
+  -- Expand the ring multiplication terms manually using distributivity and associativity.
+  simp [add_mul, mul_add, add_assoc]
 
 end HatsuYakitori.HeisenbergCarabiner
