@@ -54,9 +54,10 @@ subgroup to the discrete Heisenberg group presentation
 `⟨x, y | [x, [x, y]] = [y, [x, y]] = 1⟩`; the embedding into `Aut(M₂(F_q), det)`; and
 any connection to towers of field extensions. Also still open:
 `heisenberg_matrix_witness` below states the concrete non-abelian witness but defers
-its proof (`sorry`), pending confirmation of the exact matrix-multiplication lemma
-name available in this project's pinned Mathlib (`stdBasisMatrix` was recently renamed
-to `single`).
+its proof (`sorry`). `Matrix.stdBasisMatrix` is confirmed unavailable in this
+project's pinned Mathlib (`Matrix.single` is the live name, now used below); what is
+still missing is the exact value-at-a-point/multiplication lemma names needed to turn
+the (hand-verified) witness computation into an actual proof.
 
 ## Main definitions
 
@@ -335,7 +336,10 @@ lemma z_sq_eq_zero_of_central (R : Type*) [Ring R] (V : Type*) [AddCommGroup V]
     (hcf : ⁅f, ⁅f, g⁆⁆ = 0) (hcg : ⁅g, ⁅f, g⁆⁆ = 0)
     (hfz : f * ⁅f, g⁆ = 0) (hgz : g * ⁅f, g⁆ = 0) :
     ⁅f, g⁆ * ⁅f, g⁆ = 0 := by
-  rw [LieRing.of_associative_ring_bracket] at hcf hcg hfz hgz ⊢
+  -- `hcf`/`hcg` have a *nested* bracket (`⁅f, ⁅f, g⁆⁆`), so a single `rw` only unfolds the
+  -- outer instantiation and leaves the inner `⁅f, g⁆` untouched; `simp only` iterates to a
+  -- fixpoint and catches both.
+  simp only [LieRing.of_associative_ring_bracket] at hcf hcg hfz hgz ⊢
   have hzf : (f * g - g * f) * f = 0 := by
     have h := hcf; rw [hfz, zero_sub, neg_eq_zero] at h; exact h
   have hzg : (f * g - g * f) * g = 0 := by
@@ -361,15 +365,21 @@ lemma CentralNilpotentPair.heisenberg_relation {R : Type*} [Ring R] {V : Type*}
 `g * f = 0`, so `z := ⁅f, g⁆ = E₀₂ ≠ 0` — genuinely non-abelian — while `f * z = 0`
 and `g * z = 0`, since e.g. `E₀₁ * E₀₂` needs "column 1 of the first factor" to
 match "row 0 of the second", i.e. `1 = 0`, which is false, so that product is `0`
-(similarly for the other products involved). The proof is left as `sorry`: recent
-Mathlib renamed `Matrix.stdBasisMatrix` to `Matrix.single`, and this file has not yet
-pinned down the exact multiplication lemma (`Matrix.single_mul_single`? computing
-directly via `Matrix.mul_apply` and `Fin.sum_univ_three`?) available in the Mathlib
-version this project builds against — confirming that, and filling in this proof, is
-the natural next step. -/
+(similarly for the other products involved).
+
+`Matrix.stdBasisMatrix` is confirmed **not** available in this project's pinned
+Mathlib (`Unknown constant`) — `Matrix.single` below is the live name, with the same
+argument order (`single i j a` = the matrix with `a` at row `i`, column `j`). The
+`sorry` is left deliberately: turning the hand computation above into a proof needs
+(a) a value-at-a-point characterization of `single` (guessing `Matrix.single_apply`,
+unconfirmed), (b) `Matrix.mul_apply` to unfold `*` as a sum over `Fin 3`, and
+(c) `Fin.sum_univ_three` to turn that sum into three explicit terms — three more
+unconfirmed lemma names is one round of guessing too many to stack on top of this
+turn's already-partly-wrong fixes, so this is left as the next step rather than
+guessed at again immediately. -/
 lemma heisenberg_matrix_witness (q : ℕ) [Fact (Nat.Prime q)] :
-    let f : Matrix (Fin 3) (Fin 3) (ZMod q) := Matrix.stdBasisMatrix 0 1 1
-    let g : Matrix (Fin 3) (Fin 3) (ZMod q) := Matrix.stdBasisMatrix 1 2 1
+    let f : Matrix (Fin 3) (Fin 3) (ZMod q) := Matrix.single 0 1 1
+    let g : Matrix (Fin 3) (Fin 3) (ZMod q) := Matrix.single 1 2 1
     ⁅f, g⁆ ≠ 0 ∧ f * ⁅f, g⁆ = 0 ∧ g * ⁅f, g⁆ = 0 := by
   sorry
 
