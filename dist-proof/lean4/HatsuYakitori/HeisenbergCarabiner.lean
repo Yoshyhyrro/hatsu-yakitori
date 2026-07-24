@@ -381,7 +381,17 @@ lemma heisenberg_matrix_witness (q : ℕ) [Fact (Nat.Prime q)] :
     let f : Matrix (Fin 3) (Fin 3) (ZMod q) := Matrix.single 0 1 1
     let g : Matrix (Fin 3) (Fin 3) (ZMod q) := Matrix.single 1 2 1
     ⁅f, g⁆ ≠ 0 ∧ f * ⁅f, g⁆ = 0 ∧ g * ⁅f, g⁆ = 0 := by
-  sorry
+  simp only [LieRing.of_associative_ring_bracket]
+  have hfg : (Matrix.single 0 1 1 : Matrix (Fin 3) (Fin 3) (ZMod q)) * Matrix.single 1 2 1
+      = Matrix.single 0 2 1 := by simp
+  have hgf : (Matrix.single 1 2 1 : Matrix (Fin 3) (Fin 3) (ZMod q)) * Matrix.single 0 1 1
+      = 0 := by simp
+  refine ⟨?_, ?_, ?_⟩ <;> simp only [hfg, hgf, sub_zero]
+  · intro h
+    have h02 := congrFun (congrFun h 0) 2
+    simp [Matrix.single_apply_same] at h02
+  · simp
+  · simp
 
 /-- A generic fact about inner derivations — **not** specific to the Heisenberg
 construction, despite superficial appearances. If *every* derivation of `End(V)` is
