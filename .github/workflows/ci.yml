@@ -16,7 +16,7 @@ on:
       - 'tests/**'
   push:
     branches:
-      - feature/example/output_flang
+      - feature/sedenion_bridge
     tags-ignore:
       - '*'
     paths:
