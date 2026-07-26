@@ -65,6 +65,10 @@ allModules =
                     "modules/sssp_geometry/sssp_geo_main.scm" 
                     "tests/sssp_geometry_tests.scm" 
                     coreFiles
+
+    , regularModule "sedenion_bridge"
+                    "modules\sedenion_bridge/sedenion_decomposition.scm"
+                    coreFiles
     
     , regularModule "golay24-tool" 
                     "tools/golay24-tool/golay24_main.scm" 
