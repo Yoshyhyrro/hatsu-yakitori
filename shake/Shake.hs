@@ -67,7 +67,7 @@ allModules =
                     coreFiles
 
     , regularModule "sedenion_bridge"
-                    "modules\sedenion_bridge/sedenion_decomposition.scm"
+                    "modules/sedenion_bridge/sedenion_decomposition.scm"
                     coreFiles
     
     , regularModule "golay24-tool" 
