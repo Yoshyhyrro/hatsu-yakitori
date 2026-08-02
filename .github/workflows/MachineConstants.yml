@@ -1,0 +1,37 @@
+name: MachineConstants
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/MachineConstants.yml'
+      - 'dist-proof/lean4/**'
+  push:
+    branches:
+      - feature/sedenion_bridge
+
+jobs:
+  build-deb:
+    name: Build HeisenbergCarabiner
+    runs-on: ubuntu-latest
+    
+    steps:
+        - name: Checkout
+          uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+        - name: Install elan
+          run: |
+                curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
+                echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+        - name: Check Lean
+          run: |
+            source "$HOME/.profile" || true
+            lean --version
+            lake --version
+
+        - name: Build Specific Lean File
+          run: |
+            cd dist-proof/lean4
+            lake clean
+            lake update
+            lake build HatsuYakitori.MachineConstants
