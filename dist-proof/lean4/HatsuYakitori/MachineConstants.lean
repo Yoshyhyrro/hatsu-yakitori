@@ -657,29 +657,62 @@ This section provides the interface for computing cycle length from permutations
 which is used by KakIntegration to connect permutation structure with Galois height.
 -/
 
-/-- Placeholder for cycle length computation.
+/-- Length of the longest cycle in σ's cycle decomposition, counting
+    fixed points as trivial length-1 cycles.
 
-    In a full implementation, this would compute the maximum cycle length
-    in the cycle decomposition of σ. For now, we use a simple encoding
-    based on the permutation's action on Fin 24.
+    Previously this was a placeholder that ignored σ entirely and
+    returned the constant 1 for every permutation. This computes the
+    real quantity: `Equiv.Perm.cycleType` gives the multiset of NONTRIVIAL
+    cycle lengths (fixed points excluded by Mathlib's convention), so
+    its `sup` is 0 for the identity -- `max 1 (...)` restores the
+    "fixed points count as length-1 cycles" convention that
+    `cycleLength_id` below depends on, while leaving every permutation
+    with at least one nontrivial cycle unaffected (its sup is already
+    >= 2 there).
 
     The cycle length determines the Galois height via:
     galoisHeight(cycleLength) = 8 * log(cycleLength) / log(24)
+
+    NOT compiler-verified in this edit -- Mathlib was unavailable in the
+    environment this was prepared in. Run `lake build` before relying on
+    this, and check in particular: `Equiv.Perm.cycleType_one` (used by
+    `cycleLength_id` below) and whatever lemma bounds elements of
+    `Equiv.Perm.cycleType` by the ambient Fintype's cardinality (used by
+    `cycleLength_bounded` below) -- neither name is guaranteed exactly
+    right here.
 -/
-noncomputable def cycleLength_placeholder (_σ : Equiv.Perm (Fin 24)) : ℕ := 1
+noncomputable def cycleLength_placeholder (σ : Equiv.Perm (Fin 24)) : ℕ :=
+  max 1 (Equiv.Perm.cycleType σ).sup
 
 /-- Cycle length is always positive. -/
 theorem cycleLength_pos (σ : Equiv.Perm (Fin 24)) : 0 < cycleLength_placeholder σ := by
   unfold cycleLength_placeholder
-  norm_num
+  omega
 
-/-- Cycle length is bounded by 24 (the size of the permuted set). -/
+/-- Cycle length is bounded by 24 (the size of the permuted set).
+    NOT verified: relies on every entry of `Equiv.Perm.cycleType σ`
+    being <= 24, which should follow from each cycle's length being at
+    most `Fintype.card (Fin 24) = 24`, but the exact Mathlib lemma name
+    for that bound was not confirmed against a real build. -/
 theorem cycleLength_bounded (σ : Equiv.Perm (Fin 24)) : cycleLength_placeholder σ ≤ 24 := by
   unfold cycleLength_placeholder
-  norm_num
+  have h : ∀ c ∈ (Equiv.Perm.cycleType σ), c ≤ 24 := by
+    intro c hc
+    have := Equiv.Perm.le_card_support_of_mem_cycleType hc
+    have hcard : σ.support.card ≤ 24 := by
+      calc σ.support.card ≤ Fintype.card (Fin 24) := Finset.card_le_univ _
+        _ = 24 := by simp
+    omega
+  simp only [Multiset.sup_le]
+  omega
 
-/-- Identity permutation has cycle length 1. -/
-theorem cycleLength_id : cycleLength_placeholder 1 = 1 := rfl
+/-- Identity permutation has cycle length 1 (no nontrivial cycles, so
+    the max-1-fallback applies). NOT verified: relies on
+    `Equiv.Perm.cycleType_one : Equiv.Perm.cycleType 1 = 0` (the empty
+    multiset) existing under that name. -/
+theorem cycleLength_id : cycleLength_placeholder 1 = 1 := by
+  unfold cycleLength_placeholder
+  simp [Equiv.Perm.cycleType_one]
 
 /-- Galois height from permutation cycle length. -/
 noncomputable def permHeight (σ : Equiv.Perm (Fin 24)) : ℝ :=
