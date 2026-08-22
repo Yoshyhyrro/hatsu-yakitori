@@ -34,4 +34,4 @@ jobs:
             cd dist-proof/lean4
             lake clean
             lake update
-            lake build HatsuYakitori.MachineConstants
+            lake build HatsuYakitori.SedenionZeroDivisors.lean
