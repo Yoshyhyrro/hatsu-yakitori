@@ -696,15 +696,14 @@ theorem cycleLength_pos (σ : Equiv.Perm (Fin 24)) : 0 < cycleLength_placeholder
     for that bound was not confirmed against a real build. -/
 theorem cycleLength_bounded (σ : Equiv.Perm (Fin 24)) : cycleLength_placeholder σ ≤ 24 := by
   unfold cycleLength_placeholder
-  have h : ∀ c ∈ (Equiv.Perm.cycleType σ), c ≤ 24 := by
+  have h : ∀ c ∈ σ.cycleType, c ≤ 24 := by
     intro c hc
     have := Equiv.Perm.le_card_support_of_mem_cycleType hc
-    have hcard : σ.support.card ≤ 24 := by
-      calc σ.support.card ≤ Fintype.card (Fin 24) := Finset.card_le_univ _
-        _ = 24 := by simp
-    omega
-  simp only [Multiset.sup_le]
-  omega
+    calc σ.support.card ≤ Fintype.card (Fin 24) := Finset.card_le_univ _
+      _ = 24 := by simp
+
+  have hsup : σ.cycleType.sup ≤ 24 := (Multiset.sup_le).mpr h
+  exact Nat.max_le (by norm_num) hsup
 
 /-- Identity permutation has cycle length 1 (no nontrivial cycles, so
     the max-1-fallback applies). NOT verified: relies on
