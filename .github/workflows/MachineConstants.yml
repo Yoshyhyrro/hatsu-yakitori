@@ -35,4 +35,4 @@ jobs:
             lake clean
             lake update
             lake build HatsuYakitori.SedenionZeroDivisors
-            lake build HatsuYakitori.SedenionJordan
+            lake build HatsuYakitori.Sedenion
