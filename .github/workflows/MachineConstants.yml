@@ -36,3 +36,4 @@ jobs:
             lake update
             lake build HatsuYakitori.SedenionZeroDivisors
             lake build HatsuYakitori.Sedenion
+            lake build HatsuYakitori.PBCGoppa
