@@ -37,3 +37,4 @@ jobs:
             lake build HatsuYakitori.SedenionZeroDivisors
             lake build HatsuYakitori.Sedenion
             lake build HatsuYakitori.PBCGoppa
+            lake build HatsuYakitori.JordanQuiverEigenspace
