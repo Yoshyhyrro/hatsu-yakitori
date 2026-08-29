@@ -10,29 +10,23 @@ jobs:
   typecheck:
     name: Typecheck Agda Modules
     runs-on: ubuntu-latest
-    
-    # Agda + agda-stdlib がプリインストールされた公式イメージを使用
-    container:
-      image: index.docker.io/agda/agda:latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@v4
 
-      - name: Register Agda Libraries
+      - name: Setup Agda
+        uses: wenkokke/setup-agda@v2
+        with:
+          agda-version: "latest"
+          agda-stdlib-version: "recommended"
+
+      - name: Register project library
         run: |
-          mkdir -p ~/.agda
-          
-          # 1. 依存ライブラリ (agda-stdlib) のロード設定
-          # Dockerイメージ内の agda-stdlib のパスを指定
-          echo "standard-library" > ~/.agda/defaults
-          echo "/usr/local/datadir/agda-stdlib/standard-library.agda-lib" > ~/.agda/libraries
-          
-          # 2. 自身の .agda-lib を Agda に認識させる (絶対パスで登録)
-          echo "$GITHUB_WORKSPACE/cayley-dickson-quiver.agda-lib" >> ~/.agda/libraries
+          mkdir -p \~/.agda
+          echo "$GITHUB_WORKSPACE/cayley-dickson-quiver.agda-lib" >> \~/.agda/libraries
 
       - name: Typecheck via Everything.agda
         run: |
-          # --library-path や .agda-lib の設定を自動読み込みして型チェック
-          cd dist-proof\Agda
+          cd dist-proof/Agda
           agda src/Everything.agda
