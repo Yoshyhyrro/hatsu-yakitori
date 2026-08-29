@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Agda
-        uses: wenkokke/setup-agda@v2
+        uses: wenkokke/setup-agda@52f1e708494c8717630b3e1378383b01a56a379c # v2.5.0
         with:
           agda-version: "latest"
           agda-stdlib-version: "recommended"
