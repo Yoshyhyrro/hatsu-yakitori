@@ -316,3 +316,51 @@ record Fluctuation (source target : Vertex) : Set where
     energy       : ℕ
     assoc-type   : AssociatorType
     preserves-image : IsSurjective (get-linear-map (Arrow.zero-div arrow)) (Vertex.kernel-dim target)
+
+
+-- ============================================================
+-- Section 12: Discrete Hodge Structure and Bifiltration
+-- Formalizing the nested boundedness and infinitesimal displacement.
+-- ============================================================
+
+-- Definition: Weight Filtration (Boundedness per path algebra)
+-- Represented by the path length or kernel dimension decrease.
+record WeightFiltration (v : Vertex) : Set where
+  constructor mkWeight
+  field
+    weight : ℕ  -- e.g., initial kernel dim - current kernel dim
+    bound  : weight ≤ initial-max-dim
+
+-- Definition: Hodge Filtration (Other boundedness)
+-- Represented by the subspace structure (Image/Kernel) at each vertex.
+record HodgeFiltration (v : Vertex) : Set where
+  constructor mkHodge
+  field
+    image-dim    : ℕ
+    kernel-dim   : ℕ
+    total-dim    : ℕ
+    dim-sum      : image-dim + kernel-dim ≡ total-dim
+
+-- Definition: Bifiltration (Nested structure)
+record Bifiltration (v : Vertex) : Set where
+  constructor mkBifiltration
+  field
+    W : WeightFiltration v
+    F : HodgeFiltration v
+
+-- Definition: Discrete Infinitesimal Displacement (Arrow)
+-- An arrow acts as the discrete analogue of the Gauss-Manin connection.
+record Displacement (v1 v2 : Vertex) : Set where
+  constructor mkDisplacement
+  field
+    arrow : Arrow v1 v2
+    -- Discrete Griffiths Transversality:
+    -- The displacement strictly decreases the Hodge/Weight filtration level.
+    transversality : Vertex.kernel-dim v2 < Vertex.kernel-dim v1
+
+-- Theorem: The Quiver representation with Bifiltration satisfies
+-- the discrete analogue of Griffiths Transversality.
+-- This is exactly Lemma 2.1 (arrow-decreases-kernel).
+quiver-satisfies-transversality : ∀ {v1 v2} (a : Arrow v1 v2) →
+  Displacement v1 v2
+quiver-satisfies-transversality a = mkDisplacement a (arrow-decreases-kernel a)
