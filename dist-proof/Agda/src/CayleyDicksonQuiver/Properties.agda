@@ -49,47 +49,39 @@ path-length-multiply (extend-path a p1) p2 = cong suc (path-length-multiply p1 p
 -- Section 2: Kernel Dimension Monotonicity
 -- ============================================================
 
--- Additional proof helpers required for Section 2
-postulate
-≤-trans : ∀ {m n o} → m ≤ n → n ≤ o → m ≤ o
-<-trans : ∀ {m n o} → m < n → n < o → m < o
-≤-pred : ∀ {m n} → m < n → m ≤ n ∸ 1
-¬-sym : ∀ {m n} → ¬ (m < n) → n ≤ m
-z≤n : ∀ {n} → 0 ≤ n
-≤-step : ∀ {m n} → m ≤ n → m ≤ suc n
+-- Import required lemmas from standard library instead of postulating them
+open import Data.Nat.Properties using (≤-trans; <-trans; ≤-pred; ¬-<⇒≥; z≤n; ≤-step)
 
 -- Lemma 2.1: Each arrow strictly decreases kernel dimension
 arrow-decreases-kernel : ∀ (a : Arrow) →
-Vertex.kernel-dim (Arrow.target a) < Vertex.kernel-dim (Arrow.source a)
+  Vertex.kernel-dim (Arrow.target a) < Vertex.kernel-dim (Arrow.source a)
 arrow-decreases-kernel (mkArrow _ _ _ (decreases gt _)) = gt
 
 -- Lemma 2.2: Path length is bounded by initial kernel dimension
--- COMPLETED: Replaced {!!} with inductive proof using helpers.
 path-length-bounded : ∀ {v1 v2} (p : Path v1 v2) →
-length-of-path p ≤ Vertex.kernel-dim v1
+  length-of-path p ≤ Vertex.kernel-dim v1
 path-length-bounded empty-path = z≤n
 path-length-bounded (extend-path a p) =
-let ih = path-length-bounded p
-dec = arrow-decreases-kernel a
-in ≤-step (≤-trans ih (≤-pred dec))
+  let ih = path-length-bounded p
+      dec = arrow-decreases-kernel a
+  in ≤-step (≤-trans ih (≤-pred dec))
 
 -- Lemma 2.3: Kernel dimension decreases along path
--- COMPLETED: Replaced {!!} with inj₁ routing.
 path-decreases-kernel : ∀ {v1 v2} (p : Path v1 v2) →
-Vertex.kernel-dim v2 < Vertex.kernel-dim v1 ∨ length-of-path p ≡ 0
+  Vertex.kernel-dim v2 < Vertex.kernel-dim v1 ∨ length-of-path p ≡ 0
 path-decreases-kernel empty-path = inj₂ refl
 path-decreases-kernel (extend-path a p) =
-inj₁ (<-trans (arrow-decreases-kernel a) (proj₁ (path-decreases-kernel p)))
+  inj₁ (<-trans (arrow-decreases-kernel a) (proj₁ (path-decreases-kernel p)))
 
 -- Lemma 2.4: No path from lower to higher kernel dimension
--- COMPLETED: Replaced {!!} with contradiction (⊥-elim).
 no-ascending-path : ∀ {v1 v2} (p : Path v1 v2) →
-Vertex.kernel-dim v1 ≤ Vertex.kernel-dim v2 → length-of-path p ≡ 0
+  Vertex.kernel-dim v1 ≤ Vertex.kernel-dim v2 → length-of-path p ≡ 0
 no-ascending-path empty-path _ = refl
 no-ascending-path (extend-path a p) le =
-let dec = arrow-decreases-kernel a
-contra = ≤-trans le (≤-pred dec) -- Approximation of <⇒≤ relation for CI
-in {!!} -- Requires specific library ¬-<⇒≥ import to fully close
+  let dec = arrow-decreases-kernel a
+      contra : ¬ (Vertex.kernel-dim (Arrow.target a) < Vertex.kernel-dim (Arrow.source a))
+      contra = ¬-<⇒≥ le
+  in ⊥-elim (contra dec)
 
 -- ============================================================
 -- Section 3: Zero Divisor Properties
