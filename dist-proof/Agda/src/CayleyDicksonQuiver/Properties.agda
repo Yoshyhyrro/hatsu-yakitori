@@ -155,7 +155,6 @@ quiver-acyclic q {v} (extend-path a p) =
       same = refl
   in ⊥-elim (¬-<⇒≥ same dec)
 
--- Lemma 4.3: No cycles in the quiver (DAG property)
 
 -- ============================================================
 -- Section 5: Path Equivalence Properties
@@ -288,3 +287,32 @@ PathModule : Vertex → Vertex → Set
 HeckeGenerator : ℕ → Set
 apply-hecke : ∀ {v1 v2 i} → HeckeGenerator i → Path v1 v2 → PathModule v1 v2
 hecke-quadratic-relation : ∀ {v1 v2 i} (T : HeckeGenerator i) (p : Path v1 v2) → Set
+
+
+-- ============================================================
+-- Section 11: Inter-Universe Fluctuations
+-- Formalizing "surjective fluctuations into another universe"
+-- based on F-V decomposition and generalized inverses.
+-- ============================================================
+
+-- Definition: The Image Universe (Another Universe)
+-- Represents the subspace where restricted division is valid.
+record ImageUniverse (p : Pair) : Set where
+  constructor mkImageUniverse
+  field
+    carrier      : Set
+    pseudo-inv-op : carrier → carrier
+    identity-law : ∀ v → pseudo-inv-op (pseudo-inv-op v) ≡ v
+
+-- Definition: Surjectivity condition for inter-universe communication
+data IsSurjective (f : LinearMap) (target : Set) : Set where
+  surj-witness : ∀ (w : ℕ) → ∃[ v ∈ ℕ ] (apply-map f v ≡ w)
+
+-- Definition: Fluctuation as dynamic propagation of non-associativity
+record Fluctuation (source target : Vertex) : Set where
+  constructor mkFluctuation
+  field
+    arrow        : Arrow source target
+    energy       : ℕ
+    assoc-type   : AssociatorType
+    preserves-image : IsSurjective (get-linear-map (Arrow.zero-div arrow)) (Vertex.kernel-dim target)
