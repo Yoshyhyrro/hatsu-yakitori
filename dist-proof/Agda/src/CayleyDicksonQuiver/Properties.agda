@@ -1,63 +1,63 @@
-module CayleyDicksonQuiver.Lemmas where
+module CayleyDicksonQuiver.Properties where
 
-open import Data.Nat using (ℕ; <; ≤; ≥; suc; zero; +; ∸; *; ^)
-open import Data.Product using (×; ,; proj₁; proj₂; Σ)
-open import Data.List using (List; []; ∷; length; ++)
-open import Relation.Binary.PropositionalEquality using (≡; refl; sym; trans; cong)
-open import Data.Sum using (∨; inj₁; inj₂)
+open import Data.Nat using (ℕ; _<_; _≤_; _≥_; _>_; _+_; _∸_; _*_; _^_; suc; zero)
+open import Data.Nat.Properties
+  using ( ≤-trans; <-trans; ≤-pred; ¬-<⇒≥; z≤n; ≤-step
+        ; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans )
+open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Data.List using (List; []; _∷_; length; _++_)
+open import Relation.Binary.PropositionalEquality
+  using (_≡_; refl; sym; trans; cong; begin_; _≡⟨_⟩_; _∎)
 open import Data.Empty using (⊥-elim)
 open import Relation.Nullary using (¬_)
 open import CayleyDicksonQuiver
 
--- ============================================================
+------------------------------------------------------------------------
 -- Helper functions for length
--- ============================================================
+------------------------------------------------------------------------
 
--- REPLACED: Moved length-of-path up here and implemented it fully instead of postulate.
+-- Length of a path.
 length-of-path : ∀ {v1 v2} → Path v1 v2 → ℕ
 length-of-path empty-path = 0
 length-of-path (extend-path _ p) = suc (length-of-path p)
 
--- ============================================================
+------------------------------------------------------------------------
 -- Section 1: Path Basic Properties
--- ============================================================
+------------------------------------------------------------------------
 
--- Lemma 1.1: Empty path is left identity
+-- Empty path is left identity for path multiplication.
 path-left-identity : ∀ {v1 v2} (p : Path v1 v2) → path-multiply empty-path p ≡ p
 path-left-identity empty-path = refl
 path-left-identity (extend-path a p) = refl
 
--- Lemma 1.2: Empty path is right identity
+-- Empty path is right identity for path multiplication.
 path-right-identity : ∀ {v1 v2} (p : Path v1 v2) → path-multiply p empty-path ≡ p
 path-right-identity empty-path = refl
 path-right-identity (extend-path a p) = cong (extend-path a) (path-right-identity p)
 
--- Lemma 1.3: Path multiplication is associative
+-- Path multiplication is associative.
 path-assoc : ∀ {v1 v2 v3 v4} (p1 : Path v1 v2) (p2 : Path v2 v3) (p3 : Path v3 v4) →
-path-multiply (path-multiply p1 p2) p3 ≡ path-multiply p1 (path-multiply p2 p3)
+  path-multiply (path-multiply p1 p2) p3 ≡ path-multiply p1 (path-multiply p2 p3)
 path-assoc empty-path p2 p3 = refl
 path-assoc (extend-path a p1) p2 p3 = cong (extend-path a) (path-assoc p1 p2 p3)
 
--- Lemma 1.4: Path length is additive under multiplication
--- COMPLETED: Replaced {!!} with the actual inductive proof.
+-- Path length is additive under multiplication.
 path-length-multiply : ∀ {v1 v2 v3} (p1 : Path v1 v2) (p2 : Path v2 v3) →
-length-of-path (path-multiply p1 p2) ≡ length-of-path p1 + length-of-path p2
+  length-of-path (path-multiply p1 p2) ≡ length-of-path p1 + length-of-path p2
 path-length-multiply empty-path p2 = refl
 path-length-multiply (extend-path a p1) p2 = cong suc (path-length-multiply p1 p2)
 
--- ============================================================
+------------------------------------------------------------------------
 -- Section 2: Kernel Dimension Monotonicity
--- ============================================================
+------------------------------------------------------------------------
 
--- Import required lemmas from standard library instead of postulating them
-open import Data.Nat.Properties using (≤-trans; <-trans; ≤-pred; ¬-<⇒≥; z≤n; ≤-step)
+-- Each arrow strictly decreases kernel dimension.
+arrow-decreases-kernel : ∀ {v1 v2} (a : Arrow v1 v2) →
+  Vertex.kernel-dim v2 < Vertex.kernel-dim v1
+arrow-decreases-kernel (mkArrow _ (decreases gt _)) = gt
 
--- Lemma 2.1: Each arrow strictly decreases kernel dimension
-arrow-decreases-kernel : ∀ (a : Arrow) →
-  Vertex.kernel-dim (Arrow.target a) < Vertex.kernel-dim (Arrow.source a)
-arrow-decreases-kernel (mkArrow _ _ _ (decreases gt _)) = gt
-
--- Lemma 2.2: Path length is bounded by initial kernel dimension
+-- Path length is bounded by the initial kernel dimension.
 path-length-bounded : ∀ {v1 v2} (p : Path v1 v2) →
   length-of-path p ≤ Vertex.kernel-dim v1
 path-length-bounded empty-path = z≤n
@@ -66,36 +66,34 @@ path-length-bounded (extend-path a p) =
       dec = arrow-decreases-kernel a
   in ≤-step (≤-trans ih (≤-pred dec))
 
--- Lemma 2.3: Kernel dimension decreases along path
+-- Kernel dimension decreases along a non-empty path;
+-- an empty path leaves it unchanged.
 path-decreases-kernel : ∀ {v1 v2} (p : Path v1 v2) →
-  Vertex.kernel-dim v2 < Vertex.kernel-dim v1 ∨ length-of-path p ≡ 0
+  (Vertex.kernel-dim v2 < Vertex.kernel-dim v1) ⊎ (length-of-path p ≡ 0)
 path-decreases-kernel empty-path = inj₂ refl
-path-decreases-kernel (extend-path a p) =
-  inj₁ (<-trans (arrow-decreases-kernel a) (proj₁ (path-decreases-kernel p)))
+path-decreases-kernel (extend-path a p) with path-decreases-kernel p
+... | inj₁ lt = inj₁ (<-trans lt (arrow-decreases-kernel a))
+... | inj₂ _  = inj₁ (arrow-decreases-kernel a)
 
--- Lemma 2.4: No path from lower to higher kernel dimension
+-- No path from a lower (or equal) to a higher kernel dimension.
 no-ascending-path : ∀ {v1 v2} (p : Path v1 v2) →
   Vertex.kernel-dim v1 ≤ Vertex.kernel-dim v2 → length-of-path p ≡ 0
 no-ascending-path empty-path _ = refl
 no-ascending-path (extend-path a p) le =
-  let dec = arrow-decreases-kernel a
-      contra : ¬ (Vertex.kernel-dim (Arrow.target a) < Vertex.kernel-dim (Arrow.source a))
-      contra = ¬-<⇒≥ le
-  in ⊥-elim (contra dec)
+  ⊥-elim (¬-<⇒≥ le (arrow-decreases-kernel a))
 
--- ============================================================
+------------------------------------------------------------------------
 -- Section 3: Zero Divisor Properties
--- ============================================================
+------------------------------------------------------------------------
 
--- REPLACED: postulate with actual record and accessors
 record ZeroDivisor : Set where
-constructor mkZeroDivisor
-field
-pair : Pair
-dim : ℕ
-kernel-dim : ℕ
-idx1 : ℕ
-idx2 : ℕ
+  constructor mkZeroDivisor
+  field
+    pair       : Pair
+    dim        : ℕ
+    kernel-dim : ℕ
+    idx1       : ℕ
+    idx2       : ℕ
 
 ZeroDivisor-pair : ZeroDivisor → Pair
 ZeroDivisor-pair = ZeroDivisor.pair
@@ -107,145 +105,129 @@ ZeroDivisor-kernel-dim : ZeroDivisor → ℕ
 ZeroDivisor-kernel-dim = ZeroDivisor.kernel-dim
 
 postulate
-ZeroDivisor-associator-type : Pair → AssociatorType
+  ZeroDivisor-associator-type : Pair → AssociatorType
 
--- Lemma 3.1: Zero divisor pair indices are within dimension bounds
+-- TODO: Fill in the proofs.
 zd-in-bounds : ∀ (zd : ZeroDivisor) →
-proj₁ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd ×
-proj₂ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd
+  proj₁ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd ×
+  proj₂ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd
 zd-in-bounds = {!!}
 
--- Lemma 3.2: Kernel dimension of single zero divisor is positive
 zd-kernel-positive : ∀ (zd : ZeroDivisor) →
-ZeroDivisor-kernel-dim zd > 0
+  ZeroDivisor-kernel-dim zd > 0
 zd-kernel-positive = {!!}
 
--- Lemma 3.3: Associator type determines path equivalence class
-associator-determines-equiv : ∀ {v1 v2} (a1 a2 : Arrow) →
-ZeroDivisor-associator-type (Arrow.zero-div a1) ≡
-ZeroDivisor-associator-type (Arrow.zero-div a2) →
-Arrow.source a1 ≡ Arrow.source a2 →
-Arrow.target a1 ≡ Arrow.target a2 →
-PathEquiv (extend-path a1 empty-path) (extend-path a2 empty-path)
-associator-determines-equiv a1 a2 type-eq src-eq tgt-eq = {!!}
+-- With indexed arrows there is only one choice of source/target,
+-- so the source/target equality arguments are no longer needed.
+associator-determines-equiv : ∀ {v1 v2} (a1 a2 : Arrow v1 v2) →
+  ZeroDivisor-associator-type (Arrow.zero-div a1) ≡
+  ZeroDivisor-associator-type (Arrow.zero-div a2) →
+  PathEquiv (extend-path a1 empty-path) (extend-path a2 empty-path)
+associator-determines-equiv a1 a2 type-eq = {!!}
 
--- ============================================================
+------------------------------------------------------------------------
 -- Section 4: Quiver Finiteness
--- ============================================================
+------------------------------------------------------------------------
 
-postulate Quiver-longest-path-length : Quiver → ℕ
+postulate
+  Quiver-longest-path-length : Quiver → ℕ
 
--- Lemma 4.1: The number of reachable vertices is bounded by the initial kernel dimension.
--- Since each arrow strictly decreases the kernel dimension (Lemma 2.1) and 
--- the dimension cannot drop below 0, the maximum number of distinct kernel 
--- dimensions (and thus vertices in a single path) is bounded by start + 1.
+-- The number of reachable vertices is bounded by the initial kernel
+-- dimension.  (Stub: a full proof requires reachability and distinctness
+-- of kernel dimensions.)
 vertices-bounded : (q : Quiver) (start : Vertex) →
   length (Quiver.vertices q) ≤ suc (Vertex.kernel-dim start)
-vertices-bounded q start = 
-  -- Note: A full proof requires establishing that all vertices in `q` 
-  -- are reachable from `start` and have distinct kernel dimensions.
-  -- This stub provides the structural bound based on Lemma 2.2.
+vertices-bounded q start =
   let max-depth = Vertex.kernel-dim start
   in ≤-trans (length-reachable-vertices-bounded-by-depth q start)
              (≤-step max-depth)
   where
-  -- Helper lemma asserting that reachable vertices have distinct, bounded dimensions
   postulate
-    length-reachable-vertices-bounded-by-depth : 
-      (q : Quiver) (start : Vertex) → 
+    length-reachable-vertices-bounded-by-depth :
+      (q : Quiver) (start : Vertex) →
       length (Quiver.vertices q) ≤ suc (Vertex.kernel-dim start)
 
--- Lemma 4.2: Maximum path length equals initial kernel dimension
 max-path-length : (q : Quiver) (start : Vertex) →
-Quiver-longest-path-length q ≤ Vertex.kernel-dim start
+  Quiver-longest-path-length q ≤ Vertex.kernel-dim start
 max-path-length q start = {!!}
 
--- Lemma 4.3: No cycles in the quiver (DAG property)
-quiver-acyclic : (q : Quiver) {v : Vertex} (p : Path v v) →
-  length-of-path p ≡ 0
-quiver-acyclic q {v} empty-path = refl
-quiver-acyclic q {v} (extend-path a p) =
-  let dec = arrow-decreases-kernel a
-      same : Vertex.kernel-dim v ≡ Vertex.kernel-dim v
-      same = refl
-  in ⊥-elim (¬-<⇒≥ same dec)
+-- The kernel dimension never increases along a path.
+path-nonincreasing : ∀ {v1 v2} (p : Path v1 v2) →
+  Vertex.kernel-dim v2 ≤ Vertex.kernel-dim v1
+path-nonincreasing empty-path = ≤-refl
+path-nonincreasing (extend-path a p) =
+  ≤-trans (path-nonincreasing p) (<⇒≤ (arrow-decreases-kernel a))
 
+-- There are no non-trivial cycles: every path from a vertex to itself
+-- is empty.  A non-empty path would force a strict decrease of the
+-- vertex's own kernel dimension, which is impossible.
+quiver-acyclic : ∀ {v} (p : Path v v) → length-of-path p ≡ 0
+quiver-acyclic empty-path = refl
+quiver-acyclic (extend-path a p) =
+  ⊥-elim (<-irrefl refl (≤-<-trans (path-nonincreasing p) (arrow-decreases-kernel a)))
 
--- ============================================================
+------------------------------------------------------------------------
 -- Section 5: Path Equivalence Properties
--- ============================================================
+------------------------------------------------------------------------
 
--- Lemma 5.1: PathEquiv is reflexive
 equiv-reflexive : ∀ {v1 v2} (p : Path v1 v2) → PathEquiv p p
 equiv-reflexive p = equiv-refl
 
--- Lemma 5.2: PathEquiv is symmetric
 equiv-symmetric : ∀ {v1 v2} {p q : Path v1 v2} →
-PathEquiv p q → PathEquiv q p
+  PathEquiv p q → PathEquiv q p
 equiv-symmetric eq = equiv-sym eq
 
--- Lemma 5.3: PathEquiv is transitive
 equiv-transitive : ∀ {v1 v2} {p q r : Path v1 v2} →
-PathEquiv p q → PathEquiv q r → PathEquiv p r
+  PathEquiv p q → PathEquiv q r → PathEquiv p r
 equiv-transitive eq1 eq2 = equiv-trans eq1 eq2
 
--- Lemma 5.4: Path multiplication respects equivalence
 equiv-congruence : ∀ {v1 v2 v3} {p1 q1 : Path v1 v2} {p2 q2 : Path v2 v3} →
-PathEquiv p1 q1 → PathEquiv p2 q2 →
-PathEquiv (path-multiply p1 p2) (path-multiply q1 q2)
+  PathEquiv p1 q1 → PathEquiv p2 q2 →
+  PathEquiv (path-multiply p1 p2) (path-multiply q1 q2)
 equiv-congruence eq1 eq2 = {!!}
 
--- ============================================================
+------------------------------------------------------------------------
 -- Section 6: Cayley-Dickson Specific Lemmas
--- ============================================================
+------------------------------------------------------------------------
 
-postulate dim : ℕ → Set
-postulate dim-to-ℕ : ∀ {k} → dim k → ℕ
+postulate
+  dim : ℕ → Set
+  dim-to-ℕ : ∀ {k} → dim k → ℕ
 
--- Lemma 6.1: Dimension doubling property
 dim-doubling : ∀ (k : ℕ) (d-k : dim k) (d-sk : dim (suc k)) →
-dim-to-ℕ d-sk ≡ 2 * dim-to-ℕ d-k
+  dim-to-ℕ d-sk ≡ 2 * dim-to-ℕ d-k
 dim-doubling k d-k d-sk = {!!}
 
--- Lemma 6.2: Zero divisor count grows exponentially
 zd-count-exponential : ∀ (k : ℕ) → {!!}
 zd-count-exponential k = {!!}
 
--- Lemma 6.3: Associator distribution by type
 associator-distribution : ∀ (k : ℕ) → {!!}
 associator-distribution k = {!!}
 
--- ============================================================
+------------------------------------------------------------------------
 -- Section 7: Computational Lemmas
--- ============================================================
+------------------------------------------------------------------------
 
--- Lemma 7.1: compute-kernel-dim is well-defined
 compute-kernel-well-defined : ∀ (pairs : List Pair) →
   compute-kernel-dim pairs ≤ length pairs
-compute-kernel-well-defined [] = z≤n
+compute-kernel-well-defined []       = z≤n
 compute-kernel-well-defined (_ ∷ pairs) = ≤-step (compute-kernel-well-defined pairs)
 
--- Lemma 7.2: Adding operators never increases the kernel dimension.
--- This reflects the linear algebraic fact that intersecting with more 
--- null spaces can only maintain or reduce the dimension of the kernel.
 kernel-monotone : ∀ (pairs1 pairs2 : List Pair) →
   compute-kernel-dim (pairs1 ++ pairs2) ≤ compute-kernel-dim pairs1
 kernel-monotone [] pairs2 = z≤n
-kernel-monotone (x ∷ pairs1) pairs2 = 
-  -- Proof by induction on pairs1, relying on the property that 
-  -- adding a single constraint decreases or maintains the kernel dimension.
+kernel-monotone (x ∷ pairs1) pairs2 =
   let ih = kernel-monotone pairs1 pairs2
   in ≤-trans (kernel-dim-decreases-on-cons x (pairs1 ++ pairs2)) ih
   where
-  -- Helper: Adding one operator to a list does not increase the kernel dimension
   postulate
     kernel-dim-decreases-on-cons : ∀ (x : Pair) (xs : List Pair) →
       compute-kernel-dim (x ∷ xs) ≤ compute-kernel-dim xs
--- ============================================================
--- Section 8: Restricted Division and Generalized Inverses
--- ============================================================
 
--- REPLACED: postulate with actual function signatures for linear maps
+------------------------------------------------------------------------
+-- Section 8: Restricted Division and Generalized Inverses
+------------------------------------------------------------------------
+
 LinearMap : Set
 LinearMap = ℕ → ℕ
 
@@ -256,157 +238,135 @@ compose : LinearMap → LinearMap → LinearMap
 compose f g x = f (g x)
 
 postulate
-get-linear-map : Pair → LinearMap
+  get-linear-map : Pair → LinearMap
 
 record HasGeneralizedInverse (p : Pair) : Set where
-constructor mkGenInv
-field
-pseudo-inv : LinearMap
-property : compose (get-linear-map p) (compose pseudo-inv (get-linear-map p)) ≡ get-linear-map p
+  constructor mkGenInv
+  field
+    pseudo-inv : LinearMap
+    property   : compose (get-linear-map p) (compose pseudo-inv (get-linear-map p))
+                   ≡ get-linear-map p
 
-
--- Anonymous Lemma: Based on experimental observation (20/20 SUCCESS in dim=16)
-zero-divisor-has-gen-inv : ∀ (p : Pair) → HasGeneralizedInverse p
-zero-divisor-has-gen-inv p = mkGenInv gen-inv refl
-  where
-    gen-inv : LinearMap
-    gen-inv v = v
-    _ : compose (get-linear-map p) (compose gen-inv (get-linear-map p)) ≡ get-linear-map p
-    _ = refl
+-- Asserted as an axiom: the pseudo-inverse law is not definitionally
+-- true, so it cannot be discharged by refl.
+postulate
+  zero-divisor-has-gen-inv : ∀ (p : Pair) → HasGeneralizedInverse p
 
 record InImage (p : Pair) (v : ℕ) : Set where
-constructor in-im
-field
-preimage : ℕ
-witness : apply-map (get-linear-map p) preimage ≡ v
+  constructor in-im
+  field
+    preimage : ℕ
+    witness  : apply-map (get-linear-map p) preimage ≡ v
 
--- Lemma 8.3: Restricted division yields a unique solution on the image space.
--- If v is in the image of Lx, then Lx ∘ Lx⁺ applied to v returns v.
 restricted-division-unique : ∀ {p} {v : ℕ} →
   InImage p v →
-  apply-map (compose (get-linear-map p) (pseudo-inv (zero-divisor-has-gen-inv p))) v ≡ v
+  apply-map (compose (get-linear-map p) (HasGeneralizedInverse.pseudo-inv (zero-divisor-has-gen-inv p))) v ≡ v
 restricted-division-unique {p} {v} (in-im u wit) =
   let Lx  = get-linear-map p
-      Lx⁺ = pseudo-inv (zero-divisor-has-gen-inv p)
-      prop = property (zero-divisor-has-gen-inv p)
+      Lx⁺ = HasGeneralizedInverse.pseudo-inv (zero-divisor-has-gen-inv p)
+      prop = HasGeneralizedInverse.property (zero-divisor-has-gen-inv p)
   in begin
     apply-map (compose Lx Lx⁺) v
       ≡⟨ cong (apply-map (compose Lx Lx⁺)) wit ⟩
     apply-map (compose Lx Lx⁺) (apply-map Lx u)
-      ≡⟨ cong (apply-map id) (sym prop) ⟩  -- Lx ∘ Lx⁺ ∘ Lx ≡ Lx
+      ≡⟨ cong (λ f → apply-map f u) (sym prop) ⟩
     apply-map Lx u
       ≡⟨ sym wit ⟩
     v
   ∎
-  where
-  open import Relation.Binary.Reasoning.Syntax using (begin_; _≡⟨_⟩_; _∎)
 
--- ============================================================
--- Section 9: Advanced Algebraic Properties (Category Theory & Coherence)
--- ============================================================
+------------------------------------------------------------------------
+-- Section 9: Advanced Algebraic Properties
+------------------------------------------------------------------------
 
 postulate
-ValidAssociatorPair : ∀ {v1 v2 v3} → Path v1 v2 → Path v2 v3 → Set
-path-pseudo-inv : ∀ {v1 v2} → Path v1 v2 → LinearMap
+  ValidAssociatorPair : ∀ {v1 v2 v3} → Path v1 v2 → Path v2 v3 → Set
+  path-pseudo-inv : ∀ {v1 v2} → Path v1 v2 → LinearMap
 
 path-inverse-contravariance : ∀ {v1 v2 v3} (p1 : Path v1 v2) (p2 : Path v2 v3) →
-ValidAssociatorPair p1 p2 →
-path-pseudo-inv (path-multiply p1 p2) ≡ compose (path-pseudo-inv p2) (path-pseudo-inv p1)
+  ValidAssociatorPair p1 p2 →
+  path-pseudo-inv (path-multiply p1 p2) ≡ compose (path-pseudo-inv p2) (path-pseudo-inv p1)
+path-inverse-contravariance p1 p2 vp = {!!}
 
-quantized-kernel-drop : ∀ (a : Arrow) →
-Σ ℕ (λ k → Vertex.kernel-dim (Arrow.source a) ∸ Vertex.kernel-dim (Arrow.target a) ≡ 2 ^ k)
+quantized-kernel-drop : ∀ {v1 v2} (a : Arrow v1 v2) →
+  Σ ℕ (λ k → Vertex.kernel-dim v1 ∸ Vertex.kernel-dim v2 ≡ 2 ^ k)
+quantized-kernel-drop a = {!!}
 
-IsTypeIII-Braid : Arrow → Arrow → Set
+-- TODO: Adapt to indexed arrows.  The original definition assumed an
+-- unindexed Arrow : Set, which is no longer available.
+postulate
+  IsTypeIII-Braid : ∀ {v1 v2} → Arrow v1 v2 → Arrow v1 v2 → Set
+  yang-baxter-equiv : ∀ {v1 v2 v3 v4 v5 v6}
+                      (a1 : Arrow v1 v2) (a2 : Arrow v2 v3) (a3 : Arrow v3 v4)
+                      (a4 : Arrow v4 v5) (a5 : Arrow v5 v6) →
+                      Set
 
-yang-baxter-equiv : ∀ {v1 v2 v3 v4} (a1 a2 : Arrow) →
-IsTypeIII-Braid a1 a2 →
-PathEquiv
-(path-multiply (extend-path a1 empty-path) (path-multiply (extend-path a2 empty-path) (extend-path a1 empty-path)))
-(path-multiply (extend-path a2 empty-path) (path-multiply (extend-path a1 empty-path) (extend-path a2 empty-path)))
-
--- ============================================================
+------------------------------------------------------------------------
 -- Section 10: Hecke Algebra Action on Bounded Paths
--- ============================================================
+------------------------------------------------------------------------
 
 postulate
-PathModule : Vertex → Vertex → Set
-HeckeGenerator : ℕ → Set
-apply-hecke : ∀ {v1 v2 i} → HeckeGenerator i → Path v1 v2 → PathModule v1 v2
-hecke-quadratic-relation : ∀ {v1 v2 i} (T : HeckeGenerator i) (p : Path v1 v2) → Set
+  PathModule : Vertex → Vertex → Set
+  HeckeGenerator : ℕ → Set
+  apply-hecke : ∀ {v1 v2 i} → HeckeGenerator i → Path v1 v2 → PathModule v1 v2
+  hecke-quadratic-relation : ∀ {v1 v2 i} (T : HeckeGenerator i) (p : Path v1 v2) → Set
 
-
--- ============================================================
+------------------------------------------------------------------------
 -- Section 11: Inter-Universe Fluctuations
--- Formalizing "surjective fluctuations into another universe"
--- based on F-V decomposition and generalized inverses.
--- ============================================================
+------------------------------------------------------------------------
 
--- Definition: The Image Universe (Another Universe)
--- Represents the subspace where restricted division is valid.
 record ImageUniverse (p : Pair) : Set where
   constructor mkImageUniverse
   field
-    carrier      : Set
+    carrier       : Set
     pseudo-inv-op : carrier → carrier
-    identity-law : ∀ v → pseudo-inv-op (pseudo-inv-op v) ≡ v
+    identity-law  : ∀ v → pseudo-inv-op (pseudo-inv-op v) ≡ v
 
--- Definition: Surjectivity condition for inter-universe communication
-data IsSurjective (f : LinearMap) (target : Set) : Set where
-  surj-witness : ∀ (w : ℕ) → ∃[ v ∈ ℕ ] (apply-map f v ≡ w)
+-- Fixed: removed the unused `target : Set` parameter which received a ℕ.
+data IsSurjective (f : LinearMap) : Set where
+  surj-witness : ∀ (w : ℕ) → Σ ℕ (λ v → apply-map f v ≡ w) → IsSurjective f
 
--- Definition: Fluctuation as dynamic propagation of non-associativity
 record Fluctuation (source target : Vertex) : Set where
   constructor mkFluctuation
   field
-    arrow        : Arrow source target
-    energy       : ℕ
-    assoc-type   : AssociatorType
-    preserves-image : IsSurjective (get-linear-map (Arrow.zero-div arrow)) (Vertex.kernel-dim target)
+    arrow           : Arrow source target
+    energy          : ℕ
+    assoc-type      : AssociatorType
+    preserves-image : IsSurjective (get-linear-map (Arrow.zero-div arrow))
 
-
--- ============================================================
+------------------------------------------------------------------------
 -- Section 12: Discrete Hodge Structure and Bifiltration
--- Formalizing the nested boundedness and infinitesimal displacement.
--- ============================================================
+------------------------------------------------------------------------
 
--- Definition: Weight Filtration (Boundedness per path algebra)
--- Represented by the path length or kernel dimension decrease.
+postulate
+  initial-max-dim : ℕ
+
 record WeightFiltration (v : Vertex) : Set where
   constructor mkWeight
   field
-    weight : ℕ  -- e.g., initial kernel dim - current kernel dim
+    weight : ℕ
     bound  : weight ≤ initial-max-dim
 
--- Definition: Hodge Filtration (Other boundedness)
--- Represented by the subspace structure (Image/Kernel) at each vertex.
 record HodgeFiltration (v : Vertex) : Set where
   constructor mkHodge
   field
-    image-dim    : ℕ
-    kernel-dim   : ℕ
-    total-dim    : ℕ
-    dim-sum      : image-dim + kernel-dim ≡ total-dim
+    image-dim  : ℕ
+    kernel-dim : ℕ
+    total-dim  : ℕ
+    dim-sum    : image-dim + kernel-dim ≡ total-dim
 
--- Definition: Bifiltration (Nested structure)
 record Bifiltration (v : Vertex) : Set where
   constructor mkBifiltration
   field
     W : WeightFiltration v
     F : HodgeFiltration v
 
--- Definition: Discrete Infinitesimal Displacement (Arrow)
--- An arrow acts as the discrete analogue of the Gauss-Manin connection.
 record Displacement (v1 v2 : Vertex) : Set where
   constructor mkDisplacement
   field
-    arrow : Arrow v1 v2
-    -- Discrete Griffiths Transversality:
-    -- The displacement strictly decreases the Hodge/Weight filtration level.
+    arrow          : Arrow v1 v2
     transversality : Vertex.kernel-dim v2 < Vertex.kernel-dim v1
 
--- Theorem: The Quiver representation with Bifiltration satisfies
--- the discrete analogue of Griffiths Transversality.
--- This is exactly Lemma 2.1 (arrow-decreases-kernel).
 quiver-satisfies-transversality : ∀ {v1 v2} (a : Arrow v1 v2) →
   Displacement v1 v2
 quiver-satisfies-transversality a = mkDisplacement a (arrow-decreases-kernel a)
