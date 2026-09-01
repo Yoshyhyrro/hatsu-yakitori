@@ -1,17 +1,27 @@
 module CayleyDicksonQuiver.Properties where
 
-open import Data.Nat using (ℕ; _<_; _≤_; _≥_; _>_; _+_; _∸_; _*_; _^_; suc; zero)
+open import CayleyDicksonQuiver
+open import Data.Empty using (⊥-elim)
+open import Data.List using (List; []; _∷_; length; _++_)
+-- `z≤n` is a constructor of the `_≤_` datatype, defined in
+-- `Data.Nat.Base` and re-exported by `Data.Nat`; it is not part of
+-- `Data.Nat.Properties`.
+open import Data.Nat
+  using (ℕ; _<_; _≤_; _≥_; _>_; _+_; _∸_; _*_; _^_; suc; zero; z≤n)
+-- `≤⇒≯` replaces the non-existent `¬-<⇒≥` (not present in stdlib v2.1).
+-- Its type, `m ≤ n → ¬ (m > n)`, matches the call site in
+-- `no-ascending-path` below exactly.
 open import Data.Nat.Properties
-  using ( ≤-trans; <-trans; ≤-pred; ¬-<⇒≥; z≤n; ≤-step
+  using ( ≤-trans; <-trans; ≤-pred; ≤⇒≯; ≤-step
         ; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans )
 open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Data.List using (List; []; _∷_; length; _++_)
+-- `begin_`, `_≡⟨_⟩_` and `_∎` live in the `≡-Reasoning` submodule and
+-- are not exported at the top level; they are opened locally at the
+-- single site that uses them (see `restricted-division-unique`).
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; refl; sym; trans; cong; begin_; _≡⟨_⟩_; _∎)
-open import Data.Empty using (⊥-elim)
+  using (_≡_; refl; sym; trans; cong; module ≡-Reasoning)
 open import Relation.Nullary using (¬_)
-open import CayleyDicksonQuiver
 
 ------------------------------------------------------------------------
 -- Helper functions for length
@@ -80,7 +90,7 @@ no-ascending-path : ∀ {v1 v2} (p : Path v1 v2) →
   Vertex.kernel-dim v1 ≤ Vertex.kernel-dim v2 → length-of-path p ≡ 0
 no-ascending-path empty-path _ = refl
 no-ascending-path (extend-path a p) le =
-  ⊥-elim (¬-<⇒≥ le (arrow-decreases-kernel a))
+  ⊥-elim (≤⇒≯ le (arrow-decreases-kernel a))
 
 ------------------------------------------------------------------------
 -- Section 3: Zero Divisor Properties
@@ -274,6 +284,7 @@ restricted-division-unique {p} {v} (in-im u wit) =
       ≡⟨ sym wit ⟩
     v
   ∎
+  where open ≡-Reasoning
 
 ------------------------------------------------------------------------
 -- Section 9: Advanced Algebraic Properties
