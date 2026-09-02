@@ -2,6 +2,7 @@ module CayleyDicksonQuiver.Properties where
 
 open import CayleyDicksonQuiver
 open import Data.Empty using (⊥-elim)
+open import Data.Fin using (Fin)
 open import Data.List using (List; []; _∷_; length; _++_)
 open import Data.List.Properties using (length-++)
 -- `z≤n` is a constructor of the `_≤_` datatype, defined in
@@ -329,12 +330,17 @@ postulate
 -- Section 11: Inter-Universe Fluctuations
 ------------------------------------------------------------------------
 
-record ImageUniverse (p : Pair) : Set where
+-- `ImageUniverse k p`: carrier is pinned to `Fin (ambient-dim k)`, a type
+-- with exactly `ambient-dim k` (= 2^k) elements, rather than an abstract
+-- `Set` -- this is the `dim(carrier(k)) = 2^k` requirement made concrete.
+-- `p` does not yet constrain anything about the universe beyond its
+-- dimension; it is carried here only so a witness can be selected per
+-- zero-divisor pair once that connection is designed.
+record ImageUniverse (k : ℕ) (p : Pair) : Set where
   constructor mkImageUniverse
   field
-    carrier       : Set
-    pseudo-inv-op : carrier → carrier
-    identity-law  : ∀ v → pseudo-inv-op (pseudo-inv-op v) ≡ v
+    pseudo-inv-op : Fin (ambient-dim k) → Fin (ambient-dim k)
+    identity-law  : ∀ x → pseudo-inv-op (pseudo-inv-op x) ≡ x
 
 -- Fixed: removed the unused `target : Set` parameter which received a ℕ.
 data IsSurjective (f : LinearMap) : Set where
@@ -352,17 +358,22 @@ record Fluctuation (source target : Vertex) : Set where
 -- Section 12: Discrete Hodge Structure and Bifiltration
 ------------------------------------------------------------------------
 
--- `initial-max-dim` is defined in `CayleyDicksonQuiver.agda` (16, the
--- sedenion ambient dimension) and is already in scope here via the
--- unqualified import at the top of this file.
+-- `ambient-dim` is defined in `CayleyDicksonQuiver.agda`; `initial-max-dim`
+-- (the sedenion special case, k=4) remains as-is, still governing the
+-- fixed-level `compute-kernel-dim` used in Sections 1-10.
 
-record WeightFiltration (v : Vertex) : Set where
+record WeightFiltration (k : ℕ) (v : Vertex) : Set where
   constructor mkWeight
   field
     weight : ℕ
-    bound  : weight ≤ initial-max-dim
+    bound  : weight ≤ ambient-dim k
 
-record HodgeFiltration (v : Vertex) : Set where
+-- NOTE: `k` does not yet constrain `image-dim`/`kernel-dim`/`total-dim`
+-- here (unlike `WeightFiltration`, whose bound now genuinely depends on
+-- k). Carried for uniform indexing with `WeightFiltration`; tighten with
+-- an `ambient-dim k` bound on `total-dim` if/when that invariant is
+-- wanted.
+record HodgeFiltration (k : ℕ) (v : Vertex) : Set where
   constructor mkHodge
   field
     image-dim  : ℕ
@@ -370,11 +381,11 @@ record HodgeFiltration (v : Vertex) : Set where
     total-dim  : ℕ
     dim-sum    : image-dim + kernel-dim ≡ total-dim
 
-record Bifiltration (v : Vertex) : Set where
+record Bifiltration (k : ℕ) (v : Vertex) : Set where
   constructor mkBifiltration
   field
-    W : WeightFiltration v
-    F : HodgeFiltration v
+    W : WeightFiltration k v
+    F : HodgeFiltration k v
 
 record Displacement (v1 v2 : Vertex) : Set where
   constructor mkDisplacement
@@ -385,3 +396,26 @@ record Displacement (v1 v2 : Vertex) : Set where
 quiver-satisfies-transversality : ∀ {v1 v2} (a : Arrow v1 v2) →
   Displacement v1 v2
 quiver-satisfies-transversality a = mkDisplacement a (arrow-decreases-kernel a)
+
+------------------------------------------------------------------------
+-- Section 13: The Carabiner Tower
+------------------------------------------------------------------------
+
+-- CT_k := (Q_k, {ImageUniverse_k(p)}_{p in Pair}, {Bifiltration_k(v)}_{v in Vertex}):
+-- the level-k quiver together with a level-k ImageUniverse witness for
+-- every zero-divisor pair and a level-k Bifiltration witness for every
+-- vertex. `quiver` plays the role of Q_k once a particular Quiver value
+-- is supplied for this k.
+--
+-- Named after `Carabiner` in `dist-proof/lean4/HatsuYakitori/Carabiner.lean`:
+-- there, a carabiner is the rigid structural bundle at a fixed height on
+-- the Berkovich tree, and a route is a sequence of carabiners across
+-- heights. Here, a `CarabinerTower k` is that same idea of "the rigid
+-- bundle at a fixed level" applied to the Cayley-Dickson tower, with `k`
+-- playing the role of height/level.
+record CarabinerTower (k : ℕ) : Set where
+  constructor mkCarabinerTower
+  field
+    quiver          : Quiver
+    image-universes : (p : Pair) → ImageUniverse k p
+    bifiltrations   : (v : Vertex) → Bifiltration k v
