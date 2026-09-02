@@ -7,13 +7,12 @@ open import Data.List using (List; []; _∷_; length; _++_)
 -- `Data.Nat.Base` and re-exported by `Data.Nat`; it is not part of
 -- `Data.Nat.Properties`.
 open import Data.Nat
-  using (ℕ; _<_; _≤_; _≥_; _>_; _+_; _∸_; _*_; _^_; suc; zero; z≤n)
+  using (ℕ; _<_; _≤_; _≥_; _>_; _+_; _∸_; _*_; _^_; suc; zero; z≤n; s≤s)
 -- `≤⇒≯` replaces the non-existent `¬-<⇒≥` (not present in stdlib v2.1).
 -- Its type, `m ≤ n → ¬ (m > n)`, matches the call site in
 -- `no-ascending-path` below exactly.
 open import Data.Nat.Properties
-  using ( ≤-trans; <-trans; ≤-pred; ≤⇒≯; ≤-step
-        ; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans )
+  using (≤-trans; <-trans; ≤⇒≯; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans)
 open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 -- `begin_`, `_≡⟨_⟩_` and `_∎` live in the `≡-Reasoning` submodule and
@@ -72,9 +71,9 @@ path-length-bounded : ∀ {v1 v2} (p : Path v1 v2) →
   length-of-path p ≤ Vertex.kernel-dim v1
 path-length-bounded empty-path = z≤n
 path-length-bounded (extend-path a p) =
-  let ih = path-length-bounded p
-      dec = arrow-decreases-kernel a
-  in ≤-step (≤-trans ih (≤-pred dec))
+  let ih  = path-length-bounded p             -- length-of-path p ≤ kernel-dim vm
+      dec = arrow-decreases-kernel a           -- kernel-dim vm < kernel-dim v1
+  in ≤-trans (s≤s ih) dec
 
 -- Kernel dimension decreases along a non-empty path;
 -- an empty path leaves it unchanged.
@@ -147,10 +146,7 @@ postulate
 -- of kernel dimensions.)
 vertices-bounded : (q : Quiver) (start : Vertex) →
   length (Quiver.vertices q) ≤ suc (Vertex.kernel-dim start)
-vertices-bounded q start =
-  let max-depth = Vertex.kernel-dim start
-  in ≤-trans (length-reachable-vertices-bounded-by-depth q start)
-             (≤-step max-depth)
+vertices-bounded q start = length-reachable-vertices-bounded-by-depth q start
   where
   postulate
     length-reachable-vertices-bounded-by-depth :
@@ -218,11 +214,24 @@ associator-distribution k = {!!}
 -- Section 7: Computational Lemmas
 ------------------------------------------------------------------------
 
+-- NOTE: `compute-kernel-dim` is currently defined as `length` (see
+-- `CayleyDicksonQuiver.agda`), so the two sides are definitionally equal
+-- and this holds by `≤-refl` regardless of `pairs`. This proof will need
+-- revisiting once `compute-kernel-dim` gets its real, non-stub definition.
 compute-kernel-well-defined : ∀ (pairs : List Pair) →
   compute-kernel-dim pairs ≤ length pairs
-compute-kernel-well-defined []       = z≤n
-compute-kernel-well-defined (_ ∷ pairs) = ≤-step (compute-kernel-well-defined pairs)
+compute-kernel-well-defined pairs = ≤-refl
 
+-- WARNING: as stated, this is inconsistent with the current
+-- `compute-kernel-dim = length` stub: `length` grows under `_++_` and
+-- under `_∷_`, so both this lemma's base case and the local postulate
+-- `kernel-dim-decreases-on-cons` below claim the opposite of what
+-- `length` actually does. The name "kernel dimension" suggests the
+-- intended semantics is closer to a null-space dimension that shrinks
+-- as more constraint pairs accumulate (i.e. an actual rank-based
+-- computation), not a raw pair count. Do not attempt to discharge
+-- `kernel-dim-decreases-on-cons` against the current stub — it is not
+-- provable as typed until `compute-kernel-dim` gets its real definition.
 kernel-monotone : ∀ (pairs1 pairs2 : List Pair) →
   compute-kernel-dim (pairs1 ++ pairs2) ≤ compute-kernel-dim pairs1
 kernel-monotone [] pairs2 = z≤n
