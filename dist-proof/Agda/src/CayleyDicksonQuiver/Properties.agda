@@ -3,6 +3,7 @@ module CayleyDicksonQuiver.Properties where
 open import CayleyDicksonQuiver
 open import Data.Empty using (⊥-elim)
 open import Data.List using (List; []; _∷_; length; _++_)
+open import Data.List.Properties using (length-++)
 -- `z≤n` is a constructor of the `_≤_` datatype, defined in
 -- `Data.Nat.Base` and re-exported by `Data.Nat`; it is not part of
 -- `Data.Nat.Properties`.
@@ -12,14 +13,15 @@ open import Data.Nat
 -- Its type, `m ≤ n → ¬ (m > n)`, matches the call site in
 -- `no-ascending-path` below exactly.
 open import Data.Nat.Properties
-  using (≤-trans; <-trans; ≤⇒≯; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans)
+  using (≤-trans; <-trans; ≤⇒≯; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans;
+         m∸n≤m; ∸-monoʳ-≤; m≤m+n)
 open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 -- `begin_`, `_≡⟨_⟩_` and `_∎` live in the `≡-Reasoning` submodule and
 -- are not exported at the top level; they are opened locally at the
 -- single site that uses them (see `restricted-division-unique`).
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; refl; sym; trans; cong; module ≡-Reasoning)
+  using (_≡_; refl; sym; trans; cong; subst; module ≡-Reasoning)
 open import Relation.Nullary using (¬_)
 
 ------------------------------------------------------------------------
@@ -214,34 +216,24 @@ associator-distribution k = {!!}
 -- Section 7: Computational Lemmas
 ------------------------------------------------------------------------
 
--- NOTE: `compute-kernel-dim` is currently defined as `length` (see
--- `CayleyDicksonQuiver.agda`), so the two sides are definitionally equal
--- and this holds by `≤-refl` regardless of `pairs`. This proof will need
--- revisiting once `compute-kernel-dim` gets its real, non-stub definition.
+-- `compute-kernel-dim` is bounded above by the ambient dimension.
+-- (Previously stated as `≤ length pairs`, which was only true of the
+-- old `= length` stub; under the real `_∸_`-based definition it is
+-- false at `pairs = []`, where `compute-kernel-dim [] ≡ initial-max-dim`.)
 compute-kernel-well-defined : ∀ (pairs : List Pair) →
-  compute-kernel-dim pairs ≤ length pairs
-compute-kernel-well-defined pairs = ≤-refl
+  compute-kernel-dim pairs ≤ initial-max-dim
+compute-kernel-well-defined pairs = m∸n≤m initial-max-dim (length pairs)
 
--- WARNING: as stated, this is inconsistent with the current
--- `compute-kernel-dim = length` stub: `length` grows under `_++_` and
--- under `_∷_`, so both this lemma's base case and the local postulate
--- `kernel-dim-decreases-on-cons` below claim the opposite of what
--- `length` actually does. The name "kernel dimension" suggests the
--- intended semantics is closer to a null-space dimension that shrinks
--- as more constraint pairs accumulate (i.e. an actual rank-based
--- computation), not a raw pair count. Do not attempt to discharge
--- `kernel-dim-decreases-on-cons` against the current stub — it is not
--- provable as typed until `compute-kernel-dim` gets its real definition.
+-- Appending more constraint pairs can only shrink (or preserve) the
+-- kernel dimension. Follows from `_∸_` being antitone in its second
+-- argument together with `length pairs1 ≤ length (pairs1 ++ pairs2)`.
 kernel-monotone : ∀ (pairs1 pairs2 : List Pair) →
   compute-kernel-dim (pairs1 ++ pairs2) ≤ compute-kernel-dim pairs1
-kernel-monotone [] pairs2 = z≤n
-kernel-monotone (x ∷ pairs1) pairs2 =
-  let ih = kernel-monotone pairs1 pairs2
-  in ≤-trans (kernel-dim-decreases-on-cons x (pairs1 ++ pairs2)) ih
+kernel-monotone pairs1 pairs2 = ∸-monoʳ-≤ initial-max-dim len1≤len12
   where
-  postulate
-    kernel-dim-decreases-on-cons : ∀ (x : Pair) (xs : List Pair) →
-      compute-kernel-dim (x ∷ xs) ≤ compute-kernel-dim xs
+  len1≤len12 : length pairs1 ≤ length (pairs1 ++ pairs2)
+  len1≤len12 = subst (length pairs1 ≤_) (sym (length-++ pairs1))
+                      (m≤m+n (length pairs1) (length pairs2))
 
 ------------------------------------------------------------------------
 -- Section 8: Restricted Division and Generalized Inverses
@@ -358,8 +350,9 @@ record Fluctuation (source target : Vertex) : Set where
 -- Section 12: Discrete Hodge Structure and Bifiltration
 ------------------------------------------------------------------------
 
-postulate
-  initial-max-dim : ℕ
+-- `initial-max-dim` is defined in `CayleyDicksonQuiver.agda` (16, the
+-- sedenion ambient dimension) and is already in scope here via the
+-- unqualified import at the top of this file.
 
 record WeightFiltration (v : Vertex) : Set where
   constructor mkWeight
