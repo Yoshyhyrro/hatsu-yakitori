@@ -97,8 +97,10 @@ path-decreases-kernel (extend-path a p) =
 no-ascending-path : ∀ {v1 v2} (p : Path v1 v2) →
   Vertex.kernel-dim v1 ≤ Vertex.kernel-dim v2 → length-of-path p ≡ 0
 no-ascending-path empty-path _ = refl
-no-ascending-path (extend-path a p) le =
-  ⊥-elim (≤⇒≯ le (arrow-decreases-kernel a))
+no-ascending-path (extend-path a p) le
+  with path-decreases-kernel (extend-path a p)
+... | inj₁ lt = ⊥-elim (≤⇒≯ le lt)
+... | inj₂ eq = eq
 
 ------------------------------------------------------------------------
 -- Section 3: Zero Divisor Properties
