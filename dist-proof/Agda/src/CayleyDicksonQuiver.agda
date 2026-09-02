@@ -23,6 +23,18 @@ Pair = ℕ × ℕ
 initial-max-dim : ℕ
 initial-max-dim = 16
 
+-- Ambient dimension of an arbitrary level k of the Cayley-Dickson tower
+-- (k=0: reals, dim 1; k=1: complex, dim 2; ...; k=4: sedenions, dim 16),
+-- doubling at each level -- consistent with `dim-doubling` in
+-- `Properties.agda` (Section 6). `initial-max-dim` is the k=4 instance.
+ambient-dim : ℕ → ℕ
+ambient-dim k = 2 ^ k
+
+-- Sanity check: the fixed sedenion constant used throughout Sections 1-10
+-- is exactly the k=4 case of the general family above.
+initial-max-dim-is-ambient-4 : initial-max-dim ≡ ambient-dim 4
+initial-max-dim-is-ambient-4 = refl
+
 -- Constructive computation of kernel dimension: the ambient dimension
 -- minus one unit per accumulated constraint pair, floored at 0 by `_∸_`.
 -- This is a conservative stand-in for the true rank-based kernel
