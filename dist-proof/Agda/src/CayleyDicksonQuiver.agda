@@ -1,6 +1,6 @@
 module CayleyDicksonQuiver where
 
-open import Data.Nat using (ℕ; _<_; _≤_; _>_; _^_; zero; suc)
+open import Data.Nat using (ℕ; _<_; _≤_; _>_; _^_; _∸_; zero; suc)
 open import Data.Product using (_×_; _,_; Σ)
 open import Data.List using (List; []; _∷_; length)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
