@@ -16,9 +16,27 @@ data AssociatorType : Set where
 Pair : Set
 Pair = ℕ × ℕ
 
--- Constructive computation of kernel dimension
+-- Ambient dimension of the Cayley-Dickson level this quiver models (16
+-- for the sedenions). Kept as a named constant, rather than inlined,
+-- because `Properties.agda` (Section 12, `WeightFiltration`) also
+-- pins its bound to this same ambient dimension.
+initial-max-dim : ℕ
+initial-max-dim = 16
+
+-- Constructive computation of kernel dimension: the ambient dimension
+-- minus one unit per accumulated constraint pair, floored at 0 by `_∸_`.
+-- This is a conservative stand-in for the true rank-based kernel
+-- dimension (worst case: every pair is independent) -- `Pair` and
+-- `LinearMap` do not yet carry real vector-space structure (no field,
+-- no linear independence) to compute an exact rank, so "at most one
+-- dimension lost per pair" is the honest, computable proxy for now.
+-- The floor-at-0 behaviour of `_∸_` is also exactly what is needed for
+-- the nilpotency argument this quiver exists to support: once a path's
+-- length exceeds the ambient dimension, the endpoint's kernel dimension
+-- is pinned at 0, forcing any length-graded quantity indexed by that
+-- path (e.g. an epsilon^length(p) term) to vanish.
 compute-kernel-dim : List Pair → ℕ
-compute-kernel-dim pairs = length pairs
+compute-kernel-dim pairs = initial-max-dim ∸ length pairs
 
 -- Inductive relation for strictly decreasing kernel dimension
 data _StrictlyDecreases_ : ℕ → ℕ → Set where
