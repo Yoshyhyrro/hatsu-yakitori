@@ -13,7 +13,7 @@ open import Data.Nat
 -- Its type, `m ≤ n → ¬ (m > n)`, matches the call site in
 -- `no-ascending-path` below exactly.
 open import Data.Nat.Properties
-  using (≤-trans; <-trans; ≤⇒≯; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans;
+  using (≤-trans; ≤⇒≯; ≤-refl; <⇒≤; <-irrefl; ≤-<-trans;
          m∸n≤m; ∸-monoʳ-≤; m≤m+n)
 open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -77,14 +77,21 @@ path-length-bounded (extend-path a p) =
       dec = arrow-decreases-kernel a           -- kernel-dim vm < kernel-dim v1
   in ≤-trans (s≤s ih) dec
 
+-- The kernel dimension never increases along a path (weak form; used
+-- below to chain past the intermediate vertex reached by `a`).
+path-nonincreasing : ∀ {v1 v2} (p : Path v1 v2) →
+  Vertex.kernel-dim v2 ≤ Vertex.kernel-dim v1
+path-nonincreasing empty-path = ≤-refl
+path-nonincreasing (extend-path a p) =
+  ≤-trans (path-nonincreasing p) (<⇒≤ (arrow-decreases-kernel a))
+
 -- Kernel dimension decreases along a non-empty path;
 -- an empty path leaves it unchanged.
 path-decreases-kernel : ∀ {v1 v2} (p : Path v1 v2) →
   (Vertex.kernel-dim v2 < Vertex.kernel-dim v1) ⊎ (length-of-path p ≡ 0)
 path-decreases-kernel empty-path = inj₂ refl
-path-decreases-kernel (extend-path a p) with path-decreases-kernel p
-... | inj₁ lt = inj₁ (<-trans lt (arrow-decreases-kernel a))
-... | inj₂ _  = inj₁ (arrow-decreases-kernel a)
+path-decreases-kernel (extend-path a p) =
+  inj₁ (≤-<-trans (path-nonincreasing p) (arrow-decreases-kernel a))
 
 -- No path from a lower (or equal) to a higher kernel dimension.
 no-ascending-path : ∀ {v1 v2} (p : Path v1 v2) →
@@ -158,13 +165,6 @@ vertices-bounded q start = length-reachable-vertices-bounded-by-depth q start
 max-path-length : (q : Quiver) (start : Vertex) →
   Quiver-longest-path-length q ≤ Vertex.kernel-dim start
 max-path-length q start = {!!}
-
--- The kernel dimension never increases along a path.
-path-nonincreasing : ∀ {v1 v2} (p : Path v1 v2) →
-  Vertex.kernel-dim v2 ≤ Vertex.kernel-dim v1
-path-nonincreasing empty-path = ≤-refl
-path-nonincreasing (extend-path a p) =
-  ≤-trans (path-nonincreasing p) (<⇒≤ (arrow-decreases-kernel a))
 
 -- There are no non-trivial cycles: every path from a vertex to itself
 -- is empty.  A non-empty path would force a strict decrease of the
