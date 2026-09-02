@@ -280,11 +280,11 @@ restricted-division-unique {p} {v} (in-im u wit) =
       prop = HasGeneralizedInverse.property (zero-divisor-has-gen-inv p)
   in begin
     apply-map (compose Lx Lx⁺) v
-      ≡⟨ cong (apply-map (compose Lx Lx⁺)) wit ⟩
+      ≡⟨ cong (apply-map (compose Lx Lx⁺)) (sym wit) ⟩
     apply-map (compose Lx Lx⁺) (apply-map Lx u)
-      ≡⟨ cong (λ f → apply-map f u) (sym prop) ⟩
+      ≡⟨ cong (λ f → apply-map f u) prop ⟩
     apply-map Lx u
-      ≡⟨ sym wit ⟩
+      ≡⟨ wit ⟩
     v
   ∎
   where open ≡-Reasoning
