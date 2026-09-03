@@ -17,10 +17,9 @@ open import CayleyDicksonQuiver using (ambient-dim)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Nat using (ℕ)
 open import Data.Product using (_×_; _,_)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; subst)
 open import Relation.Nullary using (Dec; ¬_)
 
 ------------------------------------------------------------------------
@@ -57,10 +56,16 @@ Paired : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
   Fin (ambient-dim k) → Fin (ambient-dim k) → Set
 Paired f x y = f x ≡ y
 
--- Symmetric for free, given the involution law.
+-- Symmetric for free, given the involution law. Uses `subst` rather
+-- than pattern-matching `refl` directly: with `k` implicit/abstract,
+-- `Fin (ambient-dim k)`'s index (`2 ^ k`) never reduces to a concrete
+-- constructor form, so the unifier cannot accept a `refl` pattern here
+-- (it gets stuck trying to solve indices involving a bare variable
+-- `k`). `subst` sidesteps dependent pattern matching on the proof term
+-- entirely.
 paired-symm : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k))
   (inv : ∀ x → f (f x) ≡ x) {x y} → Paired f x y → Paired f y x
-paired-symm f inv {x} refl = inv x
+paired-symm f inv {x} {y} h = subst (λ z → f z ≡ x) h (inv x)
 
 OnShell : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
   Fin (ambient-dim k) → Set
