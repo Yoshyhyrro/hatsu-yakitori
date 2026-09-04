@@ -101,7 +101,7 @@ _ = go
 -- other) -- never a mix of exactly one fixed point. Unlike the k=0
 -- case, this genuinely needs the involution law.
 
-0≢1 : ¬ (zero ≡ suc zero)
+0≢1 : ¬ (_≡_ {A = Fin 2} zero (suc zero))
 0≢1 ()
 
 involution-Fin2-dichotomy :
