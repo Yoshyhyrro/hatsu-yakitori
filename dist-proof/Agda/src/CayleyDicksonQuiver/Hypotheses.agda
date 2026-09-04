@@ -66,7 +66,8 @@ Paired k f x y = f x ≡ y
 -- wasn't independently pinned down by something else. Explicit `k` is
 -- simply given by the caller, no inference needed.
 paired-symm : (k : ℕ) (f : Fin (ambient-dim k) → Fin (ambient-dim k))
-  (inv : ∀ x → f (f x) ≡ x) {x y} → Paired k f x y → Paired k f y x
+  (inv : ∀ x → f (f x) ≡ x) {x y : Fin (ambient-dim k)} →
+  Paired k f x y → Paired k f y x
 paired-symm k f inv {x} {y} h = subst (λ z → f z ≡ x) h (inv x)
 
 OnShell : (k : ℕ) (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
