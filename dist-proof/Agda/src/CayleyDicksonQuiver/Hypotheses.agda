@@ -17,8 +17,8 @@ open import CayleyDicksonQuiver using (ambient-dim)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Integer using (ℤ; -_; +_; -[1+_])
-open import Data.Integer.Properties using (neg-involutive)
+open import Data.Integer using (ℤ; -_; +_; -[1+_]; _+_; _*_)
+open import Data.Integer.Properties using (neg-involutive; *-comm)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
 open import Data.Product using (_×_; _,_; Σ; proj₁; proj₂)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -231,3 +231,35 @@ Fix-is-real-part (ℕsuc k) (p , q) eq =
   let a , p-fixed = Fix-is-real-part k p (cong proj₁ eq)
       q-zero      = neg-fixed-is-zeroCD k q (cong proj₂ eq)
   in a , cong₂ _,_ p-fixed (sym q-zero)
+
+------------------------------------------------------------------------
+-- Cayley-Dickson multiplication
+------------------------------------------------------------------------
+-- Standard doubling-construction product (Baez, "The Octonions", eq.
+-- 4.2): (a,b)(c,d) = (ac - d̄b, da + bc̄). Matches the conjugate already
+-- built above ((a,b)‾ = (ā,-b)), so `conj` and `mul` are not
+-- independently-invented -- they come from the same textbook
+-- construction. No associativity/alternativity claimed or needed here
+-- -- those genuinely fail starting at the sedenions (k=4), which is
+-- part of why zero divisors exist there at all.
+
+add : (k : ℕ) → CD k → CD k → CD k
+add ℕzero    x       y       = x + y
+add (ℕsuc k) (a , b) (c , d) = add k a c , add k b d
+
+mul : (k : ℕ) → CD k → CD k → CD k
+mul ℕzero    x       y       = x * y
+mul (ℕsuc k) (a , b) (c , d) =
+  add k (mul k a c) (neg k (mul k (conj k d) b)) ,
+  add k (mul k d a) (mul k b (conj k c))
+
+-- Sanity check: at k=1 (Gaussian-integer-style pairs, conj is identity
+-- on the ℤ coordinates), this specializes to ordinary complex
+-- multiplication (a,b)(c,d) = (ac - bd, ad + bc), up to reordering the
+-- two products that commutativity of ℤ multiplication accounts for.
+mul-k1-is-complex-mul : (a b c d : ℤ) →
+  mul 1 (a , b) (c , d) ≡ ((a * c) + (- (b * d)) , (a * d) + (b * c))
+mul-k1-is-complex-mul a b c d =
+  cong₂ _,_
+    (cong (λ z → (a * c) + (- z)) (*-comm d b))
+    (cong (λ z → z + (b * c)) (*-comm d a))
