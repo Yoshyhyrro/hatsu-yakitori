@@ -17,13 +17,13 @@ open import CayleyDicksonQuiver using (ambient-dim)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Integer using (ℤ; -_)
+open import Data.Integer using (ℤ; -_; +_; -[1+_])
 open import Data.Integer.Properties using (neg-involutive)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (_×_; _,_; Σ; proj₁; proj₂)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; refl; sym; trans; subst; cong₂)
+  using (_≡_; refl; sym; trans; subst; cong; cong₂)
 open import Relation.Nullary using (Dec; ¬_)
 
 ------------------------------------------------------------------------
@@ -169,3 +169,65 @@ neg-neg (ℕsuc k) (a , b) = cong₂ _,_ (neg-neg k a) (neg-neg k b)
 conj-conj : (k : ℕ) (x : CD k) → conj k (conj k x) ≡ x
 conj-conj ℕzero    x       = refl
 conj-conj (ℕsuc k) (a , b) = cong₂ _,_ (conj-conj k a) (neg-neg k b)
+
+------------------------------------------------------------------------
+-- Dimension of the +1 eigenspace (points 1/2, done with ordinary
+-- dimension instead of Hausdorff/fractal dimension)
+------------------------------------------------------------------------
+-- The +1 eigenspace of `conj` is an honest linear subspace, so its
+-- Hausdorff dimension just IS its ordinary dimension -- no fractal
+-- machinery needed or applicable. What follows shows it concretely:
+-- Fix(conj_k) is exactly the image of the "real axis" embedding
+-- `real-part`, i.e. in bijection with ℤ. Dimension exactly 1, for
+-- every k, proved rather than merely asserted.
+
+zeroCD : (k : ℕ) → CD k
+zeroCD ℕzero    = + ℕzero
+zeroCD (ℕsuc k) = zeroCD k , zeroCD k
+
+neg-zeroCD : (k : ℕ) → neg k (zeroCD k) ≡ zeroCD k
+neg-zeroCD ℕzero    = refl
+neg-zeroCD (ℕsuc k) = cong₂ _,_ (neg-zeroCD k) (neg-zeroCD k)
+
+-- Embed the "real axis" at level k: a, followed by all-zero elsewhere.
+real-part : (k : ℕ) → ℤ → CD k
+real-part ℕzero    a = a
+real-part (ℕsuc k) a = real-part k a , zeroCD k
+
+-- Every real-part embedding is a fixed point of conj.
+real-part-fixed : (k : ℕ) (a : ℤ) → conj k (real-part k a) ≡ real-part k a
+real-part-fixed ℕzero    a = refl
+real-part-fixed (ℕsuc k) a =
+  cong₂ _,_ (real-part-fixed k a) (neg-zeroCD k)
+
+-- real-part is injective (different reals embed to different points).
+real-part-injective : (k : ℕ) (a b : ℤ) →
+  real-part k a ≡ real-part k b → a ≡ b
+real-part-injective ℕzero    a b eq = eq
+real-part-injective (ℕsuc k) a b eq =
+  real-part-injective k a b (cong proj₁ eq)
+
+-- A fixed point of `neg` at any level must be zero (ℤ has no 2-torsion:
+-- `- c ≡ c` forces `c` and `- c` to share a constructor, and `+_` /
+-- `-[1+_]` never do except through `+ 0`).
+neg-fixed-is-zeroℤ : (c : ℤ) → - c ≡ c → c ≡ + ℕzero
+neg-fixed-is-zeroℤ (+ ℕzero)    eq = refl
+neg-fixed-is-zeroℤ (+ (ℕsuc n)) ()
+neg-fixed-is-zeroℤ (-[1+ n ])   ()
+
+neg-fixed-is-zeroCD : (k : ℕ) (x : CD k) → neg k x ≡ x → x ≡ zeroCD k
+neg-fixed-is-zeroCD ℕzero    x       eq = neg-fixed-is-zeroℤ x eq
+neg-fixed-is-zeroCD (ℕsuc k) (a , b) eq =
+  cong₂ _,_ (neg-fixed-is-zeroCD k a (cong proj₁ eq))
+            (neg-fixed-is-zeroCD k b (cong proj₂ eq))
+
+-- Every fixed point of conj comes from real-part: combined with
+-- real-part-fixed and real-part-injective above, Fix(conj_k) is
+-- exactly ℤ, not merely "at least" or "at most" ℤ-sized.
+Fix-is-real-part : (k : ℕ) (x : CD k) → conj k x ≡ x →
+  Σ ℤ (λ a → real-part k a ≡ x)
+Fix-is-real-part ℕzero    x       eq = x , refl
+Fix-is-real-part (ℕsuc k) (p , q) eq =
+  let a , p-fixed = Fix-is-real-part k p (cong proj₁ eq)
+      q-zero      = neg-fixed-is-zeroCD k q (cong proj₂ eq)
+  in a , cong₂ _,_ p-fixed (sym q-zero)
