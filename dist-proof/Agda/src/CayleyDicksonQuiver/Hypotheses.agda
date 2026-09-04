@@ -17,10 +17,13 @@ open import CayleyDicksonQuiver using (ambient-dim)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Nat using (ℕ)
+open import Data.Integer using (ℤ; -_)
+open import Data.Integer.Properties using (neg-involutive)
+open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
 open import Data.Product using (_×_; _,_)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; subst)
+open import Relation.Binary.PropositionalEquality
+  using (_≡_; refl; sym; trans; subst; cong₂)
 open import Relation.Nullary using (Dec; ¬_)
 
 ------------------------------------------------------------------------
@@ -114,3 +117,55 @@ involution-Fin2-dichotomy f inv
 ... | zero     | i0 | suc zero | i1 = inj₁ (refl , refl)
 ... | suc zero | i0 | zero     | i1 = inj₂ (refl , refl)
 ... | suc zero | i0 | suc zero | i1 = ⊥-elim (0≢1 (trans (sym i0) i1))
+
+------------------------------------------------------------------------
+-- Cayley-Dickson conjugation as a linear involution (point 4)
+------------------------------------------------------------------------
+-- D = P_H - P_H⊥, with D b = b, D a = -a, is concretely the standard
+-- Cayley-Dickson conjugate: (a, b) ↦ (conj a, -b) at each doubling
+-- step, fixing the "real" part and negating the "purely imaginary"
+-- part. Unlike points 1/2/3/5 of the projection-operator proposal
+-- (P_H, P_H⊥, {P_H,P_H⊥} = 0, Z = P_H P_H⊥ = 0 -- all true for ANY
+-- orthogonal decomposition of ANY Hilbert space, not specific to zero
+-- divisors), this one is not a relabeling: H⊥, the -1 eigenspace of
+-- conjugation, IS Moreno's space of "purely imaginary" elements, the
+-- actual raw material his zero-divisor constructions are built from.
+-- Points 1/2/3/5 fall out for free once `conj` exists (P_H = (I +
+-- conj)/2, P_H⊥ = (I - conj)/2, the standard projections-from-an-
+-- involution formulas) rather than needing to be built separately.
+--
+-- Point 7 (J, an anti-automorphism with the same stated linear
+-- properties) is most likely this same `conj`, viewed through its
+-- multiplicative role (conj (x y) = conj y * conj x) rather than its
+-- linear/eigenspace role -- not built here, since no multiplication
+-- exists yet (see below). Point 6 (U : H → H with "U a" for a
+-- presumably outside H) has a domain mismatch as literally stated; not
+-- attempted until that's resolved.
+--
+-- Coefficients are ℤ, matching `Sedenion := List Int` on the Lean side.
+-- Only the additive/conjugation structure is built here -- no
+-- multiplication, no inner product, no norm yet, so `D` cannot yet be
+-- checked self-adjoint or `P_H`/`P_H⊥` idempotent against a real inner
+-- product. This is deliberately the smallest next piece, not the whole
+-- vector-space model at once.
+
+CD : ℕ → Set
+CD ℕzero    = ℤ
+CD (ℕsuc k) = CD k × CD k
+
+neg : (k : ℕ) → CD k → CD k
+neg ℕzero    x       = - x
+neg (ℕsuc k) (a , b) = neg k a , neg k b
+
+conj : (k : ℕ) → CD k → CD k
+conj ℕzero    x       = x
+conj (ℕsuc k) (a , b) = conj k a , neg k b
+
+neg-neg : (k : ℕ) (x : CD k) → neg k (neg k x) ≡ x
+neg-neg ℕzero    x       = neg-involutive x
+neg-neg (ℕsuc k) (a , b) = cong₂ _,_ (neg-neg k a) (neg-neg k b)
+
+-- D² = I.
+conj-conj : (k : ℕ) (x : CD k) → conj k (conj k x) ≡ x
+conj-conj ℕzero    x       = refl
+conj-conj (ℕsuc k) (a , b) = cong₂ _,_ (conj-conj k a) (neg-neg k b)
