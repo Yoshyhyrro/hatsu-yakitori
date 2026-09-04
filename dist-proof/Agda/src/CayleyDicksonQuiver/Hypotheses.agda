@@ -17,6 +17,7 @@ open import CayleyDicksonQuiver using (ambient-dim)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Properties using (_≟_)
+open import Data.Nat using (ℕ)
 open import Data.Product using (_×_; _,_)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; subst)
@@ -52,41 +53,42 @@ _ = λ { zero                   → refl
 -- Gram matrix -- kept unbundled (no dependency on `Properties.agda`'s
 -- `ImageUniverse`) so this file stays independently checkable.
 
-Paired : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
+Paired : (k : ℕ) (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
   Fin (ambient-dim k) → Fin (ambient-dim k) → Set
-Paired f x y = f x ≡ y
+Paired k f x y = f x ≡ y
 
 -- Symmetric for free, given the involution law. Uses `subst` rather
--- than pattern-matching `refl` directly: with `k` implicit/abstract,
--- `Fin (ambient-dim k)`'s index (`2 ^ k`) never reduces to a concrete
--- constructor form, so the unifier cannot accept a `refl` pattern here
--- (it gets stuck trying to solve indices involving a bare variable
--- `k`). `subst` sidesteps dependent pattern matching on the proof term
--- entirely.
-paired-symm : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k))
-  (inv : ∀ x → f (f x) ≡ x) {x y} → Paired f x y → Paired f y x
-paired-symm f inv {x} {y} h = subst (λ z → f z ≡ x) h (inv x)
+-- than pattern-matching `refl` directly, and takes `k` explicitly
+-- rather than as an implicit `{k}`: `Fin (ambient-dim k)`'s index
+-- (`2 ^ k`) is opaque to the unifier (it cannot invert `ambient-dim` to
+-- recover `k` from a `Fin (ambient-dim k)` value alone), so leaving `k`
+-- implicit left it as a permanently-unresolved metavariable wherever it
+-- wasn't independently pinned down by something else. Explicit `k` is
+-- simply given by the caller, no inference needed.
+paired-symm : (k : ℕ) (f : Fin (ambient-dim k) → Fin (ambient-dim k))
+  (inv : ∀ x → f (f x) ≡ x) {x y} → Paired k f x y → Paired k f y x
+paired-symm k f inv {x} {y} h = subst (λ z → f z ≡ x) h (inv x)
 
-OnShell : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
+OnShell : (k : ℕ) (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
   Fin (ambient-dim k) → Set
-OnShell f x = Paired f x x
+OnShell k f x = Paired k f x x
 
-OffShell : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
+OffShell : (k : ℕ) (f : Fin (ambient-dim k) → Fin (ambient-dim k)) →
   Fin (ambient-dim k) → Set
-OffShell f x = ¬ OnShell f x
+OffShell k f x = ¬ OnShell k f x
 
 -- Every point is decidably one or the other.
-_ : ∀ {k} (f : Fin (ambient-dim k) → Fin (ambient-dim k))
-  (x : Fin (ambient-dim k)) → Dec (OnShell f x)
-_ = λ f x → f x ≟ x
+_ : (k : ℕ) (f : Fin (ambient-dim k) → Fin (ambient-dim k))
+  (x : Fin (ambient-dim k)) → Dec (OnShell k f x)
+_ = λ k f x → f x ≟ x
 
 -- Smallest case (k=0, ambient-dim 0 = 1): the one available point is
 -- forced on-shell, for ANY f -- there is nothing else to map it to, and
 -- the involution law is not even needed here.
-_ : (f : Fin (ambient-dim 0) → Fin (ambient-dim 0)) → OnShell f zero
+_ : (f : Fin (ambient-dim 0) → Fin (ambient-dim 0)) → OnShell 0 f zero
 _ = go
   where
-  go : (f : Fin (ambient-dim 0) → Fin (ambient-dim 0)) → OnShell f zero
+  go : (f : Fin (ambient-dim 0) → Fin (ambient-dim 0)) → OnShell 0 f zero
   go f with f zero
   ... | zero = refl
 
