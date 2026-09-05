@@ -341,3 +341,26 @@ mul-identityˡ (ℕsuc k) (c , d) =
            (add-identityʳ k c))
     (trans (cong₂ (add k) (mul-identityʳ k d) (mul-zeroˡ k (conj k c)))
            (add-identityʳ k d))
+
+------------------------------------------------------------------------
+-- Concrete zero-divisor smoke test at k=4 (sedenions)
+------------------------------------------------------------------------
+-- e_3 + e_10 is Moreno's standard example of a sedenion zero divisor
+-- (the same seed used in the accompanying Sage/NumPy experiment, and
+-- in the same family as the Lean side's `ex4_count` sedenion work).
+-- Numerically, a NumPy/SymPy rank-chain computation found this exact
+-- kernel witness (-e_5 + e_12) with a * witness = 0. Re-checking it
+-- here via `refl` is an independent verification: Agda re-derives the
+-- same fact purely from `mul`'s own reduction rules, not by trusting
+-- the external computation.
+
+seed-a : CD 4
+seed-a = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 1))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) ,
+          ((((+ 0) , (+ 0)) , ((+ 1) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+witness-x : CD 4
+witness-x = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (- (+ 1))) , ((+ 0) , (+ 0)))) ,
+             ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 1) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+_ : mul 4 seed-a witness-x ≡ zeroCD 4
+_ = refl
