@@ -17,8 +17,10 @@ open import CayleyDicksonQuiver using (ambient-dim)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Integer using (ℤ; -_; +_; -[1+_]; _+_; _*_)
-open import Data.Integer.Properties using (neg-involutive; *-comm)
+open import Data.Integer using (ℤ; -_; +_; -[1+_]; 1ℤ; _+_; _*_)
+open import Data.Integer.Properties
+  using (neg-involutive; *-comm; +-identityˡ; +-identityʳ;
+         *-identityˡ; *-identityʳ; *-zeroˡ; *-zeroʳ)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
 open import Data.Product using (_×_; _,_; Σ; proj₁; proj₂)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -263,3 +265,79 @@ mul-k1-is-complex-mul a b c d =
   cong₂ _,_
     (cong (λ z → (a * c) + (- z)) (*-comm d b))
     (cong (λ z → z + (b * c)) (*-comm d a))
+
+------------------------------------------------------------------------
+-- Multiplicative identity: real-part k 1ℤ acts as identity for mul
+------------------------------------------------------------------------
+-- Built from `mul-zeroˡ`/`mul-zeroʳ` (mutually recursive: each one's
+-- inductive step needs the other one at the *same* level, since mul's
+-- doubling formula always pairs up one left-multiplication and one
+-- right-multiplication), plus the additive-identity and conjugate-of-
+-- zero facts below.
+
+conj-zeroCD : (k : ℕ) → conj k (zeroCD k) ≡ zeroCD k
+conj-zeroCD ℕzero    = refl
+conj-zeroCD (ℕsuc k) = cong₂ _,_ (conj-zeroCD k) (neg-zeroCD k)
+
+add-identityˡ : (k : ℕ) (x : CD k) → add k (zeroCD k) x ≡ x
+add-identityˡ ℕzero    x       = +-identityˡ x
+add-identityˡ (ℕsuc k) (a , b) = cong₂ _,_ (add-identityˡ k a) (add-identityˡ k b)
+
+add-identityʳ : (k : ℕ) (x : CD k) → add k x (zeroCD k) ≡ x
+add-identityʳ ℕzero    x       = +-identityʳ x
+add-identityʳ (ℕsuc k) (a , b) = cong₂ _,_ (add-identityʳ k a) (add-identityʳ k b)
+
+mul-zeroˡ : (k : ℕ) (x : CD k) → mul k (zeroCD k) x ≡ zeroCD k
+mul-zeroʳ : (k : ℕ) (x : CD k) → mul k x (zeroCD k) ≡ zeroCD k
+
+mul-zeroˡ ℕzero    x       = *-zeroˡ x
+mul-zeroˡ (ℕsuc k) (c , d) =
+  cong₂ _,_
+    (trans (cong₂ (add k) (mul-zeroˡ k c)
+                           (trans (cong (neg k) (mul-zeroʳ k (conj k d)))
+                                  (neg-zeroCD k)))
+           (add-identityˡ k (zeroCD k)))
+    (trans (cong₂ (add k) (mul-zeroʳ k d) (mul-zeroˡ k (conj k c)))
+           (add-identityˡ k (zeroCD k)))
+
+mul-zeroʳ ℕzero    x       = *-zeroʳ x
+mul-zeroʳ (ℕsuc k) (a , b) =
+  cong₂ _,_
+    (trans (cong₂ (add k) (mul-zeroʳ k a)
+                           (trans (cong (neg k)
+                                        (trans (cong (λ z → mul k z b) (conj-zeroCD k))
+                                               (mul-zeroˡ k b)))
+                                  (neg-zeroCD k)))
+           (add-identityˡ k (zeroCD k)))
+    (trans (cong₂ (add k) (mul-zeroˡ k a)
+                           (trans (cong (mul k b) (conj-zeroCD k))
+                                  (mul-zeroʳ k b)))
+           (add-identityˡ k (zeroCD k)))
+
+-- Proved first: mul-identityˡ's inductive step needs this at the same
+-- level, but not vice versa.
+mul-identityʳ : (k : ℕ) (x : CD k) → mul k x (real-part k 1ℤ) ≡ x
+mul-identityʳ ℕzero    x       = *-identityʳ x
+mul-identityʳ (ℕsuc k) (a , b) =
+  cong₂ _,_
+    (trans (cong₂ (add k) (mul-identityʳ k a)
+                           (trans (cong (neg k)
+                                        (trans (cong (λ z → mul k z b) (conj-zeroCD k))
+                                               (mul-zeroˡ k b)))
+                                  (neg-zeroCD k)))
+           (add-identityʳ k a))
+    (trans (cong₂ (add k) (mul-zeroˡ k a)
+                           (trans (cong (mul k b) (real-part-fixed k 1ℤ))
+                                  (mul-identityʳ k b)))
+           (add-identityˡ k b))
+
+mul-identityˡ : (k : ℕ) (x : CD k) → mul k (real-part k 1ℤ) x ≡ x
+mul-identityˡ ℕzero    x       = *-identityˡ x
+mul-identityˡ (ℕsuc k) (c , d) =
+  cong₂ _,_
+    (trans (cong₂ (add k) (mul-identityˡ k c)
+                           (trans (cong (neg k) (mul-zeroʳ k (conj k d)))
+                                  (neg-zeroCD k)))
+           (add-identityʳ k c))
+    (trans (cong₂ (add k) (mul-identityʳ k d) (mul-zeroˡ k (conj k c)))
+           (add-identityʳ k d))
