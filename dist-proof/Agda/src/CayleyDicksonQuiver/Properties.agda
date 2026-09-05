@@ -2,7 +2,7 @@ module CayleyDicksonQuiver.Properties where
 
 open import CayleyDicksonQuiver
 open import Data.Empty using (⊥-elim)
-open import Data.Fin using (Fin)
+open import Data.Fin using (Fin; toℕ)
 open import Data.List using (List; []; _∷_; length; _++_)
 open import Data.List.Properties using (length-++)
 -- `z≤n` is a constructor of the `_≤_` datatype, defined in
@@ -201,13 +201,24 @@ equiv-congruence eq1 eq2 = {!!}
 -- Section 6: Cayley-Dickson Specific Lemmas
 ------------------------------------------------------------------------
 
-postulate
-  dim : ℕ → Set
-  dim-to-ℕ : ∀ {k} → dim k → ℕ
+-- `dim k` is the type of level-k coordinate indices, matching
+-- `ImageUniverse`'s carrier exactly (Section 11): `Fin (ambient-dim k)`,
+-- a type with precisely `ambient-dim k` elements.
+dim : ℕ → Set
+dim k = Fin (ambient-dim k)
 
-dim-doubling : ∀ (k : ℕ) (d-k : dim k) (d-sk : dim (suc k)) →
-  dim-to-ℕ d-sk ≡ 2 * dim-to-ℕ d-k
-dim-doubling k d-k d-sk = {!!}
+dim-to-ℕ : ∀ {k} → dim k → ℕ
+dim-to-ℕ = toℕ
+
+-- NOTE: the original postulated statement here related dim-to-ℕ of two
+-- arbitrary, unrelated elements d-k : dim k and d-sk : dim (suc k) --
+-- false in general (nothing ties a specific index at level k to a
+-- specific index at level k+1). The doubling law is a fact about the
+-- *cardinality* of the two types, not about arbitrary chosen elements
+-- of them; restated that way, it holds by refl directly from `_^_`'s
+-- own defining equation (`n ^ suc m = n * n ^ m`).
+dim-doubling : ∀ (k : ℕ) → ambient-dim (suc k) ≡ 2 * ambient-dim k
+dim-doubling k = refl
 
 zd-count-exponential : ∀ (k : ℕ) → {!!}
 zd-count-exponential k = {!!}
