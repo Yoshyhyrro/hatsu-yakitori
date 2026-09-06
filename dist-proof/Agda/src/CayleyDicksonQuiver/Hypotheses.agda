@@ -20,7 +20,7 @@ open import Data.Fin.Properties using (_≟_)
 open import Data.Integer using (ℤ; -_; +_; -[1+_]; 1ℤ; _+_; _*_)
 open import Data.Integer.Properties
   using (neg-involutive; *-comm; +-identityˡ; +-identityʳ;
-         *-identityˡ; *-identityʳ; *-zeroˡ; *-zeroʳ)
+         *-identityˡ; *-identityʳ; *-zeroˡ; *-zeroʳ; +-comm; +-assoc)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
 open import Data.Product using (_×_; _,_; Σ; proj₁; proj₂)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -364,3 +364,32 @@ witness-x = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (- (+ 1))) , ((+ 0
 
 _ : mul 4 seed-a witness-x ≡ zeroCD 4
 _ = refl
+
+------------------------------------------------------------------------
+-- Algebraic plumbing for future norm/bilinearity work
+------------------------------------------------------------------------
+-- The numerical experiment (Sage/NumPy, outside this file) found
+-- rank(L_a) = rank(L_a^2) for every tested seed -- i.e. Im(L_a) and
+-- ker(L_a) never overlap ("index <= 1"), which is exactly the
+-- structure `zero-divisor-has-gen-inv` needs. The natural route to a
+-- real proof runs through the norm N(x) = mul k x (conj k x) being
+-- always fixed by conjugation (i.e. "real"); reaching that theorem
+-- needs commutativity/associativity of `add` and `conj`/`neg`
+-- commuting, none of which exist yet. Built here as safe, mechanical
+-- groundwork (same pattern as `neg-neg`/`conj-conj`) -- NOT attempting
+-- the norm theorem itself yet, since it additionally needs
+-- bilinearity of `mul` over `neg`, a bigger, still-unverified piece.
+
+add-comm : (k : ℕ) (x y : CD k) → add k x y ≡ add k y x
+add-comm ℕzero    x       y       = +-comm x y
+add-comm (ℕsuc k) (a , b) (c , d) = cong₂ _,_ (add-comm k a c) (add-comm k b d)
+
+add-assoc : (k : ℕ) (x y z : CD k) →
+  add k (add k x y) z ≡ add k x (add k y z)
+add-assoc ℕzero    x       y       z       = +-assoc x y z
+add-assoc (ℕsuc k) (a , b) (c , d) (e , f) =
+  cong₂ _,_ (add-assoc k a c e) (add-assoc k b d f)
+
+conj-neg-comm : (k : ℕ) (x : CD k) → conj k (neg k x) ≡ neg k (conj k x)
+conj-neg-comm ℕzero    x       = refl
+conj-neg-comm (ℕsuc k) (a , b) = cong₂ _,_ (conj-neg-comm k a) refl
