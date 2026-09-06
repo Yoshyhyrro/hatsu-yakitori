@@ -43,6 +43,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_)
 
 record RawAlgebra : Set₁ where
   constructor mkRawAlgebra
+  infixl 7 _∙_
   field
     Carrier : Set
     _∙_     : Carrier → Carrier → Carrier  -- multiplication m
