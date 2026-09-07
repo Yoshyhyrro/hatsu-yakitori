@@ -35,6 +35,7 @@ open import CayleyDicksonQuiver.Hypotheses
 open import Data.Bool using (Bool; true; false; _xor_)
 open import Data.Integer using (ℤ; 1ℤ)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
+open import Data.Product using (_,_)
 open import Data.Vec using (Vec; []; _∷_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; sym; trans; cong; cong₂)
