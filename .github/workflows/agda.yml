@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Agda
-        uses: agda/agda-setup-action@001a4ede95950a55099ee7eaf583288606fb8272
+        uses: agda/agda-setup-action@1432104f3a87f85ab4a5327caee9601dc8364274c3880258a8bc67515b03de4b
         with:
           agda-version: '2.8.0.1'
           agda-stdlib-version: '2.3'
