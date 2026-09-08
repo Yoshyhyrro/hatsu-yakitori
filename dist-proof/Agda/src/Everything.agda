@@ -4,4 +4,4 @@ open import CayleyDicksonQuiver
 open import CayleyDicksonQuiver.HopfStructure
 --open import CayleyDicksonQuiver.Properties
 open import CayleyDicksonQuiver.Hypotheses
-open import CayleyDicksonQuiver.ObstructionFiber
+--open import CayleyDicksonQuiver.ObstructionFiber
