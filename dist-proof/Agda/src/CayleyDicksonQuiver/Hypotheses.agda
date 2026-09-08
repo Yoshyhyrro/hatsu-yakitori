@@ -20,7 +20,8 @@ open import Data.Fin.Properties using (_≟_)
 open import Data.Integer using (ℤ; -_; +_; -[1+_]; 1ℤ; _+_; _*_)
 open import Data.Integer.Properties
   using (neg-involutive; *-comm; +-identityˡ; +-identityʳ;
-         *-identityˡ; *-identityʳ; *-zeroˡ; *-zeroʳ; +-comm; +-assoc)
+         *-identityˡ; *-identityʳ; *-zeroˡ; *-zeroʳ; +-comm; +-assoc;
+         neg-distrib-+; neg-distribˡ-*; neg-distribʳ-*)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
 open import Data.Product using (_×_; _,_; Σ; proj₁; proj₂)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -393,3 +394,69 @@ add-assoc (ℕsuc k) (a , b) (c , d) (e , f) =
 conj-neg-comm : (k : ℕ) (x : CD k) → conj k (neg k x) ≡ neg k (conj k x)
 conj-neg-comm ℕzero    x       = refl
 conj-neg-comm (ℕsuc k) (a , b) = cong₂ _,_ (conj-neg-comm k a) refl
+
+------------------------------------------------------------------------
+-- Bilinearity of mul over neg
+------------------------------------------------------------------------
+-- The true bottleneck identified from two independent directions: the
+-- norm theorem (N(x) = x * conj x is real) and the Cayley-Dickson/Hopf
+-- closure theorem (product of two basis vectors is always +-or-minus a
+-- third) both got stuck on exactly this. Mutually recursive for the
+-- same structural reason as `mul-zeroˡ`/`mul-zeroʳ`: `mul`'s doubling
+-- formula always pairs up one left- and one right-multiplication at
+-- each step.
+
+neg-add-distrib : (k : ℕ) (x y : CD k) → neg k (add k x y) ≡ add k (neg k x) (neg k y)
+neg-add-distrib ℕzero    x       y       = neg-distrib-+ x y
+neg-add-distrib (ℕsuc k) (a , b) (c , d) =
+  cong₂ _,_ (neg-add-distrib k a c) (neg-add-distrib k b d)
+
+mul-neg-distribˡ : (k : ℕ) (x y : CD k) → mul k (neg k x) y ≡ neg k (mul k x y)
+mul-neg-distribʳ : (k : ℕ) (x y : CD k) → mul k x (neg k y) ≡ neg k (mul k x y)
+
+mul-neg-distribˡ ℕzero x y = sym (neg-distribˡ-* x y)
+mul-neg-distribˡ (ℕsuc k) (a , b) (c , d) = cong₂ _,_ P1≡P2 Q1≡Q2
+  where
+  P1≡P2 : add k (mul k (neg k a) c) (neg k (mul k (conj k d) (neg k b)))
+          ≡ neg k (add k (mul k a c) (neg k (mul k (conj k d) b)))
+  P1≡P2 =
+    trans (cong₂ (add k)
+                 (mul-neg-distribˡ k a c)
+                 (trans (cong (neg k) (mul-neg-distribʳ k (conj k d) b))
+                        (neg-neg k (mul k (conj k d) b))))
+          (sym (trans (neg-add-distrib k (mul k a c) (neg k (mul k (conj k d) b)))
+                      (cong (add k (neg k (mul k a c)))
+                            (neg-neg k (mul k (conj k d) b)))))
+
+  Q1≡Q2 : add k (mul k d (neg k a)) (mul k (neg k b) (conj k c))
+          ≡ neg k (add k (mul k d a) (mul k b (conj k c)))
+  Q1≡Q2 =
+    trans (cong₂ (add k)
+                 (mul-neg-distribʳ k d a)
+                 (mul-neg-distribˡ k b (conj k c)))
+          (sym (neg-add-distrib k (mul k d a) (mul k b (conj k c))))
+
+mul-neg-distribʳ ℕzero x y = sym (neg-distribʳ-* x y)
+mul-neg-distribʳ (ℕsuc k) (a , b) (c , d) = cong₂ _,_ R1≡R2 S1≡S2
+  where
+  R1≡R2 : add k (mul k a (neg k c)) (neg k (mul k (conj k (neg k d)) b))
+          ≡ neg k (add k (mul k a c) (neg k (mul k (conj k d) b)))
+  R1≡R2 =
+    trans (cong₂ (add k)
+                 (mul-neg-distribʳ k a c)
+                 (trans (cong (neg k)
+                              (trans (cong (λ z → mul k z b) (conj-neg-comm k d))
+                                     (mul-neg-distribˡ k (conj k d) b)))
+                        (neg-neg k (mul k (conj k d) b))))
+          (sym (trans (neg-add-distrib k (mul k a c) (neg k (mul k (conj k d) b)))
+                      (cong (add k (neg k (mul k a c)))
+                            (neg-neg k (mul k (conj k d) b)))))
+
+  S1≡S2 : add k (mul k (neg k d) a) (mul k b (conj k (neg k c)))
+          ≡ neg k (add k (mul k d a) (mul k b (conj k c)))
+  S1≡S2 =
+    trans (cong₂ (add k)
+                 (mul-neg-distribˡ k d a)
+                 (trans (cong (mul k b) (conj-neg-comm k c))
+                        (mul-neg-distribʳ k b (conj k c))))
+          (sym (neg-add-distrib k (mul k d a) (mul k b (conj k c))))
