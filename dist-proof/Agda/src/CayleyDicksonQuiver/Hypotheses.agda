@@ -21,7 +21,7 @@ open import Data.Integer using (ℤ; -_; +_; -[1+_]; 1ℤ; _+_; _*_)
 open import Data.Integer.Properties
   using (neg-involutive; *-comm; +-identityˡ; +-identityʳ;
          *-identityˡ; *-identityʳ; *-zeroˡ; *-zeroʳ; +-comm; +-assoc;
-         neg-distrib-+; neg-distribˡ-*; neg-distribʳ-*)
+         neg-distrib-+; neg-distribˡ-*; neg-distribʳ-*; +-inverseˡ)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
 open import Data.Product using (_×_; _,_; Σ; proj₁; proj₂)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -460,3 +460,60 @@ mul-neg-distribʳ (ℕsuc k) (a , b) (c , d) = cong₂ _,_ R1≡R2 S1≡S2
                  (trans (cong (mul k b) (conj-neg-comm k c))
                         (mul-neg-distribʳ k b (conj k c))))
           (sym (neg-add-distrib k (mul k d a) (mul k b (conj k c))))
+
+------------------------------------------------------------------------
+-- The norm N(x) = x * conj(x) is always real (fixed by conj)
+------------------------------------------------------------------------
+-- The payoff of the last several sections. `conj-add-distrib` and
+-- `add-neg-inverseˡ` are the two small remaining pieces; both are
+-- proved first, standalone.
+
+conj-add-distrib : (k : ℕ) (x y : CD k) → conj k (add k x y) ≡ add k (conj k x) (conj k y)
+conj-add-distrib ℕzero    x       y       = refl
+conj-add-distrib (ℕsuc k) (a , b) (c , d) =
+  cong₂ _,_ (conj-add-distrib k a c) (neg-add-distrib k b d)
+
+add-neg-inverseˡ : (k : ℕ) (x : CD k) → add k (neg k x) x ≡ zeroCD k
+add-neg-inverseˡ ℕzero    x       = +-inverseˡ x
+add-neg-inverseˡ (ℕsuc k) (a , b) =
+  cong₂ _,_ (add-neg-inverseˡ k a) (add-neg-inverseˡ k b)
+
+-- N(x) := mul k x (conj k x) is fixed by conj k, for every x.
+norm-real : (k : ℕ) (x : CD k) → conj k (mul k x (conj k x)) ≡ mul k x (conj k x)
+norm-real ℕzero x = refl
+norm-real (ℕsuc k) (a , b) =
+  subst (λ z → conj (ℕsuc k) z ≡ z) (sym M-eq) P-fixed
+  where
+  N_a  : CD k
+  N_a  = mul k a (conj k a)
+  N'_b : CD k
+  N'_b = mul k (conj k b) b
+
+  -- N'(b) = conj(b) * b is real too: it is literally N(conj k b),
+  -- since conj-conj turns conj(conj(b)) back into b -- an instance of
+  -- this very theorem at the smaller argument `conj k b`, not a
+  -- separate fact.
+  N'-real : conj k N'_b ≡ N'_b
+  N'-real = subst (λ z → conj k (mul k (conj k b) z) ≡ mul k (conj k b) z)
+                   (conj-conj k b) (norm-real k (conj k b))
+
+  First-eq : add k N_a (neg k (mul k (conj k (neg k b)) b)) ≡ add k N_a N'_b
+  First-eq = cong₂ (add k) refl
+    (trans (cong (neg k)
+                 (trans (cong (λ z → mul k z b) (conj-neg-comm k b))
+                        (mul-neg-distribˡ k (conj k b) b)))
+           (neg-neg k N'_b))
+
+  -- The "off-diagonal" second coordinate cancels entirely.
+  Second-eq : add k (mul k (neg k b) a) (mul k b (conj k (conj k a))) ≡ zeroCD k
+  Second-eq =
+    trans (cong₂ (add k) (mul-neg-distribˡ k b a) (cong (mul k b) (conj-conj k a)))
+          (add-neg-inverseˡ k (mul k b a))
+
+  M-eq : mul (ℕsuc k) (a , b) (conj (ℕsuc k) (a , b)) ≡ (add k N_a N'_b , zeroCD k)
+  M-eq = cong₂ _,_ First-eq Second-eq
+
+  P-fixed : conj (ℕsuc k) (add k N_a N'_b , zeroCD k) ≡ (add k N_a N'_b , zeroCD k)
+  P-fixed = cong₂ _,_
+    (trans (conj-add-distrib k N_a N'_b) (cong₂ (add k) (norm-real k a) N'-real))
+    (neg-zeroCD k)
