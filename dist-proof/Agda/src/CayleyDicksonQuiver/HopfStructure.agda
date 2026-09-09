@@ -12,23 +12,21 @@
 -- `IsWeakHopfAlgebra` instance. What it proves, fully and safely:
 --   - a basis-vector encoding `basisVec` of `CD k` by bit-addresses,
 --   - which basis vectors `conj` fixes vs. negates (`conj-basisVec`),
---   - the "same-half" and one "cross-half" quadrant multiplication
---     formulas for `mul` on basis vectors (`mul-basis-00`,
---     `mul-basis-01`).
--- What is still missing, identified precisely rather than guessed at:
--- the other two quadrant formulas (`mul-basis-10`, `mul-basis-11`) each
--- hit a `mul k _ (conj k (basisVec k _))` term that can only be
--- resolved into "+-or-minus the corresponding unconjugated product" via
--- bilinearity of `mul` over `neg` (`mul k (neg k x) y ≡ neg k (mul k x
--- y)` and the mirror law) -- which does not exist yet in
--- `CayleyDicksonQuiver.Hypotheses`. That bilinearity is the same
--- missing piece flagged earlier for the norm theorem (N(x) = x * conj
--- x is real); ℤ's own `neg-distribˡ-*` / `neg-distribʳ-*`
--- (`Data.Integer.Properties`) are the base case it would need. Once
--- built, `mul-basis-10`/`mul-basis-11` and then the full closure
--- theorem (product of two basis vectors is always +-or-minus a third)
--- and the `IsWeakHopfAlgebra` instance itself are the natural next
--- steps, in that order.
+--   - all four quadrant multiplication formulas for `mul` on basis
+--     vectors (`mul-basis-00`, `mul-basis-01`, `mul-basis-10`,
+--     `mul-basis-11`), each reducing `mul` at level k+1 to a single
+--     `mul`/`applySign` at level k. The last two needed bilinearity of
+--     `mul` over `neg` (`mul-neg-distribˡ`/`ʳ` in
+--     `CayleyDicksonQuiver.Hypotheses`), which now exists.
+-- What is still missing: the four quadrant formulas are stated
+-- separately, each still mentioning a level-k `mul` of two basis
+-- vectors rather than "+-or-minus a third basis vector" directly.
+-- Turning them into one closure theorem (product of two basis vectors
+-- at level k+1 is always +-or-minus a basis vector, for every k) needs
+-- an induction on k that packages all four cases via a case split on
+-- both arguments' leading bit -- mechanical given what is here, but not
+-- yet assembled. That closure theorem is the remaining prerequisite for
+-- the `IsWeakHopfAlgebra` instance itself.
 module CayleyDicksonQuiver.HopfStructure where
 
 open import CayleyDicksonQuiver.Hypotheses
@@ -119,9 +117,9 @@ conj-basisVec (ℕsuc k) (true ∷ bs) =
 -- `mul`'s doubling formula treats the top bit of each argument as
 -- choosing one of four "quadrants"; each quadrant reduces to a plain
 -- level-k `mul` via the zero/identity lemmas already in
--- `Hypotheses.agda`. Two of the four quadrants ("same half": 00 and
--- 11; "cross half": 01 and 10) are done below for 00 and 01 -- 11 and
--- 10 are the two blocked on `mul`-bilinearity, per the header note.
+-- `Hypotheses.agda`. `mul-basis-00` (below) and `mul-basis-01` (further
+-- down) are the "no bilinearity needed" ones; `mul-basis-11` and
+-- `mul-basis-10` (below that) needed `mul-neg-distribˡ/ʳ`.
 
 -- Same half, both false: reduces cleanly, no conjugate of a nonzero
 -- basis vector ever appears (the conjugate that does appear is
@@ -148,6 +146,84 @@ mul-basis-00 k p q = cong₂ _,_ first-eq second-eq
     trans (cong₂ (add k) (mul-zeroˡ k (basisVec k p))
                           (mul-zeroˡ k (conj k (basisVec k q))))
           (add-identityˡ k (zeroCD k))
+
+------------------------------------------------------------------------
+-- The remaining two quadrants, unlocked by mul-neg-distribˡ/ʳ
+------------------------------------------------------------------------
+
+flipSign : Sign → Sign
+flipSign plus  = minus
+flipSign minus = plus
+
+neg-applySign : (k : ℕ) (s : Sign) (x : CD k) →
+  neg k (applySign k s x) ≡ applySign k (flipSign s) x
+neg-applySign k plus  x = refl
+neg-applySign k minus x = neg-neg k x
+
+mul-applySign-left : (k : ℕ) (s : Sign) (x y : CD k) →
+  mul k (applySign k s x) y ≡ applySign k s (mul k x y)
+mul-applySign-left k plus  x y = refl
+mul-applySign-left k minus x y = mul-neg-distribˡ k x y
+
+mul-applySign-right : (k : ℕ) (s : Sign) (x y : CD k) →
+  mul k x (applySign k s y) ≡ applySign k s (mul k x y)
+mul-applySign-right k plus  x y = refl
+mul-applySign-right k minus x y = mul-neg-distribʳ k x y
+
+-- Same half, both true. The surviving product is
+-- `basisVec q * basisVec p` (swapped, as in mul-basis-01), carrying an
+-- extra sign flip from conjugating basisVec q.
+mul-basis-11 : (k : ℕ) (p q : Addr k) →
+  mul (ℕsuc k) (zeroCD k , basisVec k p) (zeroCD k , basisVec k q)
+    ≡ (applySign k (flipSign (signOf q)) (mul k (basisVec k q) (basisVec k p)) , zeroCD k)
+mul-basis-11 k p q = cong₂ _,_ first-eq second-eq
+  where
+  conjQ-step : mul k (conj k (basisVec k q)) (basisVec k p)
+               ≡ applySign k (signOf q) (mul k (basisVec k q) (basisVec k p))
+  conjQ-step =
+    trans (cong (λ z → mul k z (basisVec k p)) (conj-basisVec k q))
+          (mul-applySign-left k (signOf q) (basisVec k q) (basisVec k p))
+
+  first-eq : add k (mul k (zeroCD k) (zeroCD k))
+                    (neg k (mul k (conj k (basisVec k q)) (basisVec k p)))
+             ≡ applySign k (flipSign (signOf q)) (mul k (basisVec k q) (basisVec k p))
+  first-eq =
+    trans (cong₂ (add k) (mul-zeroˡ k (zeroCD k)) (cong (neg k) conjQ-step))
+          (trans (add-identityˡ k (neg k (applySign k (signOf q) (mul k (basisVec k q) (basisVec k p)))))
+                 (neg-applySign k (signOf q) (mul k (basisVec k q) (basisVec k p))))
+
+  second-eq : add k (mul k (basisVec k q) (zeroCD k))
+                     (mul k (basisVec k p) (conj k (zeroCD k)))
+              ≡ zeroCD k
+  second-eq =
+    trans (cong₂ (add k) (mul-zeroʳ k (basisVec k q))
+                          (trans (cong (mul k (basisVec k p)) (conj-zeroCD k))
+                                 (mul-zeroʳ k (basisVec k p))))
+          (add-identityˡ k (zeroCD k))
+
+-- Cross half, p true / q false.
+mul-basis-10 : (k : ℕ) (p q : Addr k) →
+  mul (ℕsuc k) (zeroCD k , basisVec k p) (basisVec k q , zeroCD k)
+    ≡ (zeroCD k , applySign k (signOf q) (mul k (basisVec k p) (basisVec k q)))
+mul-basis-10 k p q = cong₂ _,_ first-eq second-eq
+  where
+  first-eq : add k (mul k (zeroCD k) (basisVec k q))
+                    (neg k (mul k (conj k (zeroCD k)) (basisVec k p)))
+             ≡ zeroCD k
+  first-eq =
+    trans (cong₂ (add k) (mul-zeroˡ k (basisVec k q))
+                          (cong (neg k) (trans (cong (λ z → mul k z (basisVec k p)) (conj-zeroCD k))
+                                               (mul-zeroˡ k (basisVec k p)))))
+          (trans (cong (add k (zeroCD k)) (neg-zeroCD k)) (add-identityˡ k (zeroCD k)))
+
+  second-eq : add k (mul k (zeroCD k) (zeroCD k))
+                     (mul k (basisVec k p) (conj k (basisVec k q)))
+              ≡ applySign k (signOf q) (mul k (basisVec k p) (basisVec k q))
+  second-eq =
+    trans (cong₂ (add k) (mul-zeroˡ k (zeroCD k))
+                          (trans (cong (mul k (basisVec k p)) (conj-basisVec k q))
+                                 (mul-applySign-right k (signOf q) (basisVec k p) (basisVec k q))))
+          (add-identityˡ k (applySign k (signOf q) (mul k (basisVec k p) (basisVec k q))))
 
 -- Cross half, p false / q true: also reduces cleanly -- the conjugate
 -- that appears (`conj k (basisVec k q)`) is likewise multiplied
