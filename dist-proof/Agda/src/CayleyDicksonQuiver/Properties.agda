@@ -1,8 +1,10 @@
 module CayleyDicksonQuiver.Properties where
 
 open import CayleyDicksonQuiver
+open import CayleyDicksonQuiver.Hypotheses using (CD; mul; add; zeroCD)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; toℕ)
+open import Data.Integer using (+_)
 open import Data.List using (List; []; _∷_; length; _++_)
 open import Data.List.Properties using (length-++)
 -- `z≤n` is a constructor of the `_≤_` datatype, defined in
@@ -253,17 +255,49 @@ kernel-monotone pairs1 pairs2 = ∸-monoʳ-≤ initial-max-dim len1≤len12
 -- Section 8: Restricted Division and Generalized Inverses
 ------------------------------------------------------------------------
 
+-- The sedenion level is fixed throughout this file via `initial-max-dim`
+-- (= 16 = ambient-dim 4); `LinearMap` now operates on that same level's
+-- real Cayley-Dickson algebra, `CD 4`, rather than the placeholder `ℕ`.
 LinearMap : Set
-LinearMap = ℕ → ℕ
+LinearMap = CD 4 → CD 4
 
-apply-map : LinearMap → ℕ → ℕ
+apply-map : LinearMap → CD 4 → CD 4
 apply-map f x = f x
 
 compose : LinearMap → LinearMap → LinearMap
 compose f g x = f (g x)
 
-postulate
-  get-linear-map : Pair → LinearMap
+-- The k-th standard basis vector of `CD 4` (1 at position k, 0
+-- elsewhere), for the 16 in-range indices; out-of-range indices map to
+-- the zero vector. `Pair`'s two `ℕ` components are not otherwise
+-- constrained to be `< 16` anywhere yet (that gap is `zd-in-bounds`,
+-- Section 3, still open), so this needs to be total.
+seedVec : ℕ → CD 4
+seedVec 0  = (((((+ 1) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 1  = (((((+ 0) , (+ 1)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 2  = (((((+ 0) , (+ 0)) , ((+ 1) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 3  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 1))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 4  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 1) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 5  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 1)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 6  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 1) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 7  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 1)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 8  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 1) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 9  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 1)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 10 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 1) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 11 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 1))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 12 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 1) , (+ 0)) , ((+ 0) , (+ 0)))))
+seedVec 13 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 1)) , ((+ 0) , (+ 0)))))
+seedVec 14 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 1) , (+ 0)))))
+seedVec 15 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 1)))))
+seedVec (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc n)))))))))))))))) = zeroCD 4
+
+-- `get-linear-map (i , j)` is left multiplication by the seed `e_i +
+-- e_j` -- the concrete zero-divisor candidate `Pair` is meant to name.
+-- No longer a postulate: this is now a real, computable function, built
+-- from the actual Cayley-Dickson multiplication in
+-- `CayleyDicksonQuiver.Hypotheses`.
+get-linear-map : Pair → LinearMap
+get-linear-map (i , j) = mul 4 (add 4 (seedVec i) (seedVec j))
 
 record HasGeneralizedInverse (p : Pair) : Set where
   constructor mkGenInv
@@ -272,18 +306,22 @@ record HasGeneralizedInverse (p : Pair) : Set where
     property   : compose (get-linear-map p) (compose pseudo-inv (get-linear-map p))
                    ≡ get-linear-map p
 
--- Asserted as an axiom: the pseudo-inverse law is not definitionally
--- true, so it cannot be discharged by refl.
+-- Asserted as an axiom: existence of a pseudo-inverse needs a real
+-- rank-nullity / Fitting-decomposition argument for `mul 4`, which does
+-- not exist in Agda yet (only checked numerically, in Python, for
+-- specific seeds so far -- see the accompanying rank-chain
+-- experiments). Unlike before, this now postulates a fact about a
+-- genuine, concrete function rather than an entirely free one.
 postulate
   zero-divisor-has-gen-inv : ∀ (p : Pair) → HasGeneralizedInverse p
 
-record InImage (p : Pair) (v : ℕ) : Set where
+record InImage (p : Pair) (v : CD 4) : Set where
   constructor in-im
   field
-    preimage : ℕ
+    preimage : CD 4
     witness  : apply-map (get-linear-map p) preimage ≡ v
 
-restricted-division-unique : ∀ {p} {v : ℕ} →
+restricted-division-unique : ∀ {p} {v : CD 4} →
   InImage p v →
   apply-map (compose (get-linear-map p) (HasGeneralizedInverse.pseudo-inv (zero-divisor-has-gen-inv p))) v ≡ v
 restricted-division-unique {p} {v} (in-im u wit) =
@@ -354,8 +392,10 @@ record ImageUniverse (k : ℕ) (p : Pair) : Set where
     identity-law  : ∀ x → pseudo-inv-op (pseudo-inv-op x) ≡ x
 
 -- Fixed: removed the unused `target : Set` parameter which received a ℕ.
+-- w, v updated from ℕ to CD 4 to match LinearMap's real domain/codomain
+-- (Section 8).
 data IsSurjective (f : LinearMap) : Set where
-  surj-witness : ∀ (w : ℕ) → Σ ℕ (λ v → apply-map f v ≡ w) → IsSurjective f
+  surj-witness : ∀ (w : CD 4) → Σ (CD 4) (λ v → apply-map f v ≡ w) → IsSurjective f
 
 record Fluctuation (source target : Vertex) : Set where
   constructor mkFluctuation
