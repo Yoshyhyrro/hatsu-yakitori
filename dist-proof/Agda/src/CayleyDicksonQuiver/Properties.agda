@@ -2,6 +2,7 @@ module CayleyDicksonQuiver.Properties where
 
 open import CayleyDicksonQuiver
 open import CayleyDicksonQuiver.Hypotheses using (CD; mul; add; zeroCD)
+open import Data.Bool using (if_then_else_)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Integer using (+_)
@@ -11,7 +12,7 @@ open import Data.List.Properties using (length-++)
 -- `Data.Nat.Base` and re-exported by `Data.Nat`; it is not part of
 -- `Data.Nat.Properties`.
 open import Data.Nat
-  using (ℕ; _<_; _≤_; _≥_; _>_; _+_; _∸_; _*_; _^_; suc; zero; z≤n; s≤s)
+  using (ℕ; _<_; _≤_; _≥_; _>_; _+_; _∸_; _*_; _^_; _<ᵇ_; suc; zero; z≤n; s≤s)
 -- `≤⇒≯` replaces the non-existent `¬-<⇒≥` (not present in stdlib v2.1).
 -- Its type, `m ≤ n → ¬ (m > n)`, matches the call site in
 -- `no-ascending-path` below exactly.
@@ -267,29 +268,31 @@ apply-map f x = f x
 compose : LinearMap → LinearMap → LinearMap
 compose f g x = f (g x)
 
+-- Dynamically generates the n-th standard basis vector of `CD k` via
+-- binary recursive traversal: n < half goes into the left half of the
+-- doubling pair, otherwise the right half with the offset removed --
+-- exactly the same split `mul`/`add`/`conj` themselves use in
+-- `CayleyDicksonQuiver.Hypotheses`. Reuses `ambient-dim` (already
+-- defined in `CayleyDicksonQuiver`, computing the same 2^k) rather than
+-- redefining it under the name `dim`, which Section 6 already uses for
+-- something else (`dim : ℕ → Set`). Out-of-range n (>= ambient-dim k)
+-- falls through every remaining split into `zeroCD k`, since it always
+-- eventually lands on `basis zero (suc _)`.
+basis : (k : ℕ) → ℕ → CD k
+basis zero    zero    = + 1
+basis zero    (suc _) = + 0
+basis (suc k) n =
+  if n <ᵇ ambient-dim k
+    then (basis k n , zeroCD k)
+    else (zeroCD k , basis k (n ∸ ambient-dim k))
+
 -- The k-th standard basis vector of `CD 4` (1 at position k, 0
--- elsewhere), for the 16 in-range indices; out-of-range indices map to
--- the zero vector. `Pair`'s two `ℕ` components are not otherwise
+-- elsewhere). `Pair`'s two `ℕ` components are not otherwise
 -- constrained to be `< 16` anywhere yet (that gap is `zd-in-bounds`,
--- Section 3, still open), so this needs to be total.
+-- Section 3, still open); `basis` is already total, so `seedVec`
+-- inherits that for free.
 seedVec : ℕ → CD 4
-seedVec 0  = (((((+ 1) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 1  = (((((+ 0) , (+ 1)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 2  = (((((+ 0) , (+ 0)) , ((+ 1) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 3  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 1))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 4  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 1) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 5  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 1)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 6  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 1) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 7  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 1)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 8  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 1) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 9  = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 1)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 10 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 1) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 11 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 1))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 12 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 1) , (+ 0)) , ((+ 0) , (+ 0)))))
-seedVec 13 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 1)) , ((+ 0) , (+ 0)))))
-seedVec 14 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 1) , (+ 0)))))
-seedVec 15 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 1)))))
-seedVec (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc n)))))))))))))))) = zeroCD 4
+seedVec = basis 4
 
 -- `get-linear-map (i , j)` is left multiplication by the seed `e_i +
 -- e_j` -- the concrete zero-divisor candidate `Pair` is meant to name.
