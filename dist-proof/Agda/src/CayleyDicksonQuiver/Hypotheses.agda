@@ -21,7 +21,8 @@ open import Data.Integer using (ℤ; -_; +_; -[1+_]; 1ℤ; _+_; _*_)
 open import Data.Integer.Properties
   using (neg-involutive; *-comm; +-identityˡ; +-identityʳ;
          *-identityˡ; *-identityʳ; *-zeroˡ; *-zeroʳ; +-comm; +-assoc;
-         neg-distrib-+; neg-distribˡ-*; neg-distribʳ-*; +-inverseˡ)
+         neg-distrib-+; neg-distribˡ-*; neg-distribʳ-*; +-inverseˡ;
+         *-distribˡ-+; *-distribʳ-+)
 open import Data.Nat using (ℕ) renaming (zero to ℕzero; suc to ℕsuc)
 open import Data.Product using (_×_; _,_; Σ; proj₁; proj₂)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -517,3 +518,83 @@ norm-real (ℕsuc k) (a , b) =
   P-fixed = cong₂ _,_
     (trans (conj-add-distrib k N_a N'_b) (cong₂ (add k) (norm-real k a) N'-real))
     (neg-zeroCD k)
+
+------------------------------------------------------------------------
+-- mul is genuinely linear (distributes over add)
+------------------------------------------------------------------------
+-- `LinearMap` (CayleyDicksonQuiver.Properties, Section 8) has been
+-- called that since it was first written, but nothing ever checked
+-- that `mul k a` actually respects addition -- this is exactly that
+-- check, i.e. the "R-module homomorphism" property `a * (x + y) = a*x
+-- + a*y` (and the mirror law), the first stage of the
+-- ModuleStructureExperiment separation (rank-nullity and invertibility
+-- are later, harder stages, deliberately not attempted here).
+
+-- The "middle four exchange" law, needed repeatedly below to reconcile
+-- two different ways of grouping four summands. A direct consequence
+-- of add-comm/add-assoc, not itself an induction on k.
+add-interchange : (k : ℕ) (P Q R S : CD k) →
+  add k (add k P Q) (add k R S) ≡ add k (add k P R) (add k Q S)
+add-interchange k P Q R S =
+  trans (add-assoc k P Q (add k R S))
+        (trans (cong (add k P)
+                     (trans (sym (add-assoc k Q R S))
+                            (trans (cong (λ z → add k z S) (add-comm k Q R))
+                                   (add-assoc k R Q S))))
+               (sym (add-assoc k P R (add k Q S))))
+
+mul-add-distribˡ : (k : ℕ) (x y z : CD k) →
+  mul k x (add k y z) ≡ add k (mul k x y) (mul k x z)
+mul-add-distribʳ : (k : ℕ) (x y z : CD k) →
+  mul k (add k x y) z ≡ add k (mul k x z) (mul k y z)
+
+mul-add-distribˡ ℕzero x y z = *-distribˡ-+ x y z
+mul-add-distribˡ (ℕsuc k) (a , b) (c , d) (e , f) = cong₂ _,_ first-eq second-eq
+  where
+  first-eq : add k (mul k a (add k c e)) (neg k (mul k (conj k (add k d f)) b))
+             ≡ add k (add k (mul k a c) (neg k (mul k (conj k d) b)))
+                     (add k (mul k a e) (neg k (mul k (conj k f) b)))
+  first-eq =
+    trans (cong₂ (add k)
+                 (mul-add-distribˡ k a c e)
+                 (trans (cong (neg k)
+                              (trans (cong (λ z → mul k z b) (conj-add-distrib k d f))
+                                     (mul-add-distribʳ k (conj k d) (conj k f) b)))
+                        (neg-add-distrib k (mul k (conj k d) b) (mul k (conj k f) b))))
+          (add-interchange k (mul k a c) (mul k a e)
+                              (neg k (mul k (conj k d) b)) (neg k (mul k (conj k f) b)))
+
+  second-eq : add k (mul k (add k d f) a) (mul k b (conj k (add k c e)))
+              ≡ add k (add k (mul k d a) (mul k b (conj k c)))
+                      (add k (mul k f a) (mul k b (conj k e)))
+  second-eq =
+    trans (cong₂ (add k)
+                 (mul-add-distribʳ k d f a)
+                 (trans (cong (mul k b) (conj-add-distrib k c e))
+                        (mul-add-distribˡ k b (conj k c) (conj k e))))
+          (add-interchange k (mul k d a) (mul k f a)
+                              (mul k b (conj k c)) (mul k b (conj k e)))
+
+mul-add-distribʳ ℕzero x y z = *-distribʳ-+ z x y
+mul-add-distribʳ (ℕsuc k) (a , b) (c , d) (e , f) = cong₂ _,_ first-eq second-eq
+  where
+  first-eq : add k (mul k (add k a c) e) (neg k (mul k (conj k f) (add k b d)))
+             ≡ add k (add k (mul k a e) (neg k (mul k (conj k f) b)))
+                     (add k (mul k c e) (neg k (mul k (conj k f) d)))
+  first-eq =
+    trans (cong₂ (add k)
+                 (mul-add-distribʳ k a c e)
+                 (trans (cong (neg k) (mul-add-distribˡ k (conj k f) b d))
+                        (neg-add-distrib k (mul k (conj k f) b) (mul k (conj k f) d))))
+          (add-interchange k (mul k a e) (mul k c e)
+                              (neg k (mul k (conj k f) b)) (neg k (mul k (conj k f) d)))
+
+  second-eq : add k (mul k f (add k a c)) (mul k (add k b d) (conj k e))
+              ≡ add k (add k (mul k f a) (mul k b (conj k e)))
+                      (add k (mul k f c) (mul k d (conj k e)))
+  second-eq =
+    trans (cong₂ (add k)
+                 (mul-add-distribˡ k f a c)
+                 (mul-add-distribʳ k b d (conj k e)))
+          (add-interchange k (mul k f a) (mul k f c)
+                              (mul k b (conj k e)) (mul k d (conj k e)))
