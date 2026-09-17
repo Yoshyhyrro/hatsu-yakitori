@@ -812,3 +812,88 @@ left-alternative-holds-at-matched-pair :
   mul 4 (mul 4 matched-pair matched-pair) witness-x
     ≡ mul 4 matched-pair (mul 4 matched-pair witness-x)
 left-alternative-holds-at-matched-pair = refl
+
+------------------------------------------------------------------------
+-- Which zero divisors share a kernel? An elementary product-level signature
+------------------------------------------------------------------------
+-- A further experiment (exact kernel-intersection dimensions between every
+-- pair of the 42 zero-divisor seeds at k=4, via SymPy/Sage-style linear
+-- algebra outside Agda) found a strikingly clean structure: every pairwise
+-- intersection is either 0-dimensional or exactly 2-dimensional (never
+-- anything else), and the "positive intersection" graph on the 42 seeds is
+-- a disjoint union of exactly 14 triangles -- 3-seed groups that pairwise
+-- share a 2-dimensional piece of kernel, with zero overlap against every
+-- seed outside the group.
+--
+-- Writing c(i,j) = i xor (j-8) for a zero-divisor seed e_i+e_j (i in 1..7,
+-- j in 9..15), every triangle turns out to share one c value, and the 7
+-- possible c values (1..7) each own exactly 2 of the 14 triangles -- so
+-- something beyond c alone (whose 6 candidate seeds it groups) has to pick
+-- out which 3 of those 6 are the actual triangle. That extra bit is
+-- elementary and needs no rank or kernel at all: for i in 1..7, j in
+-- 9..15, `mul (basis e_i) (basis e_j)` always comes out to plus or minus
+-- `basis e_(8+c(i,j))`, and matching sign is exactly the missing
+-- condition -- checked against the real kernel-intersection data over all
+-- C(42,2) = 861 pairs, zero mismatches. `seed-a` (= e_3+e_10) sits in the
+-- triangle {e_3+e_10, e_5+e_12, e_6+e_15}: all three basis products below
+-- come out to the *same* element, `basis-e9`; the fourth check
+-- (`e_2+e_11`, same c = 1, opposite sign) lands on `neg 4 basis-e9`
+-- instead, and is numerically confirmed to share no kernel with `seed-a`.
+--
+-- This only documents the elementary product-level signature that
+-- correlates with the kernel-intersection structure -- it is not a proof
+-- that matching signature implies (or is implied by) actual kernel
+-- overlap in general, which would need real rank/kernel machinery this
+-- file does not have. What is fully checked below, with no gap at all, is
+-- one concrete instance of the overlap itself: `witness-x` -- already
+-- known to be in `seed-a`'s kernel -- turns out to also be killed by
+-- `e_6+e_15`, `seed-a`'s triangle-mate, by the same elementary `refl` this
+-- file has used throughout.
+
+basis-e2 : CD 4
+basis-e2 = (((((+ 0) , (+ 0)) , (((+ 1)) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e3 : CD 4
+basis-e3 = (((((+ 0) , (+ 0)) , ((+ 0) , ((+ 1)))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e5 : CD 4
+basis-e5 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , ((+ 1))) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e6 : CD 4
+basis-e6 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , (((+ 1)) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e10 : CD 4
+basis-e10 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , (((+ 1)) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e11 : CD 4
+basis-e11 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , ((+ 1)))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e12 : CD 4
+basis-e12 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , ((((+ 1)) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e15 : CD 4
+basis-e15 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , ((+ 1))))))
+
+-- sanity: seed-a really is basis-e3 + basis-e10, as advertised above.
+seed-a-decomposes : add 4 basis-e3 basis-e10 ≡ seed-a
+seed-a-decomposes = refl
+
+-- the three "triangle" products all agree...
+triangle-product-3-10 : mul 4 basis-e3 basis-e10 ≡ basis-e9
+triangle-product-3-10 = refl
+
+triangle-product-5-12 : mul 4 basis-e5 basis-e12 ≡ basis-e9
+triangle-product-5-12 = refl
+
+triangle-product-6-15 : mul 4 basis-e6 basis-e15 ≡ basis-e9
+triangle-product-6-15 = refl
+
+-- ...while the same-c, opposite-sign seed lands elsewhere.
+other-triangle-product-2-11 : mul 4 basis-e2 basis-e11 ≡ neg 4 basis-e9
+other-triangle-product-2-11 = refl
+
+-- witness-x, already known to solve mul 4 seed-a witness-x ≡ zeroCD 4, is
+-- also annihilated by seed-a's triangle-mate e_6+e_15.
+shared-kernel-witness :
+  mul 4 (add 4 basis-e6 basis-e15) witness-x ≡ zeroCD 4
+shared-kernel-witness = refl
