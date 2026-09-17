@@ -598,3 +598,302 @@ mul-add-distribʳ (ℕsuc k) (a , b) (c , d) (e , f) = cong₂ _,_ first-eq seco
                  (mul-add-distribʳ k b d (conj k e)))
           (add-interchange k (mul k f a) (mul k f c)
                               (mul k b (conj k e)) (mul k d (conj k e)))
+
+------------------------------------------------------------------------
+-- Does N(a) = 0 detect zero divisors? A concrete refutation
+------------------------------------------------------------------------
+-- With `norm-real` in hand, the natural next question -- and the one
+-- the accompanying Sage/Python experiment
+-- (`CayleyDicksonTropicalSkeleton.zero_divisor_test`, which reports
+-- `norm` and `nullity` side by side for every seed) invites directly --
+-- is whether N detects zero divisors: N(a) = 0 exactly when
+-- `get-linear-map a` (Properties.agda, Section 8) fails to be full
+-- rank. Re-running that computation (ported to plain SymPy here, since
+-- Sage is unavailable in this environment; the algebra layer -- cd_mul,
+-- cd_conj, get_linear_map -- is copied verbatim, so the numbers are
+-- directly comparable) over all C(16,2) = 120 seeds e_i + e_j at k=4
+-- gives a clean negative answer:
+--
+--     zero-divisor seeds (rank(L_a) = 12 < 16): 42, all with nullity 4
+--     ...of which N(a) = 0:                      0
+--     ...of which N(a) = 2:                     42
+--
+-- and the 78 non-zero-divisor seeds also all have N(a) = 2 -- the norm
+-- is constant across the whole family and carries no information about
+-- zero-divisor status. `seed-a` (= e_3 + e_10, the smoke test above) is
+-- one of the 42; N(seed-a) = 2, confirmed below by Agda's own
+-- reduction, not by trusting the external computation.
+--
+-- This is not a quirk of this one family, it is the standard fact about
+-- the Cayley-Dickson tower. N(x) = x * conj(x) stays a positive-definite
+-- sum-of-squares form -- anisotropic, N(x) = 0 only at x = 0 -- at every
+-- level, including the sedenions (checked separately, outside Agda,
+-- against the literal sum of squares of the flat integer coefficients:
+-- 0 mismatches over 200 random samples spanning k = 0..5). What breaks
+-- at the sedenions (k=4) is multiplicativity, N(x*y) = N(x)*N(y), and
+-- with it the classical inverse formula: x * (conj(x) * y) = N(x) * y
+-- holds whenever `mul` is alternative (true through the octonions,
+-- k <= 3 -- checked: 0/20 failures at k=2 and k=3), which is exactly
+-- what would turn "N(a) nonzero" into "a invertible". At k=4 it no
+-- longer holds in general (20/20 failures on random samples at k=4,
+-- same at k=5), and it fails precisely at `seed-a`: applying `conj(seed-a)`
+-- and then `seed-a` to `witness-x` collapses straight back to zero
+-- (`non-alternative-witness` below) instead of returning
+-- `N(seed-a) * witness-x`, a nonzero multiple of `witness-x`. So
+-- `norm-real` alone was never going to reach `zero-divisor-has-gen-inv`
+-- -- the missing ingredient is this alternativity-type identity, not
+-- realness of the norm, and that identity is false exactly where it
+-- would need to hold. (This also lines up with
+-- `CarabinerHypotheses.lagda.md`'s own H2 note: Moreno's actual
+-- zero-divisor invariant is the eigenvalue structure of L_a restricted
+-- to Spec(a), not the norm -- a genuinely different, and still not
+-- formalizable here, shape of argument.)
+--
+-- `N(a) = 0 <=> rank(L_a) < 2^k` is therefore false in general, and the
+-- counterexample lives in the "<=" direction (rank-deficient does not
+-- imply isotropic), not the trivial "=>" one. What is recorded below
+-- instead, fully proven rather than merely observed in Python, is that
+-- concrete refutation: `seed-a` is a genuine zero divisor (nonzero
+-- kernel witness `witness-x`, not just "rank looks low"), yet its norm
+-- is provably not the zero element -- the correct, honest fact to
+-- "solidify" here in place of the false biconditional, postulate-free
+-- and hole-free like the rest of this file.
+
+N : (k : ℕ) → CD k → CD k
+N k x = mul k x (conj k x)
+
+-- N(seed-a) reduces to the real integer 2, matching the SymPy port.
+N-seed-a : N 4 seed-a ≡ real-part 4 (+ 2)
+N-seed-a = refl
+
+-- `real-part k 0` and `zeroCD k` are the same element: base case, both
+-- reduce to `+ 0`; step case, the first coordinate follows the
+-- induction hypothesis and the second coordinate is `zeroCD k` on both
+-- sides already.
+real-part-zero-is-zeroCD : (k : ℕ) → real-part k (+ 0) ≡ zeroCD k
+real-part-zero-is-zeroCD ℕzero    = refl
+real-part-zero-is-zeroCD (ℕsuc k) =
+  cong (λ z → z , zeroCD k) (real-part-zero-is-zeroCD k)
+
+two≢zero : ¬ (_≡_ {A = ℤ} (+ 2) (+ 0))
+two≢zero ()
+
+-- The inequality made explicit rather than left to eyeballing the `2`
+-- above: chase `N-seed-a` back through `real-part-injective` (already
+-- on file, from the Fix(conj) = ℤ development) to the underlying ℤ fact
+-- 2 ≠ 0.
+N-seed-a≢zero : ¬ (N 4 seed-a ≡ zeroCD 4)
+N-seed-a≢zero eq =
+  two≢zero (real-part-injective 4 (+ 2) (+ 0)
+    (trans eq (sym (real-part-zero-is-zeroCD 4))))
+
+-- `witness-x` is genuinely nonzero, not just "looks nonzero": isolate
+-- the one leaf coordinate where it differs from `zeroCD 4` (its
+-- `-e_5` coefficient, per the header comment on `witness-x` above) and
+-- show that single ℤ value cannot be 0.
+witness-x-e5-coord : CD 4 → ℤ
+witness-x-e5-coord x = proj₂ (proj₁ (proj₂ (proj₁ x)))
+
+neg1≢0 : ¬ (_≡_ {A = ℤ} (- (+ 1)) (+ 0))
+neg1≢0 ()
+
+witness-x≢zeroCD4 : ¬ (witness-x ≡ zeroCD 4)
+witness-x≢zeroCD4 eq = neg1≢0 (cong witness-x-e5-coord eq)
+
+-- The mechanical witness of exactly where the classical
+-- "N(a) ≠ 0 ⇒ a invertible" argument fails for `seed-a`: routing
+-- `witness-x` through `conj(seed-a)` and then `seed-a` collapses it to
+-- zero, rather than to N(seed-a) * witness-x as it would under an
+-- alternative product.
+non-alternative-witness :
+  mul 4 seed-a (mul 4 (conj 4 seed-a) witness-x) ≡ zeroCD 4
+non-alternative-witness = refl
+
+-- Packaged as one fact: `seed-a` is a zero divisor via a genuinely
+-- nonzero kernel witness, yet its norm is genuinely nonzero. This is
+-- the fully-formal version of the numeric finding above -- the SymPy
+-- experiment said the same thing about all 42 zero-divisor seeds at
+-- k=4, `seed-a` among them; this is that finding, Agda-checked.
+zero-divisor-need-not-be-isotropic :
+  ¬ (witness-x ≡ zeroCD 4)
+    × mul 4 seed-a witness-x ≡ zeroCD 4
+    × ¬ (N 4 seed-a ≡ zeroCD 4)
+zero-divisor-need-not-be-isotropic =
+  witness-x≢zeroCD4 , refl , N-seed-a≢zero
+
+------------------------------------------------------------------------
+-- Where exactly does associativity break? [a,a,x] at seed-a vs. a safe pair
+------------------------------------------------------------------------
+-- The "defect operator" experiment (D_LL, D_LL_rev, D_RR, D_RR_rev =
+-- L_conj(a) L_a - N(a) I, and its three variants) run over all 120 pair
+-- seeds e_i+e_j at k=4 gives an exact dichotomy no norm-based test above
+-- ever managed: every one of the four defects has rank exactly 0 on the
+-- 78 invertible seeds -- the classical composition-algebra identity
+-- a*(conj(a)*x) = N(a)*x holds exactly, for every x, not just on average
+-- -- and rank exactly 8 = 2 * nullity on the 42 genuine zero divisors,
+-- `seed-a` among them, with no exceptions on either side. The 42 are
+-- themselves a complete closed-form set: writing the 16 basis indices as
+-- two blocks {0..7} and {8..15}, e_i+e_j (i<j) is a zero divisor iff
+-- i in 1..7, j in 9..15, and j != i+8 -- the 7 "matched" cross pairs
+-- e_i+e_(i+8) are the only cross pairs that stay safe, and nothing
+-- confined to one block, or touching e_0 or e_8, is ever a zero divisor.
+--
+-- For a purely imaginary a (conj a = neg a, i.e. trace zero -- every pair
+-- seed e_i+e_j with i,j != 0 qualifies), N(a) = a*conj(a) = a*(neg a) =
+-- neg(a*a) [`mul-neg-distribʳ`], so a*a is always exactly -N(a): a plain
+-- consequence of bilinearity that has nothing to do with associativity
+-- (`purely-imaginary-square` below, general in k). `seed-a` squares to
+-- -N(seed-a) = real-part 4 (-2), confirmed by refl.
+--
+-- What the defect operators are actually measuring, once a*a = -N(a) is
+-- known, is whether (a*a)*x = a*(a*x) -- the left-alternative law. That
+-- is exactly where `seed-a` and `witness-x` part ways: a*(a*witness-x)
+-- collapses to zero, but (a*a)*witness-x does not (it computes to
+-- -2 * witness-x, since a*a = -2), so the two sides genuinely disagree.
+-- `left-alternative-fails-at-seed-a` below is a complete, refl-checked
+-- proof of that disagreement -- no rank/nullity machinery needed, and no
+-- postulate either. This is the honest, mechanical version of "the norm
+-- test failed": a concrete demonstration of the actual failure.
+--
+-- For contrast, the matched cross pair e_1+e_9 -- one of the 7 seeds the
+-- scan identifies as safe -- stays left-alternative at `witness-x`
+-- (`left-alternative-holds-at-matched-pair` below). One pair at one
+-- vector is not a proof that all 78 safe seeds are alternative for every
+-- x (that general theorem is not attempted here), just a second concrete
+-- data point confirming the dichotomy runs the direction the scan says.
+
+purely-imaginary-square :
+  (k : ℕ) (a : CD k) → conj k a ≡ neg k a → N k a ≡ neg k (mul k a a)
+purely-imaginary-square k a a-pure =
+  trans (cong (mul k a) a-pure) (mul-neg-distribʳ k a a)
+
+seed-a-pure : conj 4 seed-a ≡ neg 4 seed-a
+seed-a-pure = refl
+
+seed-a-squared : mul 4 seed-a seed-a ≡ neg 4 (real-part 4 (+ 2))
+seed-a-squared =
+  trans (trans (sym (neg-neg 4 (mul 4 seed-a seed-a)))
+               (cong (neg 4) (sym (purely-imaginary-square 4 seed-a seed-a-pure))))
+        (cong (neg 4) N-seed-a)
+
+-- a*(a*witness-x) collapses to zero...
+a-ax-is-zero : mul 4 seed-a (mul 4 seed-a witness-x) ≡ zeroCD 4
+a-ax-is-zero = refl
+
+-- ...but (a*a)*witness-x does not: its e_5 coordinate is 2, not 0 (reusing
+-- the same leaf-projection trick, and the same ℤ fact `two≢zero`, as the
+-- norm refutation above).
+aa-x-e5-coord : witness-x-e5-coord (mul 4 (mul 4 seed-a seed-a) witness-x) ≡ + 2
+aa-x-e5-coord = refl
+
+aa-x-not-zero : ¬ (mul 4 (mul 4 seed-a seed-a) witness-x ≡ zeroCD 4)
+aa-x-not-zero eq = two≢zero (trans (sym aa-x-e5-coord) (cong witness-x-e5-coord eq))
+
+-- So the two sides of the left-alternative law genuinely disagree at
+-- (seed-a, witness-x): this is where the algebra actually stops being
+-- alternative, stated with no reference to rank or nullity at all.
+left-alternative-fails-at-seed-a :
+  ¬ (mul 4 (mul 4 seed-a seed-a) witness-x ≡ mul 4 seed-a (mul 4 seed-a witness-x))
+left-alternative-fails-at-seed-a eq = aa-x-not-zero (trans eq a-ax-is-zero)
+
+-- The contrasting safe pair: e_1 and e_9 (basis vectors, written out as
+-- literals the same way `seed-a`/`witness-x` are above), combined into
+-- `matched-pair` via the already-proven `add`.
+basis-e1 : CD 4
+basis-e1 = (((((+ 0) , ((+ 1))) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e9 : CD 4
+basis-e9 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , ((+ 1))) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+matched-pair : CD 4
+matched-pair = add 4 basis-e1 basis-e9
+
+left-alternative-holds-at-matched-pair :
+  mul 4 (mul 4 matched-pair matched-pair) witness-x
+    ≡ mul 4 matched-pair (mul 4 matched-pair witness-x)
+left-alternative-holds-at-matched-pair = refl
+
+------------------------------------------------------------------------
+-- Which zero divisors share a kernel? An elementary product-level signature
+------------------------------------------------------------------------
+-- A further experiment (exact kernel-intersection dimensions between every
+-- pair of the 42 zero-divisor seeds at k=4, via SymPy/Sage-style linear
+-- algebra outside Agda) found a strikingly clean structure: every pairwise
+-- intersection is either 0-dimensional or exactly 2-dimensional (never
+-- anything else), and the "positive intersection" graph on the 42 seeds is
+-- a disjoint union of exactly 14 triangles -- 3-seed groups that pairwise
+-- share a 2-dimensional piece of kernel, with zero overlap against every
+-- seed outside the group.
+--
+-- Writing c(i,j) = i xor (j-8) for a zero-divisor seed e_i+e_j (i in 1..7,
+-- j in 9..15), every triangle turns out to share one c value, and the 7
+-- possible c values (1..7) each own exactly 2 of the 14 triangles -- so
+-- something beyond c alone (whose 6 candidate seeds it groups) has to pick
+-- out which 3 of those 6 are the actual triangle. That extra bit is
+-- elementary and needs no rank or kernel at all: for i in 1..7, j in
+-- 9..15, `mul (basis e_i) (basis e_j)` always comes out to plus or minus
+-- `basis e_(8+c(i,j))`, and matching sign is exactly the missing
+-- condition -- checked against the real kernel-intersection data over all
+-- C(42,2) = 861 pairs, zero mismatches. `seed-a` (= e_3+e_10) sits in the
+-- triangle {e_3+e_10, e_5+e_12, e_6+e_15}: all three basis products below
+-- come out to the *same* element, `basis-e9`; the fourth check
+-- (`e_2+e_11`, same c = 1, opposite sign) lands on `neg 4 basis-e9`
+-- instead, and is numerically confirmed to share no kernel with `seed-a`.
+--
+-- This only documents the elementary product-level signature that
+-- correlates with the kernel-intersection structure -- it is not a proof
+-- that matching signature implies (or is implied by) actual kernel
+-- overlap in general, which would need real rank/kernel machinery this
+-- file does not have. What is fully checked below, with no gap at all, is
+-- one concrete instance of the overlap itself: `witness-x` -- already
+-- known to be in `seed-a`'s kernel -- turns out to also be killed by
+-- `e_6+e_15`, `seed-a`'s triangle-mate, by the same elementary `refl` this
+-- file has used throughout.
+
+basis-e2 : CD 4
+basis-e2 = (((((+ 0) , (+ 0)) , (((+ 1)) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e3 : CD 4
+basis-e3 = (((((+ 0) , (+ 0)) , ((+ 0) , ((+ 1)))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e5 : CD 4
+basis-e5 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , ((+ 1))) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e6 : CD 4
+basis-e6 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , (((+ 1)) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e10 : CD 4
+basis-e10 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , (((+ 1)) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e11 : CD 4
+basis-e11 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , ((+ 1)))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e12 : CD 4
+basis-e12 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , ((((+ 1)) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e15 : CD 4
+basis-e15 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) , ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , ((+ 1))))))
+
+-- sanity: seed-a really is basis-e3 + basis-e10, as advertised above.
+seed-a-decomposes : add 4 basis-e3 basis-e10 ≡ seed-a
+seed-a-decomposes = refl
+
+-- the three "triangle" products all agree...
+triangle-product-3-10 : mul 4 basis-e3 basis-e10 ≡ basis-e9
+triangle-product-3-10 = refl
+
+triangle-product-5-12 : mul 4 basis-e5 basis-e12 ≡ basis-e9
+triangle-product-5-12 = refl
+
+triangle-product-6-15 : mul 4 basis-e6 basis-e15 ≡ basis-e9
+triangle-product-6-15 = refl
+
+-- ...while the same-c, opposite-sign seed lands elsewhere.
+other-triangle-product-2-11 : mul 4 basis-e2 basis-e11 ≡ neg 4 basis-e9
+other-triangle-product-2-11 = refl
+
+-- witness-x, already known to solve mul 4 seed-a witness-x ≡ zeroCD 4, is
+-- also annihilated by seed-a's triangle-mate e_6+e_15.
+shared-kernel-witness :
+  mul 4 (add 4 basis-e6 basis-e15) witness-x ≡ zeroCD 4
+shared-kernel-witness = refl
