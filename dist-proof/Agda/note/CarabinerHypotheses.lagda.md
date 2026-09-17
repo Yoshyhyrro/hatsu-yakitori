@@ -137,6 +137,77 @@ on-shell) or the swap (both points off-shell, paired with each other) --
 worth stating and checking both are actually realizable before assuming
 either.
 
+## H5 — Zero divisors are an associator phenomenon, not a norm phenomenon (k=4, resolved and promoted)
+
+The obvious next hypothesis after `norm-real` -- `N(a) = 0 <=>
+rank(L_a) < 2^k` -- turned out to be false, and the counterexample is
+`seed-a` itself: `N(seed-a) = 2`, confirmed by Agda's own reduction,
+not guesswork. A defect-operator experiment (`D_LL_rev = L_a L_conj(a)
+- N(a) I`, run in SymPy -- Sage is unavailable here -- over all 120
+pair seeds `e_i+e_j` at k=4) found the real dichotomy: the
+composition-algebra identity `a*(conj(a)*x) = N(a)*x` holds *exactly*
+(defect rank 0) on all 78 invertible seeds, and fails on all 42
+genuine zero divisors with defect rank *exactly* 8 = 2*nullity, no
+exceptions either way. For purely imaginary `a` (`conj a = neg a`),
+that identity reduces (using `a*a = -N(a)`, itself just
+`mul-neg-distribʳ` applied to `conj a = neg a` -- see
+`purely-imaginary-square` in `Hypotheses.agda`) to left-alternativity:
+`(a*a)*x = a*(a*x)`. That is exactly where `seed-a` and `witness-x`
+disagree -- `left-alternative-fails-at-seed-a`, promoted to
+`Hypotheses.agda`, no rank/nullity theory required, just two `refl`s
+and one `ℤ` inequality.
+
+The 42 zero-divisor seeds at k=4 have a complete closed-form
+description, found the same way: writing the 16 basis indices as two
+blocks `{0..7}` and `{8..15}`, `e_i+e_j` (i<j) is a zero divisor iff
+`i` is in `1..7`, `j` is in `9..15`, and `j != i+8`. The 7 "matched"
+cross pairs `e_i+e_(i+8)` are the only cross pairs that stay safe
+(confirmed alternative at `witness-x` in `Hypotheses.agda`'s
+`left-alternative-holds-at-matched-pair`); nothing confined to one
+block, or touching `e_0` or `e_8`, is ever a zero divisor. This rule is
+complete and numerically exhaustive for k=4, but it is a statement
+about 120 concrete cases, not yet a general theorem -- turning "the
+associator vanishes at every safe seed, for every x" into an actual
+proof (rather than one representative `x` per seed, as `Hypotheses.agda`
+currently checks) is the natural next real try, in the H4 sense.
+
+## H6 — Doubling at k=5, and the still-open cross-block pattern (open)
+
+Extending the same pair-seed scan to k=5 (32-dim, 496 pairs, ~28s in
+SymPy) shows the k=4 structure survives *inside* each 16-dim half, but
+genuinely new structure appears *between* the halves. Overall: 294 of
+the 496 pairs are zero divisors, with nullity now taking three
+different values (4, 8, 12) instead of k=4's single value.
+
+Seeds confined to one half (`i,j` both `< 16`, or both `>= 16`; 120
+pairs each) reproduce the k=4 zero-divisor set exactly, with nullity
+doubled: 42 zero divisors per half, nullity 8 (not 4), checked
+pair-by-pair against the k=4 table with zero mismatches. This has a
+one-line explanation, not just a numerical coincidence: for `a`
+embedded as `(a, 0)` in `CD5 = CD4 x CD4`, `mul` unfolds
+(definitionally, no new lemma needed) to
+`mul5 (a,0) (x,y) = (a*x, y*a)`, so the k=5 kernel of `L_(a,0)` is
+`ker(L_a) x ker(R_a)` -- two independent copies of the k=4 kernel,
+hence double the dimension (using `rank_L = rank_R`, itself provable
+in general from `conj a = neg a` plus `mul`'s bilinearity, the same
+way `purely-imaginary-square` was derived). Worth promoting to
+`Hypotheses.agda` as a real, general statement --
+`nullity_(k+1) (a, zeroCD k) = 2 * nullity_k a` for any `k`, not just
+k=4-to-k=5 -- not attempted yet.
+
+The 256 cross pairs (`i < 16 <= j`) are the genuinely new territory:
+210 of them are zero divisors. Splitting further by 8-index quadrant
+(`0..7`, `8..15`, `16..23`, `24..31`) shows real structure --
+quadrants `(0,2)` and `(1,3)` (42 and 56 zero divisors out of 64 pairs
+respectively) have a single nullity value (12) among their zero
+divisors, while `(0,3)` and `(1,2)` (56 zero divisors out of 64 pairs,
+each) are mixed: 14 pairs at nullity 12, 42 at nullity 4, in both --
+but no closed-form rule has been found yet, unlike k=4's clean
+`j != i+8`. Left as a numeric lead, not a hypothesis: the
+quadrant-mixed cases are the place to look next, probably against
+Moreno's actual classification of sedenion-pair zero divisors rather
+than by guessing from this table alone.
+
 ## Not pursuing
 
 Went looking for a literature connection between Cayley-Dickson
