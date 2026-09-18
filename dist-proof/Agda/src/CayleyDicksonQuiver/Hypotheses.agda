@@ -355,14 +355,46 @@ mul-identityˡ (ℕsuc k) (c , d) =
 -- here via `refl` is an independent verification: Agda re-derives the
 -- same fact purely from `mul`'s own reduction rules, not by trusting
 -- the external computation.
+--
+-- Basis vectors are written as an injection path down the CD doubling
+-- tree rather than as a literal pair of zeros and ones: `inl` places a
+-- CD k element in the left half of CD (suc k) (zero-padding the right
+-- half via `zeroCD`), `inr` does the same on the right, and `e-base`
+-- is the one nonzero element of CD 0. A path of `inl`/`inr` from the
+-- outermost (top-level) choice down to `e-base` names exactly one
+-- basis vector, in the same order a person would read off which half,
+-- then which half of that half, and so on, contains it.
+
+inl : {k : ℕ} → CD k → CD (ℕsuc k)
+inl {k} x = x , zeroCD k
+
+inr : {k : ℕ} → CD k → CD (ℕsuc k)
+inr {k} x = zeroCD k , x
+
+e-base : CD 0
+e-base = + 1
+
+-- Path for e3 in a 4-level binary tree: Left -> Left -> Right -> Right
+basis-e3 : CD 4
+basis-e3 = inl (inl (inr (inr e-base)))
+
+-- Path for e5 in a 4-level binary tree: Left -> Right -> Left -> Right
+basis-e5 : CD 4
+basis-e5 = inl (inr (inl (inr e-base)))
+
+-- Path for e10 in a 4-level binary tree: Right -> Left -> Right -> Left
+basis-e10 : CD 4
+basis-e10 = inr (inl (inr (inl e-base)))
+
+-- Path for e12 in a 4-level binary tree: Right -> Right -> Left -> Left
+basis-e12 : CD 4
+basis-e12 = inr (inr (inl (inl e-base)))
 
 seed-a : CD 4
-seed-a = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 1))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) ,
-          ((((+ 0) , (+ 0)) , ((+ 1) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+seed-a = add 4 basis-e3 basis-e10
 
 witness-x : CD 4
-witness-x = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (- (+ 1))) , ((+ 0) , (+ 0)))) ,
-             ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 1) , (+ 0)) , ((+ 0) , (+ 0)))))
+witness-x = add 4 (neg 4 basis-e5) basis-e12
 
 _ : mul 4 seed-a witness-x ≡ zeroCD 4
 _ = refl
@@ -783,24 +815,8 @@ left-alternative-fails-at-seed-a :
 left-alternative-fails-at-seed-a eq = aa-x-not-zero (trans eq a-ax-is-zero)
 
 -- The contrasting safe pair: e_1 and e_9, combined into `matched-pair`
--- via the already-proven `add`. Basis vectors are written as an
--- injection path down the CD doubling tree rather than as a literal
--- pair of zeros and ones: `inl` places a CD k element in the left half
--- of CD (suc k) (zero-padding the right half via `zeroCD`), `inr` does
--- the same on the right, and `e-base` is the one nonzero element of
--- CD 0. A path of `inl`/`inr` from the outermost (top-level) choice
--- down to `e-base` names exactly one basis vector, in the same order a
--- person would read off which half, then which half of that half, and
--- so on, contains it.
-
-inl : {k : ℕ} → CD k → CD (ℕsuc k)
-inl {k} x = x , zeroCD k
-
-inr : {k : ℕ} → CD k → CD (ℕsuc k)
-inr {k} x = zeroCD k , x
-
-e-base : CD 0
-e-base = + 1
+-- via the already-proven `add`; `inl`/`inr`/`e-base` are introduced
+-- above, at `basis-e3`'s first use.
 
 -- Path for e1 in a 4-level binary tree: Left -> Left -> Left -> Right
 basis-e1 : CD 4
@@ -863,37 +879,21 @@ left-alternative-holds-at-matched-pair = refl
 basis-e2 : CD 4
 basis-e2 = inl (inl (inr (inl e-base)))
 
--- Path for e3 in a 4-level binary tree: Left -> Left -> Right -> Right
-basis-e3 : CD 4
-basis-e3 = inl (inl (inr (inr e-base)))
-
--- Path for e5 in a 4-level binary tree: Left -> Right -> Left -> Right
-basis-e5 : CD 4
-basis-e5 = inl (inr (inl (inr e-base)))
-
 -- Path for e6 in a 4-level binary tree: Left -> Right -> Right -> Left
 basis-e6 : CD 4
 basis-e6 = inl (inr (inr (inl e-base)))
-
--- Path for e10 in a 4-level binary tree: Right -> Left -> Right -> Left
-basis-e10 : CD 4
-basis-e10 = inr (inl (inr (inl e-base)))
 
 -- Path for e11 in a 4-level binary tree: Right -> Left -> Right -> Right
 basis-e11 : CD 4
 basis-e11 = inr (inl (inr (inr e-base)))
 
--- Path for e12 in a 4-level binary tree: Right -> Right -> Left -> Left
-basis-e12 : CD 4
-basis-e12 = inr (inr (inl (inl e-base)))
-
 -- Path for e15 in a 4-level binary tree: Right -> Right -> Right -> Right
 basis-e15 : CD 4
 basis-e15 = inr (inr (inr (inr e-base)))
 
--- sanity: seed-a really is basis-e3 + basis-e10, as advertised above.
-seed-a-decomposes : add 4 basis-e3 basis-e10 ≡ seed-a
-seed-a-decomposes = refl
+-- `basis-e3`, `basis-e5`, `basis-e10`, `basis-e12` are already in scope
+-- from `seed-a`'s and `witness-x`'s own definitions above; `seed-a`
+-- being `add 4 basis-e3 basis-e10` is itself the decomposition.
 
 -- the three "triangle" products all agree...
 triangle-product-3-10 : mul 4 basis-e3 basis-e10 ≡ basis-e9
