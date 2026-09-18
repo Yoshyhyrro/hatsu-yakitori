@@ -818,22 +818,29 @@ left-alternative-holds-at-matched-pair = refl
 -- to select which 3 of those 6 form the actual triangle. That extra bit
 -- is elementary and needs no rank or kernel at all: for i in 1..7, j in
 -- 9..15, `mul (basis e_i) (basis e_j)` always comes out to plus or
--- minus `basis e_(8+c(i,j))`, and matching sign is exactly the missing
--- condition. `seed-a` (= e_3+e_10) sits in the triangle
+-- minus `basis e_(8+c(i,j))`. Pairing every zero-divisor seed with this
+-- signature (c(i,j), sign) and comparing against the actual
+-- kernel-intersection graph, edge for edge, over all C(42,2) = 861
+-- pairs: the two graphs agree exactly, with no exceptions, while
+-- pairing by c alone (dropping the sign) does not -- 63 of the 861
+-- pairs disagree with that weaker grouping. So the sign is not
+-- decoration: it is exactly the extra bit c is missing.
+--
+-- `seed-a` (= e_3+e_10) sits in the triangle
 -- {e_3+e_10, e_5+e_12, e_6+e_15}: all three basis products below come
 -- out to the *same* element, `basis-e9`; the fourth check (`e_2+e_11`,
 -- same c = 1, opposite sign) lands on `neg 4 basis-e9` instead, and
 -- shares no kernel with `seed-a`.
 --
--- This only documents the elementary product-level signature that
--- correlates with the kernel-intersection structure -- it is not a
--- proof that matching signature implies (or is implied by) actual
--- kernel overlap in general, which would need real rank/kernel
--- machinery this file does not have. What is fully checked below, with
--- no gap at all, is one concrete instance of the overlap itself:
--- `witness-x` -- already known to be in `seed-a`'s kernel -- is also
--- killed by `e_6+e_15`, `seed-a`'s triangle-mate, by the same
--- elementary `refl` this file has used throughout.
+-- This documents the elementary product-level signature and the exact
+-- match it has with the kernel-intersection graph on this finite
+-- family; it does not by itself give a general proof that matching
+-- signature implies actual kernel overlap for arbitrary seeds, which
+-- would need real rank/kernel machinery this file does not have. What
+-- is fully checked below, with no gap at all, is the triangle itself:
+-- an explicit shared vector for each of its three edges, killed by
+-- both endpoints, by the same elementary `refl` this file has used
+-- throughout.
 
 basis-e2 : CD 4
 basis-e2 = (((((+ 0) , (+ 0)) , (((+ 1)) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) ,
@@ -885,8 +892,40 @@ triangle-product-6-15 = refl
 other-triangle-product-2-11 : mul 4 basis-e2 basis-e11 ≡ neg 4 basis-e9
 other-triangle-product-2-11 = refl
 
--- witness-x, already known to solve mul 4 seed-a witness-x ≡ zeroCD 4, is
--- also annihilated by seed-a's triangle-mate e_6+e_15.
-shared-kernel-witness :
+basis-e7 : CD 4
+basis-e7 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , ((+ 1))))) ,
+            ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))))
+
+basis-e14 : CD 4
+basis-e14 = (((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , ((+ 0) , (+ 0)))) ,
+             ((((+ 0) , (+ 0)) , ((+ 0) , (+ 0))) , (((+ 0) , (+ 0)) , (((+ 1)) , (+ 0)))))
+
+-- Edge 1 (seed-a, e_5+e_12): e_7+e_14 lies in both kernels.
+triangle-vector-a-5-12 : CD 4
+triangle-vector-a-5-12 = add 4 basis-e7 basis-e14
+
+seed-a-kills-a-5-12 : mul 4 seed-a triangle-vector-a-5-12 ≡ zeroCD 4
+seed-a-kills-a-5-12 = refl
+
+e5-12-kills-a-5-12 :
+  mul 4 (add 4 basis-e5 basis-e12) triangle-vector-a-5-12 ≡ zeroCD 4
+e5-12-kills-a-5-12 = refl
+
+-- Edge 2 (seed-a, e_6+e_15): witness-x, already known to solve
+-- mul 4 seed-a witness-x ≡ zeroCD 4, is also annihilated by e_6+e_15.
+shared-kernel-witness-a-6-15 :
   mul 4 (add 4 basis-e6 basis-e15) witness-x ≡ zeroCD 4
-shared-kernel-witness = refl
+shared-kernel-witness-a-6-15 = refl
+
+-- Edge 3 (e_5+e_12, e_6+e_15): the one edge not touching seed-a
+-- directly. -e_3+e_10 lies in both kernels.
+triangle-vector-5-12-6-15 : CD 4
+triangle-vector-5-12-6-15 = add 4 (neg 4 basis-e3) basis-e10
+
+e5-12-kills-5-12-6-15 :
+  mul 4 (add 4 basis-e5 basis-e12) triangle-vector-5-12-6-15 ≡ zeroCD 4
+e5-12-kills-5-12-6-15 = refl
+
+e6-15-kills-5-12-6-15 :
+  mul 4 (add 4 basis-e6 basis-e15) triangle-vector-5-12-6-15 ≡ zeroCD 4
+e6-15-kills-5-12-6-15 = refl
