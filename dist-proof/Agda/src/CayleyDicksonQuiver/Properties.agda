@@ -278,29 +278,54 @@ compose f g x = f (g x)
 -- something else (`dim : ℕ → Set`). Out-of-range n (>= ambient-dim k)
 -- falls through every remaining split into `zeroCD k`, since it always
 -- eventually lands on `basis zero (suc _)`.
-basis : (k : ℕ) → ℕ → CD k
-basis zero    zero    = + 1
-basis zero    (suc _) = + 0
-basis (suc k) n =
-  if n <ᵇ ambient-dim k
-    then (basis k n , zeroCD k)
-    else (zeroCD k , basis k (n ∸ ambient-dim k))
+--
+-- `abstract`: `get-linear-map` and everything it is built from stay
+-- opaque outside this block. Nothing downstream (`HasGeneralizedInverse`,
+-- `restricted-division-unique`, ...) ever needs to compute a
+-- `get-linear-map p` down to a concrete value -- every use is symbolic,
+-- through `apply-map`/`compose` -- so opacity costs nothing. Leaving
+-- these transparent is what was silently killing `agda src/Everything.agda`
+-- in CI (plain "Killed", i.e. OOM): a record field whose type mentions
+-- `get-linear-map (i , j)` for abstract `i j : ℕ` forces Agda to
+-- eta-expand `mul`'s pair-pattern-matching against `basis`'s
+-- `if n <ᵇ ambient-dim k then ... else ...`, and since that `if` cannot
+-- resolve for abstract `n`, projections get pushed into *both* branches
+-- at every one of `mul`'s 4 recursion levels -- confirmed directly: the
+-- identical record compiles in under 5 seconds at ~450MB with this
+-- `abstract` block, and is reproducibly killed at ~3.9GB without it
+-- (isolated by bisecting the file against the project's actual CI
+-- toolchain, Agda 2.8.0 with agda-stdlib 2.3, matching the exact
+-- "Killed" failure `agda src/Everything.agda` gave in CI). The same
+-- blow-up reproduces from a bare record with a single field of type
+-- `compose (get-linear-map (i,j)) (compose (get-linear-map (i,j))
+-- (get-linear-map (i,j))) ≡ get-linear-map (i,j)` -- it is specifically
+-- a *record* field forcing this, not a same-shaped plain function
+-- (`(i j : ℕ) → ...` with the identical right-hand side type-checks
+-- instantly).
+abstract
+  basis : (k : ℕ) → ℕ → CD k
+  basis zero    zero    = + 1
+  basis zero    (suc _) = + 0
+  basis (suc k) n =
+    if n <ᵇ ambient-dim k
+      then (basis k n , zeroCD k)
+      else (zeroCD k , basis k (n ∸ ambient-dim k))
 
--- The k-th standard basis vector of `CD 4` (1 at position k, 0
--- elsewhere). `Pair`'s two `ℕ` components are not otherwise
--- constrained to be `< 16` anywhere yet (that gap is `zd-in-bounds`,
--- Section 3, still open); `basis` is already total, so `seedVec`
--- inherits that for free.
-seedVec : ℕ → CD 4
-seedVec = basis 4
+  -- The k-th standard basis vector of `CD 4` (1 at position k, 0
+  -- elsewhere). `Pair`'s two `ℕ` components are not otherwise
+  -- constrained to be `< 16` anywhere yet (that gap is `zd-in-bounds`,
+  -- Section 3, still open); `basis` is already total, so `seedVec`
+  -- inherits that for free.
+  seedVec : ℕ → CD 4
+  seedVec = basis 4
 
--- `get-linear-map (i , j)` is left multiplication by the seed `e_i +
--- e_j` -- the concrete zero-divisor candidate `Pair` is meant to name.
--- No longer a postulate: this is now a real, computable function, built
--- from the actual Cayley-Dickson multiplication in
--- `CayleyDicksonQuiver.Hypotheses`.
-get-linear-map : Pair → LinearMap
-get-linear-map (i , j) = mul 4 (add 4 (seedVec i) (seedVec j))
+  -- `get-linear-map (i , j)` is left multiplication by the seed `e_i +
+  -- e_j` -- the concrete zero-divisor candidate `Pair` is meant to name.
+  -- No longer a postulate: this is now a real, computable function, built
+  -- from the actual Cayley-Dickson multiplication in
+  -- `CayleyDicksonQuiver.Hypotheses`.
+  get-linear-map : Pair → LinearMap
+  get-linear-map (i , j) = mul 4 (add 4 (seedVec i) (seedVec j))
 
 record HasGeneralizedInverse (p : Pair) : Set where
   constructor mkGenInv
