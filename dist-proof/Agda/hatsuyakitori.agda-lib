@@ -1,0 +1,4 @@
+name: hatsuyakitori
+include: src
+depend: standard-library
+flags: --safe
