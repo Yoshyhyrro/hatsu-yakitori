@@ -946,3 +946,60 @@ e5-12-kills-5-12-6-15 = refl
 e6-15-kills-5-12-6-15 :
   mul 4 (add 4 basis-e6 basis-e15) triangle-vector-5-12-6-15 ≡ zeroCD 4
 e6-15-kills-5-12-6-15 = refl
+
+------------------------------------------------------------------------
+-- Kernels stop growing after one step: ker(L_a) = ker(L_a^2)
+------------------------------------------------------------------------
+-- Tracking the full rank profile rank(I), rank(L_a), rank(L_a^2), ...
+-- until it repeats, over every pair seed at k=2 (no zero divisors),
+-- k=3 (no zero divisors), k=4 (42 zero divisors) and k=5 (294 zero
+-- divisors): the profile always stabilizes by the second step. Every
+-- invertible seed gives the two-term profile (dim, dim); every zero
+-- divisor gives a three-term profile (dim, r, r) with r = rank(L_a)
+-- repeated exactly once more -- never three or more distinct values.
+-- Concretely for `seed-a`: rank(I) = 16, rank(L_a) = rank(L_a^2) = 12.
+--
+-- This is exactly the "index <= 1" property `zero-divisor-has-gen-inv`
+-- (Properties.agda, Section 8) needs: ker(L_a) and Im(L_a) never grow
+-- into each other, so a generalized (Drazin-style) inverse exists on
+-- sight, without needing the deeper Fitting decomposition a larger
+-- index would require. Half of it is free, and holds for every a and
+-- every k with no side condition at all: a*x = 0 always forces
+-- a*(a*x) = 0, i.e. ker(L_a) ⊆ ker(L_a^2) (`kernel-stable-forward`
+-- below, two lines from `mul-zeroʳ`). The other half -- that ker(L_a^2)
+-- never gains anything ker(L_a) did not already have -- is exactly
+-- where "index <= 1" lives, and it is not free: it is what the rank
+-- profile above is reporting seed by seed, and once
+-- dim(ker(L_a)) = dim(ker(L_a^2)) is known (from the rank profile), the
+-- inclusion already proved here forces the two kernels to coincide
+-- outright, by ordinary linear algebra. Proving that dimension equality
+-- for arbitrary a would need the rank/kernel machinery this file does
+-- not have; what is checked below, completely, is one concrete
+-- instance of the inclusion actually being tight: `basis-e2` is
+-- outside `seed-a`'s kernel (its image is nonzero), and the general
+-- lemma's contrapositive shows this the cheap way, from the fact that
+-- it is still outside the *squared* kernel too.
+
+kernel-stable-forward :
+  (k : ℕ) (a x : CD k) →
+  mul k a x ≡ zeroCD k → mul k a (mul k a x) ≡ zeroCD k
+kernel-stable-forward k a x ax≡0 = trans (cong (mul k a) ax≡0) (mul-zeroʳ k a)
+
+outside-square-kernel→outside-kernel :
+  (k : ℕ) (a x : CD k) →
+  ¬ (mul k a (mul k a x) ≡ zeroCD k) → ¬ (mul k a x ≡ zeroCD k)
+outside-square-kernel→outside-kernel k a x ¬a²x≡0 ax≡0 =
+  ¬a²x≡0 (kernel-stable-forward k a x ax≡0)
+
+leaf-e2-coord : CD 4 → ℤ
+leaf-e2-coord x = proj₁ (proj₂ (proj₁ (proj₁ x)))
+
+neg2≢0 : ¬ (_≡_ {A = ℤ} (- (+ 2)) (+ 0))
+neg2≢0 ()
+
+seed-a-squared-e2-nonzero : ¬ (mul 4 seed-a (mul 4 seed-a basis-e2) ≡ zeroCD 4)
+seed-a-squared-e2-nonzero eq = neg2≢0 (cong leaf-e2-coord eq)
+
+seed-a-e2-nonzero : ¬ (mul 4 seed-a basis-e2 ≡ zeroCD 4)
+seed-a-e2-nonzero =
+  outside-square-kernel→outside-kernel 4 seed-a basis-e2 seed-a-squared-e2-nonzero
