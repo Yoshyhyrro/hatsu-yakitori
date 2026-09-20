@@ -17,16 +17,22 @@
 --     `mul-basis-11`), each reducing `mul` at level k+1 to a single
 --     `mul`/`applySign` at level k. The last two needed bilinearity of
 --     `mul` over `neg` (`mul-neg-distribˡ`/`ʳ` in
---     `CayleyDicksonQuiver.Hypotheses`), which now exists.
--- What is still missing: the four quadrant formulas are stated
--- separately, each still mentioning a level-k `mul` of two basis
--- vectors rather than "+-or-minus a third basis vector" directly.
--- Turning them into one closure theorem (product of two basis vectors
--- at level k+1 is always +-or-minus a basis vector, for every k) needs
--- an induction on k that packages all four cases via a case split on
--- both arguments' leading bit -- mechanical given what is here, but not
--- yet assembled. That closure theorem is the remaining prerequisite for
--- the `IsWeakHopfAlgebra` instance itself.
+--     `CayleyDicksonQuiver.Hypotheses`), which now exists,
+--   - the closure theorem the four quadrant formulas were building
+--     toward (`mul-basis-closure`): the product of any two basis
+--     vectors, at every level, is again a basis vector up to sign, with
+--     address `p ⊕ q` and sign given by a recursive `cocycle`. This is
+--     the general, every-k, every-pair statement behind what was
+--     otherwise only checked seed by seed at k=4 in
+--     `CayleyDicksonQuiver.Hypotheses` (`triangle-product-*`,
+--     `other-triangle-product-2-11`): those are exactly
+--     `mul-basis-closure` instantiated at four concrete addresses.
+-- What is still missing: `cocycle` is a real function, not yet shown
+-- to be a genuine 2-cocycle (the identity a working `IsWeakHopfAlgebra`
+-- instance would need is `cocycle`'s own associativity-compatibility
+-- condition, not attempted here), and nothing here yet touches the
+-- coproduct/counit/antipode side of `Algebra.WeakHopf` at all -- this
+-- file closes the *product* structure on basis vectors, nothing more.
 module CayleyDicksonQuiver.HopfStructure where
 
 open import CayleyDicksonQuiver.Hypotheses
@@ -250,3 +256,79 @@ mul-basis-01 k p q = cong₂ _,_ first-eq second-eq
   second-eq =
     trans (cong₂ (add k) refl (mul-zeroˡ k (conj k (zeroCD k))))
           (add-identityʳ k (mul k (basisVec k q) (basisVec k p)))
+------------------------------------------------------------------------
+-- Closure: the product of two basis vectors is a basis vector
+------------------------------------------------------------------------
+-- The four quadrant formulas above each reduce `mul (suc k)` on basis
+-- vectors to a plain level-k `mul` of basis vectors, but that level-k
+-- product is itself an arbitrary `CD k` element as far as those lemmas
+-- know -- nothing yet says it is *also* a signed basis vector. Packaging
+-- all four quadrants into one induction on k closes that gap: the
+-- product of any two basis vectors, at every level, is again a signed
+-- basis vector, addressed by XOR and signed by the recursive `cocycle`
+-- below (a case split on both arguments' leading bit matching each of
+-- the four quadrant formulas in turn).
+
+xor-comm : (a b : Bool) → a xor b ≡ b xor a
+xor-comm true  true  = refl
+xor-comm true  false = refl
+xor-comm false true  = refl
+xor-comm false false = refl
+
+⊕-comm : ∀ {k} (p q : Addr k) → p ⊕ q ≡ q ⊕ p
+⊕-comm []      []      = refl
+⊕-comm (a ∷ p) (b ∷ q) = cong₂ _∷_ (xor-comm a b) (⊕-comm p q)
+
+-- Sign multiplication: the group law of {plus, minus} ≅ Z/2.
+_*S_ : Sign → Sign → Sign
+plus  *S s     = s
+minus *S plus  = minus
+minus *S minus = plus
+
+applySign-compose : (k : ℕ) (s1 s2 : Sign) (x : CD k) →
+  applySign k s1 (applySign k s2 x) ≡ applySign k (s1 *S s2) x
+applySign-compose k plus  s2    x = refl
+applySign-compose k minus plus  x = refl
+applySign-compose k minus minus x = neg-neg k x
+
+-- The sign of `basisVec p * basisVec q`. Same-half cases (both `false`
+-- or both `true`) recurse directly (`mul-basis-00`/`mul-basis-11`);
+-- cross-half cases pick up the extra `signOf` factor `mul-basis-10`
+-- carries (`mul-basis-01` does not). The `true`/`true` and `false`/
+-- `true` clauses recurse on the *swapped* arguments, matching
+-- `mul-basis-11`/`mul-basis-01`'s own `basisVec q * basisVec p` shape.
+cocycle : ∀ {k} → Addr k → Addr k → Sign
+cocycle {ℕzero}  []          []          = plus
+cocycle {ℕsuc k} (false ∷ p) (false ∷ q) = cocycle p q
+cocycle {ℕsuc k} (true  ∷ p) (true  ∷ q) = flipSign (signOf q) *S cocycle q p
+cocycle {ℕsuc k} (true  ∷ p) (false ∷ q) = signOf q *S cocycle p q
+cocycle {ℕsuc k} (false ∷ p) (true  ∷ q) = cocycle q p
+
+mul-basis-closure : (k : ℕ) (p q : Addr k) →
+  mul k (basisVec k p) (basisVec k q) ≡ applySign k (cocycle p q) (basisVec k (p ⊕ q))
+mul-basis-closure ℕzero [] [] = refl
+mul-basis-closure (ℕsuc k) (false ∷ p) (false ∷ q) =
+  trans (mul-basis-00 k p q)
+        (trans (cong₂ _,_ (mul-basis-closure k p q) refl)
+               (sym (apply-sign-pair-zeroR k (cocycle p q) (basisVec k (p ⊕ q)))))
+mul-basis-closure (ℕsuc k) (true ∷ p) (false ∷ q) =
+  trans (mul-basis-10 k p q)
+        (trans (cong (λ z → (zeroCD k , z))
+                     (trans (cong (applySign k (signOf q)) (mul-basis-closure k p q))
+                            (applySign-compose k (signOf q) (cocycle p q) (basisVec k (p ⊕ q)))))
+               (sym (apply-sign-pair-zeroL k (signOf q *S cocycle p q) (basisVec k (p ⊕ q)))))
+mul-basis-closure (ℕsuc k) (false ∷ p) (true ∷ q) =
+  trans (mul-basis-01 k p q)
+        (trans (cong (λ z → (zeroCD k , z))
+                     (trans (mul-basis-closure k q p)
+                            (cong (applySign k (cocycle q p)) (cong (basisVec k) (⊕-comm q p)))))
+               (sym (apply-sign-pair-zeroL k (cocycle q p) (basisVec k (p ⊕ q)))))
+mul-basis-closure (ℕsuc k) (true ∷ p) (true ∷ q) =
+  trans (mul-basis-11 k p q)
+        (trans (cong (λ z → (z , zeroCD k))
+                     (cong (applySign k (flipSign (signOf q)))
+                           (trans (mul-basis-closure k q p)
+                                  (cong (applySign k (cocycle q p)) (cong (basisVec k) (⊕-comm q p))))))
+               (trans (cong (λ z → (z , zeroCD k))
+                            (applySign-compose k (flipSign (signOf q)) (cocycle q p) (basisVec k (p ⊕ q))))
+                      (sym (apply-sign-pair-zeroR k (flipSign (signOf q) *S cocycle q p) (basisVec k (p ⊕ q))))))
