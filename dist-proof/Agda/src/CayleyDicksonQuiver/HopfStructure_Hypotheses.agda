@@ -28,14 +28,25 @@
 -- dimension 2" needs real linear algebra this project does not have,
 -- exactly as already flagged for `zero-divisor-has-gen-inv`
 -- (`CayleyDicksonQuiver.Properties`, Section 8).
+--
+-- Style note: each cluster of checks below (the nine basis vectors,
+-- the four triangle signatures, the three joint-kernel edges) is one
+-- `List` plus one `All` proof rather than one named lemma per row --
+-- same content as writing each row out as its own top-level `refl`,
+-- but the repetition is data (a list literal) instead of syntax (many
+-- declarations), so the shape of the check is written once.
 module CayleyDicksonQuiver.HopfStructure_Hypotheses where
 
 open import CayleyDicksonQuiver.Hypotheses
-  using (CD; mul; zeroCD; seed-a;
-         basis-e2; basis-e3; basis-e5; basis-e6; basis-e9;
-         basis-e10; basis-e11; basis-e12; basis-e15)
+  using (CD; mul; add; neg; zeroCD; seed-a; witness-x;
+         basis-e2; basis-e3; basis-e5; basis-e6; basis-e7; basis-e9;
+         basis-e10; basis-e11; basis-e12; basis-e14; basis-e15)
 open import CayleyDicksonQuiver.HopfStructure
 open import Data.Bool using (false; true)
+open import Data.List using (List; []; _∷_)
+open import Data.List.Relation.Unary.All using (All; []; _∷_)
+open import Data.Nat using (ℕ)
+open import Data.Product using (_×_; _,_)
 open import Data.Vec using ([]; _∷_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
@@ -83,32 +94,20 @@ addr-e15 = true  ∷ true  ∷ true  ∷ true  ∷ []
 -- and the concrete one are the same nine basis vectors, so results
 -- about one transfer to the other for free.
 
-basisVec-e2  : basisVec 4 addr-e2  ≡ basis-e2
-basisVec-e2  = refl
+basisVec-pairs : List (Addr 4 × CD 4)
+basisVec-pairs =
+  (addr-e2  , basis-e2)  ∷
+  (addr-e3  , basis-e3)  ∷
+  (addr-e5  , basis-e5)  ∷
+  (addr-e6  , basis-e6)  ∷
+  (addr-e9  , basis-e9)  ∷
+  (addr-e10 , basis-e10) ∷
+  (addr-e11 , basis-e11) ∷
+  (addr-e12 , basis-e12) ∷
+  (addr-e15 , basis-e15) ∷ []
 
-basisVec-e3  : basisVec 4 addr-e3  ≡ basis-e3
-basisVec-e3  = refl
-
-basisVec-e5  : basisVec 4 addr-e5  ≡ basis-e5
-basisVec-e5  = refl
-
-basisVec-e6  : basisVec 4 addr-e6  ≡ basis-e6
-basisVec-e6  = refl
-
-basisVec-e9  : basisVec 4 addr-e9  ≡ basis-e9
-basisVec-e9  = refl
-
-basisVec-e10 : basisVec 4 addr-e10 ≡ basis-e10
-basisVec-e10 = refl
-
-basisVec-e11 : basisVec 4 addr-e11 ≡ basis-e11
-basisVec-e11 = refl
-
-basisVec-e12 : basisVec 4 addr-e12 ≡ basis-e12
-basisVec-e12 = refl
-
-basisVec-e15 : basisVec 4 addr-e15 ≡ basis-e15
-basisVec-e15 = refl
+basisVec-encodings-agree : All (λ (a , x) → basisVec 4 a ≡ x) basisVec-pairs
+basisVec-encodings-agree = refl ∷ refl ∷ refl ∷ refl ∷ refl ∷ refl ∷ refl ∷ refl ∷ refl ∷ []
 
 ------------------------------------------------------------------------
 -- mul-basis-closure reproduces every concrete triangle fact at once
@@ -117,32 +116,52 @@ basisVec-e15 = refl
 -- its two triangle-mates, and the contrasting `e_2+e_11`) by `refl` on
 -- four separate literals. Each is now an instance of the *same*
 -- `mul-basis-closure` theorem: the address side (`⊕`) picks out the
--- shared target `addr-e9`, and the sign side (`cocycle`) picks out
--- `plus` for the three triangle members and `minus` for the outsider
--- -- exactly the "same c, same sign" grouping the numerical
--- kernel-intersection experiment found, stated here with no reference
--- to k=4, rank, or nullity at all.
+-- shared target `addr-e9` for all four rows, and the sign side
+-- (`cocycle`) picks out `plus` for the three triangle members and
+-- `minus` for the outsider -- exactly the "same c, same sign" grouping
+-- the numerical kernel-intersection experiment found, stated here with
+-- no reference to k=4, rank, or nullity at all.
 
-cocycle-3-10  : cocycle addr-e3 addr-e10 ≡ plus
-cocycle-3-10  = refl
+triangle-signature-checks : List (Addr 4 × Addr 4 × Sign × Addr 4)
+triangle-signature-checks =
+  (addr-e3 , addr-e10 , plus  , addr-e9) ∷
+  (addr-e5 , addr-e12 , plus  , addr-e9) ∷
+  (addr-e6 , addr-e15 , plus  , addr-e9) ∷
+  (addr-e2 , addr-e11 , minus , addr-e9) ∷ []
 
-cocycle-5-12  : cocycle addr-e5 addr-e12 ≡ plus
-cocycle-5-12  = refl
+triangle-signatures-agree :
+  All (λ (p , q , s , t) → cocycle p q ≡ s × p ⊕ q ≡ t) triangle-signature-checks
+triangle-signatures-agree =
+  (refl , refl) ∷ (refl , refl) ∷ (refl , refl) ∷ (refl , refl) ∷ []
 
-cocycle-6-15  : cocycle addr-e6 addr-e15 ≡ plus
-cocycle-6-15  = refl
+------------------------------------------------------------------------
+-- Joint kernels, stated elementarily
+------------------------------------------------------------------------
+-- The natural way to say "a and b share a piece of kernel" needs no
+-- rank or matrix at all: x is jointly killed by a and b exactly when
+-- a*x = 0 and b*x = 0, both. Restating the triangle's three edges this
+-- way is nothing new mathematically -- each pair was already exactly
+-- this, checked one field at a time -- but it names the shape once
+-- instead of leaving it implicit, and is what a dimension-counting
+-- version of the same statement (`the joint kernel of a and b has
+-- dimension 2`, checked exhaustively across all 861 zero-divisor-seed
+-- pairs at k=4, with equality holding in both directions against "same
+-- address-XOR and same cocycle sign") would have to be built on top
+-- of, since dimension is a property of this same set of vectors, not a
+-- different one. Genuinely computing that dimension for arbitrary a, b
+-- is exactly the open, linear-algebra-shaped gap already on record for
+-- `zero-divisor-has-gen-inv`.
 
-cocycle-2-11  : cocycle addr-e2 addr-e11 ≡ minus
-cocycle-2-11  = refl
+JointlyKilledBy : (k : ℕ) → CD k → CD k → CD k → Set
+JointlyKilledBy k a b x = mul k a x ≡ zeroCD k × mul k b x ≡ zeroCD k
 
-address-3-10  : addr-e3 ⊕ addr-e10 ≡ addr-e9
-address-3-10  = refl
+triangle-edges : List (CD 4 × CD 4 × CD 4)
+triangle-edges =
+  (seed-a , add 4 basis-e5 basis-e12 , add 4 basis-e7 basis-e14) ∷
+  (seed-a , add 4 basis-e6 basis-e15 , witness-x) ∷
+  (add 4 basis-e5 basis-e12 , add 4 basis-e6 basis-e15 ,
+    add 4 (neg 4 basis-e3) basis-e10) ∷ []
 
-address-5-12  : addr-e5 ⊕ addr-e12 ≡ addr-e9
-address-5-12  = refl
-
-address-6-15  : addr-e6 ⊕ addr-e15 ≡ addr-e9
-address-6-15  = refl
-
-address-2-11  : addr-e2 ⊕ addr-e11 ≡ addr-e9
-address-2-11  = refl
+triangle-edges-jointly-killed :
+  All (λ (a , b , x) → JointlyKilledBy 4 a b x) triangle-edges
+triangle-edges-jointly-killed = (refl , refl) ∷ (refl , refl) ∷ (refl , refl) ∷ []
