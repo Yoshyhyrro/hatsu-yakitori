@@ -165,3 +165,64 @@ triangle-edges =
 triangle-edges-jointly-killed :
   All (λ (a , b , x) → JointlyKilledBy 4 a b x) triangle-edges
 triangle-edges-jointly-killed = (refl , refl) ∷ (refl , refl) ∷ (refl , refl) ∷ []
+
+------------------------------------------------------------------------
+-- k=5: a genuinely new zero divisor, and e_16's special role
+------------------------------------------------------------------------
+-- Everything above stayed at k=4, where `basisVec`/`cocycle` only
+-- reproduce facts already checked by hand. At k=5 the closure theorem
+-- earns its keep: it reaches seeds no `inl`/`inr` literal has been
+-- written out for, with no new infrastructure beyond `Addr 5`.
+--
+-- The k=5 cross-block zero-divisor scan (32-dim, i < 16 <= j) has a
+-- complete closed-form rule now (see `CarabinerHypotheses.lagda.md`,
+-- H6): writing `i`'s block as 0/1 and `j`'s block as 2/3 with local
+-- offsets `di = i mod 8`, `dj = j mod 8`, block pair (0,3) is a zero
+-- divisor with nullity 4 exactly when `i != 0` and `dj` is neither `0`
+-- nor `di`. `e_1+e_26` is one such seed (`di=1`, `dj=2`): `e_3+e_24` is
+-- an actual kernel witness, checked the same way `seed-a`/`witness-x`
+-- were at k=4, just built from `basisVec 5` addresses instead of a
+-- hand-written 32-entry literal.
+--
+-- Separately, that same rule marks `j = 16` as unconditionally safe no
+-- matter which block `i` is in -- an echo of `e_8`'s role at k=4, where
+-- `e_i * e_(i+8)` was always the constant `-e_8`. `e_16`'s own pattern
+-- is simpler, not constant: `e_16 = basisVec 5 (true, false,false,
+-- false,false)` is exactly `inr` of the k=4 real unit, so
+-- `mul-basis-closure` says multiplying any k=4-side basis vector by it
+-- just shifts that vector into the second half unchanged -- `e_1*e_16`
+-- lands on `e_17`, not on a fixed target. Whether that shift property
+-- is *why* `j=16` is always safe is not checked here; this only
+-- records the product-level fact, the same honest half `mul-basis-
+-- closure` covers everywhere else in this file.
+
+addr5-e1  : Addr 5
+addr5-e1  = false ∷ false ∷ false ∷ false ∷ true  ∷ []
+
+addr5-e3  : Addr 5
+addr5-e3  = false ∷ false ∷ false ∷ true  ∷ true  ∷ []
+
+addr5-e16 : Addr 5
+addr5-e16 = true  ∷ false ∷ false ∷ false ∷ false ∷ []
+
+addr5-e17 : Addr 5
+addr5-e17 = true  ∷ false ∷ false ∷ false ∷ true  ∷ []
+
+addr5-e24 : Addr 5
+addr5-e24 = true  ∷ true  ∷ false ∷ false ∷ false ∷ []
+
+addr5-e26 : Addr 5
+addr5-e26 = true  ∷ true  ∷ false ∷ true  ∷ false ∷ []
+
+e16-shifts-e1 :
+  mul 5 (basisVec 5 addr5-e1) (basisVec 5 addr5-e16) ≡ basisVec 5 addr5-e17
+e16-shifts-e1 = refl
+
+seed5 : CD 5
+seed5 = add 5 (basisVec 5 addr5-e1) (basisVec 5 addr5-e26)
+
+witness5 : CD 5
+witness5 = add 5 (basisVec 5 addr5-e3) (basisVec 5 addr5-e24)
+
+seed5-zero-divisor : mul 5 seed5 witness5 ≡ zeroCD 5
+seed5-zero-divisor = refl
