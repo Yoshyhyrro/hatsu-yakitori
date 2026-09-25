@@ -44,6 +44,12 @@ coreFiles =
     , "modules/topological-gc.scm"
     ]
 
+ats2KernelSource :: FilePath
+ats2KernelSource = "ats2/ats_kernel.dats"
+
+ats2KernelObject :: FilePath
+ats2KernelObject = "dist/obj_ats2/ats_kernel.o"
+
 allModules :: [Module]
 allModules =
     [ regularModule "boids" 
@@ -200,6 +206,34 @@ main = do
         Quadcopter.quadcopterRules defaultCfg
         HDF5.hdf5Rules defaultCfg
         DebFMM.debFmmRules defaultCfg coreFiles
+
+        phony "ats2-kernel" $ do
+            srcExists <- liftIO $ Dir.doesFileExist ats2KernelSource
+            if not srcExists
+                then do
+                    let d = Diag.Diag Diag.SevError Diag.HYK012E
+                                ("ATS2 source not found: " ++ ats2KernelSource)
+                                ["create the file at ats2/ats_kernel.dats before building the ATS2 target"]
+                    liftIO $ Diag.emit d
+                    fail $ "ATS2 source missing: " ++ ats2KernelSource
+                else do
+                    patsccFound <- liftIO $ Dir.findExecutable "patscc"
+                    case patsccFound of
+                        Nothing -> do
+                            let d = Diag.Diag Diag.SevWarning Diag.HYK012W
+                                        "patscc not found in PATH; ATS2 object build skipped"
+                                        ["install ATS2 and ensure patscc is on PATH"]
+                            liftIO $ Diag.emit d
+                            fail "patscc not found in PATH"
+                        Just _ -> do
+                            liftIO $ Dir.createDirectoryIfMissing True (takeDirectory ats2KernelObject)
+                            cmd_ "patscc" ["-c", ats2KernelSource, "-o", ats2KernelObject]
+                            let d = Diag.Diag Diag.SevInfo Diag.HYK012I
+                                        ("ATS2 object built: " ++ ats2KernelObject)
+                                        []
+                            liftIO $ Diag.emit d
+
+        phony "ats2" $ need ["ats2-kernel"]
 
         forM_ allModules $ \m -> do
             let mName = modName m

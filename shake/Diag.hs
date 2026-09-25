@@ -41,6 +41,10 @@ data DiagCode
   | HYK011W   -- Flang Dhall: Warning-level gap (Warning)
   | HYK011N   -- Flang Dhall: Note-level gap (Note)
   | HYK011I   -- Flang Dhall: Info-level gap (Info)
+  -- ---- ATS2 / patscc ------------------------------------------
+  | HYK012W   -- patscc not found in PATH (Warning)
+  | HYK012E   -- ATS2 source missing or invalid path (Error)
+  | HYK012I   -- ATS2 target built successfully (Info)
   deriving (Show, Eq)
 
 -- ----------------------------------------------------------------
@@ -48,7 +52,7 @@ data DiagCode
 --   severity: error, warning, note, info
 -- ----------------------------------------------------------------
 data Severity
-  = SevError    -- ^ summarize で exitFailure
+  = SevError    -- ^ summarize then exitFailure to halt the build with a non-zero exit code
   | SevWarning  -- ^ the build continues, but the summary will report the warning count
   | SevNote     -- ^ informational note that is not a warning; the build continues and the summary does not count it, but it may be emitted alongside warnings or errors for additional context
   | SevInfo     -- ^ purely informational message that is not a warning; the build continues and the summary does not count it

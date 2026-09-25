@@ -8,6 +8,7 @@ on:
       - 'dist-proof/lean4/**'
       - 'examples/fmm/**'
       - 'modules/**'
+      - 'ats2/**'
       - 'package.yaml'
       - 'hatsu-yakitori.cabal'
       - 'shake/**'
@@ -16,7 +17,7 @@ on:
       - 'tests/**'
   push:
     branches:
-      - feature/example/output_flang
+      - example/ats2_build/output_flang←smt2_theory
     tags-ignore:
       - '*'
     paths:
@@ -25,6 +26,7 @@ on:
       - 'dist-proof/lean4/**'
       - 'examples/fmm/**'
       - 'modules/**'
+      - 'ats2/**'
       - 'package.yaml'
       - 'hatsu-yakitori.cabal'
       - 'shake/**'
@@ -100,6 +102,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y chicken-bin
 
+      - name: Install ATS2 toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ats2 || true
+          if command -v patscc >/dev/null 2>&1; then
+            patscc --version
+          else
+            echo "patscc not found in PATH; ATS2 build will remain skipped in CI"
+          fi
+
       - name: Install CHICKEN egg dependencies
         run: sudo chicken-install srfi-1 srfi-69
 
@@ -133,6 +145,15 @@ jobs:
           }
           echo "info[HYK005I]: HDF5 mock file OK"
           h5dump -H "$H5"
+
+      - name: Build ATS2 kernel object
+        run: |
+          mkdir -p dist/obj_ats2
+          if command -v patscc >/dev/null 2>&1; then
+            patscc -c ats2/ats_kernel.dats -o dist/obj_ats2/ats_kernel.o
+          else
+            echo "skip ATS2 compile: patscc not installed"
+          fi
 
       - name: Run FMM smoke test
         run: csi -s tests/fmm_tests.scm
