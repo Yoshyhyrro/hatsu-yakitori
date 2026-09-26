@@ -45,6 +45,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
       - name: "Debug: write run marker"
         run: |
           echo "CI_RUN_ID=$GITHUB_RUN_ID" > ci-debug-marker.txt
@@ -77,12 +78,12 @@ jobs:
             curl -L -o ats2.tgz \
               "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.4.2/ATS2-Postiats-0.4.2.tgz"
             tar -xzf ats2.tgz
-            cd ATS2-Postiats-0.4.2
+            cd ATS2-Postiats-*/ # Navigate into extracted release directory dynamically
             ./configure --prefix="$HOME/.local/ats2"
             make -j"$(nproc)"
             make install
             echo "$HOME/.local/ats2/bin" >> "$GITHUB_PATH"
-            patscc --version
+            "$HOME/.local/ats2/bin/patscc" --version
           fi
 
       - name: Install CHICKEN egg dependencies
@@ -146,6 +147,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
       - name: "Debug: write run marker"
         run: |
           echo "CI_RUN_ID=$GITHUB_RUN_ID" > ci-debug-marker.txt
@@ -173,12 +175,12 @@ jobs:
             curl -L -o ats2.tgz \
               "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.4.2/ATS2-Postiats-0.4.2.tgz"
             tar -xzf ats2.tgz
-            cd ATS2-Postiats-0.4.2
+            cd ATS2-Postiats-*/ # Navigate into extracted release directory dynamically
             ./configure --prefix="$HOME/.local/ats2"
             make -j"$(nproc)"
             make install
             echo "$HOME/.local/ats2/bin" >> "$GITHUB_PATH"
-            patscc --version
+            "$HOME/.local/ats2/bin/patscc" --version
           fi
 
       - name: Build ATS2 mock registry object
