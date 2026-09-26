@@ -110,8 +110,8 @@ jobs:
           which patscc
           patscc --version
           stack --version
-          stack build shake --fast
-          stack exec shake -- ats2
+          stack build hatsu-yakitori:exe:shake --fast
+          stack exec hatsu-yakitori:exe:shake -- ats2
 
       - name: Check mock HDF5 integrity
         run: |
