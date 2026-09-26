@@ -180,14 +180,25 @@ jobs:
 
       - name: Install ATS2 toolchain
         run: |
+          set -eux
           sudo apt-get update
-          sudo apt-get install -y ats2 || true
+          sudo apt-get install -y build-essential wget ca-certificates
+
           if command -v patscc >/dev/null 2>&1; then
             patscc --version
-          else
-            echo "error[HYK012E]: patscc not found in PATH; ATS2 mock registry cannot be checked"
-            exit 1
+            exit 0
           fi
+
+          mkdir -p "$HOME/.local/src"
+          cd "$HOME/.local/src"
+          curl -L -o ats2.tar.gz https://github.com/ats-lang/ATS-Postiats/archive/refs/tags/v0.5.2.tar.gz
+          tar -xzf ats2.tar.gz
+          cd ATS-Postiats-*
+          ./configure --prefix="$HOME/.local/ats2"
+          make -j"$(nproc)"
+          make install
+          echo "$HOME/.local/ats2/bin" >> "$GITHUB_PATH"
+          patscc --version
 
       - name: Build ATS2 mock registry object
         run: |
