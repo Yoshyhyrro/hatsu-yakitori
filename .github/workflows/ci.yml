@@ -158,8 +158,8 @@ jobs:
       - name: Run FMM smoke test
         run: csi -s tests/fmm_tests.scm
 
-  flang-dhall-emit:
-    name: Emit Flang Dhall Diags
+  ats2-mock-registry:
+    name: Build ATS2 mock registry
     runs-on: ubuntu-latest
     needs: fmm-runtime-smoke
     steps:
@@ -175,61 +175,27 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: ci-debug-marker-flang-dhall-emit
+          name: ci-debug-marker-ats2-mock-registry
           path: ci-debug-marker.txt
 
-      - name: Install LLVM 17 and Flang
+      - name: Install ATS2 toolchain
         run: |
-          # apt.llvm.org provides llvm-17 and flang-17 packages for Ubuntu; install via their script which handles repository setup and installation
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 17 all
-          
-          # flang-17 which may be provided by the llvm-17 package or may require separate installation depending on the distribution; attempt to install but ignore failure if it's not available
-          sudo apt-get install -y flang-17 || echo "flang-17 is already installed or unavailable"
-          
-          # installation paths for llvm-17 binaries (clang-17, flang-17 if available) should be in /usr/lib/llvm-17/bin; add to PATH for CI steps
-          echo "/usr/lib/llvm-17/bin" >> $GITHUB_PATH
-
-      - name: Verify LLVM 17 Installation
-        run: |
-          clang-17 --version
-          if command -v flang-17 &> /dev/null; then
-            flang-17 --version
+          sudo apt-get update
+          sudo apt-get install -y ats2 || true
+          if command -v patscc >/dev/null 2>&1; then
+            patscc --version
           else
-            echo "flang-17 not found, but LLVM 17 core is installed."
-          fi
-
-      # 'text' dependency is managed in source (package.yaml / .cabal); CI no longer attempts sed edits.
-
-      - name: Setup GHC and Stack (manual)
-        run: |
-          # Ensure stack is available (it is pre-installed on ubuntu-latest)
-          if ! command -v stack &> /dev/null; then
-            echo "Stack not found, installing..."
-            curl -sSL https://get.haskellstack.org/ | sh
-          fi
-          
-          # Instruct Stack to setup GHC based on your stack.yaml resolver
-          stack setup
-
-      - name: Build shake target (non-interactive)
-        run: |
-          stack build :shake --no-terminal --color never
-
-      - name: Run flang-dhall-emit and save output
-        run: |
-          stack exec -- shake flang-dhall-emit 2>&1 | tee flang-dhall-output.txt
-
-      - name: Upload flang-dhall-output artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: flang-dhall-output
-          path: flang-dhall-output.txt
-
-      - name: Fail on missing HYK diagnostic code
-        run: |
-          if ! grep -q "HYK" flang-dhall-output.txt; then
-            echo "error: Expected HYK diagnostic code not found in flang-dhall-output.txt"
+            echo "error[HYK012E]: patscc not found in PATH; ATS2 mock registry cannot be checked"
             exit 1
           fi
+
+      - name: Build ATS2 mock registry object
+        run: |
+          mkdir -p dist/obj_ats2
+          patscc -c ats2/mock_test/flang.dats -o dist/obj_ats2/flang_mock.o
+
+      - name: Upload ATS2 mock registry artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ats2-mock-registry
+          path: dist/obj_ats2/flang_mock.o
