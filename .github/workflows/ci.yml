@@ -182,31 +182,32 @@ jobs:
         run: |
           set -eux
           sudo apt-get update
-          sudo apt-get install -y build-essential wget ca-certificates
+          sudo apt-get install -y build-essential libgmp-dev wget ca-certificates
 
           if command -v patscc >/dev/null 2>&1; then
-            patscc --version
-            exit 0
+          patscc --version
+          exit 0
           fi
 
           mkdir -p "$HOME/.local/src"
           cd "$HOME/.local/src"
-          curl -L -o ats2.tar.gz https://github.com/ats-lang/ATS-Postiats/archive/refs/tags/v0.5.2.tar.gz
-          tar -xzf ats2.tar.gz
-          cd ATS-Postiats-*
+          curl -L -o ats2.tgz \
+            "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.4.2/ATS2-Postiats-0.4.2.tgz"
+          tar -xzf ats2.tgz
+          cd ATS2-Postiats-0.4.2
           ./configure --prefix="$HOME/.local/ats2"
           make -j"$(nproc)"
           make install
           echo "$HOME/.local/ats2/bin" >> "$GITHUB_PATH"
           patscc --version
 
-      - name: Build ATS2 mock registry object
-        run: |
+          - name: Build ATS2 mock registry object
+          run: |
           mkdir -p dist/obj_ats2
           patscc -c ats2/mock_test/flang.dats -o dist/obj_ats2/flang_mock.o
 
-      - name: Upload ATS2 mock registry artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: ats2-mock-registry
-          path: dist/obj_ats2/flang_mock.o
+          - name: Upload ATS2 mock registry artifact
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+          with:
+            name: ats2-mock-registry
+            path: dist/obj_ats2/flang_mock.o
