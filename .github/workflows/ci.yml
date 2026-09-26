@@ -65,12 +65,24 @@ jobs:
 
       - name: Install ATS2 toolchain
         run: |
+          set -eux
           sudo apt-get update
-          sudo apt-get install -y ats2 || true
+          sudo apt-get install -y build-essential libgmp-dev wget ca-certificates
+
           if command -v patscc >/dev/null 2>&1; then
             patscc --version
           else
-            echo "patscc not found in PATH; ATS2 build will remain skipped in CI"
+            mkdir -p "$HOME/.local/src"
+            cd "$HOME/.local/src"
+            curl -L -o ats2.tgz \
+              "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.4.2/ATS2-Postiats-0.4.2.tgz"
+            tar -xzf ats2.tgz
+            cd ATS2-Postiats-0.4.2
+            ./configure --prefix="$HOME/.local/ats2"
+            make -j"$(nproc)"
+            make install
+            echo "$HOME/.local/ats2/bin" >> "$GITHUB_PATH"
+            patscc --version
           fi
 
       - name: Install CHICKEN egg dependencies
@@ -91,6 +103,14 @@ jobs:
           which csc
           csc -version
           chicken-status srfi-1 srfi-69
+
+      - name: Verify ATS2 + Shake integration
+        run: |
+          which patscc
+          patscc --version
+          stack --version
+          stack build shake --fast
+          stack exec shake -- ats2
 
       - name: Check mock HDF5 integrity
         run: |
@@ -147,20 +167,19 @@ jobs:
 
           if command -v patscc >/dev/null 2>&1; then
             patscc --version
-            exit 0
+          else
+            mkdir -p "$HOME/.local/src"
+            cd "$HOME/.local/src"
+            curl -L -o ats2.tgz \
+              "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.4.2/ATS2-Postiats-0.4.2.tgz"
+            tar -xzf ats2.tgz
+            cd ATS2-Postiats-0.4.2
+            ./configure --prefix="$HOME/.local/ats2"
+            make -j"$(nproc)"
+            make install
+            echo "$HOME/.local/ats2/bin" >> "$GITHUB_PATH"
+            patscc --version
           fi
-
-          mkdir -p "$HOME/.local/src"
-          cd "$HOME/.local/src"
-          curl -L -o ats2.tgz \
-            "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.4.2/ATS2-Postiats-0.4.2.tgz"
-          tar -xzf ats2.tgz
-          cd ATS2-Postiats-int-0.4.2  # Top-level directory extracted from tarball
-          ./configure --prefix="$HOME/.local/ats2"
-          make -j"$(nproc)"
-          make install
-          echo "$HOME/.local/ats2/bin" >> "$GITHUB_PATH"
-          patscc --version
 
       - name: Build ATS2 mock registry object
         run: |

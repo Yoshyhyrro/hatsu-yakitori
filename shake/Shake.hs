@@ -50,6 +50,12 @@ ats2KernelSource = "ats2/ats_kernel.dats"
 ats2KernelObject :: FilePath
 ats2KernelObject = "dist/obj_ats2/ats_kernel.o"
 
+ats2MockRegistrySource :: FilePath
+ats2MockRegistrySource = "ats2/mock_test/flang.dats"
+
+ats2MockRegistryObject :: FilePath
+ats2MockRegistryObject = "dist/obj_ats2/flang_mock.o"
+
 allModules :: [Module]
 allModules =
     [ regularModule "boids" 
@@ -232,6 +238,38 @@ main = do
                                         ("ATS2 object built: " ++ ats2KernelObject)
                                         []
                             liftIO $ Diag.emit d
+
+        -- ATS2 mock registry: canonical target.
+        phony "ats2-mock-registry" $ do
+            srcExists <- liftIO $ Dir.doesFileExist ats2MockRegistrySource
+            if not srcExists
+                then do
+                    let d = Diag.Diag Diag.SevError Diag.HYK012E
+                                ("ATS2 mock registry source not found: " ++ ats2MockRegistrySource)
+                                ["create the file at ats2/mock_test/flang.dats before building the ATS2 mock registry"]
+                    liftIO $ Diag.emit d
+                    fail $ "ATS2 mock registry source missing: " ++ ats2MockRegistrySource
+                else do
+                    patsccFound <- liftIO $ Dir.findExecutable "patscc"
+                    case patsccFound of
+                        Nothing -> do
+                            let d = Diag.Diag Diag.SevWarning Diag.HYK012W
+                                        "patscc not found in PATH; ATS2 mock registry build skipped"
+                                        ["install ATS2 and ensure patscc is on PATH"]
+                            liftIO $ Diag.emit d
+                            fail "patscc not found in PATH"
+                        Just _ -> do
+                            liftIO $ Dir.createDirectoryIfMissing True (takeDirectory ats2MockRegistryObject)
+                            cmd_ "patscc" ["-c", ats2MockRegistrySource, "-o", ats2MockRegistryObject]
+                            let d = Diag.Diag Diag.SevInfo Diag.HYK012I
+                                        ("ATS2 mock registry built: " ++ ats2MockRegistryObject)
+                                        []
+                            liftIO $ Diag.emit d
+
+        -- Backward compatibility aliases for the older Flang/Dhall names.
+        phony "ats2-mock" $ need ["ats2-mock-registry"]
+        phony "flang-mock" $ need ["ats2-mock-registry"]
+        phony "flang-dhall-emit" $ need ["ats2-mock-registry"]
 
         phony "ats2" $ need ["ats2-kernel"]
 
