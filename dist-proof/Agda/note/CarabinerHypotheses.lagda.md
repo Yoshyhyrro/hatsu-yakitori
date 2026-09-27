@@ -227,6 +227,69 @@ once someone sits down with the right `Addr 5` values -- not attempted
 yet, but no longer blocked on missing structure, only on writing it
 out.
 
+## H7 — Bi-octonions vs. sedenions: tangent space and block structure (open)
+
+The sedenions are not the only 16-dimensional zero-divisor algebra:
+complexifying the octonions (bi-octonions, `O + I*O`, `I^2 = -1`) does
+too, by the general classical fact that complexifying any composition
+algebra introduces zero divisors. This is a genuinely different
+algebra from the sedenions -- the product `(a,b)(c,d) = (ac-bd,
+ad+bc)` is the ordinary complex-bilinear extension, built entirely
+from the octonions' own multiplication with no conjugate anywhere,
+unlike the Cayley-Dickson doubling step the sedenions use. `1 + I*e_1`
+is the simplest such example: `(1)(1) - e_1*e_1 = 1-(-1) = 0`. This
+one fact -- `bio-mul x-bio y-bio = (zeroCD 3, zeroCD 3)` -- is now
+checked by `refl` in `HopfStructure_Hypotheses.agda`, the same way
+`seed-a`/`witness-x` are for the sedenions.
+
+Comparing the two algebras at these zero-divisor points with the
+tangent map of `(x,y) -> x*y` (i.e. `(dx,dy) -> dx*y + x*dy`, an
+`n x 2n` matrix for `n=16`) found a real structural difference:
+
+  - SED (`seed-a`, `witness-x`): rank of the tangent map is exactly 16
+    -- the maximum possible, i.e. a smooth point of the "product
+    vanishes" locus. Checked not just for `seed-a` but for all 42
+    sedenion pair-seed zero divisors (each with its own kernel
+    witness): rank 16 in every case, no exceptions.
+  - BIO (`1 + I*e_1`, its own kernel witness `1 - I*e_1`): rank of the
+    tangent map is only 10 -- a genuinely singular point, with a
+    22-dimensional tangent space instead of the generic 16. `ker(L_x)`
+    is already 8-dimensional here (vs. 4 for a typical sedenion
+    pair-seed), which mostly accounts for the excess on its own.
+
+Decomposing both `L_x` and `R_y` into their natural 4x4 quaternion
+blocks (`H_a..H_d`, the four dimension-4 pieces both `CD 4` and
+`O + I*O` split into) sharpened this further: at this specific point,
+BIO's `L_x` and `R_y` have *identical* block-support patterns, and that
+shared pattern splits cleanly into two disconnected pairs of blocks
+(`{H_a,H_c}` and `{H_b,H_d}`, no cross terms at all) -- a genuine
+block-flow cut. SED's `L_x` and `R_y` do not match each other's
+pattern at all: `L_x` has the same two-way split BIO shows, but `R_y`
+is fully cyclically connected (`H_a<->H_b<->H_c<->H_d<->H_a`) -- a
+real asymmetry, consistent with the sedenions' product genuinely not
+being commutative-like the way the bi-octonion product is.
+
+That block-flow cut does NOT survive genericity, though, and this is
+the one part of H7 checked carefully rather than off one example: a
+one-parameter family of bi-octonion zero divisors through the same
+point (`x = s + I*(e_1+t*e_4)`, `y = s - I*(e_1+t*e_4)`,
+`s=(1+u^2)/(1-u^2)`, `t=2u/(1-u^2)`, so `s^2-t^2=1` identically and
+`x*y=0` holds for every `u`) shows the cut is a feature of `u=0`
+specifically: symbolically in `u`, and concretely at `u=1/2`, all four
+blocks are connected with no cut, in both `L_x` and `R_y`. What does
+survive genericity: `L_x` and `R_y` still match each other's block
+pattern exactly at every `u` checked, cut or no cut -- so the BIO/SED
+asymmetry (`L_x = R_y`-shaped vs. not) looks like a real, level-
+independent difference between the two algebras, while the specific
+two-block cut was a `u=0` coincidence, not evidence of one.
+
+None of the rank or block-connectivity claims above are formalized --
+they need real linear algebra (matrix rank, over a function field for
+the parametrized family) this project does not have, the same gap
+already on record for `zero-divisor-has-gen-inv`. What is fully
+checked is the elementary product fact establishing `1+I*e_1` as a
+genuine zero divisor in the first place.
+
 ## Not pursuing
 
 Went looking for a literature connection between Cayley-Dickson
