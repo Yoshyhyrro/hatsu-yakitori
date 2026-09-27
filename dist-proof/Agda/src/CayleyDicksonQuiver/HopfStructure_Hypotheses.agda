@@ -42,7 +42,6 @@ open import CayleyDicksonQuiver.Hypotheses
          basis-e2; basis-e3; basis-e5; basis-e6; basis-e7; basis-e9;
          basis-e10; basis-e11; basis-e12; basis-e14; basis-e15)
 open import CayleyDicksonQuiver.HopfStructure
-open import Algebra.Separates using (Separates)
 open import Data.Bool using (false; true)
 open import Data.Integer using (1ℤ)
 open import Data.List using (List; []; _∷_)
@@ -247,6 +246,10 @@ seed5-zero-divisor = refl
 -- be checking with (abelianization, degree-2 Magnus term) in place of
 -- (address-XOR, cocycle-sign) -- one instance of `Separates`, not two
 -- unrelated facts.
+
+-- Inlined from Algebra.Separates to resolve missing module dependency.
+Separates : ∀ {A B C : Set} → (A → B) → (A → C) → A → A → Set
+Separates T S x y = (T x ≡ T y) × ¬ (S x ≡ S y)
 
 signature-T : Addr 4 × Addr 4 → Addr 4
 signature-T (p , q) = p ⊕ q
