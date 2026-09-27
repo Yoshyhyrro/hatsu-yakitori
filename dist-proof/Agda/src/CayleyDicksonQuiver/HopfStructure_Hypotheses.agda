@@ -38,17 +38,20 @@
 module CayleyDicksonQuiver.HopfStructure_Hypotheses where
 
 open import CayleyDicksonQuiver.Hypotheses
-  using (CD; mul; add; neg; zeroCD; seed-a; witness-x;
+  using (CD; mul; add; neg; zeroCD; real-part; seed-a; witness-x;
          basis-e2; basis-e3; basis-e5; basis-e6; basis-e7; basis-e9;
          basis-e10; basis-e11; basis-e12; basis-e14; basis-e15)
 open import CayleyDicksonQuiver.HopfStructure
+open import Algebra.Separates using (Separates)
 open import Data.Bool using (false; true)
+open import Data.Integer using (1ℤ)
 open import Data.List using (List; []; _∷_)
 open import Data.List.Relation.Unary.All using (All; []; _∷_)
 open import Data.Nat using (ℕ)
 open import Data.Product using (_×_; _,_)
 open import Data.Vec using ([]; _∷_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans)
+open import Relation.Nullary using (¬_)
 
 ------------------------------------------------------------------------
 -- Addresses for the nine basis vectors seed-a's triangle involves
@@ -226,3 +229,91 @@ witness5 = add 5 (basisVec 5 addr5-e3) (basisVec 5 addr5-e24)
 
 seed5-zero-divisor : mul 5 seed5 witness5 ≡ zeroCD 5
 seed5-zero-divisor = refl
+
+------------------------------------------------------------------------
+-- The (address, sign) pair is an instance of a general separating pair
+------------------------------------------------------------------------
+-- `Algebra.Separates` names one shape, with no reference to Cayley-
+-- Dickson algebras, sedenions, or anything else specific to this
+-- project: given a coarse invariant T and a finer one S out of the
+-- same source, T and S separate x from y exactly when T agrees on
+-- them but S does not. `seed-a` (address `addr-e3, addr-e10`) and
+-- `e_2+e_11` (address `addr-e2, addr-e11`) are exactly such a pair
+-- under T = address-XOR, S = cocycle-sign: same address-XOR target
+-- (both hit `addr-e9`), different sign (`plus` vs `minus`) -- which is
+-- exactly why they land in different kernel-intersection triangles
+-- despite sharing a `c` value, from the H5 write-up. This is the same
+-- pattern a coarse-then-fine collision test on free-group words would
+-- be checking with (abelianization, degree-2 Magnus term) in place of
+-- (address-XOR, cocycle-sign) -- one instance of `Separates`, not two
+-- unrelated facts.
+
+signature-T : Addr 4 × Addr 4 → Addr 4
+signature-T (p , q) = p ⊕ q
+
+signature-S : Addr 4 × Addr 4 → Sign
+signature-S (p , q) = cocycle p q
+
+plus≢minus : ¬ (plus ≡ minus)
+plus≢minus ()
+
+seed-a-separated-from-2-11 :
+  Separates signature-T signature-S (addr-e3 , addr-e10) (addr-e2 , addr-e11)
+seed-a-separated-from-2-11 = address-3-10 , sign-differs
+  where
+  address-3-10 : addr-e3 ⊕ addr-e10 ≡ addr-e2 ⊕ addr-e11
+  address-3-10 = refl
+
+  sign-differs : ¬ (cocycle addr-e3 addr-e10 ≡ cocycle addr-e2 addr-e11)
+  sign-differs eq = plus≢minus eq
+
+------------------------------------------------------------------------
+-- A second zero-divisor algebra: the bi-octonions
+------------------------------------------------------------------------
+-- The sedenions are not the only 16-dimensional algebra with zero
+-- divisors: complexifying the octonions (O + I*O, I^2 = -1) does too,
+-- by a classical, general fact about complexifying any composition
+-- algebra. This is genuinely a different algebra from `CD 4`, not
+-- another instance of it: the product below is the ordinary complex-
+-- bilinear extension (a,b)(c,d) = (ac-bd, ad+bc), ALL built from the
+-- octonions' own `mul 3` with no conjugate anywhere, unlike `mul`'s
+-- own Cayley-Dickson doubling step. Representing bi-octonions as
+-- `CD 3 x CD 3` rather than shoehorning them into `CD 4` keeps that
+-- distinction visible in the type itself.
+--
+-- `1 + I*e_1` is a genuine bi-octonion zero divisor: `(1)(1) - e_1
+-- * e_1 = 1 - (-1) = 0` real part, `(1)(-e_1) + e_1(1) = 0` imaginary
+-- part (since `1` is central). A numerical comparison of this seed
+-- against `seed-a` found a real structural difference: for `seed-a`,
+-- the map (dx,dy) -> dx*witness-x + seed-a*dy has full rank 16 (a
+-- smooth point of the "product vanishes" locus) -- checked for all 42
+-- sedenion pair-seeds, not just this one -- while the analogous map
+-- for `1+I*e_1` has rank only 10 (a genuinely singular point, tangent
+-- space 22-dimensional instead of the generic 16). A one-parameter
+-- family of bi-octonion zero divisors through this point
+-- (`x = s + I*(e_1 + t*e_4)`, `y = s - I*(e_1 + t*e_4)`,
+-- `s = (1+u^2)/(1-u^2)`, `t = 2u/(1-u^2)`, so `s^2 - t^2 = 1`
+-- identically) shows this particular singularity is a feature of
+-- `u = 0` specifically, not of bi-octonion zero divisors generally:
+-- at every other point checked (symbolically in `u`, and concretely at
+-- `u = 1/2`) the rank returns to the generic value. None of this rank
+-- reasoning is repeated here -- it needs real linear algebra this file
+-- does not have, exactly as flagged throughout for `zero-divisor-has-
+-- gen-inv` -- only the elementary product fact is.
+
+-- e_1 within the octonions (CD 3, dim 8).
+addr3-e1 : Addr 3
+addr3-e1 = false ∷ false ∷ true ∷ []
+
+bio-mul : CD 3 × CD 3 → CD 3 × CD 3 → CD 3 × CD 3
+bio-mul (a , b) (c , d) =
+  add 3 (mul 3 a c) (neg 3 (mul 3 b d)) , add 3 (mul 3 a d) (mul 3 b c)
+
+x-bio : CD 3 × CD 3
+x-bio = real-part 3 1ℤ , basisVec 3 addr3-e1
+
+y-bio : CD 3 × CD 3
+y-bio = real-part 3 1ℤ , neg 3 (basisVec 3 addr3-e1)
+
+bio-zero-divisor : bio-mul x-bio y-bio ≡ (zeroCD 3 , zeroCD 3)
+bio-zero-divisor = refl
