@@ -42,14 +42,15 @@ open import CayleyDicksonQuiver.Hypotheses
          basis-e2; basis-e3; basis-e5; basis-e6; basis-e7; basis-e9;
          basis-e10; basis-e11; basis-e12; basis-e14; basis-e15)
 open import CayleyDicksonQuiver.HopfStructure
-open import Data.Bool using (false; true)
+open import Data.Bool using (Bool; false; true)
 open import Data.Integer using (1ℤ)
-open import Data.List using (List; []; _∷_)
+open import Data.List using (List; []; _∷_; map; concatMap; length; applyUpTo)
 open import Data.List.Relation.Unary.All using (All; []; _∷_)
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; zero; suc; _+_; _∸_; _≡ᵇ_)
+open import Data.Nat.Properties using (+-assoc; +-comm; +-identityʳ)
 open import Data.Product using (_×_; _,_)
 open import Data.Vec using ([]; _∷_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
 open import Relation.Nullary using (¬_)
 
 ------------------------------------------------------------------------
@@ -320,3 +321,231 @@ y-bio = real-part 3 1ℤ , neg 3 (basisVec 3 addr3-e1)
 
 bio-zero-divisor : bio-mul x-bio y-bio ≡ (zeroCD 3 , zeroCD 3)
 bio-zero-divisor = refl
+
+------------------------------------------------------------------------
+-- Index words and the stuffle product
+------------------------------------------------------------------------
+-- An index word is a list of natural numbers, read as positive
+-- integers. Its weight is the sum of its entries and its depth is its
+-- length. An index word is admissible if it is nonempty and its first
+-- entry is at least 2.
+--
+-- The stuffle product of two index words is a formal sum of index
+-- words. A formal sum is represented as an association list from index
+-- words to coefficients, ordered by first occurrence.
+--
+-- Recorded below: the definitions, a few evaluations by `refl`, and two
+-- general statements about the terms of a stuffle product (their
+-- weight, and admissibility when both factors are admissible).
+-- Commutativity and associativity of the stuffle product are not
+-- treated.
+
+IndexWord : Set
+IndexWord = List ℕ
+
+weight : IndexWord → ℕ
+weight []       = 0
+weight (n ∷ ns) = n + weight ns
+
+admissible : IndexWord → Bool
+admissible []                = false
+admissible (zero ∷ _)        = false
+admissible (suc zero ∷ _)    = false
+admissible (suc (suc _) ∷ _) = true
+
+filter-words : (IndexWord → Bool) → List IndexWord → List IndexWord
+filter-words p []       = []
+filter-words p (w ∷ ws) with p w
+... | true  = w ∷ filter-words p ws
+... | false = filter-words p ws
+
+-- `compositions n k` lists the ordered sums of `k` positive integers
+-- with total `n`, in lexicographic order.
+
+compositions : ℕ → ℕ → List IndexWord
+compositions zero    zero    = [] ∷ []
+compositions (suc n) zero    = []
+compositions n       (suc k) =
+  concatMap (λ a → map (λ w → a ∷ w) (compositions (n ∸ a) k))
+            (applyUpTo suc n)
+
+admissible-words : ℕ → ℕ → List IndexWord
+admissible-words n k = filter-words admissible (compositions n k)
+
+compositions-4-2 :
+  compositions 4 2 ≡ (1 ∷ 3 ∷ []) ∷ (2 ∷ 2 ∷ []) ∷ (3 ∷ 1 ∷ []) ∷ []
+compositions-4-2 = refl
+
+admissible-words-5-2 :
+  admissible-words 5 2 ≡ (2 ∷ 3 ∷ []) ∷ (3 ∷ 2 ∷ []) ∷ (4 ∷ 1 ∷ []) ∷ []
+admissible-words-5-2 = refl
+
+-- Each triple is (weight, depth, number of admissible words).
+
+admissible-word-counts : List (ℕ × ℕ × ℕ)
+admissible-word-counts =
+  (8 , 5 , 15) ∷ (10 , 5 , 70) ∷ (12 , 5 , 210) ∷ []
+
+admissible-word-counts-agree :
+  All (λ (n , k , c) → length (admissible-words n k) ≡ c)
+      admissible-word-counts
+admissible-word-counts-agree = refl ∷ refl ∷ refl ∷ []
+
+------------------------------------------------------------------------
+-- Formal sums and the stuffle product
+------------------------------------------------------------------------
+
+FormalSum : Set
+FormalSum = List (IndexWord × ℕ)
+
+-- Boolean equality of index words.
+
+word-eq : IndexWord → IndexWord → Bool
+word-eq []       []       = true
+word-eq (m ∷ ms) (n ∷ ns) with m ≡ᵇ n
+... | true  = word-eq ms ns
+... | false = false
+word-eq _        _        = false
+
+-- Adds `c` to the coefficient of `w`, appending `w` if it is absent.
+
+add-term : IndexWord → ℕ → FormalSum → FormalSum
+add-term w c []               = (w , c) ∷ []
+add-term w c ((v , d) ∷ rest) with word-eq w v
+... | true  = (v , d + c) ∷ rest
+... | false = (v , d) ∷ add-term w c rest
+
+-- Adds the terms of the second sum to the first, in order.
+
+add-sum : FormalSum → FormalSum → FormalSum
+add-sum xs []              = xs
+add-sum xs ((w , c) ∷ ys)  = add-sum (add-term w c xs) ys
+
+-- Prepends a letter to every index word of a formal sum.
+
+prefix-letter : ℕ → FormalSum → FormalSum
+prefix-letter n []              = []
+prefix-letter n ((w , c) ∷ xs)  = (n ∷ w , c) ∷ prefix-letter n xs
+
+-- `stuffle x y` sums over the interleavings of `x` and `y`, where a
+-- letter of `x` and a letter of `y` may also be merged into their sum.
+
+stuffle : IndexWord → IndexWord → FormalSum
+stuffle []       ys       = (ys , 1) ∷ []
+stuffle (x ∷ xs) []       = (x ∷ xs , 1) ∷ []
+stuffle (x ∷ xs) (y ∷ ys) =
+  add-sum (add-sum (prefix-letter x (stuffle xs (y ∷ ys)))
+                   (prefix-letter y (stuffle (x ∷ xs) ys)))
+          (prefix-letter (x + y) (stuffle xs ys))
+
+stuffle-checks : List (IndexWord × IndexWord × FormalSum)
+stuffle-checks =
+  (2 ∷ [] , 3 ∷ [] ,
+    (2 ∷ 3 ∷ [] , 1) ∷ (3 ∷ 2 ∷ [] , 1) ∷ (5 ∷ [] , 1) ∷ []) ∷
+  (1 ∷ [] , 1 ∷ [] ,
+    (1 ∷ 1 ∷ [] , 2) ∷ (2 ∷ [] , 1) ∷ []) ∷
+  (2 ∷ 1 ∷ [] , 3 ∷ [] ,
+    (2 ∷ 1 ∷ 3 ∷ [] , 1) ∷ (2 ∷ 3 ∷ 1 ∷ [] , 1) ∷ (2 ∷ 4 ∷ [] , 1) ∷
+    (3 ∷ 2 ∷ 1 ∷ [] , 1) ∷ (5 ∷ 1 ∷ [] , 1) ∷ []) ∷ []
+
+stuffle-checks-agree :
+  All (λ (x , y , s) → stuffle x y ≡ s) stuffle-checks
+stuffle-checks-agree = refl ∷ refl ∷ refl ∷ []
+
+------------------------------------------------------------------------
+-- Properties of the terms of a stuffle product
+------------------------------------------------------------------------
+-- `AllKeys P xs` states that `P` holds for every index word occurring
+-- in the formal sum `xs`, regardless of its coefficient.
+
+data AllKeys (P : IndexWord → Set) : FormalSum → Set where
+  []  : AllKeys P []
+  _∷_ : ∀ {w c xs} → P w → AllKeys P xs → AllKeys P ((w , c) ∷ xs)
+
+keys-map : {P Q : IndexWord → Set} → (∀ w → P w → Q w) →
+  (xs : FormalSum) → AllKeys P xs → AllKeys Q xs
+keys-map f []              []         = []
+keys-map f ((w , c) ∷ xs)  (h ∷ hs)   = f w h ∷ keys-map f xs hs
+
+add-term-keys : {P : IndexWord → Set} (w : IndexWord) (c : ℕ)
+  (xs : FormalSum) → P w → AllKeys P xs → AllKeys P (add-term w c xs)
+add-term-keys w c []              hw []         = hw ∷ []
+add-term-keys w c ((v , d) ∷ xs)  hw (hv ∷ hxs) with word-eq w v
+... | true  = hv ∷ hxs
+... | false = hv ∷ add-term-keys w c xs hw hxs
+
+add-sum-keys : {P : IndexWord → Set} (xs ys : FormalSum) →
+  AllKeys P xs → AllKeys P ys → AllKeys P (add-sum xs ys)
+add-sum-keys xs []              hxs []         = hxs
+add-sum-keys xs ((w , c) ∷ ys)  hxs (hw ∷ hys) =
+  add-sum-keys (add-term w c xs) ys (add-term-keys w c xs hw hxs) hys
+
+-- Weight: every term of `stuffle x y` has weight `weight x + weight y`.
+
+prefix-letter-weight : (m n : ℕ) (xs : FormalSum) →
+  AllKeys (λ w → weight w ≡ n) xs →
+  AllKeys (λ w → weight w ≡ m + n) (prefix-letter m xs)
+prefix-letter-weight m n []              []         = []
+prefix-letter-weight m n ((w , c) ∷ xs)  (h ∷ hs)   =
+  cong (m +_) h ∷ prefix-letter-weight m n xs hs
+
+swap-inner : (y a b : ℕ) → y + (a + b) ≡ a + (y + b)
+swap-inner y a b =
+  trans (sym (+-assoc y a b))
+        (trans (cong (_+ b) (+-comm y a)) (+-assoc a y b))
+
+rearrange : (x a y b : ℕ) → (x + y) + (a + b) ≡ (x + a) + (y + b)
+rearrange x a y b =
+  trans (+-assoc x y (a + b))
+        (trans (cong (x +_) (swap-inner y a b))
+               (sym (+-assoc x a (y + b))))
+
+stuffle-weight : (x y : IndexWord) →
+  AllKeys (λ w → weight w ≡ weight x + weight y) (stuffle x y)
+stuffle-weight []       y        = refl ∷ []
+stuffle-weight (x ∷ xs) []       = sym (+-identityʳ (weight (x ∷ xs))) ∷ []
+stuffle-weight (x ∷ xs) (y ∷ ys) =
+  add-sum-keys _ _
+    (add-sum-keys _ _
+      (keys-map
+        (λ w h → trans h (sym (+-assoc x (weight xs) (y + weight ys))))
+        _
+        (prefix-letter-weight x (weight xs + (y + weight ys)) _
+          (stuffle-weight xs (y ∷ ys))))
+      (keys-map
+        (λ w h → trans h (swap-inner y (x + weight xs) (weight ys)))
+        _
+        (prefix-letter-weight y ((x + weight xs) + weight ys) _
+          (stuffle-weight (x ∷ xs) ys))))
+    (keys-map
+      (λ w h → trans h (rearrange x (weight xs) y (weight ys)))
+      _
+      (prefix-letter-weight (x + y) (weight xs + weight ys) _
+        (stuffle-weight xs ys)))
+
+-- Admissibility: the stuffle product of two admissible words has only
+-- admissible terms. Each term begins with `x`, `y` or `x + y`.
+
+Admissible : IndexWord → Set
+Admissible w = admissible w ≡ true
+
+prefix-letter-admissible : (m : ℕ) (xs : FormalSum) →
+  AllKeys Admissible (prefix-letter (suc (suc m)) xs)
+prefix-letter-admissible m []              = []
+prefix-letter-admissible m ((w , c) ∷ xs)  =
+  refl ∷ prefix-letter-admissible m xs
+
+stuffle-admissible : (x y : IndexWord) →
+  Admissible x → Admissible y → AllKeys Admissible (stuffle x y)
+stuffle-admissible []                 y                 ()  _
+stuffle-admissible (_ ∷ _)            []                _   ()
+stuffle-admissible (zero ∷ _)         (_ ∷ _)           ()  _
+stuffle-admissible (suc zero ∷ _)     (_ ∷ _)           ()  _
+stuffle-admissible (suc (suc _) ∷ _)  (zero ∷ _)        _   ()
+stuffle-admissible (suc (suc _) ∷ _)  (suc zero ∷ _)    _   ()
+stuffle-admissible (suc (suc x) ∷ xs) (suc (suc y) ∷ ys) _ _ =
+  add-sum-keys _ _
+    (add-sum-keys _ _
+      (prefix-letter-admissible x (stuffle xs (suc (suc y) ∷ ys)))
+      (prefix-letter-admissible y (stuffle (suc (suc x) ∷ xs) ys)))
+    (prefix-letter-admissible (x + suc (suc y)) (stuffle xs ys))
