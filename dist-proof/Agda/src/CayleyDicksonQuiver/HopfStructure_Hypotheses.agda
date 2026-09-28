@@ -43,14 +43,16 @@ open import CayleyDicksonQuiver.Hypotheses
          basis-e10; basis-e11; basis-e12; basis-e14; basis-e15)
 open import CayleyDicksonQuiver.HopfStructure
 open import Data.Bool using (Bool; false; true)
-open import Data.Integer using (1ℤ)
-open import Data.List using (List; []; _∷_; map; concatMap; length; applyUpTo)
+open import Data.Integer using (ℤ; 1ℤ; _⊖_; -_; ∣_∣) renaming (+_ to pos)
+open import Data.List using (List; []; _∷_; map; concatMap; length; applyUpTo; _++_)
 open import Data.List.Relation.Unary.All using (All; []; _∷_)
-open import Data.Nat using (ℕ; zero; suc; _+_; _∸_; _≡ᵇ_)
-open import Data.Nat.Properties using (+-assoc; +-comm; +-identityʳ)
+open import Data.Nat using (ℕ; zero; suc; _+_; _∸_; _≡ᵇ_; _≤_; z≤n; s≤s)
+open import Data.Nat.Properties
+  using (+-assoc; +-comm; +-identityʳ; +-suc; ≤-trans; ≤-reflexive; +-monoʳ-≤; n≤1+n;
+         m+[n∸m]≡n)
 open import Data.Product using (_×_; _,_)
 open import Data.Vec using ([]; _∷_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂)
 open import Relation.Nullary using (¬_)
 
 ------------------------------------------------------------------------
@@ -549,3 +551,469 @@ stuffle-admissible (suc (suc x) ∷ xs) (suc (suc y) ∷ ys) _ _ =
       (prefix-letter-admissible x (stuffle xs (suc (suc y) ∷ ys)))
       (prefix-letter-admissible y (stuffle (suc (suc x) ∷ xs) ys)))
     (prefix-letter-admissible (x + suc (suc y)) (stuffle xs ys))
+
+------------------------------------------------------------------------
+-- Binary words
+------------------------------------------------------------------------
+-- The index word (n₁, …, nᵣ) of positive integers is encoded as the
+-- binary word 0^(n₁-1) 1 … 0^(nᵣ-1) 1, with `false` for 0 and `true`
+-- for 1. The weight of an index word is the length of its encoding,
+-- and its depth is the number of 1s. Every non-empty encoded word ends
+-- in 1, and the encoding is injective on index words of positive
+-- integers.
+
+BinWord : Set
+BinWord = List Bool
+
+zeros : ℕ → BinWord → BinWord
+zeros zero    w = w
+zeros (suc n) w = false ∷ zeros n w
+
+index-to-word : IndexWord → BinWord
+index-to-word []       = []
+index-to-word (n ∷ ns) = zeros (n ∸ 1) (true ∷ index-to-word ns)
+
+-- Reads the zeros before each 1. Trailing zeros are dropped, so this
+-- inverts `index-to-word` only on binary words ending in 1.
+
+word-to-index-from : ℕ → BinWord → IndexWord
+word-to-index-from z []          = []
+word-to-index-from z (false ∷ w) = word-to-index-from (suc z) w
+word-to-index-from z (true  ∷ w) = suc z ∷ word-to-index-from zero w
+
+word-to-index : BinWord → IndexWord
+word-to-index = word-to-index-from zero
+
+Positive : IndexWord → Set
+Positive = All (λ n → 1 ≤ n)
+
+encoding-checks : List (IndexWord × BinWord)
+encoding-checks =
+  (2 ∷ 1 ∷ 3 ∷ [] , false ∷ true ∷ true ∷ false ∷ false ∷ true ∷ []) ∷
+  (3 ∷ 1 ∷ [] , false ∷ false ∷ true ∷ true ∷ []) ∷
+  (2 ∷ 2 ∷ [] , false ∷ true ∷ false ∷ true ∷ []) ∷ []
+
+encoding-checks-agree :
+  All (λ (a , w) → index-to-word a ≡ w × word-to-index w ≡ a) encoding-checks
+encoding-checks-agree = (refl , refl) ∷ (refl , refl) ∷ (refl , refl) ∷ []
+
+word-to-index-from-zeros : (m z : ℕ) (w : BinWord) →
+  word-to-index-from z (zeros m w) ≡ word-to-index-from (m + z) w
+word-to-index-from-zeros zero    z w = refl
+word-to-index-from-zeros (suc m) z w =
+  trans (word-to-index-from-zeros m (suc z) w)
+        (cong (λ k → word-to-index-from k w) (+-suc m z))
+
+word-to-index-index-to-word : (a : IndexWord) → Positive a →
+  word-to-index (index-to-word a) ≡ a
+word-to-index-index-to-word []           []          = refl
+word-to-index-index-to-word (suc m ∷ ns) (_ ∷ ps)    =
+  trans (word-to-index-from-zeros m zero (true ∷ index-to-word ns))
+        (cong₂ _∷_ (cong suc (+-identityʳ m))
+                   (word-to-index-index-to-word ns ps))
+
+length-zeros : (m : ℕ) (w : BinWord) → length (zeros m w) ≡ m + length w
+length-zeros zero    w = refl
+length-zeros (suc m) w = cong suc (length-zeros m w)
+
+length-index-to-word : (a : IndexWord) → Positive a →
+  length (index-to-word a) ≡ weight a
+length-index-to-word []           []         = refl
+length-index-to-word (suc m ∷ ns) (_ ∷ ps)   =
+  trans (length-zeros m (true ∷ index-to-word ns))
+        (trans (+-suc m (length (index-to-word ns)))
+               (cong (λ k → suc (m + k)) (length-index-to-word ns ps)))
+
+------------------------------------------------------------------------
+-- The shuffle product
+------------------------------------------------------------------------
+-- `interleavings u v` lists the interleavings of two binary words,
+-- with multiplicity. The shuffle product of two index words counts
+-- the interleavings of their encodings, read back as index words.
+
+interleavings : BinWord → BinWord → List BinWord
+interleavings []       v        = v ∷ []
+interleavings (x ∷ xs) []       = (x ∷ xs) ∷ []
+interleavings (x ∷ xs) (y ∷ ys) =
+  map (x ∷_) (interleavings xs (y ∷ ys))
+    ++ map (y ∷_) (interleavings (x ∷ xs) ys)
+
+count-words : FormalSum → List IndexWord → FormalSum
+count-words acc []       = acc
+count-words acc (w ∷ ws) = count-words (add-term w 1 acc) ws
+
+shuffle : IndexWord → IndexWord → FormalSum
+shuffle a b =
+  count-words []
+    (map word-to-index (interleavings (index-to-word a) (index-to-word b)))
+
+shuffle-checks : List (IndexWord × IndexWord × FormalSum)
+shuffle-checks =
+  (2 ∷ [] , 2 ∷ [] ,
+    (2 ∷ 2 ∷ [] , 2) ∷ (3 ∷ 1 ∷ [] , 4) ∷ []) ∷ []
+
+shuffle-checks-agree :
+  All (λ (x , y , s) → shuffle x y ≡ s) shuffle-checks
+shuffle-checks-agree = refl ∷ []
+
+------------------------------------------------------------------------
+-- Weight of the terms of a shuffle product
+------------------------------------------------------------------------
+-- Every term of `shuffle x y` has weight `weight x + weight y`, for
+-- non-empty index words of positive integers. The proof goes through
+-- the encoding: each interleaving of two encoded words has the
+-- combined length and ends in 1.
+
+all-++ : {A : Set} {P : A → Set} {xs ys : List A} →
+  All P xs → All P ys → All P (xs ++ ys)
+all-++ []         hys = hys
+all-++ (h ∷ hxs)  hys = h ∷ all-++ hxs hys
+
+all-map : {A B : Set} {P : B → Set} (f : A → B) {xs : List A} →
+  All (λ x → P (f x)) xs → All P (map f xs)
+all-map f []         = []
+all-map f (h ∷ hs)   = h ∷ all-map f hs
+
+all-imp : {A : Set} {P Q : A → Set} → (∀ x → P x → Q x) →
+  {xs : List A} → All P xs → All Q xs
+all-imp f []         = []
+all-imp f (h ∷ hs)   = f _ h ∷ all-imp f hs
+
+all-both : {A : Set} {P Q : A → Set} {xs : List A} →
+  All P xs → All Q xs → All (λ x → P x × Q x) xs
+all-both []         []         = []
+all-both (p ∷ ps)   (q ∷ qs)   = (p , q) ∷ all-both ps qs
+
+interleavings-length : (u v : BinWord) →
+  All (λ w → length w ≡ length u + length v) (interleavings u v)
+interleavings-length []       v        = refl ∷ []
+interleavings-length (x ∷ xs) []       =
+  sym (+-identityʳ (suc (length xs))) ∷ []
+interleavings-length (x ∷ xs) (y ∷ ys) =
+  all-++
+    (all-map (x ∷_)
+      (all-imp (λ w h → cong suc h)
+        (interleavings-length xs (y ∷ ys))))
+    (all-map (y ∷_)
+      (all-imp
+        (λ w h → trans (cong suc h)
+                       (sym (cong suc (+-suc (length xs) (length ys)))))
+        (interleavings-length (x ∷ xs) ys)))
+
+-- `EndsTrue w` states that `w` is non-empty and its last letter is 1.
+
+data EndsTrue : BinWord → Set where
+  here  : EndsTrue (true ∷ [])
+  there : ∀ {b w} → EndsTrue w → EndsTrue (b ∷ w)
+
+interleavings-ends : (u v : BinWord) → EndsTrue u → EndsTrue v →
+  All EndsTrue (interleavings u v)
+interleavings-ends (true ∷ []) (true ∷ []) here here =
+  there here ∷ there here ∷ []
+interleavings-ends (true ∷ []) (y ∷ ys) here (there pys) =
+  there (there pys) ∷
+  all-map (y ∷_)
+    (all-imp (λ w p → there p)
+      (interleavings-ends (true ∷ []) ys here pys))
+interleavings-ends (x ∷ xs) (true ∷ []) (there pxs) here =
+  all-++
+    (all-map (x ∷_)
+      (all-imp (λ w p → there p)
+        (interleavings-ends xs (true ∷ []) pxs here)))
+    (there (there pxs) ∷ [])
+interleavings-ends (x ∷ xs) (y ∷ ys) (there pxs) (there pys) =
+  all-++
+    (all-map (x ∷_)
+      (all-imp (λ w p → there p)
+        (interleavings-ends xs (y ∷ ys) pxs (there pys))))
+    (all-map (y ∷_)
+      (all-imp (λ w p → there p)
+        (interleavings-ends (x ∷ xs) ys (there pxs) pys)))
+
+ends-true-zeros : (m : ℕ) {w : BinWord} → EndsTrue w →
+  EndsTrue (zeros m w)
+ends-true-zeros zero    p = p
+ends-true-zeros (suc m) p = there (ends-true-zeros m p)
+
+ends-true-index : (n : ℕ) (ns : IndexWord) →
+  EndsTrue (index-to-word (n ∷ ns))
+ends-true-index n []        = ends-true-zeros (n ∸ 1) here
+ends-true-index n (m ∷ ms)  =
+  ends-true-zeros (n ∸ 1) (there (ends-true-index m ms))
+
+weight-from : (z : ℕ) (w : BinWord) → EndsTrue w →
+  weight (word-to-index-from z w) ≡ z + length w
+weight-from z (true ∷ []) here =
+  trans (+-identityʳ (suc z))
+        (sym (trans (+-suc z 0) (cong suc (+-identityʳ z))))
+weight-from z (false ∷ w) (there p) =
+  trans (weight-from (suc z) w p) (sym (+-suc z (length w)))
+weight-from z (true ∷ w) (there p) =
+  trans (cong (suc z +_) (weight-from zero w p))
+        (sym (+-suc z (length w)))
+
+count-words-keys : {P : IndexWord → Set} (acc : FormalSum)
+  (ws : List IndexWord) → AllKeys P acc → All P ws →
+  AllKeys P (count-words acc ws)
+count-words-keys acc []        hacc []         = hacc
+count-words-keys acc (w ∷ ws)  hacc (hw ∷ hws) =
+  count-words-keys (add-term w 1 acc) ws
+    (add-term-keys w 1 acc hw hacc) hws
+
+shuffle-weight : (x y : ℕ) (xs ys : IndexWord) →
+  Positive (x ∷ xs) → Positive (y ∷ ys) →
+  AllKeys (λ w → weight w ≡ weight (x ∷ xs) + weight (y ∷ ys))
+          (shuffle (x ∷ xs) (y ∷ ys))
+shuffle-weight x y xs ys px py =
+  count-words-keys [] _ []
+    (all-map word-to-index
+      (all-imp step
+        (all-both
+          (interleavings-ends U V (ends-true-index x xs) (ends-true-index y ys))
+          (interleavings-length U V))))
+  where
+  U = index-to-word (x ∷ xs)
+  V = index-to-word (y ∷ ys)
+
+  step : (w : BinWord) → EndsTrue w × (length w ≡ length U + length V) →
+    weight (word-to-index w) ≡ weight (x ∷ xs) + weight (y ∷ ys)
+  step w (e , l) =
+    trans (weight-from zero w e)
+          (trans l (cong₂ _+_ (length-index-to-word (x ∷ xs) px)
+                              (length-index-to-word (y ∷ ys) py)))
+
+------------------------------------------------------------------------
+-- Depth of the terms of a stuffle product
+------------------------------------------------------------------------
+-- The depth of an index word is its length. Each term of `stuffle x y`
+-- has depth at most `depth x + depth y`.
+
+depth : IndexWord → ℕ
+depth = length
+
+prefix-letter-depth : (m n : ℕ) (xs : FormalSum) →
+  AllKeys (λ w → depth w ≤ n) xs →
+  AllKeys (λ w → depth w ≤ suc n) (prefix-letter m xs)
+prefix-letter-depth m n []              []         = []
+prefix-letter-depth m n ((w , c) ∷ xs)  (h ∷ hs)   =
+  s≤s h ∷ prefix-letter-depth m n xs hs
+
+stuffle-depth : (x y : IndexWord) →
+  AllKeys (λ w → depth w ≤ depth x + depth y) (stuffle x y)
+stuffle-depth []       y        = ≤-reflexive refl ∷ []
+stuffle-depth (x ∷ xs) []       =
+  ≤-reflexive (sym (+-identityʳ (suc (depth xs)))) ∷ []
+stuffle-depth (x ∷ xs) (y ∷ ys) =
+  add-sum-keys _ _
+    (add-sum-keys _ _
+      (prefix-letter-depth x _ _ (stuffle-depth xs (y ∷ ys)))
+      (keys-map
+        (λ w h → ≤-trans h
+          (≤-reflexive (cong suc (sym (+-suc (depth xs) (depth ys))))))
+        _
+        (prefix-letter-depth y _ _ (stuffle-depth (x ∷ xs) ys))))
+    (keys-map
+      (λ w h → ≤-trans h (s≤s (+-monoʳ-≤ (depth xs) (n≤1+n (depth ys)))))
+      _
+      (prefix-letter-depth (x + y) _ _ (stuffle-depth xs ys)))
+
+------------------------------------------------------------------------
+-- Depth projection and the depth-5 double shuffle relation
+------------------------------------------------------------------------
+-- The depth-5 double shuffle relation of a pair `(a , b)` is the
+-- difference of the depth-5 parts of `shuffle a b` and `stuffle a b`.
+-- It has integer coefficients and is recorded as an association list
+-- without zero coefficients.
+
+project-depth : ℕ → FormalSum → FormalSum
+project-depth r []              = []
+project-depth r ((w , c) ∷ xs) with depth w ≡ᵇ r
+... | true  = (w , c) ∷ project-depth r xs
+... | false = project-depth r xs
+
+coeff : IndexWord → FormalSum → ℕ
+coeff w []              = 0
+coeff w ((v , c) ∷ xs) with word-eq w v
+... | true  = c
+... | false = coeff w xs
+
+has-key : IndexWord → FormalSum → Bool
+has-key w []              = false
+has-key w ((v , c) ∷ xs) with word-eq w v
+... | true  = true
+... | false = has-key w xs
+
+Relation : Set
+Relation = List (IndexWord × ℤ)
+
+is-zero : ℤ → Bool
+is-zero z = ∣ z ∣ ≡ᵇ 0
+
+drop-zero-terms : Relation → Relation
+drop-zero-terms []              = []
+drop-zero-terms ((w , c) ∷ xs) with is-zero c
+... | true  = drop-zero-terms xs
+... | false = (w , c) ∷ drop-zero-terms xs
+
+-- `difference xs ys` subtracts `ys` from `xs`: the terms of `xs` come
+-- first, followed by the terms of `ys` that do not occur in `xs`.
+
+left-part : FormalSum → FormalSum → Relation
+left-part []              ys = []
+left-part ((w , c) ∷ xs)  ys = (w , c ⊖ coeff w ys) ∷ left-part xs ys
+
+right-only : FormalSum → FormalSum → Relation
+right-only xs []              = []
+right-only xs ((w , d) ∷ ys) with has-key w xs
+... | true  = right-only xs ys
+... | false = (w , - (pos d)) ∷ right-only xs ys
+
+difference : FormalSum → FormalSum → Relation
+difference xs ys = drop-zero-terms (left-part xs ys ++ right-only xs ys)
+
+depth5-double-shuffle : IndexWord → IndexWord → Relation
+depth5-double-shuffle a b =
+  difference (project-depth 5 (shuffle a b)) (project-depth 5 (stuffle a b))
+
+double-shuffle-sample :
+  depth5-double-shuffle (2 ∷ []) (2 ∷ 1 ∷ 1 ∷ 1 ∷ []) ≡
+    (2 ∷ 2 ∷ 1 ∷ 1 ∷ 1 ∷ [] , pos 3) ∷
+    (3 ∷ 1 ∷ 1 ∷ 1 ∷ 1 ∷ [] , pos 10) ∷
+    (2 ∷ 1 ∷ 2 ∷ 1 ∷ 1 ∷ [] , pos 2) ∷
+    (2 ∷ 1 ∷ 1 ∷ 2 ∷ 1 ∷ [] , pos 1) ∷ []
+double-shuffle-sample = refl
+
+------------------------------------------------------------------------
+-- The depth-5 relation matrix at a fixed weight
+------------------------------------------------------------------------
+-- The columns are indexed by the admissible index words of depth 5 and
+-- weight `W`. The rows come from the pairs `(a , b)` of admissible
+-- index words with `depth a + depth b = 5` and
+-- `weight a + weight b = W`. Row reduction is not carried out here.
+
+depth5-basis : ℕ → List IndexWord
+depth5-basis W = admissible-words W 5
+
+pairs : List IndexWord → List IndexWord → List (IndexWord × IndexWord)
+pairs as bs = concatMap (λ a → map (λ b → a , b) bs) as
+
+depth5-pairs : ℕ → List (IndexWord × IndexWord)
+depth5-pairs W =
+  concatMap
+    (λ r → concatMap
+      (λ Wa → pairs (admissible-words Wa r) (admissible-words (W ∸ Wa) (5 ∸ r)))
+      (applyUpTo (2 +_) (W ∸ 2)))
+    (applyUpTo suc 4)
+
+nonempty-relations : List Relation → List Relation
+nonempty-relations []              = []
+nonempty-relations ([] ∷ rs)       = nonempty-relations rs
+nonempty-relations ((t ∷ ts) ∷ rs) = (t ∷ ts) ∷ nonempty-relations rs
+
+depth5-relations : ℕ → List Relation
+depth5-relations W =
+  nonempty-relations (map (λ (a , b) → depth5-double-shuffle a b) (depth5-pairs W))
+
+lookup-relation : IndexWord → Relation → ℤ
+lookup-relation w []              = pos 0
+lookup-relation w ((v , c) ∷ xs) with word-eq w v
+... | true  = c
+... | false = lookup-relation w xs
+
+relation-row : List IndexWord → Relation → List ℤ
+relation-row basis rel = map (λ w → lookup-relation w rel) basis
+
+nonzero-row : List ℤ → Bool
+nonzero-row []       = false
+nonzero-row (c ∷ cs) with is-zero c
+... | true  = nonzero-row cs
+... | false = true
+
+nonzero-rows : List (List ℤ) → List (List ℤ)
+nonzero-rows []        = []
+nonzero-rows (r ∷ rs) with nonzero-row r
+... | true  = r ∷ nonzero-rows rs
+... | false = nonzero-rows rs
+
+relation-matrix : ℕ → List (List ℤ)
+relation-matrix W =
+  nonzero-rows (map (relation-row (depth5-basis W)) (depth5-relations W))
+
+-- Each quadruple is (weight, columns, relations, rows).
+
+relation-matrix-sizes : List (ℕ × ℕ × ℕ × ℕ)
+relation-matrix-sizes =
+  (7 , 5 , 4 , 4) ∷ (8 , 15 , 20 , 20) ∷ (9 , 35 , 60 , 60) ∷ []
+
+relation-matrix-sizes-agree :
+  All (λ (W , c , n , r) →
+         length (depth5-basis W) ≡ c
+       × length (depth5-relations W) ≡ n
+       × length (relation-matrix W) ≡ r)
+      relation-matrix-sizes
+relation-matrix-sizes-agree =
+  (refl , refl , refl) ∷ (refl , refl , refl) ∷ (refl , refl , refl) ∷ []
+
+relation-matrix-7 :
+  relation-matrix 7 ≡
+    (pos 0 ∷ pos 1 ∷ pos 2 ∷ pos 3 ∷ pos 10 ∷ []) ∷
+    (pos 0 ∷ pos 0 ∷ pos 1 ∷ pos 4 ∷ pos 20 ∷ []) ∷
+    (pos 0 ∷ pos 0 ∷ pos 1 ∷ pos 4 ∷ pos 20 ∷ []) ∷
+    (pos 0 ∷ pos 1 ∷ pos 2 ∷ pos 3 ∷ pos 10 ∷ []) ∷ []
+relation-matrix-7 = refl
+
+------------------------------------------------------------------------
+-- Weight and depth are constant on the depth-5 basis
+------------------------------------------------------------------------
+-- The pair (weight, depth) does not distinguish any two words of
+-- `depth5-basis W`. For two such words `a` and `b`, a separation by
+-- `coarse-signature` and a finer invariant `S` therefore amounts to
+-- `¬ (S a ≡ S b)`, in the sense of `Separates` above.
+
+all-upTo : {Q : IndexWord → Set} (g : ℕ → List IndexWord) (f : ℕ → ℕ)
+  (n : ℕ) → (∀ i → suc i ≤ n → All Q (g (f i))) →
+  All Q (concatMap g (applyUpTo f n))
+all-upTo g f zero    h = []
+all-upTo g f (suc n) h =
+  all-++ (h zero (s≤s z≤n))
+         (all-upTo g (λ i → f (suc i)) n (λ i lt → h (suc i) (s≤s lt)))
+
+compositions-suc : (n k : ℕ) →
+  compositions n (suc k) ≡
+    concatMap (λ a → map (a ∷_) (compositions (n ∸ a) k)) (applyUpTo suc n)
+compositions-suc zero    k = refl
+compositions-suc (suc n) k = refl
+
+compositions-signature : (n k : ℕ) →
+  All (λ a → weight a ≡ n × depth a ≡ k) (compositions n k)
+compositions-signature zero    zero    = (refl , refl) ∷ []
+compositions-signature (suc n) zero    = []
+compositions-signature n       (suc k)
+  rewrite compositions-suc n k =
+  all-upTo (λ a → map (a ∷_) (compositions (n ∸ a) k)) suc n step
+  where
+  step : ∀ i → suc i ≤ n →
+    All (λ a → weight a ≡ n × depth a ≡ suc k)
+        (map (suc i ∷_) (compositions (n ∸ suc i) k))
+  step i lt =
+    all-map (suc i ∷_)
+      (all-imp
+        (λ w (hw , hd) →
+          trans (cong (suc i +_) hw) (m+[n∸m]≡n lt) , cong suc hd)
+        (compositions-signature (n ∸ suc i) k))
+
+all-filter : {P : IndexWord → Set} (p : IndexWord → Bool)
+  {ws : List IndexWord} → All P ws → All P (filter-words p ws)
+all-filter p []                 = []
+all-filter p {w ∷ ws} (h ∷ hs) with p w
+... | true  = h ∷ all-filter p hs
+... | false = all-filter p hs
+
+coarse-signature : IndexWord → ℕ × ℕ
+coarse-signature a = weight a , depth a
+
+depth5-basis-signature : (W : ℕ) →
+  All (λ a → coarse-signature a ≡ (W , 5)) (depth5-basis W)
+depth5-basis-signature W =
+  all-imp (λ a (hw , hd) → cong₂ _,_ hw hd)
+    (all-filter admissible (compositions-signature W 5))
