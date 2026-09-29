@@ -105,6 +105,15 @@ sigma : ℕ → NCPoly
 sigma m = ad-power (m + m) E1
 
 ------------------------------------------------------------------------
+-- The Jacobiator
+------------------------------------------------------------------------
+
+jacobi : NCPoly → NCPoly → NCPoly → NCPoly
+jacobi a b c =
+  nc-add-sum (nc-add-sum (nc-lie a (nc-lie b c)) (nc-lie b (nc-lie c a)))
+             (nc-lie c (nc-lie a b))
+
+------------------------------------------------------------------------
 -- Sanity checks
 ------------------------------------------------------------------------
 
@@ -119,3 +128,9 @@ lie-self = refl
 
 lie-antisymmetric : nc-add-sum (nc-lie (sigma 1) (sigma 2)) (nc-lie (sigma 2) (sigma 1)) ≡ []
 lie-antisymmetric = refl
+
+jacobi-1-2-3 : jacobi (sigma 1) (sigma 2) (sigma 3) ≡ []
+jacobi-1-2-3 = refl
+
+jacobi-1-2-4 : jacobi (sigma 1) (sigma 2) (sigma 4) ≡ []
+jacobi-1-2-4 = refl
