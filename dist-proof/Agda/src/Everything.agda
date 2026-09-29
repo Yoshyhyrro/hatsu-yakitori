@@ -14,4 +14,4 @@ open import CayleyDicksonQuiver.MZV.DepthGraded
 --open import CayleyDicksonQuiver.Properties
 open import CayleyDicksonQuiver.Hypotheses
 --open import CayleyDicksonQuiver.ObstructionFiber
---open import CayleyDicksonQuiver.AbelianCurse.SecondOperator
+open import CayleyDicksonQuiver.AbelianCurse.DepthTwoRelations
