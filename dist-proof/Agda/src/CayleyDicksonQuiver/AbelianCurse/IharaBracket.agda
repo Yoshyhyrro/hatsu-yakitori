@@ -51,6 +51,17 @@ ihara-self = refl
 ihara-nonzero : ¬ (ihara (sigma 1) (sigma 2) ≡ [])
 ihara-nonzero ()
 
+-- Iterating the Ihara bracket against a fixed generator, in contrast
+-- with `SOReflectionGroup`'s derived series, does not visibly collapse
+-- to zero: `ihara (sigma 1) -` applied twice to `sigma 2` is still
+-- nonzero (its expansion has 148 terms, checked outside Agda; a third
+-- application already has 890 terms, well past what this file
+-- attempts to check by `refl`).
+
+ihara-iterate-2-nonzero :
+  ¬ (ihara (sigma 1) (ihara (sigma 1) (sigma 2)) ≡ [])
+ihara-iterate-2-nonzero ()
+
 ------------------------------------------------------------------------
 -- The weight-12 depth-two relation
 ------------------------------------------------------------------------
