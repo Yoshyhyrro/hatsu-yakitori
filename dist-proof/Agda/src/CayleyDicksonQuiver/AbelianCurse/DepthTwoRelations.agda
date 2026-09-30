@@ -19,6 +19,10 @@
 -- dimension of weight-12 cusp forms for SL2(Z) (spanned by Δ), which
 -- is not verified here.
 --
+-- See `note/AbelianCurseHypotheses.lagda.md` (AC2) for the wider
+-- context, including other, independent instances of the same shape
+-- (AC1, AC3, AC3b) that have not been ported to Agda.
+--
 -- Not imported by `Everything`; may contain holes.
 module CayleyDicksonQuiver.AbelianCurse.DepthTwoRelations where
 
