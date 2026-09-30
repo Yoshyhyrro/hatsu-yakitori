@@ -79,6 +79,29 @@ by Agda's own reduction (`refl`), not asserted:
   `x^2 y^8 - y^2 x^8 - 3(x^4 y^6 - y^4 x^6)` satisfies all four defining
   equations.
 
+A first check of *how far* `U` loses information -- contrasting with
+`SO(V)`'s derived series, which reaches the trivial subgroup after
+exactly two steps (AC3 above) -- iterates the Ihara bracket against a
+fixed generator, `x_{k+1} = {sigma 1, x_k}`, starting from
+`x_0 = sigma 2`, outside Agda:
+
+| k | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| terms in `x_k` | 18 | 148 | 890 | 6109 | 37716 |
+
+Not zero at any `k` up to 5 checked this way, growing roughly sevenfold
+each step; the same iteration with the plain Lie bracket in place of
+the Ihara bracket (no derivation correction) also stays nonzero through
+`k = 5`, growing roughly threefold each step instead. Neither
+comparison is a proof that the sequence never reaches zero, only that
+it does not do so this early, in contrast to `SO(V)`'s derived series,
+which is already trivial by `k = 2`. `IharaBracket.ihara-iterate-2-
+nonzero` confirms `x_2 != []` (148 terms) by Agda's own reduction,
+`--safe`; `x_3` onward (890 terms and growing sevenfold) was not
+attempted by `refl` here, since nothing in this file's approach scales
+to it -- a general nonvanishing argument, not a per-`k` computation,
+would be needed to go further.
+
 This is the cleanest instance found so far on the Lie-algebra side: the
 weight-12 relation space is one-dimensional, matching `dim S_12 = 1`
 (the cusp form `Delta`), though that dimension count itself is cited,
@@ -149,9 +172,23 @@ an accident of this search -- and `sn` provably recovers everything else
 (`ker` of the finer invariant `=` commutator subgroup, on the nose)
 happens for other groups or other choices of `S` is open; nothing here
 establishes it beyond this one group. Not attempted: any Agda
-formalization of `Q`, matrices, reflections, or the commutator
-computation (none of this exists in the codebase yet); anything
-depending on Sage's genus layer.
+formalization of `Q` or 3x3 matrices; anything depending on Sage's
+genus layer.
+
+The commutator computation above is confirmed a second time, by Agda's
+own reduction rather than by the numeric route just described.
+`CayleyDicksonQuiver.AbelianCurse.FiniteGroupTable` is a generic frame
+-- a finite group given only by a multiplication table (elements
+`0,...,n-1`), with the derived series and lower central series computed
+by iterating a commutator-then-closure step a fixed number of times,
+independent of whether either series happens to terminate.
+`CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup` instantiates it
+with `SO(V)`'s own 8x8 table (asserted, not derived from any
+construction of `O(V)` in Agda) and checks, by `refl`: the derived
+series reaches `{id, R1*R2}` after one step and the trivial subgroup
+after two, and does not shrink further at a third; the lower central
+series agrees with the derived series at both steps computed. Both
+`--safe`, no holes.
 
 #### AC3a — Local (GF(2)) reformulation of the spinor norm
 
