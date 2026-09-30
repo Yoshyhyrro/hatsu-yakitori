@@ -15,3 +15,5 @@ open import CayleyDicksonQuiver.MZV.DepthGraded
 open import CayleyDicksonQuiver.Hypotheses
 --open import CayleyDicksonQuiver.ObstructionFiber
 open import CayleyDicksonQuiver.AbelianCurse.DepthTwoRelations
+open import CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup
+open import CayleyDicksonQuiver.AbelianCurse.IharaBracket
