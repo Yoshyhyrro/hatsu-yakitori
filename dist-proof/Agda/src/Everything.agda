@@ -17,3 +17,4 @@ open import CayleyDicksonQuiver.Hypotheses
 open import CayleyDicksonQuiver.AbelianCurse.DepthTwoRelations
 open import CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup
 open import CayleyDicksonQuiver.AbelianCurse.IharaBracket
+open import CayleyDicksonQuiver.AbelianCurse.FMZVDerivation
