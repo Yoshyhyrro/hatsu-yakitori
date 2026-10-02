@@ -20,13 +20,13 @@ shape of a single instance is recorded, independent of the setting, as
 `CayleyDicksonQuiver.AbelianCurse.SecondOperator` is the stub for
 stating instances against that shape; nothing is proved there yet.
 
-Five settings have been tried. Two (AC2, AC3) fit the abelianization
+Six settings have been tried. Two (AC2, AC3) fit the abelianization
 reading directly, and AC3 now has a complete, provable answer rather
-than an open search. Three more (AC1, AC3b, AC4) were investigated
+than an open search. Four more (AC1, AC3b, AC4, AC5) were investigated
 under the same working hypothesis, on the strength of a superficial
 resemblance ("a coarse invariant collides some objects; a finer one
 separates some of them back out") -- but on inspection none of the
-three has a noncommutative `X_structured` being abelianized at all, so
+four has a noncommutative `X_structured` being abelianized at all, so
 none is filed here as a confirmed instance of the Abelian Curse
 specifically, even though the
 underlying computations are correct and are kept below for the record.
@@ -400,3 +400,50 @@ like AC3b it is a mod-`p` / local-global phenomenon about lattices and
 modular forms, not a group or algebra being abelianized, and no second
 operator separating `α` from `ω` is proposed in the paper or attempted
 here. Noted for the record; not explored computationally.
+
+### AC5 — Finite MZVs as sections, ultraproducts as stalks (non-constructive)
+
+A follow-on question about AC4's target ring itself, not about `∂_l`
+or `φ`. `𝒜 = (∏_p F_p)/(⊕_p F_p)` is described directly in the finite-
+multiple-zeta-value literature (e.g. arXiv:2310.06809) as "the ring of
+integers modulo infinitely large primes" -- a reduced ring, not a
+domain, obtained by quotienting the product of all `F_p` by the ideal
+of finitely-supported sequences (the Fréchet filter on the primes), not
+by a maximal ideal. Its maximal ideal spectrum is, by a standard fact
+of commutative algebra for a reduced product of this shape, in
+bijection with the nonprincipal ultrafilters on the primes (the
+Stone-Čech remainder `βℕ \ ℕ`); choosing one such ultrafilter `U` gives
+a forgetful map
+
+```
+U_forgetful : 𝒜 -> 𝒜 / 𝔪_U
+```
+
+onto the genuine ultraproduct `(∏_p F_p)/U`, a field, where Łoś's
+theorem holds (unlike `𝒜` itself, which is not a domain and satisfies
+no such transfer principle). `X_structured = 𝒜` (no ultrafilter
+chosen); `X_underlying = 𝒜/𝔪_U` (one specific ultraproduct, once `U`
+is chosen); `U_forgetful` is evaluation at the point of `Spec 𝒜` that
+`U` picks out. What is lost is concrete and exact, not vague: for a set
+of primes `S` that is neither finite nor cofinite, an element supported
+exactly on `S` lands in `𝔪_U` or does not, depending on whether
+`S ∈ U` -- a question `𝒜` itself does not decide, and different choices
+of `U` need not agree.
+
+`𝒜` and every `𝒜/𝔪_U` are already commutative rings, so, as with AC3b,
+this is filed as shape-alike rather than a confirmed instance of the
+Abelian Curse -- it belongs with AC3b's family (sections over an open
+set versus the stalk or residue field at a point, in the scheme-
+theoretic sense) rather than with AC2 or AC3's group- or Lie-algebra-
+abelianization family.
+
+Unlike AC1 through AC4, this one is not computationally explorable even
+in principle, not merely unexplored so far: a nonprincipal ultrafilter
+on an infinite set needs the axiom of choice (equivalently Zorn's
+lemma applied to the Fréchet filter) to exist, and no nonprincipal
+ultrafilter has ever been exhibited by an explicit construction -- a
+standard, well-known fact, not a gap specific to this project. Every
+other entry in this note, confirmed or not, was at least checkable by
+computation; this one cannot be, by anyone, ever. Recorded for
+completeness, in service of ruling settings out as much as finding
+ones that fit; not pursued further.
