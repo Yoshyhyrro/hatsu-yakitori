@@ -18,6 +18,11 @@
 -- the derivation relation (Theorem 2.1 with `s = 0`) is derived from
 -- them, matching the base case of Murahara's own induction.
 --
+-- See `note/AbelianCurseHypotheses.lagda.md` (AC4) for why this is
+-- filed as shape-alike rather than a confirmed instance of the Abelian
+-- Curse: `∂_l` and `∂_m` were checked, outside Agda, to commute on 150
+-- random cases, with no counterexample found.
+--
 -- Not imported by `Everything`; may contain holes.
 module CayleyDicksonQuiver.AbelianCurse.FMZVDerivation where
 
