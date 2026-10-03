@@ -401,6 +401,49 @@ modular forms, not a group or algebra being abelianized, and no second
 operator separating `α` from `ω` is proposed in the paper or attempted
 here. Noted for the record; not explored computationally.
 
+### AC4 addendum — the Kaneko-Zagier conjecture is a different shape entirely
+
+While reading background for AC4 (Bachmann, "Multiple Zeta Values",
+lecture notes, Nagoya 2025), two things were confirmed and one was
+explicitly ruled out, rather than merely left unexplored.
+
+Confirmed, independently of Murahara's paper: `ζ_A(k) = 0` for every
+single-entry index `k != 0` (Bachmann, Proposition 1.27) -- the same
+fact taken as the hypothesis `ZF-depth-one-vanishes` in
+`FMZVDerivation.agda`, now corroborated by a second source rather than
+resting on one paper alone.
+
+Distinguished, to avoid conflating them later: the duality used in AC4
+(`φ`, `φ(x) = z`, `φ(y) = -y`, an algebra automorphism specific to
+finite multiple zeta values, Murahara's Theorem 1.3) is a different map
+from the duality for ordinary multiple zeta values in Bachmann's notes
+(`τ`, interchanging `x` and `y`, an *anti*-automorphism,
+`τ(uw) = τ(w)τ(u)`, arising from reversing an iterated integral).
+`FMZVDerivation.agda` already uses `φ` correctly for its stated
+purpose; this is a note for future reading, not a correction to it.
+
+Ruled out, not merely set aside: the Kaneko-Zagier conjecture
+(Bachmann, Conjecture 1.38),
+
+```
+φ_KZ : Z^A -> Z/π²Z,   ζ_A(k) |-> ζ_S(k)
+```
+
+conjectures an isomorphism of Q-algebras between the finite multiple
+zeta values and the symmetric multiple zeta values (ordinary multiple
+zeta values, taken modulo `π²`). This was raised as a candidate
+mechanism for connecting the mod-`p` and real-analytic worlds that
+motivated AC4 and AC5 in the first place. It is not filed even as
+shape-alike, unlike AC1, AC3b, AC4 and AC5: those all have a coarse map
+that loses information, with a subject and an object
+(`X_structured -> X_underlying`). Kaneko-Zagier instead conjectures an
+isomorphism between two algebras built by *different, independent*
+constructions -- one from reduction mod `p`, one from a real-analytic
+limit modulo `π²` -- so there is no map doing any forgetting here, and
+no abelianization-shaped question to ask of it. Recorded so this
+distinction is not re-discovered later; not pursued further under this
+heading.
+
 ### AC5 — Finite MZVs as sections, ultraproducts as stalks (non-constructive)
 
 A follow-on question about AC4's target ring itself, not about `∂_l`
