@@ -20,14 +20,15 @@ shape of a single instance is recorded, independent of the setting, as
 `CayleyDicksonQuiver.AbelianCurse.SecondOperator` is the stub for
 stating instances against that shape; nothing is proved there yet.
 
-Four settings have been tried. Two (AC2, AC3) fit the abelianization
+Six settings have been tried. Two (AC2, AC3) fit the abelianization
 reading directly, and AC3 now has a complete, provable answer rather
-than an open search. Two more (AC1, AC3b) were investigated under the
-same working hypothesis, on the strength of a superficial resemblance
-("a coarse invariant collides some objects; a finer one separates some
-of them back out") -- but on inspection neither has a noncommutative
-`X_structured` being abelianized at all, so neither is filed here as a
-confirmed instance of the Abelian Curse specifically, even though the
+than an open search. Four more (AC1, AC3b, AC4, AC5) were investigated
+under the same working hypothesis, on the strength of a superficial
+resemblance ("a coarse invariant collides some objects; a finer one
+separates some of them back out") -- but on inspection none of the
+four has a noncommutative `X_structured` being abelianized at all, so
+none is filed here as a confirmed instance of the Abelian Curse
+specifically, even though the
 underlying computations are correct and are kept below for the record.
 None of the four is tied to Cayley-Dickson zero divisors directly; that
 connection, if any, is still open.
@@ -78,6 +79,29 @@ by Agda's own reduction (`refl`), not asserted:
   `three-term-vanishes-4-5`: the matching combination
   `x^2 y^8 - y^2 x^8 - 3(x^4 y^6 - y^4 x^6)` satisfies all four defining
   equations.
+
+A first check of *how far* `U` loses information -- contrasting with
+`SO(V)`'s derived series, which reaches the trivial subgroup after
+exactly two steps (AC3 above) -- iterates the Ihara bracket against a
+fixed generator, `x_{k+1} = {sigma 1, x_k}`, starting from
+`x_0 = sigma 2`, outside Agda:
+
+| k | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| terms in `x_k` | 18 | 148 | 890 | 6109 | 37716 |
+
+Not zero at any `k` up to 5 checked this way, growing roughly sevenfold
+each step; the same iteration with the plain Lie bracket in place of
+the Ihara bracket (no derivation correction) also stays nonzero through
+`k = 5`, growing roughly threefold each step instead. Neither
+comparison is a proof that the sequence never reaches zero, only that
+it does not do so this early, in contrast to `SO(V)`'s derived series,
+which is already trivial by `k = 2`. `IharaBracket.ihara-iterate-2-
+nonzero` confirms `x_2 != []` (148 terms) by Agda's own reduction,
+`--safe`; `x_3` onward (890 terms and growing sevenfold) was not
+attempted by `refl` here, since nothing in this file's approach scales
+to it -- a general nonvanishing argument, not a per-`k` computation,
+would be needed to go further.
 
 This is the cleanest instance found so far on the Lie-algebra side: the
 weight-12 relation space is one-dimensional, matching `dim S_12 = 1`
@@ -149,9 +173,23 @@ an accident of this search -- and `sn` provably recovers everything else
 (`ker` of the finer invariant `=` commutator subgroup, on the nose)
 happens for other groups or other choices of `S` is open; nothing here
 establishes it beyond this one group. Not attempted: any Agda
-formalization of `Q`, matrices, reflections, or the commutator
-computation (none of this exists in the codebase yet); anything
-depending on Sage's genus layer.
+formalization of `Q` or 3x3 matrices; anything depending on Sage's
+genus layer.
+
+The commutator computation above is confirmed a second time, by Agda's
+own reduction rather than by the numeric route just described.
+`CayleyDicksonQuiver.AbelianCurse.FiniteGroupTable` is a generic frame
+-- a finite group given only by a multiplication table (elements
+`0,...,n-1`), with the derived series and lower central series computed
+by iterating a commutator-then-closure step a fixed number of times,
+independent of whether either series happens to terminate.
+`CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup` instantiates it
+with `SO(V)`'s own 8x8 table (asserted, not derived from any
+construction of `O(V)` in Agda) and checks, by `refl`: the derived
+series reaches `{id, R1*R2}` after one step and the trivial subgroup
+after two, and does not shrink further at a third; the lower central
+series agrees with the derived series at both steps computed. Both
+`--safe`, no holes.
 
 #### AC3a — Local (GF(2)) reformulation of the spinor norm
 
@@ -294,3 +332,161 @@ different quadratic forms and have not been connected to each other --
 and, per the reclassification above, may not be connectable in the
 sense originally hoped for, since only one of the two is genuinely an
 abelianization story.
+
+### AC4 — FMZV derivation relations (Murahara): no abelianization found
+
+Following Murahara, "Derivation relations for finite multiple zeta
+values" (arXiv:1512.08696): the Ihara-Kaneko-Zagier derivation `∂_l` on
+`Q<x,y>` (`∂_l(x) = x z^{l-1} y`, `∂_l(y) = -x z^{l-1} y`, `z = x+y`,
+extended by the Leibniz rule) and the duality automorphism `φ`
+(`φ(x) = z`, `φ(y) = -y`). Classically `Z(∂_l(w)) = 0`; for finite
+multiple zeta values the same derivation instead satisfies
+`Z_F(∂_l(w)) = -Z_F(z^{l-1}yw)` (Murahara's Theorem 2.1, generalizing a
+conjecture of Saito-Wakabayashi), where `F` is either of the two finite
+multiple zeta value targets `A` or `S`.
+
+Ported to `CayleyDicksonQuiver.AbelianCurse.FMZVDerivation`: `∂_l` and
+`φ` are ordinary, computable functions on `NCPoly` (reusing `FreeLie`'s
+representation), checked against the paper's own Example 2.3
+(`l = 3, w = xy`) exactly by `refl`, along with `∂_l(z) = 0` and the
+Leibniz rule (spot-checked on random pairs). This project's `.agda-lib`
+sets `--safe` for every file, which disallows `postulate` outright; the
+three genuinely FMZV-specific facts the base case needs (`ζ_F(l) = 0`
+for `l > 1`; `Z_F` is ℤ-linear; `Z_F ∘ φ = Z_F`) are instead taken as
+explicit parameters of a module (`BaseCase`), so what is proved is a
+conditional statement -- "if some `F` and `Z_F` satisfy these laws, the
+base case holds" -- rather than an assertion that they do. The base
+case `Z_F(∂_l(1)) = -Z_F(z^{l-1}y)` is derived from these three
+hypotheses for `l = 2,3,4,5`; the one fact not derived in general is
+`φ(z_l) = -(z^{l-1}y)` itself, checked by `refl` for the same four
+values rather than by induction on `l`.
+
+Whether this is a genuine instance of the Abelian Curse -- is there a
+noncommutative `X_structured` that `∂_l`/`φ` make visible, which some
+`U` then abelianizes -- was checked directly rather than assumed.
+Outside Agda, `[∂_l, ∂_m]` was computed as an operator
+(`∂_l ∘ ∂_m - ∂_m ∘ ∂_l`) against 150 random words (lengths 2-6,
+`l, m` ranging over `2..7`, `l != m`), plus `z^4` and a two-term
+polynomial: every commutator computed to exactly zero, no exceptions.
+This is evidence, not a proof (finitely many cases, no induction), but
+it points the same way as AC1 and AC3b: the natural candidate
+structure here is already abelian, so there is nothing for an
+abelianization functor to forget. Filed as shape-alike, not confirmed.
+
+Not attempted: a general-`l` proof of `φ(z_l) = -(z^{l-1}y)` (would
+need `nc-mul` associativity and identity laws for arbitrary, not
+concrete, `NCPoly` arguments -- spot-checked successfully for several
+small concrete triples in `--safe`, but not proved in general;
+attempting this through `Algebra.WeakHopf` was considered and set
+aside, since that file's `IsAlgebra` already requires full
+associativity as a field -- going through it adds obligations rather
+than removing the one at hand); the general induction for `s >= 1`
+(arbitrary `w`, not just `w = 1`) in Murahara's Theorem 2.1; and any
+check of the commutativity finding against the *general* family of
+`a(f)`-style derivations from AC2 (parametrized by an arbitrary `f`,
+not just the fixed one-parameter `∂_l` family), which is the most
+likely place non-abelian structure would reappear if it exists at all
+in this setting.
+
+A separate, unrelated paper was also looked at during this line of
+exploration -- Nagaoka-Takemori, "Notes on theta series for Niemeier
+lattices" (arXiv:1504.06715) -- for its theta operator `Θ` and "mod p
+singular modular forms" (where `Θ(F) ≡ 0 (mod p)`, and distinct
+Niemeier lattices' theta series literally coincide mod a prime:
+`θ_α ≡ θ_ω`, `θ_δ ≡ θ_ψ (mod 23)` in the paper's Theorem 7). This has
+the same surface shape as the rest of this section (a coarse, lossy
+reduction -- here, mod `p` -- collides genuinely distinct objects), but
+like AC3b it is a mod-`p` / local-global phenomenon about lattices and
+modular forms, not a group or algebra being abelianized, and no second
+operator separating `α` from `ω` is proposed in the paper or attempted
+here. Noted for the record; not explored computationally.
+
+### AC4 addendum — the Kaneko-Zagier conjecture is a different shape entirely
+
+While reading background for AC4 (Bachmann, "Multiple Zeta Values",
+lecture notes, Nagoya 2025), two things were confirmed and one was
+explicitly ruled out, rather than merely left unexplored.
+
+Confirmed, independently of Murahara's paper: `ζ_A(k) = 0` for every
+single-entry index `k != 0` (Bachmann, Proposition 1.27) -- the same
+fact taken as the hypothesis `ZF-depth-one-vanishes` in
+`FMZVDerivation.agda`, now corroborated by a second source rather than
+resting on one paper alone.
+
+Distinguished, to avoid conflating them later: the duality used in AC4
+(`φ`, `φ(x) = z`, `φ(y) = -y`, an algebra automorphism specific to
+finite multiple zeta values, Murahara's Theorem 1.3) is a different map
+from the duality for ordinary multiple zeta values in Bachmann's notes
+(`τ`, interchanging `x` and `y`, an *anti*-automorphism,
+`τ(uw) = τ(w)τ(u)`, arising from reversing an iterated integral).
+`FMZVDerivation.agda` already uses `φ` correctly for its stated
+purpose; this is a note for future reading, not a correction to it.
+
+Ruled out, not merely set aside: the Kaneko-Zagier conjecture
+(Bachmann, Conjecture 1.38),
+
+```
+φ_KZ : Z^A -> Z/π²Z,   ζ_A(k) |-> ζ_S(k)
+```
+
+conjectures an isomorphism of Q-algebras between the finite multiple
+zeta values and the symmetric multiple zeta values (ordinary multiple
+zeta values, taken modulo `π²`). This was raised as a candidate
+mechanism for connecting the mod-`p` and real-analytic worlds that
+motivated AC4 and AC5 in the first place. It is not filed even as
+shape-alike, unlike AC1, AC3b, AC4 and AC5: those all have a coarse map
+that loses information, with a subject and an object
+(`X_structured -> X_underlying`). Kaneko-Zagier instead conjectures an
+isomorphism between two algebras built by *different, independent*
+constructions -- one from reduction mod `p`, one from a real-analytic
+limit modulo `π²` -- so there is no map doing any forgetting here, and
+no abelianization-shaped question to ask of it. Recorded so this
+distinction is not re-discovered later; not pursued further under this
+heading.
+
+### AC5 — Finite MZVs as sections, ultraproducts as stalks (non-constructive)
+
+A follow-on question about AC4's target ring itself, not about `∂_l`
+or `φ`. `𝒜 = (∏_p F_p)/(⊕_p F_p)` is described directly in the finite-
+multiple-zeta-value literature (e.g. arXiv:2310.06809) as "the ring of
+integers modulo infinitely large primes" -- a reduced ring, not a
+domain, obtained by quotienting the product of all `F_p` by the ideal
+of finitely-supported sequences (the Fréchet filter on the primes), not
+by a maximal ideal. Its maximal ideal spectrum is, by a standard fact
+of commutative algebra for a reduced product of this shape, in
+bijection with the nonprincipal ultrafilters on the primes (the
+Stone-Čech remainder `βℕ \ ℕ`); choosing one such ultrafilter `U` gives
+a forgetful map
+
+```
+U_forgetful : 𝒜 -> 𝒜 / 𝔪_U
+```
+
+onto the genuine ultraproduct `(∏_p F_p)/U`, a field, where Łoś's
+theorem holds (unlike `𝒜` itself, which is not a domain and satisfies
+no such transfer principle). `X_structured = 𝒜` (no ultrafilter
+chosen); `X_underlying = 𝒜/𝔪_U` (one specific ultraproduct, once `U`
+is chosen); `U_forgetful` is evaluation at the point of `Spec 𝒜` that
+`U` picks out. What is lost is concrete and exact, not vague: for a set
+of primes `S` that is neither finite nor cofinite, an element supported
+exactly on `S` lands in `𝔪_U` or does not, depending on whether
+`S ∈ U` -- a question `𝒜` itself does not decide, and different choices
+of `U` need not agree.
+
+`𝒜` and every `𝒜/𝔪_U` are already commutative rings, so, as with AC3b,
+this is filed as shape-alike rather than a confirmed instance of the
+Abelian Curse -- it belongs with AC3b's family (sections over an open
+set versus the stalk or residue field at a point, in the scheme-
+theoretic sense) rather than with AC2 or AC3's group- or Lie-algebra-
+abelianization family.
+
+Unlike AC1 through AC4, this one is not computationally explorable even
+in principle, not merely unexplored so far: a nonprincipal ultrafilter
+on an infinite set needs the axiom of choice (equivalently Zorn's
+lemma applied to the Fréchet filter) to exist, and no nonprincipal
+ultrafilter has ever been exhibited by an explicit construction -- a
+standard, well-known fact, not a gap specific to this project. Every
+other entry in this note, confirmed or not, was at least checkable by
+computation; this one cannot be, by anyone, ever. Recorded for
+completeness, in service of ruling settings out as much as finding
+ones that fit; not pursued further.
