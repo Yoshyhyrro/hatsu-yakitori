@@ -112,6 +112,62 @@ Theorem 4.2's "iff" itself, which rests on Brown's faithfulness theorem
 for the depth-graded motivic Lie algebra; and any general dimension
 formula.
 
+### AC6 — Buium's arithmetic derivation recovers what mod-ℓ reduction of a Galois representation loses
+
+Two independent, numerically verified instances, neither yet ported to
+Agda (see "Not yet formalized" below for exactly why).
+
+**Instance 1 (modular forms mod 691).** Ramanujan's congruence
+`tau(n) ≡ sigma_11(n) (mod 691)`: at `n = 2`, `tau(2) = -24` and
+`sigma_11(2) = 2049` collide mod `691` (`667 = 667`). Buium's
+arithmetic `p`-derivation `delta_p(x) = (x - x^p)/p` (an integer,
+since `x ≡ x^p (mod p)` by Fermat) separates them exactly:
+`delta_691(-24) - delta_691(2049) ≡ 688 (mod 691)`, matching
+`(x - y)/691 ≡ 688 (mod 691)` on the nose -- not approximately. This is
+not a coincidence of these two numbers: for any `x ≡ y (mod p)`,
+writing `x = y + kp`, the binomial theorem gives `x^p ≡ y^p (mod p^2)`,
+hence `delta_p(x) - delta_p(y) = k - (x^p - y^p)/p ≡ k = (x-y)/p
+(mod p)` in general -- checked here for one pair, but a short hand
+proof, not merely this one instance.
+
+**Instance 2 (the elliptic curve 11a1, Mazur's congruence at ℓ = 5).**
+`E = 11a1` (`y^2 + y = x^3 - x^2 - 10x - 20`) has a rational 5-isogeny,
+so its mod-5 Galois representation is reducible: `a_p ≡ p + 1 (mod 5)`
+for every good prime `p`. Checked here by brute-force point counting
+over `F_p` from scratch (not from a table) for `p = 2,3,7,13,17,19`:
+every single one collides mod 5, and `delta_5(a_p) - delta_5(p+1)`
+recovers `(a_p - (p+1))/5 mod 5` exactly, every time, no exceptions.
+
+**Why this plausibly extends the Abelian Curse, and why that is less
+certain than for AC3.** `rho : Gal(Qbar/Q) -> GL_2(Z_5)`, the 5-adic
+representation attached to `E`, has an open (hence non-abelian, by
+Serre's open image theorem for non-CM curves) image in general; its
+reduction mod 5 is, for this particular curve, reducible -- upper
+triangular, with the trace alone agreeing with the reducible
+Eisenstein-type representation `p + 1`. `delta_5` recovers exactly the
+`(a_p - (p+1))/5` term that the trace mod 5 cannot see. Unlike AC3,
+though, what is precisely lost here is not a commutator subgroup under
+`G -> G^{ab}`: it is an extension class in `H^1(Gal, chi_1 chi_2^{-1})`
+lost under semisimplification (forgetting whether the short exact
+sequence of mod-5 Galois modules splits), which is a cousin of
+abelianization -- the tangent space of Mazur's deformation theory is
+`H^1(Gal, Ad(rhobar))`, a cohomology group, not literally a `G^{ab}`
+-- not a confirmed instance of the same precise shape as AC2 and AC3
+without more thought. Recorded here rather than under "shape-alike"
+because the resemblance is closer and better-grounded than AC1/AC3b/
+AC4/AC5, but the classification is left open rather than asserted.
+
+**Not yet formalized in Agda, and specifically why:** the general
+`delta_p` identity above needs a binomial-theorem argument
+(`x ≡ y (mod p) -> x^p ≡ y^p (mod p^2)`) that has not been written;
+the concrete `p = 691` instance needs `2049^691` (around 2280 digits)
+to reduce in reasonable time by `refl`, not yet attempted or timed;
+and the elliptic-curve instance needs finite-field and
+Weierstrass-point-counting infrastructure that does not exist anywhere
+in this codebase, a substantially larger undertaking than a single
+file. Python's `fractions.Fraction` (exact, not floating point) was
+used throughout instead.
+
 ### AC3 — Spinor norm as a second operator on SO(V) (resolved for this example)
 
 `A = diag(1,1,7)` over `Q`, with reflections `R1, R2, R3, R12` along
