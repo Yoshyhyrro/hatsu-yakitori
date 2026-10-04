@@ -18,3 +18,4 @@ open import CayleyDicksonQuiver.AbelianCurse.DepthTwoRelations
 open import CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup
 open import CayleyDicksonQuiver.AbelianCurse.IharaBracket
 open import CayleyDicksonQuiver.AbelianCurse.FMZVDerivation
+open import CayleyDicksonQuiver.AbelianCurse.Ext1Extraction
