@@ -168,6 +168,27 @@ in this codebase, a substantially larger undertaking than a single
 file. Python's `fractions.Fraction` (exact, not floating point) was
 used throughout instead.
 
+**The precise mechanism this was missing is now checked, separately,
+in Agda.** `CayleyDicksonQuiver.AbelianCurse.Ext1Extraction` makes the
+"extension class in `H^1`, not a commutator subgroup" remark above
+concrete: given Frobenius actions `A` on a sub-object and `B` on a
+quotient, `Ext^1(M,N)` is the cokernel of the coboundary map
+`T(X) = XB - AX` on `Hom(M,N)`, computed via a Smith normal form
+`D = U T V` (the general Smith-normal-form algorithm itself is not
+implemented or proved correct in Agda -- only this one `U, D, V` is
+checked against `T` by `refl`). For `A = (2 1; 0 2)`, `B = (2 0; 0 2)`,
+`diag D = (1,1,0,0)`: two concrete extension matrices `C1` and
+`C2 = C1 +` (coboundary noise), genuinely different as matrices
+(`C1 != C2`, also checked), land on the exact same class once the
+first two ("pure coboundary") coordinates of `U` applied to each are
+discarded and the last two (the free part of `Ext^1(M,N)`) are kept --
+checked by `refl`, `--safe`, no holes. This is the same shape as AC3's
+`[SO(V),SO(V)]` computation -- a coarse comparison collides two
+genuinely different objects, and a second, precisely specified map
+separates them again -- but for an additive (Ext-group) coarsening
+rather than a multiplicative (commutator-subgroup) one. Confirmed for
+this one `(A,B)`, not for Frobenius actions in general.
+
 ### AC3 — Spinor norm as a second operator on SO(V) (resolved for this example)
 
 `A = diag(1,1,7)` over `Q`, with reflections `R1, R2, R3, R12` along
