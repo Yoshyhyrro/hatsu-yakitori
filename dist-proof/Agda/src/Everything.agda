@@ -20,3 +20,4 @@ open import CayleyDicksonQuiver.AbelianCurse.IharaBracket
 open import CayleyDicksonQuiver.AbelianCurse.FMZVDerivation
 open import CayleyDicksonQuiver.AbelianCurse.Ext1Extraction
 open import CayleyDicksonQuiver.AbelianCurse.BlindSpots
+open import CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas
