@@ -189,6 +189,61 @@ separates them again -- but for an additive (Ext-group) coarsening
 rather than a multiplicative (commutator-subgroup) one. Confirmed for
 this one `(A,B)`, not for Frobenius actions in general.
 
+**Non-surjectivity of the noise map is necessary, not sufficient, for
+a specific signal to be detected.** `CayleyDicksonQuiver.AbelianCurse.
+BlindSpots` checks this precisely, reusing `Ext1Extraction`'s matrix
+machinery. For the same `Ind-Rigid` as above (rank 2 of 3, so some
+nonzero `S` in its left kernel exists -- "rigidity holds"): the signal
+`Δ-true = (10,-5,3)` is genuinely detected (`S(Δ-true) != 0`, checked
+by `refl`), but `Δ-blind = (1,1,2)` is a *blind spot* -- it satisfies
+`S(Δ-blind) = 0` despite rigidity holding, because `Δ-blind` happens to
+lie exactly in `Im(Ind-Rigid)` (witnessed concretely:
+`Ind-Rigid * (-1,1,0) = Δ-blind`, checked by `refl`). Non-surjectivity
+of `Ind-Rigid` guarantees *some* nonzero `S` exists; it does not
+guarantee any particular `Δ` is outside `Im(Ind-Rigid)`, which is the
+actual condition for detection. A second example (`Ind-Rank1`, rank 1
+of 3, a 2-dimensional cokernel spanned by `S0, S1`) sharpens this
+further: `Δ-mixed = (1,2,0)` is invisible to `S0` alone
+(`S0(Δ-mixed) = 0`) but visible to `S1` (`S1(Δ-mixed) != 0`), both
+checked by `refl` -- checking a single, arbitrarily chosen element of
+the cokernel is not the same as checking membership in
+`Im(T_noise)` itself, and can wrongly conclude a genuine signal is
+noise. All six facts in this paragraph are `--safe`, no holes.
+
+This does not, and is not meant to, bear on the Scholze-Stix /
+Mochizuki dispute over inter-universal Teichmüller theory: the
+BOPS/rigidity framing that prompted this check used variable names
+evoking that dispute, but nothing here is a model of Θ-links,
+indeterminacies, or any other IUT-specific structure -- it is a general
+fact about cokernels of linear maps, checked on two small hand-picked
+examples. "BOPS" (Basic Oka Property with Surjectivity) is terminology
+from Oka theory in several complex variables (Forstnerič and
+collaborators); whether it is also used with this meaning in the IUT
+literature was not confirmed, and the resemblance may be an imported
+analogy rather than shared terminology.
+
+**A different kind of coarse map: real-analytic rather than
+coboundary.** `CayleyDicksonQuiver.AbelianCurse.RealAnalyticCurse`
+checks a new pair `A = (3 1; 0 3)`, `B = (3 0; 0 3)`, chosen so that
+`3I - A = (0 -1; 0 0)` is literally the same matrix as `2I - A` was for
+`Ext1Extraction`'s `A` -- so its coboundary operator `T` and Smith
+normal form `U, D, V` are identical to that file's and are re-used
+rather than recomputed. Two real-analytic measurements of the 4x4
+block matrix `(A C; 0 B)` -- its determinant, and an entrywise upper
+bound -- are contrasted with the `Ext1Extraction`-style extractor:
+because `A` and `B` are themselves upper triangular and the lower-left
+block is zero, the full matrix is upper triangular, so its determinant
+is exactly the product of the four diagonal entries of `A` and `B`
+alone (`81`, checked by `refl`) -- a function that provably cannot see
+`C` at all, not merely one that happens to agree on this example. The
+extractor, reusing `Ext1Extraction`'s `U, D`, still separates
+`C-true = (7 4; 2 5)` from its coboundary-noised version
+`C-noise = (4 4; 2 5)` correctly (`refl`). The entrywise-upper-bound
+measurement (the other half of the original script's "Ind_3") was not
+ported: it is sensitive to `C` rather than blind to it, so it does not
+illustrate the same point as the determinant and was left out rather
+than checked and found not to matter.
+
 ### AC3 — Spinor norm as a second operator on SO(V) (resolved for this example)
 
 `A = diag(1,1,7)` over `Q`, with reflections `R1, R2, R3, R12` along
