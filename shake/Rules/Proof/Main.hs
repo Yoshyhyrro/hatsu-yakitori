@@ -13,11 +13,38 @@ import qualified System.Directory as Dir
 
 import Rules.Proof.LLVM_IR as IR
 import Rules.Proof.SBV_Bridge as SBV
+import qualified Rules.Proof.FStar_Bridge as FStar
 import qualified Rules.Proof.Lean4 as Lean4
+import qualified Diag
 
 -- | Register phony targets for proof verification
 setupProofPhonies :: Maybe FilePath -> Rules ()
 setupProofPhonies maybeHdf5 = do
+  phony "fstar" $ do
+    let spec = FStar.FStarSpec
+          { FStar.fstarModuleName = "BraidSpec"
+          , FStar.fstarStrandCount = 4
+          , FStar.fstarInvariants = []
+          , FStar.fstarInputs = []
+          }
+    let specPath = proofBuildRoot IR.defaultProofBuildPaths </> "fstar"
+                   </> FStar.fstarModuleName spec <.> "fst"
+    diagnostics <- liftIO Diag.checkFStarEnvironment
+    liftIO $ mapM_ Diag.emit diagnostics
+    liftIO $ Diag.summarize diagnostics
+    putInfo $ "[fstar] Generating specification: " ++ specPath
+    FStar.generateFStarSpec spec specPath
+    ok <- FStar.verifyFStarSpec specPath spec
+    if ok
+      then putNormal "[fstar] Proof verification PASS"
+      else fail "[fstar] Proof verification FAIL (check that F* is installed and the generated spec is valid)"
+
+  phony "fstar-check-env" $ do
+    env <- FStar.checkFStarEnvironment
+    putNormal "F* Environment:"
+    forM_ env $ \(name, found) ->
+      putNormal $ "  " ++ name ++ ": " ++ if found then "found" else "missing"
+
   -- Lean4 proof targets
   phony "lean4" $ do
     let leanDir = proofDistRoot IR.defaultProofBuildPaths </> "lean4"
@@ -94,4 +121,3 @@ setupProofPhonies maybeHdf5 = do
     if ok
       then putNormal "[sbv-so-fmm] SBV verification PASS"
       else fail "[sbv-so-fmm] SBV verification FAIL"
-

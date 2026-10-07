@@ -33,6 +33,7 @@ executables:
     other-modules:
       - Chicken
       - Clean
+      - Diag
       - Pipeline
       - Salmonella
       - SourceIO
@@ -49,6 +50,7 @@ executables:
       - Rules.Proof.Lean4
       - Rules.Proof.Main
       - Rules.Proof.SBV_Bridge
+      - Rules.Proof.FStar_Bridge
 
 
 github: Yoshyhyrro/hatsu-yakitori

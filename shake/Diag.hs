@@ -11,6 +11,7 @@ module Diag
   , Diag(..)
   , emit
   , checkHdf5
+  , checkFStarEnvironment
   , summarize
   ) where
 
@@ -27,6 +28,7 @@ data DiagCode
   | HYK003W   -- h5dump not found in PATH (Warning)
   | HYK004E   -- --hdf5 requires a non-empty file path (Error)
   | HYK005I   -- HDF5 input not supplied (Info)
+  | HYK006W   -- F* executable not found in PATH (Warning)
   deriving (Show, Eq)
 
 -- ----------------------------------------------------------------
@@ -102,6 +104,22 @@ checkHdf5 (Just fp) = do
         | otherwise = []
   mapM_ emit (fileWarn ++ h5Warn)
   return (fileWarn ++ h5Warn)
+
+checkFStarEnvironment :: IO [Diag]
+checkFStarEnvironment = do
+  fstarExe <- Dir.findExecutable "fstar.exe"
+  fstar <- Dir.findExecutable "fstar"
+  case fstarExe `orElse` fstar of
+    Nothing ->
+      let diagnostics =
+            [Diag SevWarning HYK006W
+              "fstar not found in PATH; the fstar target cannot run"
+              ["install F* and ensure its executable is available in PATH"]]
+      in mapM_ emit diagnostics >> return diagnostics
+    Just _ -> return []
+  where
+    orElse (Just x) _ = Just x
+    orElse Nothing y = y
 
 -- ----------------------------------------------------------------
 -- summarize: SBCL like summary at the end of the build. It takes the list of all emitted Diag and prints a summary of how many warnings and errors were emitted. If any Diag has SevError, it will call exitFailure to halt the build with a non-zero exit code. Otherwise, it will just print the counts and allow the build to succeed.

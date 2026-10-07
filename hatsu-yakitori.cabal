@@ -25,6 +25,7 @@ executable shake
   other-modules:
       Chicken
       Clean
+      Diag
       Pipeline
       Salmonella
       SourceIO
@@ -41,6 +42,7 @@ executable shake
       Rules.Proof.Lean4
       Rules.Proof.Main
       Rules.Proof.SBV_Bridge
+      Rules.Proof.FStar_Bridge
   hs-source-dirs:
       shake
   ghc-options: -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N
