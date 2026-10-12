@@ -19,11 +19,18 @@ shape of a single instance is recorded, independent of the setting, as
 `Algebra.Separates.Separates`.
 `CayleyDicksonQuiver.AbelianCurse.SecondOperator` is the stub for
 stating instances against that shape; nothing is proved there yet.
+Facts that hold uniformly across instances, and only those, are
+collected in `CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas`.
 
-Six settings have been tried. Two (AC2, AC3) fit the abelianization
+Seven settings have been tried. Two (AC2, AC3) fit the abelianization
 reading directly, and AC3 now has a complete, provable answer rather
-than an open search. Four more (AC1, AC3b, AC4, AC5) were investigated
-under the same working hypothesis, on the strength of a superficial
+than an open search. A third (AC6) is a cousin rather than an instance:
+its Agda-checked core (`Ext1Extraction`, with the general lemmas it
+uses in `SecondOperatorLemmas`) has the same coarse-map /
+second-operator shape, but what is lost is a cokernel of a coboundary
+map (an additive, Ext-type loss), not a commutator subgroup. Four more
+(AC1, AC3b, AC4, AC5) were investigated under the same working
+hypothesis, on the strength of a superficial
 resemblance ("a coarse invariant collides some objects; a finer one
 separates some of them back out") -- but on inspection none of the
 four has a noncommutative `X_structured` being abelianized at all, so
@@ -116,6 +123,9 @@ formula.
 
 Two independent, numerically verified instances, neither yet ported to
 Agda (see "Not yet formalized" below for exactly why).
+The linear-algebra mechanism behind them, by contrast, is formalized
+in Agda for one concrete `(A,B)` and proved for all extensions and
+gauges (see the last two paragraphs on `Ext1Extraction` below).
 
 **Instance 1 (modular forms mod 691).** Ramanujan's congruence
 `tau(n) ≡ sigma_11(n) (mod 691)`: at `n = 2`, `tau(2) = -24` and
@@ -189,6 +199,50 @@ separates them again -- but for an additive (Ext-group) coarsening
 rather than a multiplicative (commutator-subgroup) one. Confirmed for
 this one `(A,B)`, not for Frobenius actions in general.
 
+**Strengthened from one pair of matrices to every extension and every
+gauge, for the same `(A,B)`.**
+`CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas` replaces the
+single `refl` comparison above with statements quantified over all
+integers (`--safe`; a textual search finds no postulates or holes in
+either file):
+
+- `T-computes-coboundary`: the hard-coded `T`, which was obtained by a
+  computation outside Agda, is the column-major vectorization of
+  `X B - A X` for *every* integer 2x2 `X`. Proved with the ring solver
+  for `ℤ`, one equation per coordinate.
+- `S-ext-invariant-under-all-coboundaries`: for every extension matrix
+  `C` and every gauge matrix `X`,
+  `extractor (C + (X B - A X)) = extractor C`.
+  `C1-and-C2-agree-under-U` is now the single instance `C = C1`,
+  `X = I`.
+- `S-ext-complete`: the converse. If two vectors in `ℤ^4` have the
+  same extractor value, then `v = w + T x`, with the explicit witness
+  `x = (0, w1 - v1, 0, w3 - v3)`.
+- `extractor-separates`: the extractor is not constant -- two extension
+  matrices differing by 1 in the bottom-left entry get different
+  values.
+
+The second and third items together say that, for this `(A,B)`, two
+extensions have the same extractor value *if and only if* they differ
+by a coboundary: the extractor sees through exactly the noise and
+nothing else. Before this, only one colliding pair was checked, which
+does not distinguish "removes exactly the noise" from "removes the
+noise and possibly more".
+
+What this still does not establish. `A`, `B`, `U`, `D`, `V` and
+`S-ext` (which hard-codes `diag D = (1,1,0,0)`) remain one fixed
+instance: there is no Smith-normal-form algorithm, and no construction
+of the extractor from an arbitrary `(A,B)`. The statements concern the
+extractor built from this particular `U`; that `Ext^1(M,N)` is `ℤ^2`
+here follows from the shape of the Smith form but is not itself stated
+in Agda. A hand observation from the data, not an Agda statement:
+`X B - A X = (2I - A) X` and `2I - A = (0 -1; 0 0)`, so a coboundary
+only ever changes the top row of `C`, while the extractor returns
+`(0, 0, C21, C22)`, the bottom row. The instance is therefore
+degenerate in a useful way -- every claim above can be checked by
+hand -- but it exercises neither a torsion summand (every invariant
+factor is 0 or 1) nor a non-scalar `B`.
+
 **Non-surjectivity of the noise map is necessary, not sufficient, for
 a specific signal to be detected.** `CayleyDicksonQuiver.AbelianCurse.
 BlindSpots` checks this precisely, reusing `Ext1Extraction`'s matrix
@@ -209,6 +263,17 @@ checked by `refl` -- checking a single, arbitrarily chosen element of
 the cokernel is not the same as checking membership in
 `Im(T_noise)` itself, and can wrongly conclude a genuine signal is
 noise. All six facts in this paragraph are `--safe`, no holes.
+`SecondOperatorLemmas` (Lemma 2, below) later removes the dependence
+on a chosen witness in the necessary direction:
+`rigid-S-kills-all-noise`, `rank1-S0-kills-all-noise` and
+`rank1-S1-kills-all-noise` prove `S (Ind v) = 0` for *every* `v`,
+discharging the hypothesis `S^t Ind = 0` by computation. So
+`Δ-blind` being invisible is an instance of a general fact --
+everything in `Im(Ind-Rigid)` is invisible to `S` -- and not a
+coincidence of the single witness `(-1,1,0)`. The converse is not
+affected, and is false in general for a single cokernel element:
+`Δ-mixed` is invisible to `S0` yet lies outside `Im(Ind-Rank1)`, as
+`S1` shows.
 
 This does not, and is not meant to, bear on the Scholze-Stix /
 Mochizuki dispute over inter-universal Teichmüller theory: the
@@ -356,6 +421,51 @@ Separately: representing `sn`'s target as a GF(2) vector of supplied
 valuation parities, rather than a signed squarefree integer requiring
 factorization, would also be the lighter choice if this is ever ported
 to Agda -- no factorization algorithm needed, just XOR on `List Bool`.
+
+### Second-operator lemmas -- what is uniform across instances
+
+`CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas` collects facts
+proved once, for arbitrary data, instead of re-checked per example. It
+is not a general theory of the Abelian Curse, and it does not claim
+that a single construction of `S` exists across AC2, AC3 and AC6: the
+mechanism differs (a commutator subgroup for AC2 and AC3, a cokernel of
+a coboundary map for AC6), and the file records what is uniform across
+that difference, not a way to erase it.
+
+- **Lemma 1** (3x3, kept as first written). For an integer 3x3 `M`, if
+  `S^t M = 0` (checked via `mat-mul`) then `S` is orthogonal to `M v`
+  for every `v`. One ring-solver regrouping step, after which the three
+  entries of `S^t M` are rewritten to zero.
+- **Lemma 2** (any sizes). `S^t (M v) = (S^t M) v`, proved by induction
+  through `dot-scaleR`, `dot-addR` and `dot-addR-right`. No size
+  hypothesis is needed: `dot` truncates to the common prefix, so a
+  missing entry counts as zero on both sides. Corollary
+  `left-kernel-annihilates-image-gen`: if every entry of `S^t M` is
+  zero (`AllZero`), then `dot S (M v) = 0` for every `v`. This is the
+  necessary direction only -- a left-kernel vector cannot see anything
+  in `Im(M)` -- and says nothing about when a given `Δ` lies outside
+  `Im(M)` (see the blind-spot discussion in AC6).
+- **Applications of Lemma 2.** The three `*-kills-all-noise` results
+  for `BlindSpots`; and for `Ext1Extraction`, `T-image-invisible-to-r3`
+  and `-r4`, which give `S-ext-invariant`, which together with
+  `T-computes-coboundary` gives
+  `S-ext-invariant-under-all-coboundaries` (see AC6 above).
+
+The file ends with an index pointing back to AC2
+(`IharaBracket.weight-12-relation`), AC3
+(`SOReflectionGroup.derived-1-is-id-R1R2`, `derived-2-is-trivial`) and
+AC6 (`Ext1Extraction.C1-and-C2-agree-under-U`); nothing is re-derived
+there.
+
+The split this exposes is the useful part. The *invariance* half of a
+cokernel-shaped second operator -- `S` is unchanged by the noise -- is
+now one reusable lemma. The *completeness* half -- `S` is unchanged
+*only* by the noise, `S-ext-complete` -- is still proved per instance,
+because it depends on the Smith normal form of the particular `T`:
+`complete-aux` uses the explicit witness `x = (0, w1 - v1, 0, w3 - v3)`
+read off from this one `U`. Whether a uniform completeness lemma exists
+(for instance, for any `T` accompanied by a verified Smith form) is
+open.
 
 ## Shape-alike, not confirmed instances
 
