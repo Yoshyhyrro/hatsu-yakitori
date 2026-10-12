@@ -34,7 +34,11 @@
 -- coboundary noise separating `C1` from `C2`, and nothing else.
 --
 -- See `note/AbelianCurseHypotheses.lagda.md` (AC6) for where this
--- mechanism comes from and what it is checking.
+-- mechanism comes from and what it is checking. The data fixed here is
+-- further checked in `SecondOperatorLemmas`: `T` is proved there to be
+-- the vectorization of `X B - A X` for every integer `X`, and the
+-- extractor is proved invariant under every coboundary and complete for
+-- them, for this `A` and `B`.
 --
 -- Not imported by `Everything`; may contain holes.
 module CayleyDicksonQuiver.AbelianCurse.Ext1Extraction where
