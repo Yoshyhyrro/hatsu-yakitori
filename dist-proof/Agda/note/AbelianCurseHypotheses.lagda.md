@@ -210,6 +210,29 @@ the cokernel is not the same as checking membership in
 `Im(T_noise)` itself, and can wrongly conclude a genuine signal is
 noise. All six facts in this paragraph are `--safe`, no holes.
 
+**What `SecondOperatorLemmas` now proves about this instance, for
+every input rather than chosen ones.** Its Lemma 2 is the identity
+`S^t (M v) = (S^t M) v`, proved by induction for matrices and vectors
+of any sizes, from which a left-kernel vector of any `M` is orthogonal
+to the entire image of `M` (not just one chosen `v`, as `BlindSpots`
+checks; its two examples are re-derived for every `v`). Applied to
+`Ext1Extraction`: (a) its hard-coded `T`, previously computed outside
+Agda, is proved to equal the column-major vectorization of `X B - A X`
+for every integer 2x2 `X` (four ring-solver equalities); (b) for every
+extension matrix `C` and every gauge matrix `X`, adding `X B - A X` to
+`C` leaves the extractor unchanged -- the `C1`/`C2` check above is
+the single instance `C = C1`, `X = I`; (c) conversely, if two vectors
+have the same extractor value then `v = w + T x` for an explicit
+`x = (0, w1 - v1, 0, w3 - v3)`, so for this `(A, B)` the extractor
+sees through exactly the coboundary noise and nothing else; (d) the
+extractor is not constant (the matrices with rows `(5, 3)` and `(2, 4)`
+versus `(5, 3)` and `(3, 4)` have different extractor values). Scope:
+this is for the one fixed `(A, B) = ((2 1; 0 2), 2I)`, whose Smith
+normal form `diag(1,1,0,0)` is hard-coded in the extractor, not for
+Frobenius actions in general; the Smith-normal-form algorithm itself
+is still neither implemented nor proved correct in Agda. All
+`--safe`, no holes, no postulates.
+
 This does not, and is not meant to, bear on the Scholze-Stix /
 Mochizuki dispute over inter-universal Teichmüller theory: the
 BOPS/rigidity framing that prompted this check used variable names
