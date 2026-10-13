@@ -18,7 +18,7 @@ open import CayleyDicksonQuiver.AbelianCurse.DepthTwoRelations
 open import CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup
 open import CayleyDicksonQuiver.AbelianCurse.IharaBracket
 open import CayleyDicksonQuiver.AbelianCurse.FMZVDerivation
-open import CayleyDicksonQuiver.AbelianCurse.Ext1Extraction
+open import CayleyDicksonQuiver.AbelianCurse.Ext1Torsion
 open import CayleyDicksonQuiver.AbelianCurse.BlindSpots
 open import CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas
 open import CayleyDicksonQuiver.AbelianCurse.RealAnalyticCurse
