@@ -888,3 +888,153 @@ other entry in this note, confirmed or not, was at least checkable by
 computation; this one cannot be, by anyone, ever. Recorded for
 completeness, in service of ruling settings out as much as finding
 ones that fit; not pursued further.
+
+### AC5 addendum — what the Fréchet quotient does to integral data (small, finite observation)
+
+The ultrafilter question above cannot be explored by computation. A
+smaller question can: for data that comes from `ℤ`, what survives the
+map into `𝒜`, and does the choice of `U` matter? The test data are the
+integer matrices `L_x` of H8 (`CarabinerHypotheses`), at `k = 4`.
+
+For an integer matrix `M`, `coker M ≅ ℤ^ν ⊕ T` with `T` finite, so
+`dim_{F_p} coker(M mod p) = ν + #{invariant factors divisible by p}`.
+Hence the sequence `p -> d_p` is eventually constant, equal to the
+rational nullity `ν`, and the exceptional primes are exactly those that
+divide a non-unit invariant factor (standard linear algebra, not
+formalized). Its class in `𝒜` is therefore the constant `ν`, and every
+stalk `𝒜/𝔪_U` gives the same value: no dependence on `U` for such
+linear-algebraic invariants (ranks, cokernels) of integer data.
+
+Computed (own elimination modulo `p`, all primes below 100, all 120
+pair seeds `x = e_i + c e_j`); `ν_Q` is the rational nullity:
+
+```
+c=1:  ν_Q = 0 (78 seeds) and 4 (42 seeds):  d_p != ν_Q only at p = 2  (d_2 = 8)
+c=2:  ν_Q = 0, 78 seeds:  only p = 5 (d_5 = 8)
+      ν_Q = 0, 42 seeds:  p = 3 (d_3 = 4) and p = 5 (d_5 = 4)
+c=3:  ν_Q = 0, 78 seeds:  p = 2 (8) and p = 5 (8)
+      ν_Q = 0, 42 seeds:  p = 2 (8) and p = 5 (4)
+```
+
+The exceptional primes divide `(c^2 - 1)(c^2 + 1)`, in line with the
+determinant formula recorded in H8.
+
+What this shows about the quotient defining `𝒜`. At `c = 2` the 42
+zero-divisor seeds and the other 78 have the same rational nullity (0)
+and differ only in torsion, supported at the primes `{3, 5}` versus
+`{5}`. A difference supported on a finite set of primes lies in the
+ideal `⊕_p F_p`, so it is erased in `𝒜`. Moreover `det L_x` is a nonzero
+integer, hence a unit of `𝒜`: over `𝒜` the matrices of both classes are
+invertible, and the zero-divisor status is invisible there. So, for
+integral data, the map into `𝒜` forgets exactly the torsion
+(Ext^1-type) part and keeps the free rank (Ext^0-type); the finitely
+supported part is where the finer invariants (the Smith form) live. This
+is a loss for the map "integral data -> `𝒜`", not for the map
+`𝒜 -> 𝒜/𝔪_U` that AC5 asks about.
+
+Where `U` starts to matter. A sequence that is not eventually constant,
+for example the indicator `S` of the primes `p ≡ 1 (mod 4)` ("`-1` is a
+square in `F_p`"), has value 1 in `𝒜/𝔪_U` exactly when `S ∈ U`. Such a
+sequence is not the rank or cokernel profile of a fixed integer matrix
+(those are eventually constant), but it does arise from fixed integer
+data through an arithmetic rather than a linear-algebraic invariant: the
+Kummer class of the constant `-1` in `F_p^× / (F_p^×)^2`, i.e. Euler's
+criterion. No `p`-dependent input is needed; the dependence on `p` sits
+in the invariant. (An earlier version of this paragraph said the
+sequence needs a choice of square root of `-1` modulo `p`; that was
+imprecise.) That is where AC5's non-constructiveness begins, and nothing
+above changes it.
+
+A finite model of this -- a product over finitely many primes -- cannot
+show the point. Every ultrafilter on a finite set is principal, so
+"choosing `U`" is evaluation at one prime and nothing non-constructive
+occurs; and restricting to the primes of a subset `S` is not a stalk
+(a stalk value is a single element, decided by whether `S ∈ U`). What
+can be computed is the *shape* of the dependence on `U`:
+
+- For an integer constant `a`, the Kummer class sequence is a function
+  of `p mod 4|a|` (quadratic reciprocity; spot-checked for
+  `a = -1, 2, -2, 3, -3, 5, 6, -7, 10` over the primes below `3 * 10^5`).
+  A nonprincipal `U` therefore determines, for each `m`, the one residue
+  class mod `m` that lies in `U`, hence an element `a_U` of
+  `Ẑ^× = lim (ℤ/m)^× = Gal(ℚ^ab/ℚ)`; and `a` is a square in `𝒜/𝔪_U`
+  iff the quadratic character of `ℚ(√a)` takes the value 1 at `a_U`.
+  So for these classes the non-constructive choice factors through an
+  explicit profinite group. (Elementary; surjectivity of `U ↦ a_U` uses
+  Dirichlet's theorem and the existence of ultrafilters. Not formalized.)
+- This abelian shadow does not determine every Kummer-type class. "Is 2
+  a cube modulo `p`", for `p ≡ 1 (mod 3)`, is not a function of `p`
+  modulo anything: in every residue class mod `m` that was tested
+  (`m` up to 126, primes below `3 * 10^5`) both outcomes occur. It agrees
+  with Gauss's criterion `p = x^2 + 27 y^2` on the first 3000 primes
+  `p ≡ 1 (mod 3)` (no mismatch), a non-abelian Frobenius condition
+  (`ℚ(ζ_3, ∛2)`, Galois group `S_3`). So two ultrafilters with the same
+  `a_U` can disagree on it.
+
+Hypothesis, not checked here: this is the Abelian Curse shape in
+miniature. The coarse map is the residue class of `p` (the
+abelianization `Ẑ^×` of the absolute Galois group of `ℚ`); the finer
+datum is the Frobenius conjugacy class in the non-abelian Galois groups.
+That `U` determines a conjugacy class of the absolute Galois group, of
+which `a_U` is the abelianization, is the standard Chebotarev-style
+compatibility argument but was not verified.
+
+Filing unchanged: shape-alike, not an instance. Limits: `k = 4` only,
+primes below 100, numerical (no Agda), and what is seen is a rank-type
+invariant of one family of matrices.
+
+### AC9 -- Kummer classes over the primes: abelian shadow versus non-abelian Frobenius data (`KummerFrobenius`)
+
+`CayleyDicksonQuiver.AbelianCurse.KummerFrobenius` records finite
+instances of the contrast stated at the end of the AC5 addendum.
+`--safe`, type-checked under Agda 2.6.3 / standard-library 1.7.3, no
+postulates or holes. Every statement is a decidable computation on small
+natural numbers, checked by `refl`; primality is decided inside Agda by
+trial division. Two precautions against vacuity: the `all` statements
+range over lists whose lengths are themselves checked
+(`primes-5-400-count`, `primes-2-mod-3-count`, `primes-1-mod-3-count`),
+and a copy with deliberately false statements was confirmed to be
+rejected.
+
+Checked:
+
+- Abelian side: `minus-one-is-mod-4`, `two-is-mod-8`,
+  `three-is-mod-12`. For every prime in `[5, 400)`, "`-1` (respectively
+  `2`, `3`) is a square modulo `p`" agrees with a membership test on
+  `p mod 4` (respectively `8`, `12`).
+- Non-abelian side, the explanation: `two-is-cube-when-2-mod-3` (all 39
+  primes `= 2 mod 3` in range) and `gauss-criterion-below-400` (all 37
+  primes `= 1 mod 3` in range): there, `2` is a cube exactly when
+  `p = x^2 + 27 y^2`.
+- Non-abelian side, collisions: `collision-mod-m` for
+  `m = 3, 6, 12, 18, 36, 60, 84`, with the explicit pairs
+  `(31, 7)`, `(31, 7)`, `(31, 7)`, `(31, 13)`, `(43, 7)`, `(43, 103)`,
+  `(157, 73)`. In each pair both numbers are prime, both are `1 mod 3`,
+  they lie in the same residue class modulo `m`, `2` is a cube modulo the
+  first and not modulo the second.
+
+Not checked: that no modulus works. That is not a finite statement; it
+is the classical fact that `p = x^2 + 27 y^2` is not a congruence
+condition (the field `ℚ(ζ_3, ∛2)` has Galois group `S_3`, so it is not
+contained in a cyclotomic field), recorded here as known, not proved.
+The numerical spot check at larger scale (both outcomes in every class
+mod `m` for `m` up to 126, primes below `3 * 10^5`) is in the AC5
+addendum. Quadratic reciprocity itself is not formalized; only the
+finite instances above are. Nothing about ultrafilters is proved: all
+statements concern primes below 400.
+
+What this gives for the ring `𝒜`, as pure ring theory. Let `S` be the
+set of primes `p ≡ 1 (mod 3)` for which `2` is a cube, and `e_S` its
+idempotent in `𝒜`. By Chebotarev's density theorem (not formalized),
+`S` meets every residue class modulo `m` in an infinite and co-infinite
+set; hence `e_S` is not in the Boolean subalgebra of `𝒜` generated by
+the residue-class idempotents. Evaluation at `U` sends `e_S` to 1 exactly
+when `S ∈ U`, so this value is not determined by `a_U ∈ Ẑ^×`: two
+ultrafilters with the same `a_U` can disagree on it. This is the
+abelian-shadow-versus-finer-datum shape again (coarse map: residue
+class; finer datum: Frobenius class in `S_3`), and it is a statement
+about idempotents in `𝒜`, nothing more.
+
+As with the BOPS / rigidity remark earlier in this note, none of this
+models Θ-links, indeterminacies, or any other IUT-specific structure,
+and it does not bear on the Scholze-Stix / Mochizuki dispute.
