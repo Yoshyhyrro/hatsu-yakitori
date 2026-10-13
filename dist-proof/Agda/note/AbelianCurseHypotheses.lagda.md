@@ -22,13 +22,14 @@ stating instances against that shape; nothing is proved there yet.
 Facts that hold uniformly across instances, and only those, are
 collected in `CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas`.
 
-Seven settings have been tried. Two (AC2, AC3) fit the abelianization
+Eight settings have been tried. Two (AC2, AC3) fit the abelianization
 reading directly, and AC3 now has a complete, provable answer rather
-than an open search. A third (AC6) is a cousin rather than an instance:
-its Agda-checked core (`Ext1Extraction`, with the general lemmas it
-uses in `SecondOperatorLemmas`) has the same coarse-map /
-second-operator shape, but what is lost is a cokernel of a coboundary
-map (an additive, Ext-type loss), not a commutator subgroup. Four more
+than an open search. A third and a fourth (AC6, AC7) are cousins
+rather than instances: their Agda-checked cores (`Ext1Extraction`,
+`Ext1Torsion`, with the general lemmas in `SecondOperatorLemmas`) have
+the same coarse-map / second-operator shape, but what is lost is a
+cokernel of a coboundary map (an additive, Ext-type loss), not a
+commutator subgroup; AC7 is AC6 with genuine torsion. Four more
 (AC1, AC3b, AC4, AC5) were investigated under the same working
 hypothesis, on the strength of a superficial
 resemblance ("a coarse invariant collides some objects; a finer one
@@ -203,8 +204,9 @@ this one `(A,B)`, not for Frobenius actions in general.
 gauge, for the same `(A,B)`.**
 `CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas` replaces the
 single `refl` comparison above with statements quantified over all
-integers (`--safe`; a textual search finds no postulates or holes in
-either file):
+integers (`--safe`; `Ext1Extraction`, `BlindSpots` and
+`SecondOperatorLemmas` type-check together under Agda 2.6.3 with
+standard-library 1.7.3, and contain no postulates or holes):
 
 - `T-computes-coboundary`: the hard-coded `T`, which was obtained by a
   computation outside Agda, is the column-major vectorization of
@@ -466,6 +468,160 @@ because it depends on the Smith normal form of the particular `T`:
 read off from this one `U`. Whether a uniform completeness lemma exists
 (for instance, for any `T` accompanied by a verified Smith form) is
 open.
+
+A further limit, visible from AC7: Lemma 2 concerns left-kernel
+vectors over `ℤ` (`S^t M = 0`), and those only ever see the free
+coordinates (invariant factor `0`). A torsion coordinate with invariant
+factor `d` needs the weaker condition `S^t M ≡ 0 (mod d)` with `S`
+valued in `ℤ/d`; nothing in this file covers that case.
+
+### AC7 -- Ext^1 with genuine torsion (`Ext1Torsion`)
+
+Same setting as AC6, with `A = diag(1,3)` and `B = diag(3,1)` instead of
+the non-semisimple `A`. For diagonal `A`, `B` the coboundary map
+`T(X) = X B - A X` multiplies the coordinate `X_ij` by `b_j - a_i`, so
+`T` is a direct sum of `1x1` blocks: here `T = diag(2, 0, 0, -2)` in the
+order `(x11, x21, x12, x22)`, Smith form `diag D = (2, 2, 0, 0)`, and
+`Ext^1 = Z/2 + Z/2 + Z + Z`. The torsion summands sit where an
+eigenvalue of `B` and one of `A` are congruent mod 2 but unequal
+(`3 - 1 = 2`), the free summands where they are equal (`3 - 3`,
+`1 - 1`). That reading of the invariant factors as `b_j - a_i` is an
+observation from this instance (and from the general diagonal
+computation), not a theorem stated in Agda.
+
+Checked in `CayleyDicksonQuiver.AbelianCurse.Ext1Torsion` (`--safe`,
+type-checked under Agda 2.6.3 / standard-library 1.7.3, no postulates
+or holes; a deliberately false variant of one statement was confirmed
+to be rejected):
+
+- `UTV-is-D`, together with explicit inverses of `U` and `V`
+  (`U′-left-inverse` and the three analogues). `Ext1Extraction`
+  checked `U T V = D` only; invertibility of its `U` and `V` is not
+  checked there.
+- `T′-computes-coboundary`: `T` is the vectorization of `X B - A X`
+  for every integer `X`.
+- `coboundary-shifts-evenly` and `tors-complete`: a coboundary shifts
+  coordinates 1 and 4 by even amounts and leaves 2 and 3 alone, and
+  conversely two vectors that differ so are related by a coboundary
+  with the explicit witness `x = (k1, 0, 0, k2)`. This is
+  `S-ext-complete` with torsion: the class of an extension vector is
+  its `U`-image modulo `(2Z, 2Z, 0, 0)`.
+- `C-tors-order-2` and `C-tors-nonzero`: `C-tors = (1 0; 0 0)` is not a
+  coboundary (no integer is half of 1), but `2 C-tors` is (at
+  `X = (1 0; 0 0)`). So the class has order exactly 2.
+- `diagonals-agree` and `block-matrices-differ`: the block matrices
+  `(A 0; 0 B)` and `(A C-tors; 0 B)` are different, yet have the same
+  main diagonal, hence (being upper triangular) the same determinant
+  `9`. The determinant is blind to the torsion class; the class is
+  not. The two are inequivalent *as extensions* of `B` by `A`; the
+  file does not claim they are non-isomorphic as modules.
+
+This is the same phenomenon as AC6, not a new one: a coarse
+measurement that cannot see the extension, and a second operator (the
+class in `Ext^1`) that can. What is new is that the second operator is
+no longer a linear functional. In AC6 the extractor reads off free
+coordinates, which a left-kernel vector over `ℤ` can do (Lemma 2). Here
+the free coordinates 2 and 3 are still read that way
+(`T′-image-invisible-to-e2`, `-e3`), but the torsion coordinates 1 and
+4 are only defined modulo 2, so the extractor needs a reduction map
+`ℤ -> ℤ/2`, and no left-kernel vector over `ℤ` sees them. The
+invariance/completeness split from the lemma section carries over:
+invariance is the easy half, completeness depends on the Smith form.
+
+Limits. One fixed diagonal `(A,B)`; no Smith-form algorithm; no general
+statement about invariant factors of `X ↦ X B - A X`. No canonical
+reduction modulo 2 is formalized, so `tors-complete` is a relation
+(equality of classes), not an extractor function with decidable
+equality. Moving from `Ext1Extraction`'s non-semisimple `A` to a
+diagonal one makes everything split coordinate-wise, which is why it is
+easy to check and why it should not be over-read: a non-semisimple
+torsion instance is untested.
+
+### Is there room for Ext^1 and Ext^2 to separate?
+
+Short answer: not in the settings of AC6 and AC7 as they stand, by a
+structural reason; yes once a second operator or `ℤ`-torsion
+coefficients enter, with the diagonal toy below showing exactly what
+survives.
+
+1. **One operator, `ℤ`-free modules: `Ext^2 = 0`.** For modules `M`,
+   `N` that are free over `ℤ`, with `t` acting by `B` and `A`, the
+   `ℤ[t]`-module `M` has the length-one free resolution
+   `0 -> ℤ[t] (x) M -> ℤ[t] (x) M -> M -> 0` (given by `t (x) 1 - 1 (x)
+   t`). Applying `Hom(-, N)` gives the two-term complex
+   `Hom_ℤ(M,N) --T--> Hom_ℤ(M,N)` with `T(X) = X B - A X`, hence
+   `Ext^0 = ker T`, `Ext^1 = coker T` and `Ext^i = 0` for `i >= 2`.
+   Since `T` is a square matrix, the free rank of `Ext^1` equals the
+   rank of `Ext^0 = Hom`; the Euler characteristic is `0`. This is
+   standard homological algebra and is not formalized in Agda; the two
+   instances agree with it (AC6: nullity 2 and `Ext^1 ≅ ℤ^2`; AC7:
+   nullity 2, free rank 2, plus `(Z/2)^2`). So there is nothing for
+   `Ext^2` to carry that `Ext^1` and `Hom` do not already determine.
+2. **Two commuting operators (Koszul complex): `Ext^2` appears.** With a
+   second operator `s` the complex becomes
+   `Hom -> Hom^2 -> Hom`. In the diagonal case it splits by coordinate,
+   each with a pair `(δ1, δ2)` of eigenvalue differences. Computed by
+   hand and checked numerically (with sympy, not in Agda) for several
+   pairs: if `(δ1, δ2) != (0, 0)` then `H^0 = 0` and `H^1 ≅ H^2 ≅
+   ℤ/gcd(δ1, δ2)`; if both vanish, the ranks are `(1, 2, 1)`. (The
+   `H^2` statements were checked numerically; the `H^1` torsion follows
+   from the gcd argument by hand.) So in the diagonal toy the torsion of
+   `Ext^1` and `Ext^2` is tied together, and they separate only through
+   their free ranks (2 versus 1). Nothing here suggests an independent
+   torsion invariant in degree 2.
+3. **`ℤ`-torsion coefficients.** If `M` or `N` is killed by `ℓ`, the
+   one-operator resolution argument above no longer applies and
+   `Ext^2_{ℤ[t]}` can be nonzero: for `𝔽_2` with `t = 0`,
+   `Ext^0, Ext^1, Ext^2` have dimensions `1, 2, 1` (the Koszul complex
+   of the regular sequence `(2, t)`). Standard, not formalized.
+4. **Galois side (hypothesis, not tested).** The mod-`ℓ` Galois
+   instances of AC6 live in the regime of item 3, and there `H^2` is the
+   obstruction space, tied to `H^1` and `H^0` by the Euler
+   characteristic formula, which is not `0`, unlike the toy. If `Ext^2`
+   is to separate from `Ext^1` anywhere in this programme, it is there,
+   or in a toy with two operators and `ℤ`-torsion coefficients; the AC6
+   and AC7 toys cannot show it.
+
+Item 2 is now stated in Agda for one coordinate and three explicit
+pairs, in `KoszulToy` (AC8, below).
+
+### AC8 -- Koszul toy, one coordinate (`KoszulToy`)
+
+`CayleyDicksonQuiver.AbelianCurse.KoszulToy` states item 2 of the
+previous section for one coordinate of the diagonal two-operator toy:
+the complex `ℤ -> ℤ^2 -> ℤ` with `d0 x = (δ1 x, δ2 x)` and
+`d1 (a, b) = δ2 a - δ1 b`, `H^0 = ker d0`, `H^1 = ker d1 / im d0`,
+`H^2 = coker d1`. `--safe`, type-checked under Agda 2.6.3 /
+standard-library 1.7.3, no postulates or holes. Checked:
+
+- `complex`: `d1 ∘ d0 = 0` for every pair `(δ1, δ2)`.
+- `(2, 4)`, gcd 2. `H^2`: the image of `d1` is exactly the even
+  integers (`im-d1-even-24`, `even-in-im-24`), and 1 is not in it
+  (`one-not-in-im-24`), so `H^2 = ℤ/2`. `H^1`: `ker d1 = ℤ (1, 2)`
+  (`ker-d1-24`, `in-ker-24`); the generator is not in `im d0` but its
+  double is (`g-not-in-im-d0-24`, `twice-g-in-im-d0-24`), so
+  `H^1 = ℤ/2`. The torsion in degrees 1 and 2 is the same group.
+- `(3, 5)`, coprime. `H^2 = 0` (`im-d1-all-35`, from the Bezout identity
+  `5 * 2 - 3 * 3 = 1`) and `H^1 = 0` (`ker-d1-in-im-d0-35`, with the
+  explicit witness `x = 2 b - 3 a`).
+- `(0, 0)`: both differentials vanish (`d0-zero`, `d1-zero`), so the
+  ranks are `(1, 2, 1)`.
+
+Not checked: the general statement `H^1 ≅ H^2 ≅ ℤ/gcd(δ1, δ2)` (it
+needs Bezout over `ℤ`; the two nonzero cases are instances, not a
+proof); the splitting of the full diagonal Koszul complex into
+coordinates; and any link to the operators of `Ext1Torsion`, since the
+pairs here are chosen by hand rather than derived from a second
+operator on those modules. What the file does show is the point of the
+toy: in the diagonal case the torsion of degree 2 is the same group as
+the torsion of degree 1, so degree 2 carries no torsion invariant that
+degree 1 lacks, and the two separate only through free rank
+(`(0, 0)`: 2 versus 1).
+
+Cross-reference: `CarabinerHypotheses` H8 records a different
+occurrence of the same two-term shape, the integer matrix `L_x` of left
+multiplication by a sedenion seed, where kernel (zero-divisor partners)
+and cokernel torsion separate in a way the diagonal toy cannot show.
 
 ## Shape-alike, not confirmed instances
 
