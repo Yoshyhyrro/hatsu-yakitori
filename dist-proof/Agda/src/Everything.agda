@@ -22,3 +22,4 @@ open import CayleyDicksonQuiver.AbelianCurse.KoszulToy
 open import CayleyDicksonQuiver.AbelianCurse.BlindSpots
 open import CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas
 open import CayleyDicksonQuiver.AbelianCurse.RealAnalyticCurse
+open import CayleyDicksonQuiver.AbelianCurse.KummerFrobenius
