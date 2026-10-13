@@ -12,13 +12,13 @@ open import CayleyDicksonQuiver.MZV.BinaryWords
 open import CayleyDicksonQuiver.MZV.Shuffle
 open import CayleyDicksonQuiver.MZV.DepthGraded
 --open import CayleyDicksonQuiver.Properties
-open import CayleyDicksonQuiver.Hypotheses
+open import CayleyDicksonQuiver.AbelianCurse.SedenionKernelSeed
 --open import CayleyDicksonQuiver.ObstructionFiber
 open import CayleyDicksonQuiver.AbelianCurse.DepthTwoRelations
 open import CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup
 open import CayleyDicksonQuiver.AbelianCurse.IharaBracket
 open import CayleyDicksonQuiver.AbelianCurse.FMZVDerivation
-open import CayleyDicksonQuiver.AbelianCurse.Ext1Torsion
+open import CayleyDicksonQuiver.AbelianCurse.KoszulToy
 open import CayleyDicksonQuiver.AbelianCurse.BlindSpots
 open import CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas
 open import CayleyDicksonQuiver.AbelianCurse.RealAnalyticCurse
