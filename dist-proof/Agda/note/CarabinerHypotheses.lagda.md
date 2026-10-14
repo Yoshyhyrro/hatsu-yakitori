@@ -917,6 +917,75 @@ and none of the three sign systems is one); any link to the associator types of
 nullity with the number of singular cosets is exact for every pair computed,
 and elementary.
 
+## H14 — A `ℂ³`-based doubling tower is a product artifact; a `p`-dependent seed gives the first vertex label that depends on the residue class of `p` (numerical)
+
+First, the experiment design with base algebra `ℂ ⊕ ℂ ⊕ ℂ` (dimension 6),
+doubled to 12, 24 (and here also 48), with the pair `u = e_1` and
+`v = (0, ε_1)` (the first basis vector of the upper half, `ε_1` the
+idempotent of the first factor) and the complex
+`V -> V ⊕ V -> V` given by `D1 = [T1; T2]`, `D2 = [T2, T1]`, `T = L_·`.
+
+Observed (exact integer matrices): `{T1, T2} = 0` and `D2 D1 = 0` at every
+dimension, and the middle homology is
+
+```
+dim 12: H^1 = 16     dim 24: H^1 = 32     dim 48: H^1 = 64     (= 4 dim / 3),
+```
+
+with `H^0 = H^2 = 2 dim / 3`. `T1` and `T2` are nonzero on only `dim / 3`
+columns, and `dim ker L_u = 2 dim / 3`.
+
+Explanation. The doubling formula acts coordinatewise on the three factors
+of the base, so the doubled algebras are products of three copies:
+`ℍ³` (12), `𝕆³` (24), `𝕊³` (48). Genuine Cayley-Dickson zero divisors
+exist only from `𝕊` on, and the pair `(e_1, e_8)` anticommutes in `𝕊` with
+both operators invertible (a non-zero-divisor pair in the classification of
+H10). Both operators live in the first factor only, so the complex splits
+by factor: the first factor contributes 0 (a Clifford pair, `T1` invertible
+there), and the other two factors (each of dimension `dim / 3`) carry zero
+operators, so each contributes `2 (dim / 3)` to `H^1` (the whole of `V_j ⊕ V_j`);
+together `4 dim / 3`, exactly the number above. So that homology measures
+the dimension of the two factors the seeds do not touch; it contains no
+information about Cayley-Dickson zero divisors. Two further remarks: with
+anticommuting operators this is not the Koszul complex of commuting
+operators used for `Ext^i` in AC8; and "the A/0 invariant" is not defined
+by the experiment.
+
+What the finite product does model. `ℂ³` is a finite analogue of
+`𝒜 = ∏ F_p` (a ring with idempotents, evaluation at a factor playing the
+stalk). The same holds for any section `x = (x_1, x_2, x_3)` over a product:
+`L_x = ⊕ L_{x_j}`, so nullity (and every rank-type invariant) is the sum
+over factors, and the stalk at factor `j` sees only `x_j`. This is structural
+and was not computed; it implies that no non-additive phenomenon can come
+from a finite product unless an operator mixes the factors.
+
+Where something does appear (`CD_k` over `F_p`, `k = 1` to `4`, all odd
+primes below 100). Take the `p`-dependent seed `x_p = e_0 + c_p e_1` with
+`c_p^2 ≡ -1 (mod p)` when `p ≡ 1 (mod 4)` and `c_p = 1` otherwise. Then
+
+```
+nullity of L_{x_p} over F_p  =  n / 2   if p ≡ 1 (mod 4),      0   if p ≡ 3 (mod 4)
+```
+
+in every case computed, whereas the fixed integer seed `e_0 + e_1` has
+nullity 0 over `ℚ` and a nonzero nullity over `F_p` only at `p = 2` (value 8
+at `k = 4`). So for a `p`-dependent section the vertex label is the
+indicator sequence of the primes `≡ 1 (mod 4)`, scaled by `n/2`: not
+eventually constant, and its value at a stalk `𝒜/𝔪_U` is `n/2` exactly when
+`{p ≡ 1 mod 4} ∈ U`. This is the "sprout" of layer U in H12: the
+Euler-criterion sequence of the AC5 addendum appears as a vertex label of
+the quiver. It is elementary (the quaternion algebra over `F_p` is split,
+and `1 + c e_1` has norm `1 + c²`); only the numerical check was done.
+
+Hypothesis, not tested. Over `𝒜`, a vertex label is a class in `ℕ^ℕ`
+modulo finite support, and "strictly decreasing" is a condition that holds
+on a set of primes; an arrow would then exist at the stalk `U` exactly when
+its support set belongs to `U`. For inputs defined over `ℤ` every such
+support set is finite or cofinite (H8 and the AC5 addendum), so the quiver
+does not depend on `U`; only `p`-dependent inputs, as above, can make an
+arrow depend on `U`. Nothing here bears on the readings I2 and I3 of `Pair`
+in H12: neither of them is constrained by these computations.
+
 ## Not pursuing
 
 Went looking for a literature connection between Cayley-Dickson
