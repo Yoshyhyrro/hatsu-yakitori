@@ -1041,6 +1041,82 @@ upper half of `CD 4` (where `S_ij != 0` and the sedenion-specific structure
 enters); `p = 2`; any claim about the full path algebra rather than the one
 arrow and its successor.
 
+## H16 — Layer U with genuine zero-divisor structure (`S_ij != 0`): a cover with a non-abelian existence condition (numerical, `k = 4`; conditional on the cover)
+
+Setting (H12 experiment 7, H15 continued in the upper half of `CD 4`).
+Let `X` be the scheme `c2^3 = 2`, `c1^2 = -(1 + c2^2)`, a cover of degree 6
+over `Spec ℤ` (the second equation says the seed is a null vector), and
+let `N_p = #X(F_p)` be the number of its `F_p`-points ("sheets"). Seeds:
+
+- (A) `u = e_1 + c1 e_2 + c2 e_8` (the experiment design this section came
+  from);
+- (B) `u = e_1 + c1 e_2 + c2 e_10`.
+
+Which pairs carry the zero-divisor structure (rank of `{L_i, L_j}` at
+`k = 4`): `(1,2)`, `(1,8)`, `(2,8)`, `(2,10)`: `0`; `(1,10)`: `8`;
+`(3,12)`: `8`; `(4,12)`: `0`. So (A) lives entirely in the region
+`S_ij = 0` (H10), and (B) contains the zero-divisor pair `(1,10)`.
+
+Observed, for the primes `5 <= p < 80` and, for the distribution of `N_p`,
+the 781 primes in `[5, 6000)`:
+
+- (A): on every sheet `nullity L_u = 8`. This is the same value as for the
+  octonionic seeds of H15 and follows from `L_u^2 = -N(u) I + Σ x_i x_j S_ij`
+  (with all `S_ij = 0` and `N(u) = 0`, `L_u^2 = 0`); it carries no
+  sedenion-specific information.
+- (B): on every sheet `nullity L_u = 4`, the rank of `L_u^2` is 8, so
+  `L_u^2 != 0` (here `L_u^2 = c2 S_{1,10}`): the seed is not square-zero, as
+  expected from the zero-divisor pair.
+- chains: with the second seed `v = e_3 + c1 e_4 + c2 e_12` the common
+  kernel is 0 on every sheet (`(ν1, ν2) = (4, 0)`), so no chain. A search over
+  all `v = e_a + c1 e_b + c2 e_d` (distinct `a, b, d` in `1..15` outside
+  `{1,2,10}`, 1320 candidates per sheet) at `p = 5, 11, 31, 43, 47` finds,
+  on every sheet, candidates giving `16 > 4 > 2 > 0` (28 to 32 of them for
+  `p >= 11`; 320 at `p = 5`, a ramified prime); almost all other candidates
+  give 0.
+- `N_p` over `[5, 6000)`: `0` for 478 primes, `1` only at `p = 5`, `2` for 242,
+  `4` for 47, `6` for 13 primes; sheets exist for 38.8% of the primes.
+- "A sheet exists" is not a function of `p mod m`. Among primes at least 7
+  (excluding `p = 5`, the only prime with a single sheet, which is ramified for
+  the quadratic cover): for `m = 3, 4, 8, 12, 24, 36, 72, 120, 360` there are
+  two primes in the same class modulo `m`, one with `N_p = 0` and one with
+  `N_p > 0` (for example `(11, 23)` for `m = 12`, `(7, 31)` for `m = 24`,
+  `(7, 127)` for `m = 120`, `(23, 383)` for `m = 360`).
+
+Reading for AC5. On this cover, an arrow `16 > 4` exists at the prime
+`p` exactly when `X(F_p)` is nonempty, and a chain of length 2 exists on
+every nonempty fibre tested. So at the stalk `𝒜/𝔪_U` the arrow exists
+exactly when `{ p : N_p > 0 } ∈ U`. Unlike the set `{p = 1 mod 4}` of H15,
+this set is not determined by residue classes: two nonprincipal
+ultrafilters inducing the same element `a_U ∈ Ẑ^×` (AC5 addendum) can
+disagree on whether the arrow exists. That the set is not a congruence set
+is supported by the clashes above and is what one expects from a cover
+whose function field contains `ℚ(∛2)`, a non-abelian cubic field (compare
+AC9); it was not proved here. This is the first place in the quiver
+programme where a non-abelian Frobenius condition enters the existence of an
+arrow.
+
+Caveat that limits the reading, as in H15. Without the constraint
+`c2^3 = 2` the seeds `e_1 + a e_2 + b e_10` with `a² + b² + 1 = 0` form a
+conic, which has `F_p`-points for every `p`; checked for all primes
+`5 <= p < 60`, each point has nullity 4 (the value of the pair `(1,10)` itself).
+So the first arrow exists at every stalk in the larger vocabulary, and the
+non-abelian dependence above comes entirely from the cubic constraint that
+defines the cover, not from the algebra. What the experiment shows is how a
+restricted vocabulary of seeds can make the existence of an arrow depend on
+non-abelian Frobenius data.
+
+Also recorded, from the same structure: for a pair in the zero-divisor class
+the two-term seed `e_i + c e_j` has `L_x^2 = -(1 + c^2) I + c S_ij`, whose
+eigenvalues are `-(1 + c^2)`, `-(c - 1)^2`, `-(c + 1)^2`; it is singular
+exactly when `c^4 = 1` (when the pair carries zero-divisor structure). This is
+the derivation behind the determinant formula of H8/H10, and it was not tested
+separately here.
+
+Not done: a length-3 chain on the cover; the Galois group of the closure of
+`X` (and hence the density of `{ p : N_p > 0 }`); other pairs of the
+zero-divisor class; `p = 2, 3`; any statement about the whole path algebra.
+
 ## Not pursuing
 
 Went looking for a literature connection between Cayley-Dickson
