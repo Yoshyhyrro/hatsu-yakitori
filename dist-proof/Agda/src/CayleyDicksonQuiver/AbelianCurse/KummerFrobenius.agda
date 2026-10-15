@@ -25,10 +25,24 @@
 module CayleyDicksonQuiver.AbelianCurse.KummerFrobenius where
 
 open import Data.Bool using (Bool; true; false; _∧_; _∨_; not)
-open import Data.List using (List; []; _∷_; map; any; all; boolFilter; upTo; length)
+open import Data.List using (List; []; _∷_; map; any; upTo; length)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_; _≡ᵇ_; _≤ᵇ_)
 open import Data.Nat.DivMod using (_%_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+
+------------------------------------------------------------------------
+-- Local utility definitions for compatibility with newer stdlib versions
+------------------------------------------------------------------------
+
+boolFilter : {A : Set} → (A → Bool) → List A → List A
+boolFilter p []       = []
+boolFilter p (x ∷ xs) with p x
+... | true  = x ∷ boolFilter p xs
+... | false = boolFilter p xs
+
+all : {A : Set} → (A → Bool) → List A → Bool
+all p []       = true
+all p (x ∷ xs) = p x ∧ all p xs
 
 ------------------------------------------------------------------------
 -- Small decidable toolkit
