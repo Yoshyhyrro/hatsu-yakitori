@@ -986,6 +986,61 @@ does not depend on `U`; only `p`-dependent inputs, as above, can make an
 arrow depend on `U`. Nothing here bears on the readings I2 and I3 of `Pair`
 in H12: neither of them is constrained by these computations.
 
+## H15 — Layer U in an example: with two-term seeds the existence of a chain depends on `p mod 4` (numerical, `k = 3, 4`; conditional on the seed vocabulary)
+
+Setting (H12, experiment 7; interpretation I1 extended by a coefficient).
+Over `F_p` take `f = L_u`, `g = L_v` with the two-term seeds
+`u = e_1 + c e_2`, `v = e_3 + c e_4`, where `c^2 = -1 (mod p)`, and the
+quantities `z = [f, g]`, the unipotent elements `1 + f`, `1 + g`, `1 + z`,
+and the chain of common-kernel dimensions
+`n > ν1 = nullity f > ν2 = dim(ker f ∩ ker g) > 0` (the `shrink`
+condition of `CayleyDicksonQuiver.agda`).
+
+Observed (odd primes `p = 5, 13, 17, 29, 37`, so `p = 1 (mod 4)`; and
+`p = 3, 7, 11, 19, 23`; dimensions 8 and 16):
+
+- two-term null seeds exist only for `p = 1 (mod 4)`, and there
+  `f² = g² = 0`, `fg + gf = 0`, `z = fg - gf != 0`, `fz = gz = z² = 0`, and
+  the relation `(1 + f)(1 + g) = (1 + g)(1 + f)(1 + z)` holds. The chain exists:
+  `16 > 8 > 4 > 0` at `k = 4` and `8 > 4 > 2 > 0` at `k = 3`;
+- the control `u = e_1 + e_2`, `v = e_3 + e_4` (`c = 1`, norm 2, nonzero
+  modulo every odd `p`) fails every relation (`f² != 0`), has `ν1 = 0`, and
+  has no chain, for every `p` tried: it does not depend on `p mod 4`;
+- for `p = 3 (mod 4)` no `c` with `c² = -1` exists, so the two-term null seeds
+  do not exist. This case was not a test in the original design (it printed
+  that no root exists and stopped); it is read here as "no such arrow".
+
+Caveat that limits the reading. For `p = 3 (mod 4)` there are still null seeds
+with three nonzero coefficients: any `(a, b, d)` with `a² + b² + d² = 0 (mod
+p)` (such triples exist for every `p`; checked for `p = 3, 7, 11, 19, 23`).
+Taking `u` supported on `e_1, e_2, e_3` and `v` on `e_4, e_5, e_6` gave the same
+relations and the same chain `16 > 8 > 4 > 0` at `k = 4` for each of those `p`.
+So the dependence of the chain on `p mod 4` is a statement about the seed
+vocabulary (two nonzero coefficients), not about the algebra: with
+three-term seeds the arrow exists at every stalk.
+
+What the relations do and do not show. The Heisenberg-type relation is an
+algebraic consequence of `f² = g² = 0` and `fg = -gf`, which hold here because
+`e_1, ..., e_6` all lie in the lower half of `CD 4` where `S_ij = 0` (H10), i.e.
+inside an octonionic subalgebra, and `u`, `v` are null and orthogonal. There
+is no sedenion-specific content in these relations; the numbers at `k = 3` and
+`k = 4` agree for that reason. The new information is the chain
+(`ν1`, `ν2`) and its existence as a function of `p` and of the seed shape.
+
+Reading for AC5. For the two-term vocabulary the support of this arrow in the
+primes is `{p = 1 (mod 4)}`, so at the stalk `𝒜/𝔪_U` the arrow exists exactly
+when `{p = 1 mod 4} ∈ U`, an instance of the hypothesis at the end of H14
+(arrows with `U`-dependent existence). With the three-term vocabulary the
+support is all primes, so no `U` is involved. This ties the AC5 mechanism (a
+choice of `U` deciding whether `-1` is a square) to the quiver only through
+what the vocabulary of `Pair` allows; it says nothing about the readings I2
+and I3 of `Pair`.
+
+Not done: chains of length 3 or more with `p`-dependent seeds; seeds in the
+upper half of `CD 4` (where `S_ij != 0` and the sedenion-specific structure
+enters); `p = 2`; any claim about the full path algebra rather than the one
+arrow and its successor.
+
 ## Not pursuing
 
 Went looking for a literature connection between Cayley-Dickson
