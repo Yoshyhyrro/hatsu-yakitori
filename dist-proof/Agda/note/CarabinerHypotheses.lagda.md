@@ -1148,10 +1148,25 @@ What was established in the pilot (numerical, except the Agda items).
   phenomenon of the region `S_ij = 0` (a Clifford / octonionic situation),
   consistent with H15.
 - Agda feasibility (the files are scratch unless stated). Integral relations:
-  `HeisenbergSeedRelations.agda` (this repository) checks, for `(p, c, N) =
-  (5, 2, 5), (13, 5, 26), (17, 4, 17)`, that `u (u y) = -N y`,
-  `v (v y) = -N y`, `u (v y) + v (u y) = 0` on all 16 basis vectors, by `refl`
-  (144 facts, about 26 seconds); a variant with the wrong constant was rejected.
+  `HeisenbergSeedRelations.agda` and `CDBilinear.agda` (this repository)
+  prove `u_c (u_c y) = -N y`, `v_c (v_c y) = -N y`,
+  `u_c (v_c y) + v_c (u_c y) = 0`, `N = 1 + c²`, for EVERY natural number `c`
+  and every basis vector `y = basisF i`, `i : Fin 16`. Two ingredients.
+  (1) Finitely many basis facts independent of `c` (`L_a² = -I` for
+  `a = 1, 2, 3, 4`; `L_a L_b + L_b L_a = 0` for the pairs `(1,2)`, `(3,4)`,
+  `(1,3)`, `(1,4)`, `(2,3)`, `(2,4)`), each one statement over `Fin 16`,
+  closed by reflection (`CD k` has decidable equality `eqCD`, `all?` decides,
+  `toWitness` turns the computed `yes` into the proof). (2) Bilinearity:
+  `CDBilinear` proves, at every level `k` and with no postulates, that
+  `mul` is additive in each argument, develops the calculus of n-fold sums
+  `tms`, and proves two seed lemmas (`sq-seed`, `uv-seed`) turning the basis
+  facts into the statements for all `c`. The cases
+  `(p, c, N) = (5, 2, 5), (13, 5, 26), (17, 4, 17)` are instances (about 40
+  seconds in total). Controls: the same reflection fails for the
+  zero-divisor pair `(1, 10)` (where `S != 0`), for a wrong sign of `L_1²`,
+  and a wrong constant `N = c²` is a type error; so the route works exactly
+  in the lower half of `CD 4` and is not vacuous. An earlier version of this
+  file checked only `c < 30`; it is superseded.
   Exhaustive group law: associativity of the law above over `(Z/p)³`
   checked by brute force in Agda in about 5 seconds for `p = 3` and 155
   seconds for `p = 5` (about 2 million triples); the cost grows like `p^6`,
@@ -1164,8 +1179,8 @@ Design of the formalization (three layers).
 
 - L1, abstract group: `Heis(R)` for a commutative ring `R`, carrier `R³`,
   law `(a, b, c)(a', b', c') = (a + a', b + b', c + c' - b a')`.
-- L2, relations: the integral identities of the pilot (any `c`, or the
-  checked instances).
+- L2, relations: the integral identities of the pilot, proved for all `c`
+  (see above).
 - L3, bridge: for elements `f, g` of an associative ring with `f² = g² = 0`
   and `fg = -gf`, the map `(a, b, c) ↦ (1 + af)(1 + bg)(1 + cz)` is a
   homomorphism from `Heis(R)`. This is a statement about rings in general, with
@@ -1187,8 +1202,10 @@ Experiments, in the order to run them; each has its decision rule.
    prove that `{(0, 0, c)}` is central and is the derived subgroup. Success: all
    three over `Z` with a `p`-divisibility hypothesis; they are not yet
    attempted.
-3. Bridge (L3). Prove the homomorphism property in an abstract associative
-   ring, in two forms: `f z = g z = 0`, `z² = 0` and `z` central as
+3. Bridge (L3). Bilinearity of `mul` and the `tms` calculus now exist
+   (`CDBilinear`), but the bridge itself is a statement about an abstract
+   associative ring and does not need them. Prove the homomorphism property in
+   an abstract associative ring, in two forms: `f z = g z = 0`, `z² = 0` and `z` central as
    consequences of the relations, and then the law above. The ring solver is
    commutative, so non-commutative steps need manual equational reasoning;
    measure how long the shortest proof of `(1 + f)(1 + g) = (1 + g)(1 + f)(1 + z)`
