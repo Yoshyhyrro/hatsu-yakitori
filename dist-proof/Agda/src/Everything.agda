@@ -24,3 +24,4 @@ open import CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas
 open import CayleyDicksonQuiver.AbelianCurse.RealAnalyticCurse
 open import CayleyDicksonQuiver.AbelianCurse.KummerFrobenius
 open import CayleyDicksonQuiver.AbelianCurse.HeisenbergSeedRelations
+open import CayleyDicksonQuiver.AbelianCurse.AlternatorBracket
