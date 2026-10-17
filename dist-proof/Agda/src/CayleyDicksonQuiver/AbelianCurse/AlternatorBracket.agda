@@ -67,11 +67,19 @@ cube-3-12 : Cube 3 12
 cube-3-12 = cube-by-reflection 3 12 tt
 
 -- S is not identically zero on these pairs.
+--
+-- The `Dec` argument of `toWitnessFalse` is inferred from the type of the
+-- `False` argument; no implicit argument is named, because its name differs
+-- between versions of the standard library.
+nonzero-by-reflection : (a b : ℕ) (w : CD 4) →
+  False (eqCD 4 (S a b w) (zeroCD 4)) → ¬ (S a b w ≡ zeroCD 4)
+nonzero-by-reflection a b w f = toWitnessFalse f
+
 nonzero-1-10 : ¬ (S 1 10 (basis 4 4) ≡ zeroCD 4)
-nonzero-1-10 = toWitnessFalse {Q = eqCD 4 (S 1 10 (basis 4 4)) (zeroCD 4)} tt
+nonzero-1-10 = nonzero-by-reflection 1 10 (basis 4 4) tt
 
 nonzero-2-11 : ¬ (S 2 11 (basis 4 4) ≡ zeroCD 4)
-nonzero-2-11 = toWitnessFalse {Q = eqCD 4 (S 2 11 (basis 4 4)) (zeroCD 4)} tt
+nonzero-2-11 = nonzero-by-reflection 2 11 (basis 4 4) tt
 
 nonzero-3-12 : ¬ (S 3 12 (basis 4 1) ≡ zeroCD 4)
-nonzero-3-12 = toWitnessFalse {Q = eqCD 4 (S 3 12 (basis 4 1)) (zeroCD 4)} tt
+nonzero-3-12 = nonzero-by-reflection 3 12 (basis 4 1) tt
