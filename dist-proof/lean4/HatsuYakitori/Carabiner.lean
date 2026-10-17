@@ -72,6 +72,7 @@
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.List.Basic
+import Mathlib.Tactic.Linarith
 import HatsuYakitori.MachineConstants   -- GolayWeight, galoisHeight, etc.
 import HatsuYakitori.BSDQuiver          -- SpaceTag, TransformEffect, etc.
 
@@ -147,7 +148,7 @@ theorem carabiner_height_injective (c₁ c₂ : Carabiner) :
     have h' : c₁.weight.height = c₂.weight.height := h
     cases hw₁ : c₁.weight <;> cases hw₂ : c₂.weight <;>
       simp_all [GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeightBound] <;>
-      revert h' <;> norm_num
+      norm_num at h'
   · intro h
     simp [Carabiner.height, h]
 
@@ -238,13 +239,29 @@ def Route.complement (r : Route) : Route :=
 /-- The complement of an ascending route is ascending. -/
 theorem Route.complement_ascending_is_ascending (r : Route)
     (h : r.isAscending) : r.complement.isAscending := by
-  unfold Route.isAscending Route.complement at *
-  rw [List.pairwise_map, List.pairwise_reverse]
+  unfold Route.complement
+  -- For any list l, isAscending (reverse l) ↔ isDescending l
+  have rev_asc : ∀ l, isAscending l.reverse ↔ isDescending l := by
+    intro l
+    unfold isAscending isDescending
+    simp [List.pairwise_reverse]
+  -- `Route.complement r` unfolds to `List.map Carabiner.complement (List.reverse r)`,
+  -- i.e. `r.reverse.map complement`, not `(something).reverse`; `List.map_reverse`
+  -- (`l.reverse.map f = (l.map f).reverse`) commutes them so `rev_asc`'s
+  -- `isAscending (List.reverse ?l)` pattern actually matches before we `rw [rev_asc]`.
+  rw [List.map_reverse, rev_asc]
+  -- Goal: isDescending (map complement r)
+  unfold isDescending
+  rw [List.pairwise_map]
+  -- Goal: Pairwise (fun a b => (complement a).height ≥ (complement b).height) r
   apply List.Pairwise.imp _ h
   intro a b hab
-  dsimp
-  have ha := a.height_add_complement
-  have hb := b.height_add_complement
+  -- hab : a.height ≤ b.height
+  have ha := Carabiner.height_add_complement a
+  have hb := Carabiner.height_add_complement b
+  -- ha : a.height + (complement a).height = galoisHeightBound
+  -- hb : b.height + (complement b).height = galoisHeightBound
+  -- `height` is ℝ-valued, so this is a `linarith` goal, not `omega` (ℕ/ℤ only).
   linarith
   -- Strategy: reverse flips the order; complement flips the height
   -- (h → 8-h), so both flips cancel out and ≤ remains ≤.
@@ -464,7 +481,7 @@ theorem golayRoute_lattice_points :
      galoisHeightBound * 2 / 3, galoisHeightBound] := by
   simp [golayRoute, carabiner0, carabiner8, carabiner12,
         carabiner16, carabiner24, Carabiner.height,
-        GolayWeight.height, GolayWeight.toFin25, octadHeight, galoisHeight]
+        GolayWeight.height, GolayWeight.toFin25, octadHeight]
 
 /-- The Golay height interval is self-dual:
     the midpoint is galoisHeightBound / 2 = 4. -/
