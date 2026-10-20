@@ -29,6 +29,12 @@
 -- Layer 3  (theorems)     assoc, units, jacobi, structure constants,
 --                         the Heisenberg group commutator (in three steps)
 -- Layer 4  (grading)      mul-scale : the weight grading (X, Y : 1, Z : 2)
+-- Layer 5  (Heisenberg)   at N = 0 the elements 1 + aX + bY + cZ form a group;
+--                         [h , h'] = 1 + 2 (a b' - b a') Z for ALL elements, and every
+--                         1 + 2kZ is a commutator; the bracket moves under translation
+--                         by Z by N times an explicit amount: it descends modulo Z when
+--                         N = 0, modulo p when p | N, and only if 2N = 0.
+--                         (`CliffordAlternator` adds the anticommutator S.)
 --
 -- HOW THE PROOFS ARE WRITTEN
 --
@@ -46,8 +52,10 @@ module CayleyDicksonQuiver.AbelianCurse.CliffordContraction where
 
 open import Data.Integer using (ℤ; _+_; _*_; -_) renaming (+_ to pos)
 open import Data.Integer.Solver using (module +-*-Solver)
+open import Data.Integer.Divisibility.Signed using (_∣_; divides; ∣m⇒∣m*n)
+open import Data.Integer.Properties using (+-identityʳ)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym)
 open +-*-Solver using (solve; _:=_; con; _:+_; _:*_; :-_; Polynomial)
 
 ------------------------------------------------------------------------
@@ -149,14 +157,27 @@ module Gen {A : Set} (O : Ops A) where
   uX a = 𝟏 , a , 𝟎 , 𝟎
   uY b = 𝟏 , 𝟎 , b , 𝟎
 
+  -- translation of x by k Z (Z = the last basis vector)
+  shiftZ : A → GCl A → GCl A
+  shiftZ k (s , a , b , c) = s , a , b , (c ⊕ k)
+
+  -- how far the bracket [x , y] moves when x is translated by k Z:
+  --     [x + k Z , y] = [x , y] + N * (0 , -2 k b' , 2 k a' , 0)     (y = (t , a' , b' , c'))
+  bracket-drift : A → A → GCl A → GCl A
+  bracket-drift N k (t , a' , b' , c') =
+    𝟎 , (N ⊗ ⊝ ((𝟏 ⊕ 𝟏) ⊗ (k ⊗ b'))) , (N ⊗ ((𝟏 ⊕ 𝟏) ⊗ (k ⊗ a'))) , 𝟎
+
 -- The instance at ℤ.
 module ℤG = Gen ℤ-ops
-open ℤG using (g; cross; lie; lie-cyc; _⊞_; _⊡_; uX; uY; scaleC)
+open ℤG using (g; cross; lie; lie-cyc; _⊞_; _⊡_; uX; uY; scaleC; shiftZ; bracket-drift)
 
 -- The instances at n solver variables, one for each arity used below.
 module P1  = Gen (poly 1)
 module P2  = Gen (poly 2)
+module P3  = Gen (poly 3)
+module P4  = Gen (poly 4)
 module P5  = Gen (poly 5)
+module P6  = Gen (poly 6)
 module P7  = Gen (poly 7)
 module P9  = Gen (poly 9)
 module P10 = Gen (poly 10)
@@ -492,3 +513,178 @@ mul-scale N t (a0 , a1 , a2 , a3) (b0 , b1 , b2 , b3) = Cl≡
           y = b0 , b1 , b2 , b3
       in c₃ (P10.mul N (P10.scaleC t x) (P10.scaleC t y))
          := c₃ (P10.scaleC t (P10.mul ((t :* t) :* N) x y))) refl N t a0 a1 a2 a3 b0 b1 b2 b3)
+
+
+------------------------------------------------------------------------
+-- Layer 5: the Heisenberg group, and where the bracket is well defined
+------------------------------------------------------------------------
+-- At N = 0 the elements 1 + aX + bY + cZ form a group (the integral Heisenberg
+-- group), its commutator subgroup is exactly {1 + 2kZ}, and the bracket only
+-- depends on its arguments modulo Z.  For N ≠ 0 the last statement fails, by
+-- exactly N times an explicit amount: the bracket is defined on the quotient
+-- by Z precisely when 2N = 0, or modulo a prime p when p divides N.
+
+unip unip⁻¹ : ℤ → ℤ → ℤ → Cl
+unip   a b c = pos 1 , a , b , c
+unip⁻¹ a b c = pos 1 , - a , - b , - c
+
+-- The group law: (a,b,c)(a',b',c') = (a + a', b + b', c + c' + a b' - b a').
+unip-mul : ∀ a b c a' b' c' →
+  mulN (pos 0) (unip a b c) (unip a' b' c')
+    ≡ unip (a + a') (b + b') ((c + c') + (a * b' + - (b * a')))
+unip-mul a b c a' b' c' = Cl≡
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+      in c₀ (P6.mul P6.𝟎 h k) := P6.𝟏) refl a b c a' b' c')
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+      in c₁ (P6.mul P6.𝟎 h k) := a :+ a') refl a b c a' b' c')
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+      in c₂ (P6.mul P6.𝟎 h k) := b :+ b') refl a b c a' b' c')
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+      in c₃ (P6.mul P6.𝟎 h k) := (c :+ c') :+ ((a :* b') :+ (:- (b :* a')))) refl a b c a' b' c')
+
+-- Inverses (so that the commutator below is the group commutator).
+unip-inv : ∀ a b c → mulN (pos 0) (unip a b c) (unip⁻¹ a b c) ≡ oneCl
+unip-inv a b c = Cl≡
+  (solve 3 (λ a b c →
+      let h = P3.𝟏 , a , b , c
+          hi = P3.𝟏 , :- a , :- b , :- c
+      in c₀ (P3.mul P3.𝟎 h hi) := P3.𝟏) refl a b c)
+  (solve 3 (λ a b c →
+      let h = P3.𝟏 , a , b , c
+          hi = P3.𝟏 , :- a , :- b , :- c
+      in c₁ (P3.mul P3.𝟎 h hi) := P3.𝟎) refl a b c)
+  (solve 3 (λ a b c →
+      let h = P3.𝟏 , a , b , c
+          hi = P3.𝟏 , :- a , :- b , :- c
+      in c₂ (P3.mul P3.𝟎 h hi) := P3.𝟎) refl a b c)
+  (solve 3 (λ a b c →
+      let h = P3.𝟏 , a , b , c
+          hi = P3.𝟏 , :- a , :- b , :- c
+      in c₃ (P3.mul P3.𝟎 h hi) := P3.𝟎) refl a b c)
+
+-- The group commutator of two elements of the Heisenberg group.
+commutator : ℤ → ℤ → ℤ → ℤ → ℤ → ℤ → Cl
+commutator a b c a' b' c' =
+  mulN (pos 0) (mulN (pos 0) (mulN (pos 0) (unip a b c) (unip a' b' c')) (unip⁻¹ a b c))
+               (unip⁻¹ a' b' c')
+
+-- Every commutator is central and "even": [h , h'] = 1 + 2 (a b' - b a') Z.
+commutator-formula : ∀ a b c a' b' c' →
+  commutator a b c a' b' c' ≡ unip (pos 0) (pos 0) (pos 2 * (a * b' + - (b * a')))
+commutator-formula a b c a' b' c' = Cl≡
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+          hi = P6.𝟏 , :- a , :- b , :- c
+          ki = P6.𝟏 , :- a' , :- b' , :- c'
+      in c₀ (P6.mul P6.𝟎 (P6.mul P6.𝟎 (P6.mul P6.𝟎 h k) hi) ki) := P6.𝟏) refl a b c a' b' c')
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+          hi = P6.𝟏 , :- a , :- b , :- c
+          ki = P6.𝟏 , :- a' , :- b' , :- c'
+      in c₁ (P6.mul P6.𝟎 (P6.mul P6.𝟎 (P6.mul P6.𝟎 h k) hi) ki) := P6.𝟎) refl a b c a' b' c')
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+          hi = P6.𝟏 , :- a , :- b , :- c
+          ki = P6.𝟏 , :- a' , :- b' , :- c'
+      in c₂ (P6.mul P6.𝟎 (P6.mul P6.𝟎 (P6.mul P6.𝟎 h k) hi) ki) := P6.𝟎) refl a b c a' b' c')
+  (solve 6 (λ a b c a' b' c' →
+      let h = P6.𝟏 , a , b , c
+          k = P6.𝟏 , a' , b' , c'
+          hi = P6.𝟏 , :- a , :- b , :- c
+          ki = P6.𝟏 , :- a' , :- b' , :- c'
+      in c₃ (P6.mul P6.𝟎 (P6.mul P6.𝟎 (P6.mul P6.𝟎 h k) hi) ki) := (con (pos 2)) :* ((a :* b') :+ (:- (b :* a')))) refl a b c a' b' c')
+
+-- Conversely every even central element is a commutator: [1 + X , 1 + kY] = 1 + 2kZ.
+even-central-is-commutator : ∀ k →
+  commutator (pos 1) (pos 0) (pos 0) (pos 0) k (pos 0) ≡ unip (pos 0) (pos 0) (pos 2 * k)
+even-central-is-commutator k =
+  trans (commutator-formula (pos 1) (pos 0) (pos 0) (pos 0) k (pos 0))
+        (cong (unip (pos 0) (pos 0))
+              (solve 1 (λ k → (con (pos 2)) :* ((con (pos 1) :* k) :+ (:- (con (pos 0) :* con (pos 0))))
+                              := (con (pos 2)) :* k) refl k))
+
+-- Z is central at N = 0.
+unip-centre : ∀ c a b c' →
+  mulN (pos 0) (unip (pos 0) (pos 0) c) (unip a b c') ≡ mulN (pos 0) (unip a b c') (unip (pos 0) (pos 0) c)
+unip-centre c a b c' = Cl≡
+  (solve 4 (λ c a b c' →
+      let z = P4.𝟏 , P4.𝟎 , P4.𝟎 , c
+          h = P4.𝟏 , a , b , c'
+      in c₀ (P4.mul P4.𝟎 z h) := c₀ (P4.mul P4.𝟎 h z)) refl c a b c')
+  (solve 4 (λ c a b c' →
+      let z = P4.𝟏 , P4.𝟎 , P4.𝟎 , c
+          h = P4.𝟏 , a , b , c'
+      in c₁ (P4.mul P4.𝟎 z h) := c₁ (P4.mul P4.𝟎 h z)) refl c a b c')
+  (solve 4 (λ c a b c' →
+      let z = P4.𝟏 , P4.𝟎 , P4.𝟎 , c
+          h = P4.𝟏 , a , b , c'
+      in c₂ (P4.mul P4.𝟎 z h) := c₂ (P4.mul P4.𝟎 h z)) refl c a b c')
+  (solve 4 (λ c a b c' →
+      let z = P4.𝟏 , P4.𝟎 , P4.𝟎 , c
+          h = P4.𝟏 , a , b , c'
+      in c₃ (P4.mul P4.𝟎 z h) := c₃ (P4.mul P4.𝟎 h z)) refl c a b c')
+
+-- The bracket and translation by Z.  For every N:
+--     [x + k Z , y] = [x , y] + N * (0 , -2 k b' , 2 k a' , 0).
+br-shift-Z : ∀ N k (x y : Cl) → br N (shiftZ k x) y ≡ addCl (br N x y) (bracket-drift N k y)
+br-shift-Z N k (s , a , b , c) (t , a' , b' , c') = Cl≡
+  (solve 10 (λ N k s a b c t a' b' c' →
+      let x = s , a , b , c
+          y = t , a' , b' , c'
+      in c₀ (P10.br N (P10.shiftZ k x) y) := c₀ (P10.addC (P10.br N x y) (P10.bracket-drift N k y))) refl N k s a b c t a' b' c')
+  (solve 10 (λ N k s a b c t a' b' c' →
+      let x = s , a , b , c
+          y = t , a' , b' , c'
+      in c₁ (P10.br N (P10.shiftZ k x) y) := c₁ (P10.addC (P10.br N x y) (P10.bracket-drift N k y))) refl N k s a b c t a' b' c')
+  (solve 10 (λ N k s a b c t a' b' c' →
+      let x = s , a , b , c
+          y = t , a' , b' , c'
+      in c₂ (P10.br N (P10.shiftZ k x) y) := c₂ (P10.addC (P10.br N x y) (P10.bracket-drift N k y))) refl N k s a b c t a' b' c')
+  (solve 10 (λ N k s a b c t a' b' c' →
+      let x = s , a , b , c
+          y = t , a' , b' , c'
+      in c₃ (P10.br N (P10.shiftZ k x) y) := c₃ (P10.addC (P10.br N x y) (P10.bracket-drift N k y))) refl N k s a b c t a' b' c')
+
+-- At N = 0 the drift vanishes: the bracket only depends on x modulo Z.
+bracket-descends-at-0 : ∀ k (x y : Cl) → br (pos 0) (shiftZ k x) y ≡ br (pos 0) x y
+bracket-descends-at-0 k (s , a , b , c) (t , a' , b' , c') =
+  trans (br-shift-Z (pos 0) k (s , a , b , c) (t , a' , b' , c'))
+        (Cl≡ (+-identityʳ _) (+-identityʳ _) (+-identityʳ _) (+-identityʳ _))
+
+-- Modulo a prime p dividing N the drift vanishes too: all four coordinates of
+-- the drift are divisible by p.  (This is the "modulus" of H15 / H17.)
+DivCl : ℤ → Cl → Set
+DivCl p (a0 , a1 , a2 , a3) = p ∣ a0 × p ∣ a1 × p ∣ a2 × p ∣ a3
+
+bracket-drift-divisible : ∀ p N → p ∣ N → ∀ k (y : Cl) → DivCl p (bracket-drift N k y)
+bracket-drift-divisible p N p∣N k (t , a' , b' , c') =
+  divides (pos 0) refl , ∣m⇒∣m*n _ p∣N , ∣m⇒∣m*n _ p∣N , divides (pos 0) refl
+
+-- Left cancellation of addition (not in this version of the standard library).
++-cancelˡ : ∀ A D → A + D ≡ A + pos 0 → D ≡ pos 0
++-cancelˡ A D h =
+  trans (solve 2 (λ A D → D := :- A :+ (A :+ D)) refl A D)
+ (trans (cong (λ t → - A + t) h)
+        (solve 1 (λ A → :- A :+ (A :+ con (pos 0)) := con (pos 0)) refl A))
+
+-- Conversely, if the bracket is well defined modulo Z for this N, then 2N = 0.
+bracket-descends-only-if : ∀ N →
+  (∀ k (x y : Cl) → br N (shiftZ k x) y ≡ br N x y) → (- pos 2) * N ≡ pos 0
+bracket-descends-only-if N h =
+  trans (solve 1 (λ N → (:- con (pos 2)) :* N
+                        := N :* (:- ((con (pos 1) :+ con (pos 1)) :* (con (pos 1) :* con (pos 1))))) refl N)
+        (+-cancelˡ (c₁ (br N zeroCl Y)) _
+          (trans (sym (cong c₁ (br-shift-Z N (pos 1) zeroCl Y)))
+          (trans (cong c₁ (h (pos 1) zeroCl Y))
+                 (sym (+-identityʳ _)))))
