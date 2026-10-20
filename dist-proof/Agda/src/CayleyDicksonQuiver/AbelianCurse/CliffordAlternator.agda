@@ -28,8 +28,9 @@
 --   * associativity and the unit                              (assocS, oneS-*);
 --   * the bracket moves under translation by Z by an explicit amount,
 --         [x + k Z , y] = [x , y] + k (0 , S a' - 2N b' , 2N a' - S b' , 0),
---     which vanishes (at N = 0, and modulo p when p | N and p | S) exactly when
---     the whole Gram matrix of q vanishes: the Heisenberg regime is "q = 0".
+--     which vanishes at N = S = 0, and modulo p when p | N and p | S (the Gram
+--     matrix of q vanishes mod p); over ℤ it vanishes only then.  The Heisenberg
+--     regime is "q = 0".
 --
 -- NOT done here: no homomorphism from `Cl_{N,S}` into the operators on `CD 4`
 -- is constructed, so nothing is claimed about the sedenion pairs beyond the
@@ -351,4 +352,3 @@ brS-descends-only-if N S h =
   step : (cᵢ : Cl → ℤ) → _
   step cᵢ = trans (sym (cong cᵢ (brS-shift-Z N S (pos 1) zeroCl Y)))
             (trans (cong cᵢ (h (pos 1) zeroCl Y)) (sym (+-identityʳ _)))
-
