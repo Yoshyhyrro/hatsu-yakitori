@@ -12,6 +12,10 @@
 --            3x3 integer matrices (first version, kept as it was)
 --   Lemma 2  the same for matrices and vectors of any sizes, via the
 --            identity S^t (M v) = (S^t M) v proved by induction
+--   Lemma 2' the torsion form of Lemma 2: if every entry of S^t M is
+--            divisible by d, then d divides S^t (M v) for every v
+--            (the invariance half modulo d; an application, to the
+--            torsion instance `Ext1Torsion`, is given there)
 --   Applications of Lemma 2: `BlindSpots` for every noise vector, not
 --            one chosen one; and, for the `Ext1Extraction` instance,
 --            that its hard-coded coboundary matrix `T` is the
@@ -39,9 +43,10 @@ open import CayleyDicksonQuiver.AbelianCurse.Ext1Extraction
 open import CayleyDicksonQuiver.AbelianCurse.BlindSpots
   using (Ind-Rigid; Ind-Rank1; S0; S1) renaming (S to S-rigid)
 open import Data.Integer using (ℤ; _+_; _*_; -_) renaming (+_ to pos)
+open import Data.Integer.Divisibility.Signed using (_∣_; divides; ∣m⇒∣m*n)
 open import Data.Integer.Properties using (+-identityˡ; +-identityʳ; *-zeroʳ)
 open import Data.List using (List; []; _∷_; map)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym; subst)
 open import Relation.Nullary using (¬_)
 open import Data.Integer.Solver using (module +-*-Solver)
 open +-*-Solver
@@ -215,6 +220,41 @@ allzero-dot {x ∷ xs} (az-∷ hx hxs) (y ∷ ys) =
 left-kernel-annihilates-image-gen :
   (S : Row) (M : Mat) (v : Row) → AllZero (vec-mat S M) → dot S (mat-vec M v) ≡ pos 0
 left-kernel-annihilates-image-gen S M v h = trans (dot-vec-mat S M v) (allzero-dot h v)
+
+------------------------------------------------------------------------
+-- Lemma 2' (modulo d): the torsion form of the left-kernel lemma
+------------------------------------------------------------------------
+-- Lemma 2 needs `S^t M` to vanish.  Where the cokernel has torsion
+-- (invariant factors d > 1, AC7) the most one can ask is that every
+-- entry of `S^t M` be divisible by d, and then `S` is invisible to the
+-- image of `M` *modulo d*: `d` divides `S^t (M v)` for every `v`.  The
+-- proof is Lemma 2's, with `AllDiv d` in place of `AllZero`.  `k ∣ z`
+-- is the signed divisibility of the standard library (`z = q * k`).
+
+data AllDiv (d : ℤ) : Row → Set where
+  ad-[] : AllDiv d []
+  ad-∷  : ∀ {x xs} → d ∣ x → AllDiv d xs → AllDiv d (x ∷ xs)
+
+∣-zero : ∀ {d} → d ∣ pos 0
+∣-zero = divides (pos 0) refl
+
+∣-plus : ∀ {d a b} → d ∣ a → d ∣ b → d ∣ a + b
+∣-plus {d} (divides m ea) (divides n eb) =
+  divides (m + n)
+    (trans (cong₂ _+_ ea eb)
+           (solve 3 (λ M N D → M :* D :+ N :* D := (M :+ N) :* D) refl m n d))
+
+alldiv-dot : ∀ {d r} → AllDiv d r → (v : Row) → d ∣ dot r v
+alldiv-dot ad-[]         []       = ∣-zero
+alldiv-dot ad-[]         (y ∷ ys) = ∣-zero
+alldiv-dot (ad-∷ hx hxs) []       = ∣-zero
+alldiv-dot (ad-∷ hx hxs) (y ∷ ys) = ∣-plus (∣m⇒∣m*n y hx) (alldiv-dot hxs ys)
+
+left-kernel-mod-annihilates-image-gen :
+  (d : ℤ) (S : Row) (M : Mat) (v : Row) →
+  AllDiv d (vec-mat S M) → d ∣ dot S (mat-vec M v)
+left-kernel-mod-annihilates-image-gen d S M v h =
+  subst (d ∣_) (sym (dot-vec-mat S M v)) (alldiv-dot h v)
 
 ------------------------------------------------------------------------
 -- Application 1: BlindSpots, for every noise vector
@@ -414,28 +454,9 @@ extractor-separates :
 extractor-separates ()
 
 ------------------------------------------------------------------------
--- Index of confirmed instances (not re-derived here, only pointed to)
+-- Instances
 ------------------------------------------------------------------------
--- AC2 (CayleyDicksonQuiver.AbelianCurse.IharaBracket.weight-12-relation):
---   U = 𝔡 → 𝔡^ab (depth one); S = the Ihara bracket; loses relations
---   in [𝔡,𝔡], e.g. {σ1,σ4} = 3{σ2,σ3} at weight 12.
---
--- AC3 (CayleyDicksonQuiver.AbelianCurse.SOReflectionGroup.
---      derived-1-is-id-R1R2, derived-2-is-trivial):
---   U = SO(V) → SO(V)^ab; S = the spinor norm; loses exactly
---   [SO(V),SO(V)] = {id, R1 R2}, confirmed by computing the derived
---   series itself, not merely checking one invariant against it.
---
--- AC6 (CayleyDicksonQuiver.AbelianCurse.Ext1Extraction.
---      C1-and-C2-agree-under-U; strengthened above to every C and X):
---   U = compares raw extension data; S = the Ext^1(M,N) class via a
---   Smith normal form of the coboundary map; loses exactly the
---   coboundary noise {X B - A X}, now proved to be the whole of the
---   noise for this (A,B), in both directions.
---
--- No single formula unifies how `S` is built across these three: AC2
--- and AC3 recover a multiplicative (group-commutator) invariant, AC6
--- an additive (cokernel) one. Lemma 2 above is the one fact common to
--- all cokernel-shaped constructions among them (AC6, the general
--- diagnostic in `BlindSpots`, and the block-diagonal annihilator
--- structure in note AC7): nothing more general than that is claimed.
+-- Where these lemmas are used, and the instances they are not about, are
+-- indexed in `note/AbelianCurseHypotheses.lagda.md` ("Second-operator
+-- lemmas").  Lemma 2 and Lemma 2' concern cokernel-shaped constructions
+-- only; nothing more general than that is claimed.
