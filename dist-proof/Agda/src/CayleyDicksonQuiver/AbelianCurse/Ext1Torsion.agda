@@ -46,7 +46,9 @@ module CayleyDicksonQuiver.AbelianCurse.Ext1Torsion where
 open import CayleyDicksonQuiver.AbelianCurse.Ext1Extraction
   using (Mat; Row; dot; mat-vec; mat-mul; vec2x2)
 open import CayleyDicksonQuiver.AbelianCurse.SecondOperatorLemmas
-  using (addR; msub2; AllZero; az-∷; az-[]; left-kernel-annihilates-image-gen)
+  using (addR; msub2; AllZero; az-∷; az-[]; left-kernel-annihilates-image-gen;
+         AllDiv; ad-∷; ad-[]; left-kernel-mod-annihilates-image-gen)
+open import Data.Integer.Divisibility.Signed using (_∣_; divides)
 open import Data.Integer using (ℤ; _+_; _*_; -_) renaming (+_ to pos; -[1+_] to neg[1+_])
 open import Data.Integer.Properties using (+-identityʳ)
 open import Data.Integer.Solver using (module +-*-Solver)
@@ -301,3 +303,18 @@ diagonals-agree = refl
 
 block-matrices-differ : ¬ (M-split ≡ M-tors)
 block-matrices-differ ()
+
+------------------------------------------------------------------------
+-- Application of Lemma 2' (SecondOperatorLemmas): the evenness of the
+-- torsion coordinates, from the shape of T' alone
+------------------------------------------------------------------------
+-- `coboundary-shifts-evenly` computed with the ring solver that the first
+-- and last coordinates of a coboundary shift by even amounts.  Lemma 2'
+-- gives the invariance half directly: `e1^t T'` is `(2, 0, 0, 0)`, every
+-- entry divisible by 2, so `e1` sees the image of `T'` only modulo 2.
+
+T′-image-even-in-e1 : (x : Row) → pos 2 ∣ dot e1 (mat-vec T′ x)
+T′-image-even-in-e1 x =
+  left-kernel-mod-annihilates-image-gen (pos 2) e1 T′ x
+    (ad-∷ (divides (pos 1) refl) (ad-∷ (divides (pos 0) refl)
+    (ad-∷ (divides (pos 0) refl) (ad-∷ (divides (pos 0) refl) ad-[]))))
