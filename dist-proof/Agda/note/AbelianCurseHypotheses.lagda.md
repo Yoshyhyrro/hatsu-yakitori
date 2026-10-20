@@ -453,11 +453,48 @@ that difference, not a way to erase it.
   `T-computes-coboundary` gives
   `S-ext-invariant-under-all-coboundaries` (see AC6 above).
 
-The file ends with an index pointing back to AC2
-(`IharaBracket.weight-12-relation`), AC3
-(`SOReflectionGroup.derived-1-is-id-R1R2`, `derived-2-is-trivial`) and
-AC6 (`Ext1Extraction.C1-and-C2-agree-under-U`); nothing is re-derived
-there.
+- **Lemma 2′** (modulo `d`). If every entry of `S^t M` is divisible by
+  `d` (`AllDiv d`, the analogue of `AllZero`), then `d` divides
+  `dot S (M v)` for every `v`
+  (`left-kernel-mod-annihilates-image-gen`). The proof is Lemma 2's
+  with signed divisibility in place of the zero cases (`∣-plus`, and
+  `∣m⇒∣m*n` from the standard library). Application, in `Ext1Torsion`:
+  `T′-image-even-in-e1` -- `e1^t T′ = (2,0,0,0)`, so `e1` sees the image
+  of `T′` only modulo 2.
+
+#### Index of confirmed instances
+
+Not re-derived in `SecondOperatorLemmas`, only pointed to. (This index
+used to sit at the end of that file.)
+
+- **AC2** (`IharaBracket.weight-12-relation`). `U = 𝔡 → 𝔡^ab` (depth
+  one); `S` = the Ihara bracket; loses relations in `[𝔡,𝔡]`, e.g.
+  `{σ1,σ4} = 3{σ2,σ3}` at weight 12.
+- **AC3** (`SOReflectionGroup.derived-1-is-id-R1R2`,
+  `derived-2-is-trivial`). `U = SO(V) → SO(V)^ab`; `S` = the spinor
+  norm; loses exactly `[SO(V),SO(V)] = {id, R1 R2}`, confirmed by
+  computing the derived series itself, not merely checking one invariant
+  against it.
+- **AC6** (`Ext1Extraction.C1-and-C2-agree-under-U`; strengthened to
+  every `C` and `X`). `U` = compares raw extension data; `S` = the
+  `Ext^1(M,N)` class via a Smith normal form of the coboundary map;
+  loses exactly the coboundary noise `{X B - A X}`, proved to be the
+  whole of the noise for this `(A,B)`, in both directions.
+- **AC7** (`Ext1Torsion`). AC6 with genuine torsion; the invariance half
+  for the torsion coordinates is Lemma 2′.
+- **AC10** (`CliffordContraction`, `CliffordAlternator`; below). A
+  commutator-shaped instance with an explicit group: the loss
+  `[H,H] = {1 + 2kZ}` is computed exactly, and the bracket's descent is
+  the invariance half.
+
+No single formula unifies how `S` is built across these: AC2, AC3 and
+AC10 recover a multiplicative (group-commutator) invariant, AC6 and AC7
+an additive (cokernel) one. Lemma 2, and Lemma 2′ for its torsion form,
+are the facts common to all cokernel-shaped constructions among them
+(AC6, AC7, the general diagnostic in `BlindSpots`, and the block-diagonal
+annihilator structure in AC7); nothing more general than that is
+claimed. For the commutator shape what is common is the descent
+statement of AC10, proved there for one family of algebras only.
 
 The split this exposes is the useful part. The *invariance* half of a
 cokernel-shaped second operator -- `S` is unchanged by the noise -- is
@@ -473,7 +510,10 @@ A further limit, visible from AC7: Lemma 2 concerns left-kernel
 vectors over `ℤ` (`S^t M = 0`), and those only ever see the free
 coordinates (invariant factor `0`). A torsion coordinate with invariant
 factor `d` needs the weaker condition `S^t M ≡ 0 (mod d)` with `S`
-valued in `ℤ/d`; nothing in this file covers that case.
+valued in `ℤ/d`. Lemma 2′ now covers the invariance half of that case
+(`d` divides `S^t (M v)`); the completeness half, and `S` as a class in
+`ℤ/d` rather than a bare divisibility statement, remain per instance
+(`Ext1Torsion`).
 
 ### AC7 -- Ext^1 with genuine torsion (`Ext1Torsion`)
 
@@ -622,6 +662,72 @@ Cross-reference: `CarabinerHypotheses` H8 records a different
 occurrence of the same two-term shape, the integer matrix `L_x` of left
 multiplication by a sedenion seed, where kernel (zero-divisor partners)
 and cokernel torsion separate in a way the diagonal toy cannot show.
+
+### AC10 -- Clifford contraction: the Heisenberg group, and where its bracket descends (`CliffordContraction`, `CliffordAlternator`)
+
+(Label provisional; renumber as convenient.)
+
+Setting. `HeisenbergSeedRelations` shows that the left multiplications
+`f = L_u`, `g = L_v` of the lower-half seeds of `CD 4` satisfy
+`f² = g² = -N`, `fg + gf = 0`, with `N = 1 + c²`; modulo a prime `p | N`
+they become the Heisenberg relations. `CliffordContraction` takes these
+relations as the definition of the algebra `Cl_N(2)` over `ℤ` (basis
+`1, X, Y, Z = XY`), written with the quaternionic shape
+`(s,v)(t,w) = (st - g_N(v,w), s w + t v + v ×_N w)`, so that every
+identity is a polynomial identity discharged by `Data.Integer.Solver`.
+The operations are defined once, generically over a dictionary of ring
+operations, and instantiated at `ℤ` (statements) and at solver
+polynomials (proofs); no solver syntax tree is written by hand. The
+reflective `Tactic.RingSolver` was tried first and does not apply here:
+in Agda 2.6.3 / stdlib 1.7.3 it does not recognise `_*_` on `ℤ`
+(checked), and by its source it treats user-defined functions as opaque
+constants.
+
+Checked, for all `N` unless stated, `--safe`:
+
+- associativity, units, the Jacobi identity for the commutator bracket
+  (layered: `br-split` says `[x,y] = (0, 2 v×w)`, so scalars never
+  enter), structure constants `[X,Y] = 2Z`, `[X,Z] = -2N Y`,
+  `[Y,Z] = 2N X`; and the weight grading `mul-scale` (scaling `X,Y` by
+  `t` and `Z` by `t²` maps `Cl_{t²N}` to `Cl_N`, an isomorphism when `t`
+  is invertible).
+- At `N = 0` the elements `1 + aX + bY + cZ` form a group (the integral
+  Heisenberg group `H`). For all of its elements
+  `[h,h'] = 1 + 2(ab' - ba')Z` (`commutator-formula`), and every
+  `1 + 2kZ` is a commutator (`even-central-is-commutator`): the
+  commutator subgroup, which is what `H → H^ab` loses, is exactly
+  `{1 + 2kZ}`.
+- Descent. For every `N`, `[x + kZ, y] = [x,y] + N·δ` with `δ` explicit
+  (`br-shift-Z`). So the bracket depends on its arguments modulo `Z`
+  exactly when the drift vanishes: at `N = 0` (`bracket-descends-at-0`),
+  modulo `p` when `p | N` (`bracket-drift-divisible`), and descent at a
+  given `N` forces `2N = 0` (`bracket-descends-only-if`). With
+  `N = 1 + c²`, `p | N` says `c` is a solution of `c² ≡ -1 (mod p)`.
+- `CliffordAlternator`: with the anticommutator `S = fg + gf` in place
+  of `0` the same family is the Clifford algebra of the binary
+  quadratic form `q = -N x² + S x y - N y²` (so `S` is the off-diagonal
+  Gram entry, `(xX + yY)² = q(x,y)`), associative for all `N, S`; the
+  drift becomes `k(Sa' - 2Nb', 2Na' - Sb')`. Descent holds modulo `p`
+  when `p` divides both `N` and `S` (the Gram matrix vanishes mod `p`),
+  and over `ℤ` it forces `2N = 0` and `S = 0`
+  (`brS-drift-divisible`, `brS-descends-only-if`).
+
+Reading against the Abelian Curse. `U` is `H → H^ab`; `S` is the
+bracket; the invariance half is the descent statement, the completeness
+half is the exactness of the noise `{1 + 2kZ}`. Neither follows from
+Lemma 2 (they concern a bilinear bracket, not a coboundary map). Not
+stated against `Algebra.Separates`: the bracket takes two arguments, and
+the stub `SecondOperator` stays empty.
+
+Not done. No homomorphism from `Cl_{N,S}` into the operators on `CD 4`
+is built, so nothing is claimed about the sedenion pairs of
+`AlternatorBracket` beyond the relation between `S` and the form `q`
+(that would need a noncommutative ring-equation tool, absent from the
+standard library). `S³ = 4S` there is not a consequence of
+`f² = g² = -N`: in `Cl_{N,S}` the scalar `S` is free (e.g. `S = 1`).
+At `N = 1, S = 2` the form is `-(x - y)²` and `X + Y` is a nonzero
+element of square zero (`nilpotent-example`); whether the sedenion
+zero-divisor pairs realise this degeneration is open.
 
 ## Shape-alike, not confirmed instances
 
@@ -841,6 +947,59 @@ limit modulo `π²` -- so there is no map doing any forgetting here, and
 no abelianization-shaped question to ask of it. Recorded so this
 distinction is not re-discovered later; not pursued further under this
 heading.
+
+### AC4 probe -- is `CliffordContraction` a cover of AC4? (`CliffordDerivation`)
+
+Asked as a direction: could the Clifford/Heisenberg family be a
+noncommutative cover of AC4's abelian structure (the commuting
+derivations `∂_l`), so that AC4 would become a genuine instance? A cover
+would need an arrow *into* AC4's structure. The arrow that exists runs
+the other way, and was checked.
+
+`Cl_N` is the quotient of the free algebra `ℚ⟨x,y⟩` (where `∂_l` lives)
+by `I_N = (x² + N, y² + N, xy + yx)`, `x ↦ X`, `y ↦ Y`. A derivation
+descends iff it maps these three generators into `I_N`, i.e. iff their
+images vanish in `Cl_N`. In `Cl_N`, `z = X + Y` has `z² = -2N`, a
+central scalar. Proved for every `l` (`CliffordDerivation`), and
+cross-checked by computing `l ≤ 9` with a computer algebra system and
+by closed-term `refl`:
+
+- `l = 2k + 1`: the image of `∂_l x` is `(-2N)^k Z`, all three
+  obstructions vanish: `∂_l` descends to `Cl_N` for every `N`
+  (`odd-descends`). The descended derivation is inner:
+  `2 D(w) = -s [z, w]` on `X, Y, Z` with `s = (-2N)^k`, so the descended
+  `∂_l` are all multiples of one derivation `ad z` and commute.
+- `l = 2k + 2`: the image is `e (X + Y)`, `e = -N(-2N)^k`; the
+  obstruction on `x² + N` is `2N · N(-2N)^k` (and the negative on
+  `y² + N`): `∂_l` does not descend over `ℤ` unless `N = 0`; modulo `p`
+  the obstruction vanishes whenever `p | N` (`even-obstructed`,
+  `even-obstruction-divisible`; it also vanishes modulo 2, being even).
+- At `N = 0` every `∂_l` with `l ≥ 2` acts by zero.
+- The duality `φ` (`x ↦ z`, `y ↦ -y`) sends the relations to
+  `(-N, 0, 2N)`: it descends only at `N = 0` (and mod `p` when
+  `p | N`), where it is the involution `X ↦ X + Y`, `Y ↦ -Y` of the
+  exterior algebra.
+
+Conclusion. `Cl_N(2)` is a quotient of AC4's algebra, not a cover of
+it: of the abelian family `{∂_l}`, only the odd members survive, and
+they collapse there onto a single inner direction; the even members do
+not act. Nothing in `Cl_N(2)` is mapped onto AC4's data. The
+reason is a weight mismatch: `∂_l` raises degree by `l ≥ 2`, while
+`Cl_N(2)` has top degree 2 (its associated graded is the exterior
+algebra). The only source of the odd/even split is that `z^(l-1)` is a
+scalar exactly when `l` is odd. That this matches the odd weights of the
+generators `σ_3, σ_5, ...` in AC2 is noted, not used: it is a
+coincidence of parity here, not a derived relation.
+
+What a cover would need, not attempted: a noncommutative algebra on
+which lifts `D_l` of the `∂_l` act with `[D_l, D_m]` central and nonzero
+but zero after the projection to AC4. That is invisible in the
+weight-`≤ 2` truncation; the first stages that see `∂_l` are the free
+nilpotent quotients `ℚ⟨x,y⟩ / (degree ≥ k)` with `k ≥ l + 2`. Natural
+next checks: the commutators `[∂_l, ∂_m]` on those truncations (the
+150-word experiment above, truncated), and the `a(f)` family from AC2,
+which the AC4 section already names as the likeliest place for
+noncommutative structure to reappear.
 
 ### AC5 — Finite MZVs as sections, ultraproducts as stalks (non-constructive)
 
