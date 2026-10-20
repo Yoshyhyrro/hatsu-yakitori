@@ -26,3 +26,4 @@ open import CayleyDicksonQuiver.AbelianCurse.KummerFrobenius
 open import CayleyDicksonQuiver.AbelianCurse.HeisenbergSeedRelations
 open import CayleyDicksonQuiver.AbelianCurse.AlternatorBracket
 open import CayleyDicksonQuiver.AbelianCurse.CliffordContraction
+open import CayleyDicksonQuiver.AbelianCurse.CliffordDerivation
