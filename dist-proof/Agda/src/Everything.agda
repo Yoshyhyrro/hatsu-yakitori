@@ -27,3 +27,4 @@ open import CayleyDicksonQuiver.AbelianCurse.HeisenbergSeedRelations
 open import CayleyDicksonQuiver.AbelianCurse.AlternatorBracket
 open import CayleyDicksonQuiver.AbelianCurse.CliffordContraction
 open import CayleyDicksonQuiver.AbelianCurse.CliffordDerivation
+open import CayleyDicksonQuiver.AbelianCurse.CliffordSectors
