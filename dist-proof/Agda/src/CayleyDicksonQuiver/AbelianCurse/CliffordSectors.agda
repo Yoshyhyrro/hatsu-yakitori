@@ -28,10 +28,11 @@ open CC using (unip; commutator; commutator-formula; c₃)
 open import Data.Integer using (ℤ; _+_; _*_; -_) renaming (+_ to pos)
 open import Data.Integer.Divisibility.Signed using (_∣_; divides; ∣m⇒∣m*n; _∣?_)
 open import Data.Integer.Solver using (module +-*-Solver)
-open import Data.Product using (_×_; _,_)
+open import Data.Integer.Properties using (+-comm)
+open import Data.Product using (_×_; _,_; Σ)
 open import Relation.Nullary using (¬_)
 open import Relation.Nullary.Decidable using (toWitnessFalse)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; trans; sym; subst)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym; subst)
 open +-*-Solver using (solve; _:=_; con; _:+_; _:*_; :-_)
 
 ------------------------------------------------------------------------
@@ -134,3 +135,71 @@ sector-3-1-nontrivial t = toWitnessFalse {Q = pos 3 ∣? pos 2} _ (trivial-only-
 -- M = 4, k = 1: χ(Z) = i.  4 does not divide 2: nontrivial.
 sector-4-1-nontrivial : ¬ Trivial (pos 4) (pos 1)
 sector-4-1-nontrivial t = toWitnessFalse {Q = pos 4 ∣? pos 2} _ (trivial-only-if (pos 4) (pos 1) t)
+
+------------------------------------------------------------------------
+-- Gauge transformations do not change the class
+------------------------------------------------------------------------
+-- A gauge is an arbitrary function f : ℤ² → ℤ (a change of the set-theoretic
+-- section); it changes the cocycle by the coboundary  δf.  The sector is
+-- trivial in *some* gauge when k ω - δf vanishes mod M for some f.  This is
+-- not stronger than the sector being trivial in the gauge q_k used above:
+
+δ : (ℤ → ℤ → ℤ) → ℤ → ℤ → ℤ → ℤ → ℤ
+δ f a b a' b' = (f (a + a') (b + b') + - f a b) + - f a' b'
+
+GaugeTrivial : ℤ → ℤ → Set
+GaugeTrivial M k = Σ (ℤ → ℤ → ℤ) (λ f → ∀ a b a' b' → M ∣ (ωₖ k a b a' b' + - δ f a b a' b'))
+
+-- the gauge q_k is one such f
+gauge-trivial-if : ∀ M k → M ∣ (pos 2 * k) → GaugeTrivial M k
+gauge-trivial-if M k h = (λ a b → qₖ k a b) , (λ a b a' b' → trivial-if M k h a b a' b')
+
+-- If some gauge trivialises the sector then M | 2k.  Take the two orderings
+-- (g,g') = ((1,0),(0,1)) and ((0,1),(1,0)): δf is symmetric in (g,g'), the
+-- cocycle k ω is antisymmetric, so their difference is 2k.
+gauge-trivial-only-if : ∀ M k → GaugeTrivial M k → M ∣ (pos 2 * k)
+gauge-trivial-only-if M k (f , t)
+  with t (pos 1) (pos 0) (pos 0) (pos 1) | t (pos 0) (pos 1) (pos 1) (pos 0)
+... | divides q₁ e₁ | divides q₂ e₂ =
+  divides (q₁ + - q₂)
+    (trans (solve 4 (λ k A B C → con (pos 2) :* k
+              := (k :* con (pos 1) :+ :- ((A :+ :- B) :+ :- C))
+                 :+ :- (k :* (:- con (pos 1)) :+ :- ((A :+ :- C) :+ :- B))) refl
+              k (f (pos 1) (pos 1)) (f (pos 1) (pos 0)) (f (pos 0) (pos 1)))
+    (trans (cong₂ (λ u v → u + - v) e₁ e₂)
+           (solve 3 (λ a b m → a :* m :+ :- (b :* m) := (a :+ :- b) :* m) refl q₁ q₂ M)))
+
+-- the class of the sector does not depend on the gauge
+gauge-independence : ∀ M k → (GaugeTrivial M k → Trivial M k) × (Trivial M k → GaugeTrivial M k)
+gauge-independence M k =
+  (λ g → trivial-if M k (gauge-trivial-only-if M k g)) ,
+  (λ t → gauge-trivial-if M k (trivial-only-if M k t))
+
+------------------------------------------------------------------------
+-- Twisting by a line bundle (a character of H) keeps the trivial sectors
+------------------------------------------------------------------------
+-- A character μ of H is trivial on [H,H] = {1 + 2jZ}, so μ(Z)^2 = 1, i.e.
+-- the exponent j of μ(Z) = ζ^j satisfies M | 2j.  Tensoring a module of the
+-- sector k by μ moves it to the sector k + j, and the set of sectors with
+-- M | 2k is closed under such shifts.
+
+∣-sum : ∀ {m a b} → m ∣ a → m ∣ b → m ∣ a + b
+∣-sum {m} (divides u ea) (divides v eb) =
+  divides (u + v)
+    (trans (cong₂ _+_ ea eb) (solve 3 (λ x y z → x :* z :+ y :* z := (x :+ y) :* z) refl u v m))
+
+twist-preserves-trivial : ∀ M j k → M ∣ (pos 2 * j) → M ∣ (pos 2 * k) → M ∣ (pos 2 * (j + k))
+twist-preserves-trivial M j k hj hk =
+  subst (M ∣_) (solve 2 (λ j k → con (pos 2) :* j :+ con (pos 2) :* k := con (pos 2) :* (j :+ k)) refl j k)
+        (∣-sum hj hk)
+
+-- No gauge whatsoever trivialises the sectors (M,k) = (3,1) and (4,1).
+gauge-3-1-nontrivial : ¬ GaugeTrivial (pos 3) (pos 1)
+gauge-3-1-nontrivial g = toWitnessFalse {Q = pos 3 ∣? pos 2} _ (gauge-trivial-only-if (pos 3) (pos 1) g)
+
+gauge-4-1-nontrivial : ¬ GaugeTrivial (pos 4) (pos 1)
+gauge-4-1-nontrivial g = toWitnessFalse {Q = pos 4 ∣? pos 2} _ (gauge-trivial-only-if (pos 4) (pos 1) g)
+
+-- ... while (2,1) and (4,2) are trivial in some gauge.
+gauge-2-1-trivial : GaugeTrivial (pos 2) (pos 1)
+gauge-2-1-trivial = gauge-trivial-if (pos 2) (pos 1) (divides (pos 1) refl)
