@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 HatsuYakitori. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yoshihiro Hasegawa
+-/
+
 import HatsuYakitori.CliffordCarabiner
 import Mathlib.LinearAlgebra.QuadraticForm.Basic
 

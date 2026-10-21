@@ -876,16 +876,16 @@ noncomputable instance : CommGroup MulPosReals where
   mul_comm a b := Subtype.ext (mul_comm _ _)
 
 /-- Subspace topology inherited from ℝ. -/
-instance MulPosReals.topologicalSpace : TopologicalSpace MulPosReals := by
-  unfold MulPosReals; infer_instance
+instance MulPosReals.topologicalSpace : TopologicalSpace MulPosReals :=
+  inferInstanceAs (TopologicalSpace { x : ℝ // 0 < x })
 
 /-- Measurable space inherited from ℝ. -/
-instance MulPosReals.measurableSpace : MeasurableSpace MulPosReals := by
-  unfold MulPosReals; infer_instance
+instance MulPosReals.measurableSpace : MeasurableSpace MulPosReals :=
+  inferInstanceAs (MeasurableSpace { x : ℝ // 0 < x })
 
 /-- T2 inherited from ℝ. -/
-instance MulPosReals.t2Space : T2Space MulPosReals := by
-  unfold MulPosReals; infer_instance
+instance MulPosReals.t2Space : T2Space MulPosReals :=
+  inferInstanceAs (T2Space { x : ℝ // 0 < x })
 
 /-- ℝ₊ˣ is a locally compact abelian group.
     (0, ∞) is open in the locally compact ℝ,
