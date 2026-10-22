@@ -203,3 +203,53 @@ gauge-4-1-nontrivial g = toWitnessFalse {Q = pos 4 ∣? pos 2} _ (gauge-trivial-
 -- ... while (2,1) and (4,2) are trivial in some gauge.
 gauge-2-1-trivial : GaugeTrivial (pos 2) (pos 1)
 gauge-2-1-trivial = gauge-trivial-if (pos 2) (pos 1) (divides (pos 1) refl)
+
+------------------------------------------------------------------------
+-- A finite cover that kills the class of a revived sector
+------------------------------------------------------------------------
+-- There is no space here, hence no open cover or atlas; the algebraic
+-- counterpart is a finite-index sublattice nℤ² ⊂ ℤ² (multiplication by n)
+-- along which the cocycle of the extension is pulled back.  The class of
+-- the sector is a "gerbe class" in H²(ℤ²; ℤ/M) ≅ ℤ/M; pulling back along
+-- ×n multiplies the class by n², and the pulled-back sector is trivial
+-- exactly when M | 2 k n².  Over a field of characteristic 0 the factor
+-- n² is invertible, so no finite cover kills a nonzero class there.
+
+-- the pullback of the cocycle of the sector k along ×n is the cocycle of
+-- the sector k n²
+pullback-cocycle : ∀ k n a b a' b' →
+  ωₖ k (n * a) (n * b) (n * a') (n * b') ≡ ωₖ (k * (n * n)) a b a' b'
+pullback-cocycle = solve 6 (λ k n a b a' b' →
+  k :* (((n :* a) :* (n :* b')) :+ (:- ((n :* b) :* (n :* a'))))
+  := (k :* (n :* n)) :* ((a :* b') :+ (:- (b :* a')))) refl
+
+-- ... and the trivialising section pulls back to the trivialising section
+pullback-q : ∀ k n a b → qₖ k (n * a) (n * b) ≡ qₖ (k * (n * n)) a b
+pullback-q = solve 4 (λ k n a b →
+  k :* ((n :* a) :* (n :* b)) := (k :* (n :* n)) :* (a :* b)) refl
+
+-- the pulled-back sector is trivial iff M | 2 k n²
+cover-trivialises : ∀ M k n → M ∣ (pos 2 * (k * (n * n))) → Trivial M (k * (n * n))
+cover-trivialises M k n = trivial-if M (k * (n * n))
+
+cover-needs : ∀ M k n → Trivial M (k * (n * n)) → M ∣ (pos 2 * (k * (n * n)))
+cover-needs M k n = trivial-only-if M (k * (n * n))
+
+-- the cover ×M kills every class: M | 2 k M²
+cover-by-M : ∀ M k → Trivial M (k * (M * M))
+cover-by-M M k = cover-trivialises M k M
+  (divides (pos 2 * (k * M))
+    (solve 2 (λ k m → con (pos 2) :* (k :* (m :* m)) := (con (pos 2) :* (k :* m)) :* m) refl k M))
+
+-- examples.  (3,1) is not trivial, and neither is its pullback along ×2
+-- (class 4 · 1 · 2 = 8 mod 3 ≠ 0), but the cover ×3 kills it.
+sector-3-1-by-2-nontrivial : ¬ Trivial (pos 3) (pos 1 * (pos 2 * pos 2))
+sector-3-1-by-2-nontrivial t =
+  toWitnessFalse {Q = pos 3 ∣? pos 8} _ (cover-needs (pos 3) (pos 1) (pos 2) t)
+
+sector-3-1-by-3-trivial : Trivial (pos 3) (pos 1 * (pos 3 * pos 3))
+sector-3-1-by-3-trivial = cover-by-M (pos 3) (pos 1)
+
+-- (4,1) is not trivial but the double cover ×2 kills it: 4 | 2 · 1 · 4.
+sector-4-1-by-2-trivial : Trivial (pos 4) (pos 1 * (pos 2 * pos 2))
+sector-4-1-by-2-trivial = cover-trivialises (pos 4) (pos 1) (pos 2) (divides (pos 2) refl)
