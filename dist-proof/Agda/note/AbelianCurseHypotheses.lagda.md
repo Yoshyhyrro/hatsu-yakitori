@@ -113,12 +113,50 @@ would be needed to go further.
 
 This is the cleanest instance found so far on the Lie-algebra side: the
 weight-12 relation space is one-dimensional, matching `dim S_12 = 1`
-(the cusp form `Delta`), though that dimension count itself is cited,
-not computed here. What is *not* attempted: the general
+(the cusp form `Delta`), though that dimension count itself is cited
+here; the probe below computes it outside Agda for weights up to 38. What is *not* attempted: the general
 antisymmetry/Jacobi identity for arbitrary `sigma m`, `sigma n`;
 Theorem 4.2's "iff" itself, which rests on Brown's faithfulness theorem
 for the depth-graded motivic Lie algebra; and any general dimension
 formula.
+
+#### AC2 probe -- the depth-two relations as a central extension (outside Agda)
+
+Truncate `d` at depth two: `d_1` is spanned by the `sigma m` (free, no
+relations at depth one), `d_2` by the brackets `{sigma m, sigma n}`, and
+`d / d_{>=3}` is a 2-step nilpotent central extension
+`0 -> d_2 -> d/d_{>=3} -> d_1 -> 0`. The *universal* such extension is
+the free one, with centre `Λ²(d_1)`; the Ihara bracket gives a surjection
+`π : Λ²(d_1) -> d_2`, and its kernel `R` is the space of depth-two
+relations (the weight-12 relation spans `R` at weight 12). So `d/d_{>=3}`
+is a quotient of the free Heisenberg-type algebra, and `CliffordContraction`
+at `N = 0` is the rank-2 case of that free object: in this setting
+"the Clifford/Heisenberg algebra covers the AC object" is the right way
+round.
+
+Computed with the definitions of `IharaBracket` (`a(f)(e0) = [e0,f]`,
+`a(f)(e1) = 0`, `{f,g} = [f,g] + a(f)g - a(g)f`, `sigma m =
+ad(e0)^(2m) e1`), over `ℚ`, by exact rank of the span of the
+`{sigma m, sigma n}`, `m < n`, in each weight `w = 2(m+n)+2`
+(sanity: the weight-12 relation holds; `[a(f),a(g)] = a({f,g})` on
+`e0, e1`):
+
+| w | 8 | 10 | 12 | 14 | 16 | 18 | 20 | 22 | 24 | 26 | 28 | 30 | 32 | 34 | 36 | 38 |
+|---|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
+| pairs | 1 | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | 8 | 8 |
+| rank `d_2(w)` | 1 | 1 | 1 | 2 | 2 | 2 | 3 | 3 | 3 | 4 | 4 | 4 | 5 | 5 | 5 | 6 |
+| `dim R(w)` | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 2 | 1 | 2 | 2 | 2 | 2 | 3 | 2 |
+| `dim S_w` | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 2 | 1 | 2 | 2 | 2 | 2 | 3 | 2 |
+
+`dim R(w) = dim S_w` in every weight listed (the Ihara-Takao / Brown
+count, here computed rather than cited). Sector reading: a central
+character `λ` of `Λ²(d_1)` pushes the extension out to a Heisenberg-type
+extension of `d_1` with alternating form `λ ∘ {,}`; it comes from `d_2`
+(is "visible" there) exactly when `λ` vanishes on `R`. At weight `w` the
+visible characters form a space of dimension `rank d_2(w)`; the
+`dim S_w` remaining directions of the cover's centre are the ones the
+relations kill. Not attempted: any statement beyond depth two, and a
+derivation of `R` rather than a count.
 
 ### AC6 — Buium's arithmetic derivation recovers what mod-ℓ reduction of a Galois representation loses
 
@@ -712,6 +750,33 @@ Checked, for all `N` unless stated, `--safe`:
   and over `ℤ` it forces `2N = 0` and `S = 0`
   (`brS-drift-divisible`, `brS-descends-only-if`).
 
+- Sectors (`CliffordSectors`). Decompose by central character: modulus
+  `M`, `χ_k(Z) = ζ^k`. In the sector of `χ_k` the cocycle of
+  `1 → ℤ Z → H → ℤ² → 1` (`ω = ab' - ba'`, from `unip-mul`) becomes
+  `kω`, and the commutator exponent is `2kω` (`commutator-exponent`).
+  The section `(a,b) ↦ (a, b, k a b)` has defect exactly
+  `-2k a' b` (`defect-formula`), so the sector is trivial modulo `M`
+  **iff `M | 2k`** (`sector-trivial-iff`), and then that section is the
+  morphism that trivialises it. Examples checked: `(M,k) = (2,1)` and
+  `(4,2)` are trivial (`χ(Z) = -1`), `(3,1)` and `(4,1)` are not
+  (`χ(Z)` a primitive cube root, resp. `i`). The factor 2 is the 2 in
+  `[X,Y] = 2Z`: the trivial sectors are the characters of
+  `H^ab = H/{1+2kZ}`, i.e. those with `χ(Z)² = 1`, so for odd `M` only
+  `k = 0` and for even `M` also `k = M/2`.
+  The class does not depend on the gauge: the sector is trivial in
+  *some* gauge `f` (any function `ℤ² → ℤ`, cocycle changed by `δf`) iff
+  `M | 2k` (`gauge-independence`; `(3,1)` and `(4,1)` have no trivialising
+  gauge at all). Twisting by a character of `H` shifts `k` by a `j` with
+  `M | 2j` and keeps the set `{k : M | 2k}` closed
+  (`twist-preserves-trivial`). A revived sector has a finite cover that
+  kills it: pulling the cocycle back along `×n` on `ℤ²` turns the sector
+  `k` into `k n²` (`pullback-cocycle`, `pullback-q`), which is trivial
+  iff `M | 2 k n²` (`cover-trivialises`, `cover-needs`); `n = M` always
+  works (`cover-by-M`); `(M,k) = (3,1)` needs `n = 3` (`n = 2` fails),
+  `(4,1)` is killed by `n = 2`. There is no space here, so this is the
+  algebraic counterpart of "cover trivialising a gerbe class"; over `ℚ`
+  the factor `n²` is invertible and no finite cover kills a nonzero class.
+
 Reading against the Abelian Curse. `U` is `H → H^ab`; `S` is the
 bracket; the invariance half is the descent statement, the completeness
 half is the exactness of the noise `{1 + 2kZ}`. Neither follows from
@@ -991,15 +1056,142 @@ scalar exactly when `l` is odd. That this matches the odd weights of the
 generators `σ_3, σ_5, ...` in AC2 is noted, not used: it is a
 coincidence of parity here, not a derived relation.
 
+Comparison with the Ihara family `a(f)` of AC2 (outside Agda). Two facts.
+`∂_l(x) = x z^(l-1) y` has nonzero image in the commutative polynomial
+ring, while `a(f)(e0) = [e0,f]` is a commutator, so `∂_l` is not of the
+form `a(f)` under any identification of the letters (`∂_l` fixes only
+`z`). And for `l = 2, 3`, `m = 1, 2`, under each of the four naive
+identifications of `(x,y)` with `(e0,e1)` (both orders, both conventions
+`e0 ↦ [e0,f]` and `e1 ↦ [e1,f]`), `[∂_l, a(sigma m)] ≠ 0`. The
+explanation is not an accident of conventions: the Ihara bracket lives on
+the Lie algebra dual to depth-graded MZVs (Brown), while `∂_l` acts on the
+space of words that carries the MZVs themselves; they sit on opposite
+sides of a duality, so a bridge, if there is one, is not the identity on
+letters. The cover reading therefore holds for AC2 (above) and is
+still open for AC4.
+
+Truncations, gauge, twist, promotion (outside Agda; the Heisenberg-model
+counterparts are in `CliffordSectors`). Reading of "revive": a lift of
+the abelian family whose commutator is a nonzero *central* element, i.e.
+a sector with nontrivial cocycle.
+
+- `[∂_l, ∂_m] = 0` exactly on the generators `x, y` of the free algebra
+  for `1 ≤ l < m ≤ 6`, hence on the whole free algebra and on every
+  truncation `T_k = ℚ⟨x,y⟩/(degree ≥ k)`. Truncating cannot make the
+  `∂_l` noncommutative.
+- Lifts `∇_l = ∂_l + L_{a_l}` (twist by a connection form `a_l`) have
+  curvature `[∇_l,∇_m] = L_F`, `F = ∂_l a_m - ∂_m a_l + [a_l,a_m]`
+  (checked as an operator identity on `T_k`).
+  *Gauge*: conjugating by an invertible `u` gives a flat connection
+  (checked, `u = 1 + x`), and a central `F` is gauge invariant, so gauge
+  can neither create nor remove it. *Line twist*: scalar `a_l` gives
+  `F = 0`; the characters of `H` only shift the sector inside
+  `{k : M | 2k}`. *Promotion*: needs a nonzero central `F`.
+- The centre of `T_K` is `ℚ ⊕ A_{K-1}` (checked for `K = 5, 6, 7`: no
+  central word in degrees `1..K-2`, every word of degree `K-1` is
+  central). On the free algebra the centre is `ℚ` and `F` has positive
+  degree, so a nonzero central `F` cannot occur: none of the three
+  operations revives anything there. On `T_K` a nonzero central `F`
+  occurs only at the resonant shift (`a_2 ∈ A_{K-4}`, `a_3 ∈ A_{K-3}`),
+  where `F` lies in the top degree `K-1`: a truncation artefact, the same
+  mechanism that makes `Z` central in `Cl_0`.
+- At that shift the central characters of `A_{K-1}` split into trivial
+  and revived sectors by the linear part `B = ∂_2 A_{K-3} + ∂_3 A_{K-4}`:
+
+| K | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|
+| `dim A_{K-1}` | 32 | 64 | 128 | 256 |
+| `dim B` (revived sectors) | 10 | 21 | 43 | 87 |
+| trivial sectors | 22 | 43 | 85 | 169 |
+
+  `dim B = 11·2^(K-6) - 1` for `K = 6..9` (a fit to four values, not
+  proved), so about 11/32 of the top central characters are revived. At
+  `K = 6` the commutator part `[a_2,a_3]` also reaches the top degree and
+  the sampled span of `F` is 28-dimensional, larger than `B`.
+- Reading. On the free algebra `χ_0` does not revive. What creates a
+  centre is not a connection on the free algebra but a *quotient by
+  relations* (the Clifford relations make `Z` central), which is the
+  `CliffordContraction` mechanism; so a cover of AC4 has to be a quotient
+  with relations that the `∂_l` respect, and Cl_N(2) is too small for
+  that (above).
+
+Resonance, cohomology, chirality (outside Agda).
+
+*Resonance rule.* For the pair `(∂_l, ∂_m)` on `T_K`, twist shift `s`
+(`a_l ∈ A_{l+s}`, `a_m ∈ A_{m+s}`), put `u = l+m`, `δ = K-1-u`. The
+linear part of `F` has degree `u+s`, the quadratic part `u+2s`, and a
+nonzero central `F` needs every component in degree `K-1`. Hence:
+linear resonance `s_L = δ` (generic if `δ ≥ 0`, or if `a_l`, `a_m` is a
+scalar; otherwise only on the commuting locus `[a_l,a_m] = 0`), and
+quadratic resonance `s_Q = δ/2` (`δ ≤ -2` even; a pure commutator effect,
+absent on the commuting locus); both subject to `l+s, m+s ≥ 0`. At
+`K = u+1` they coincide (`s = 0`, mixed). Checked on `(l,m) ∈ {(2,3),
+(2,4),(3,4),(2,5)}`, `K ≤ 8`: 16 cases, two seeds, no mismatch.
+
+*Linear complex at `s_L`* for `(∂_2,∂_3)`: `C⁰ = A_s → C¹ = A_{2+s} ⊕
+A_{3+s} → C² = A_{K-1}`:
+
+| K | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|
+| `H⁰` | 0 | 1 | 1 | 1 | 1 |
+| `H¹` | 2 | 2 | 2 | 2 | 2 |
+| `H²` | 12 | 22 | 43 | 85 | 169 |
+| `dim B₂ = ∂_2 A_{K-3}` | 3 | 7 | 15 | 31 | 63 |
+| `dim B₃ = ∂_3 A_{K-4}` | 1 | 3 | 7 | 15 | 31 |
+| `dim B₂ ∩ B₃` | 0 | 0 | 1 | 3 | 7 |
+
+`H⁰` is spanned by `z^s` (`∂_l z = 0`), and `H¹` by the two *flat*
+twists `(z^{2+s}, 0)` and `(0, z^{3+s})` (checked independent modulo the
+exact ones for `K = 5..9`): they are nontrivial line-bundle twists that
+carry no curvature, so they revive nothing. The data fit
+`dim B₂ = 2^{K-3}-1`, `dim B₃ = 2^{K-4}-1`, `dim B₂ ∩ B₃ = 2^{K-6}-1`
+(`K ≥ 6`; fits, not proved). The revived sectors are the pairs
+`(μ_2, μ_3)` of functionals on `B₂, B₃` that agree on the intersection:
+"pure-`∂_2`" `7·2^{K-6}`, "pure-`∂_3`" `3·2^{K-6}`, "shared"
+`2^{K-6}-1`.
+
+*Chirality.* The duality `φ` (`x ↦ z`, `y ↦ -y`) is an involutive
+automorphism and conjugates the family `∂_l` (which fixes `z`) to
+`∂~_m = φ ∂_m φ` (which fixes `x`). Each family is abelian, but
+`[∂_l, ∂~_m] ≠ 0` for every `1 ≤ l, m ≤ 5`. The Lie algebra generated
+by both has graded dimensions `2, 2, 3, 4, 6, 8` in degrees `1..6`
+(free on two generators per degree: `2, 3, 8, 18, 48, 116`), with exact
+relations `[∂_1, ∂~_1] = ∂_2 - ∂~_2` and
+`[∂_2, ∂~_1] = 2∂_3 - 2∂~_3 - [∂_1, ∂~_2]`. So nonabelian structure does
+appear once both chiralities are present, but the brackets close on the
+generators: there is no new central element, and the algebra is not
+2-step nilpotent.
+
+*Dictionary with `CliffordContraction` / `CliffordSectors`.*
+
+| Clifford / Heisenberg | AC4, truncation `T_K` |
+|---|---|
+| abelian quotient `ℤ²` (`X`, `Y`) | `𝔞 = ⟨∂_2, ∂_3⟩` |
+| lifts to `H` | lifts `∇_2, ∇_3` |
+| centre `ℤ Z`, top weight 2 | centre `A_{K-1}`, top degree `K-1` |
+| cocycle `ω = ab' - ba'`, commutator `2Z` | curvature `F = [∇_2, ∇_3] ∈ A_{K-1}` |
+| character `χ_k`, class `2k ∈ ℤ/M` | functional `λ ∈ A_{K-1}^*`, class `λ(F)` |
+| trivial iff `M | 2k` | trivial iff `λ(F) = 0`; over all linear twists iff `λ ⟂ B` |
+| rank-1 centre | centre of dimension `2^{K-1}`: `B = B₂ + B₃` splits |
+| second trivial sector `χ(Z) = -1` (factor 2) | no analogue seen (`ℚ` coefficients) |
+
+The guess "chirality element `Z` ↔ splitting of `B`" is not confirmed:
+in the Heisenberg group the pairing is a single alternating form and
+nothing splits; the splitting `B₂ + B₃` comes from having two abelian
+generators act on a large centre. The `φ`-chirality is a different
+structure (previous paragraph), not 2-step nilpotent, so the Heisenberg
+model matches the *top-degree truncation* of the lifts, not the chiral
+algebra.
+
 What a cover would need, not attempted: a noncommutative algebra on
 which lifts `D_l` of the `∂_l` act with `[D_l, D_m]` central and nonzero
 but zero after the projection to AC4. That is invisible in the
 weight-`≤ 2` truncation; the first stages that see `∂_l` are the free
 nilpotent quotients `ℚ⟨x,y⟩ / (degree ≥ k)` with `k ≥ l + 2`. Natural
 next checks: the commutators `[∂_l, ∂_m]` on those truncations (the
-150-word experiment above, truncated), and the `a(f)` family from AC2,
-which the AC4 section already names as the likeliest place for
-noncommutative structure to reappear.
+150-word experiment above, truncated), and the duality that relates the
+word space of AC4 to the Lie algebra of AC2, which the naive comparison
+above shows has to be taken into account.
 
 ### AC5 — Finite MZVs as sections, ultraproducts as stalks (non-constructive)
 
