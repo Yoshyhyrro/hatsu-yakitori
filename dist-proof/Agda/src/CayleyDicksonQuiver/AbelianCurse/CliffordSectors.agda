@@ -30,10 +30,17 @@ open import Data.Integer.Divisibility.Signed using (_∣_; divides; ∣m⇒∣m*
 open import Data.Integer.Solver using (module +-*-Solver)
 open import Data.Integer.Properties using (+-comm)
 open import Data.Product using (_×_; _,_; Σ)
-open import Relation.Nullary using (¬_)
-open import Relation.Nullary.Decidable using (toWitnessFalse)
+open import Relation.Nullary using (Dec; ¬_)
+open import Relation.Nullary.Decidable using (False; toWitnessFalse)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym; subst)
 open +-*-Solver using (solve; _:=_; con; _:+_; _:*_; :-_)
+
+-- A decision procedure that answers "no" refutes the proposition.  The
+-- implicit argument of `toWitnessFalse` is named differently in different
+-- versions of the standard library, so it is recovered from the type of the
+-- `False` argument here rather than named at the use sites.
+from-dec : {P : Set} (d : Dec P) → False d → ¬ P
+from-dec d f = toWitnessFalse f
 
 ------------------------------------------------------------------------
 -- The cocycle of the extension, and the cocycle of a sector
@@ -130,11 +137,11 @@ sector-4-2-trivial = trivial-if (pos 4) (pos 2) (divides (pos 1) refl)
 -- M = 3, k = 1: χ(Z) a primitive cube root of unity; 3 does not divide 2,
 -- so this sector is NOT trivial: the Heisenberg group mod 3 has no section.
 sector-3-1-nontrivial : ¬ Trivial (pos 3) (pos 1)
-sector-3-1-nontrivial t = toWitnessFalse {Q = pos 3 ∣? pos 2} _ (trivial-only-if (pos 3) (pos 1) t)
+sector-3-1-nontrivial t = from-dec (pos 3 ∣? pos 2) _ (trivial-only-if (pos 3) (pos 1) t)
 
 -- M = 4, k = 1: χ(Z) = i.  4 does not divide 2: nontrivial.
 sector-4-1-nontrivial : ¬ Trivial (pos 4) (pos 1)
-sector-4-1-nontrivial t = toWitnessFalse {Q = pos 4 ∣? pos 2} _ (trivial-only-if (pos 4) (pos 1) t)
+sector-4-1-nontrivial t = from-dec (pos 4 ∣? pos 2) _ (trivial-only-if (pos 4) (pos 1) t)
 
 ------------------------------------------------------------------------
 -- Gauge transformations do not change the class
@@ -195,10 +202,10 @@ twist-preserves-trivial M j k hj hk =
 
 -- No gauge whatsoever trivialises the sectors (M,k) = (3,1) and (4,1).
 gauge-3-1-nontrivial : ¬ GaugeTrivial (pos 3) (pos 1)
-gauge-3-1-nontrivial g = toWitnessFalse {Q = pos 3 ∣? pos 2} _ (gauge-trivial-only-if (pos 3) (pos 1) g)
+gauge-3-1-nontrivial g = from-dec (pos 3 ∣? pos 2) _ (gauge-trivial-only-if (pos 3) (pos 1) g)
 
 gauge-4-1-nontrivial : ¬ GaugeTrivial (pos 4) (pos 1)
-gauge-4-1-nontrivial g = toWitnessFalse {Q = pos 4 ∣? pos 2} _ (gauge-trivial-only-if (pos 4) (pos 1) g)
+gauge-4-1-nontrivial g = from-dec (pos 4 ∣? pos 2) _ (gauge-trivial-only-if (pos 4) (pos 1) g)
 
 -- ... while (2,1) and (4,2) are trivial in some gauge.
 gauge-2-1-trivial : GaugeTrivial (pos 2) (pos 1)
@@ -245,7 +252,7 @@ cover-by-M M k = cover-trivialises M k M
 -- (class 4 · 1 · 2 = 8 mod 3 ≠ 0), but the cover ×3 kills it.
 sector-3-1-by-2-nontrivial : ¬ Trivial (pos 3) (pos 1 * (pos 2 * pos 2))
 sector-3-1-by-2-nontrivial t =
-  toWitnessFalse {Q = pos 3 ∣? pos 8} _ (cover-needs (pos 3) (pos 1) (pos 2) t)
+  from-dec (pos 3 ∣? pos 8) _ (cover-needs (pos 3) (pos 1) (pos 2) t)
 
 sector-3-1-by-3-trivial : Trivial (pos 3) (pos 1 * (pos 3 * pos 3))
 sector-3-1-by-3-trivial = cover-by-M (pos 3) (pos 1)
