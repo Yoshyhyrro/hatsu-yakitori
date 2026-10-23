@@ -717,13 +717,28 @@ candidate `Pair` is meant to name"). So the reading `ι(i, j) = L_{e_i + e_j}`
 stacked matrix, `K(σ) = ∩_{p ∈ σ} ker ι(p)`. What is not fixed:
 
 - the vertex invariant: `compute-kernel-dim = 16 ∸ #pairs` is declared a
-  conservative stand-in, not a rank-based dimension;
+  conservative stand-in, not a rank-based dimension. For a single seed it
+  is far from the rank-based value: over `ℚ` (computed outside Agda) the
+  kernel of `L_{e_i + e_j}` on `CD 4` has dimension 4 for exactly 42 of
+  the 120 pairs `i < j` (`1 ≤ i ≤ 7`, `8 ≤ j ≤ 15`, `j ≠ i + 8`) and 0 for
+  the other 78, whereas the stand-in gives `16 ∸ 1 = 15` for every pair.
+  Over the next levels the kernel dimensions of the seeds are again
+  multiples of 4 but not powers of 2: 4, 8, 12 at level 5 (294 of 496
+  pairs), and 4, 8, ..., 28 at level 6 (1518 of 2016);
 - the relations of the path algebra: `ZeroDivisor-associator-type : Pair ->
-  AssociatorType` (four values) is a `postulate`, and
+  AssociatorType` (four values) is a `postulate`. `PathEquiv` has no
+  generating relation (only `equiv-refl`, `-sym`, `-trans`), so it is
+  equality (`equiv⇒≡`, `Properties.agda`), and
   `associator-determines-equiv` ("arrows of equal associator type give
-  equivalent one-step paths") is still a hole. This is the only intended
-  source of nontrivial `PathEquiv` relations, so experiment 6 below should
-  be read against it once an associator type is defined.
+  equivalent one-step paths") cannot be proved as a lemma: for ANY
+  function `ZeroDivisor-associator-type` it is false
+  (`associator-determines-equiv-false`; between two fixed vertices an
+  arrow is an arbitrary pair of naturals, and four values cannot be
+  injective on five pairs). The intended relations therefore have to be
+  added as a constructor of `PathEquiv`, not derived; experiment 6 below
+  is to be read against that. Until then a functor from the path
+  category to anything (for instance `Arrow ↦ get-linear-map`) is
+  unconstrained by relations, so its well-definedness is not a test.
 
 Interpretations still open, to be used only if the author intends to change
 the repository's reading:
