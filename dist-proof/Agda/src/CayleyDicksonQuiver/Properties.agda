@@ -4,7 +4,7 @@ open import CayleyDicksonQuiver
 open import CayleyDicksonQuiver.Hypotheses using (CD; mul; add; zeroCD)
 open import Data.Bool using (if_then_else_)
 open import Data.Empty using (⊥-elim)
-open import Data.Fin using (Fin; toℕ)
+open import Data.Fin using (Fin; toℕ) renaming (zero to fzero; suc to fsuc)
 open import Data.Integer using (+_)
 open import Data.List using (List; []; _∷_; length; _++_)
 open import Data.List.Properties using (length-++)
@@ -25,7 +25,9 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 -- are not exported at the top level; they are opened locally at the
 -- single site that uses them (see `restricted-division-unique`).
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; refl; sym; trans; cong; subst; module ≡-Reasoning)
+  using (_≡_; refl; sym; trans; cong; cong₂; subst; module ≡-Reasoning)
+-- Qualified: `<-irrefl` and friends clash with the `Data.Nat.Properties` names above.
+import Data.Fin.Properties as FinP
 open import Relation.Nullary using (¬_)
 
 ------------------------------------------------------------------------
@@ -131,23 +133,118 @@ ZeroDivisor-kernel-dim = ZeroDivisor.kernel-dim
 postulate
   ZeroDivisor-associator-type : Pair → AssociatorType
 
--- TODO: Fill in the proofs.
-zd-in-bounds : ∀ (zd : ZeroDivisor) →
+-- `zd-in-bounds` and `zd-kernel-positive` were stated for *every* `ZeroDivisor`,
+-- but the record carries no invariant tying `pair`, `dim` and `kernel-dim`
+-- together, so both statements are false.  A single counterexample refutes both.
+zd-example : ZeroDivisor
+zd-example = mkZeroDivisor (0 , 0) 0 0 0 0
+
+zd-in-bounds-false : ¬ (∀ (zd : ZeroDivisor) →
+  proj₁ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd ×
+  proj₂ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd)
+zd-in-bounds-false h = ⊥-elim (<-irrefl refl (proj₁ (h zd-example)))
+
+zd-kernel-positive-false : ¬ (∀ (zd : ZeroDivisor) →
+  ZeroDivisor-kernel-dim zd > 0)
+zd-kernel-positive-false h = ⊥-elim (<-irrefl refl (h zd-example))
+
+-- What can be proved is the statement with the invariant as a hypothesis.
+-- (For the concrete seeds `e_i + e_j` of `get-linear-map` the invariant does
+-- hold exactly when `1 ≤ i ≤ 7`, `8 ≤ j ≤ 15`, `j ≠ i + 8`: 42 pairs, each
+-- with a kernel of dimension 4, computed over ℚ outside Agda.)
+record WellFormed (zd : ZeroDivisor) : Set where
+  field
+    in-bounds       : proj₁ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd ×
+                      proj₂ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd
+    kernel-positive : ZeroDivisor-kernel-dim zd > 0
+
+zd-in-bounds : ∀ (zd : ZeroDivisor) → WellFormed zd →
   proj₁ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd ×
   proj₂ (ZeroDivisor-pair zd) < ZeroDivisor-dim zd
-zd-in-bounds = {!!}
+zd-in-bounds zd wf = WellFormed.in-bounds wf
 
-zd-kernel-positive : ∀ (zd : ZeroDivisor) →
+zd-kernel-positive : ∀ (zd : ZeroDivisor) → WellFormed zd →
   ZeroDivisor-kernel-dim zd > 0
-zd-kernel-positive = {!!}
+zd-kernel-positive zd wf = WellFormed.kernel-positive wf
+
+-- `PathEquiv` has only the constructors `equiv-refl`, `equiv-sym` and
+-- `equiv-trans` and no generating relation, so it is propositional equality
+-- in disguise.
+equiv⇒≡ : ∀ {v1 v2} {p q : Path v1 v2} → PathEquiv p q → p ≡ q
+equiv⇒≡ equiv-refl          = refl
+equiv⇒≡ (equiv-sym e)       = sym (equiv⇒≡ e)
+equiv⇒≡ (equiv-trans e1 e2) = trans (equiv⇒≡ e1) (equiv⇒≡ e2)
+
+≡⇒equiv : ∀ {v1 v2} {p q : Path v1 v2} → p ≡ q → PathEquiv p q
+≡⇒equiv refl = equiv-refl
+
+-- Arrows are determined by their zero-divisor pair (the proof of `shrink`
+-- is unique, but is not even needed here): equal single-arrow paths have
+-- equal pairs.
+single-arrow-pair : ∀ {v1 v2} (a1 a2 : Arrow v1 v2) →
+  extend-path a1 empty-path ≡ extend-path a2 empty-path →
+  Arrow.zero-div a1 ≡ Arrow.zero-div a2
+single-arrow-pair a1 .a1 refl = refl
 
 -- With indexed arrows there is only one choice of source/target,
 -- so the source/target equality arguments are no longer needed.
-associator-determines-equiv : ∀ {v1 v2} (a1 a2 : Arrow v1 v2) →
-  ZeroDivisor-associator-type (Arrow.zero-div a1) ≡
-  ZeroDivisor-associator-type (Arrow.zero-div a2) →
-  PathEquiv (extend-path a1 empty-path) (extend-path a2 empty-path)
-associator-determines-equiv a1 a2 type-eq = {!!}
+--
+-- This statement CANNOT hold, whatever `ZeroDivisor-associator-type` is.
+-- Between two fixed vertices an arrow is determined by an arbitrary pair of
+-- naturals, while `AssociatorType` has four values; with `PathEquiv` being
+-- equality, the statement would make the type injective on pairs, which the
+-- pigeonhole principle forbids.  Hence a refutation instead of a proof;
+-- the lemma becomes true only with an extra relation constructor in
+-- `PathEquiv` (arrows of equal type identified), or as `single-arrow-pair`.
+assoc-code : AssociatorType → Fin 4
+assoc-code type-A = fzero
+assoc-code type-B = fsuc fzero
+assoc-code type-C = fsuc (fsuc fzero)
+assoc-code type-X = fsuc (fsuc (fsuc fzero))
+
+assoc-code-injective : ∀ {a b} → assoc-code a ≡ assoc-code b → a ≡ b
+assoc-code-injective {type-A} {type-A} _ = refl
+assoc-code-injective {type-B} {type-B} _ = refl
+assoc-code-injective {type-C} {type-C} _ = refl
+assoc-code-injective {type-X} {type-X} _ = refl
+assoc-code-injective {type-A} {type-B} ()
+assoc-code-injective {type-A} {type-C} ()
+assoc-code-injective {type-A} {type-X} ()
+assoc-code-injective {type-B} {type-A} ()
+assoc-code-injective {type-B} {type-C} ()
+assoc-code-injective {type-B} {type-X} ()
+assoc-code-injective {type-C} {type-A} ()
+assoc-code-injective {type-C} {type-B} ()
+assoc-code-injective {type-C} {type-X} ()
+assoc-code-injective {type-X} {type-A} ()
+assoc-code-injective {type-X} {type-B} ()
+assoc-code-injective {type-X} {type-C} ()
+
+-- two vertices joined by an arrow for every pair
+vtx-2 vtx-1 : Vertex
+vtx-2 = mkVertex 2 []
+vtx-1 = mkVertex 1 []
+
+arrow-at : Pair → Arrow vtx-2 vtx-1
+arrow-at p = mkArrow p (decreases (s≤s (s≤s z≤n)) (s≤s z≤n))
+
+pair-at : Fin 5 → Pair
+pair-at i = 0 , toℕ i
+
+associator-determines-equiv-false :
+  ¬ (∀ (a1 a2 : Arrow vtx-2 vtx-1) →
+       ZeroDivisor-associator-type (Arrow.zero-div a1) ≡
+       ZeroDivisor-associator-type (Arrow.zero-div a2) →
+       PathEquiv (extend-path a1 empty-path) (extend-path a2 empty-path))
+associator-determines-equiv-false h
+  with FinP.pigeonhole (s≤s (s≤s (s≤s (s≤s (s≤s z≤n)))))
+         (λ i → assoc-code (ZeroDivisor-associator-type (pair-at i)))
+... | i , j , i<j , same =
+  let types-equal = assoc-code-injective same
+      paths-equal = equiv⇒≡ (h (arrow-at (pair-at i)) (arrow-at (pair-at j)) types-equal)
+      pairs-equal = single-arrow-pair (arrow-at (pair-at i)) (arrow-at (pair-at j)) paths-equal
+      toℕ-equal   = cong proj₂ pairs-equal
+  in FinP.<-irrefl (FinP.toℕ-injective toℕ-equal) i<j
 
 ------------------------------------------------------------------------
 -- Section 4: Quiver Finiteness
@@ -168,9 +265,23 @@ vertices-bounded q start = length-reachable-vertices-bounded-by-depth q start
       (q : Quiver) (start : Vertex) →
       length (Quiver.vertices q) ≤ suc (Vertex.kernel-dim start)
 
+-- Open, and as stated not provable from the postulate alone: nothing
+-- constrains `Quiver-longest-path-length`.  It is also mis-shaped: the bound
+-- is by the kernel dimension of an ARBITRARY `start`, not of the source of
+-- the path.  For any interpretation `L` that sees a quiver with an arrow
+-- (`1 ≤ L q`), taking `start` with kernel dimension 0 refutes it.
 max-path-length : (q : Quiver) (start : Vertex) →
   Quiver-longest-path-length q ≤ Vertex.kernel-dim start
 max-path-length q start = {!!}
+
+quiver-with-arrow : Quiver
+quiver-with-arrow = record
+  { vertices = vtx-2 ∷ vtx-1 ∷ []
+  ; arrows   = ((vtx-2 , vtx-1) , arrow-at (0 , 0)) ∷ [] }
+
+max-path-length-shape-false : (L : Quiver → ℕ) → 1 ≤ L quiver-with-arrow →
+  ¬ (∀ (q : Quiver) (start : Vertex) → L q ≤ Vertex.kernel-dim start)
+max-path-length-shape-false L pos h = ⊥-elim (≤⇒≯ (h quiver-with-arrow (mkVertex 0 [])) pos)
 
 -- There are no non-trivial cycles: every path from a vertex to itself
 -- is empty.  A non-empty path would force a strict decrease of the
@@ -198,7 +309,7 @@ equiv-transitive eq1 eq2 = equiv-trans eq1 eq2
 equiv-congruence : ∀ {v1 v2 v3} {p1 q1 : Path v1 v2} {p2 q2 : Path v2 v3} →
   PathEquiv p1 q1 → PathEquiv p2 q2 →
   PathEquiv (path-multiply p1 p2) (path-multiply q1 q2)
-equiv-congruence eq1 eq2 = {!!}
+equiv-congruence eq1 eq2 = ≡⇒equiv (cong₂ path-multiply (equiv⇒≡ eq1) (equiv⇒≡ eq2))
 
 ------------------------------------------------------------------------
 -- Section 6: Cayley-Dickson Specific Lemmas
@@ -223,9 +334,17 @@ dim-to-ℕ = toℕ
 dim-doubling : ∀ (k : ℕ) → ambient-dim (suc k) ≡ 2 * ambient-dim k
 dim-doubling k = refl
 
+-- OPEN, and without a statement: the type is itself a hole.  Data to choose
+-- one from (computed outside Agda, plus-seeds `e_i + e_j`, `i < j`, with a
+-- nonzero kernel of `L_{e_i + e_j}`): level 3: 0, level 4: 42, level 5: 294,
+-- level 6: 1518.  The kernel dimensions are multiples of 4 (all equal to 4
+-- at level 4), and no clean closed form is visible from these four values.
 zd-count-exponential : ∀ (k : ℕ) → {!!}
 zd-count-exponential k = {!!}
 
+-- OPEN, and without a statement: the type is itself a hole.  It depends on
+-- `ZeroDivisor-associator-type`, which is a free postulate, so no statement
+-- about the distribution of associator types can be checked yet.
 associator-distribution : ∀ (k : ℕ) → {!!}
 associator-distribution k = {!!}
 
@@ -314,7 +433,7 @@ abstract
   -- The k-th standard basis vector of `CD 4` (1 at position k, 0
   -- elsewhere). `Pair`'s two `ℕ` components are not otherwise
   -- constrained to be `< 16` anywhere yet (that gap is `zd-in-bounds`,
-  -- Section 3, still open); `basis` is already total, so `seedVec`
+  -- Section 3, which needs the `WellFormed` hypothesis); `basis` is already total, so `seedVec`
   -- inherits that for free.
   seedVec : ℕ → CD 4
   seedVec = basis 4
@@ -378,11 +497,33 @@ postulate
 path-inverse-contravariance : ∀ {v1 v2 v3} (p1 : Path v1 v2) (p2 : Path v2 v3) →
   ValidAssociatorPair p1 p2 →
   path-pseudo-inv (path-multiply p1 p2) ≡ compose (path-pseudo-inv p2) (path-pseudo-inv p1)
+-- OPEN: both `ValidAssociatorPair` and `path-pseudo-inv` are free
+-- postulates, so neither a proof nor a refutation is possible until they
+-- are defined.
 path-inverse-contravariance p1 p2 vp = {!!}
 
-quantized-kernel-drop : ∀ {v1 v2} (a : Arrow v1 v2) →
-  Σ ℕ (λ k → Vertex.kernel-dim v1 ∸ Vertex.kernel-dim v2 ≡ 2 ^ k)
-quantized-kernel-drop a = {!!}
+-- Not true: an arrow only needs `m > n > 0`, so the drop `m ∸ n` is any positive
+-- number.  The drop 4 → 1 is 3, which is not a power of two.  (The concrete
+-- kernel dimensions of the seeds `e_i + e_j` are multiples of 4 -- 4, 8, 12,
+-- ... -- and 12 already occurs at level 5, so a power-of-two quantisation
+-- is not what the data show either.)
+pow2-ge4 : ∀ j → 4 ≤ 2 ^ suc (suc j)
+pow2-ge4 zero    = ≤-refl
+pow2-ge4 (suc j) = ≤-trans (pow2-ge4 j) (m≤m+n (2 ^ suc (suc j)) (2 ^ suc (suc j) + 0))
+
+no-pow2-3 : ∀ k → ¬ (2 ^ k ≡ 3)
+no-pow2-3 zero ()
+no-pow2-3 (suc zero) ()
+no-pow2-3 (suc (suc j)) eq = ≤⇒≯ (subst (4 ≤_) eq (pow2-ge4 j)) (s≤s (s≤s (s≤s (s≤s z≤n))))
+
+quantized-kernel-drop-false :
+  ¬ (∀ {v1 v2} (a : Arrow v1 v2) →
+       Σ ℕ (λ k → Vertex.kernel-dim v1 ∸ Vertex.kernel-dim v2 ≡ 2 ^ k))
+quantized-kernel-drop-false h =
+  no-pow2-3 (proj₁ (h a-4-1)) (sym (proj₂ (h a-4-1)))
+  where
+  a-4-1 : Arrow (mkVertex 4 []) (mkVertex 1 [])
+  a-4-1 = mkArrow (0 , 0) (decreases (s≤s (s≤s z≤n)) (s≤s z≤n))
 
 -- TODO: Adapt to indexed arrows.  The original definition assumed an
 -- unindexed Arrow : Set, which is no longer available.
