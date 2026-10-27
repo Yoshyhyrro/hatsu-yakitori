@@ -62,7 +62,7 @@ jobs:
         shell: bash
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Guard docs against hardcoded FMM release tags
         run: |
@@ -209,12 +209,12 @@ jobs:
       id-token: write
     steps:
       - name: Checkout source branch for Pages UI assets
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           path: site-src
 
       - name: Checkout gh-pages branch
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: gh-pages
           path: apt-repo
