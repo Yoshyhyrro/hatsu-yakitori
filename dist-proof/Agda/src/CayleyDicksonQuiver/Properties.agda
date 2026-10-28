@@ -150,7 +150,7 @@ zd-kernel-positive-false h = ⊥-elim (<-irrefl refl (h zd-example))
 
 -- What can be proved is the statement with the invariant as a hypothesis.
 -- (For the concrete seeds `e_i + e_j` of `get-linear-map` the invariant does
--- hold exactly when `1 ≤ i ≤ 7`, `8 ≤ j ≤ 15`, `j ≠ i + 8`: 42 pairs, each
+-- hold exactly when `1 ≤ i ≤ 7`, `9 ≤ j ≤ 15`, `j ≠ i + 8`: 42 pairs, each
 -- with a kernel of dimension 4, computed over ℚ outside Agda.)
 record WellFormed (zd : ZeroDivisor) : Set where
   field
@@ -196,6 +196,8 @@ single-arrow-pair a1 .a1 refl = refl
 -- pigeonhole principle forbids.  Hence a refutation instead of a proof;
 -- the lemma becomes true only with an extra relation constructor in
 -- `PathEquiv` (arrows of equal type identified), or as `single-arrow-pair`.
+-- The constructor is added in `AssociatorRelation` (`PathEquivT`), where the
+-- consequences for functors out of the path category are worked out.
 assoc-code : AssociatorType → Fin 4
 assoc-code type-A = fzero
 assoc-code type-B = fsuc fzero
