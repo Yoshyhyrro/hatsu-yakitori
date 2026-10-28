@@ -720,7 +720,7 @@ stacked matrix, `K(σ) = ∩_{p ∈ σ} ker ι(p)`. What is not fixed:
   conservative stand-in, not a rank-based dimension. For a single seed it
   is far from the rank-based value: over `ℚ` (computed outside Agda) the
   kernel of `L_{e_i + e_j}` on `CD 4` has dimension 4 for exactly 42 of
-  the 120 pairs `i < j` (`1 ≤ i ≤ 7`, `8 ≤ j ≤ 15`, `j ≠ i + 8`) and 0 for
+  the 120 pairs `i < j` (`1 ≤ i ≤ 7`, `9 ≤ j ≤ 15`, `j ≠ i + 8`) and 0 for
   the other 78, whereas the stand-in gives `16 ∸ 1 = 15` for every pair.
   Over the next levels the kernel dimensions of the seeds are again
   multiples of 4 but not powers of 2: 4, 8, 12 at level 5 (294 of 496
@@ -739,6 +739,29 @@ stacked matrix, `K(σ) = ∩_{p ∈ σ} ker ι(p)`. What is not fixed:
   is to be read against that. Until then a functor from the path
   category to anything (for instance `Arrow ↦ get-linear-map`) is
   unconstrained by relations, so its well-definedness is not a test.
+  `AssociatorRelation.agda` adds the constructor (`PathEquivT t`, for
+  any `t : Pair -> X`) and proves, for every `t`: a monoid-valued `F` on
+  pairs respects `PathEquivT t` iff `F` is constant on the fibres of `t`
+  (`Eval.respects⇒ev`, `ev⇒respects`); if `F` separates five pairs, no
+  `t` with values in `AssociatorType` is respected
+  (`NoGo.no-respect`), so `Arrow ↦ get-linear-map` cannot factor through
+  the quotient by any four-valued type (it separates pairs, since
+  `L_{e_i + e_j}(1) = e_i + e_j`); and what does factor is the word of
+  types along a path in the free monoid on the types
+  (`TypeWord.type-word-invariant`).
+- the kernel quiver that the I1 reading actually produces (computed
+  outside Agda, over `ℚ`): start from the empty signature (kernel `CD 4`,
+  dimension 16) and add seeds `e_i + e_j` from the 42 above. One seed:
+  dimension 4 (all 42). Two seeds: dimension 2 for 42 pairs, 0 for the
+  other 819, and the 42 are exactly pairs of seeds with the same
+  `i XOR j` (the 42 seeds fall into 7 groups of 6, 105 same-group pairs:
+  42 give 2, 63 give 0; the 756 cross-group pairs give 0). Three seeds:
+  dimension 0 for all 11480 triples. So the vertex dimensions reached are
+  `16 -> 4 -> {2, 0} -> 0`, with drops 12, 2, 4, 2, against the
+  stand-in's `16 -> 15 -> 14 -> 13`. The four kinds of step
+  (16 to 4, 4 to 2, 4 to 0, 2 to 0) match the number of values of
+  `AssociatorType` only numerically; nothing in the repository defines
+  the types, so this is a candidate for `t`, not a finding.
 
 Interpretations still open, to be used only if the author intends to change
 the repository's reading:
