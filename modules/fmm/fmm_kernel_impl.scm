@@ -81,8 +81,11 @@
   (define (frontier-mode-from-golay tau)
     (if (< tau 12) 'stack 'queue))
 
-  (define (make-adaptive-frontier #!optional (info-bits 0))
-    (let* ((codeword (encode-golay24 info-bits))
+  ;; The optional argument INFO-BITS (default 0) is taken from a rest list so that
+  ;; this definition does not depend on CHICKEN's #!optional extension.
+  (define (make-adaptive-frontier . options)
+    (let* ((info-bits (if (null? options) 0 (car options)))
+           (codeword (encode-golay24 info-bits))
            (tau (golay-weight codeword))
            (mode (frontier-mode-from-golay tau)))
       (vector mode
@@ -249,15 +252,29 @@
   ;; ------------------------------------------------------------------
   ;; Frontier-driven FMM Evaluation
   ;; ------------------------------------------------------------------
+  ;; Rejects acceptance ratios outside 0 <= theta < 1, for which the
+  ;; multipole series does not converge.  Returns THETA when it is valid.
+  (define (check-acceptance-ratio theta)
+    (if (and (real? theta) (<= 0 theta) (< theta 1))
+        theta
+        (error "cartan-fmm-evaluate: theta must satisfy 0 <= theta < 1" theta)))
+
+  ;; Evaluates the potential at TARGET-IDX using FMM with a local frontier policy.
+  ;; An optional trailing argument sets the multipole acceptance ratio theta
+  ;; (default: fmm-default-theta).  A cell is expanded only when
+  ;; radius / distance < theta; otherwise it is summed directly.
+  ;; The optional argument is taken from a rest list on purpose: this entry point
+  ;; relies only on standard `define` forms, not on CHICKEN's #!optional extension.
   (define (cartan-fmm-evaluate grid hierarchy sources charges target-idx order frontier-info-bits
-                               #!optional (theta fmm-default-theta))
-    "Evaluate potential at target-idx using FMM with a local frontier policy.
-     THETA is the multipole acceptance ratio (0 <= theta < 1); a cell is
-     expanded only when radius / distance < theta, otherwise it is summed directly."
+                               . options)
+    (when (and (pair? options) (pair? (cdr options)))
+      (error "cartan-fmm-evaluate: at most one optional argument (theta) is accepted" options))
+    (cartan-fmm-evaluate/theta
+     grid hierarchy sources charges target-idx order frontier-info-bits
+     (check-acceptance-ratio (if (null? options) fmm-default-theta (car options)))))
 
-    (unless (and (real? theta) (<= 0 theta) (< theta 1))
-      (error "cartan-fmm-evaluate: theta must satisfy 0 <= theta < 1" theta
-
+  (define (cartan-fmm-evaluate/theta grid hierarchy sources charges target-idx order
+                                     frontier-info-bits theta)
         (let* ((frontier (make-adaptive-frontier frontier-info-bits))
                (target-pos (local-parameter grid target-idx))
                (total-potential (cons 0.0 0.0)))
@@ -310,7 +327,7 @@
 
                (loop))))
 
-         total-potential))))
+         total-potential))
 
   ;; ------------------------------------------------------------------
   ;; Demo
