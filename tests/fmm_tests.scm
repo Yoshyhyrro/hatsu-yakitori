@@ -67,13 +67,27 @@
 (define kernel-hierarchy (vector (iota 8 1) (iota 8 9) (iota 16 17) (iota 31 33)))
 (define kernel-reference (fmm-direct-potential kernel-grid kernel-charges 0))
 
-(define (kernel-evaluate order bits theta #!optional (hierarchy kernel-hierarchy))
+(define (kernel-evaluate-on hierarchy order bits theta)
   (quietly
    (lambda ()
      (cartan-fmm-evaluate kernel-grid hierarchy kernel-sources kernel-charges 0 order bits theta))))
 
+(define (kernel-evaluate order bits theta)
+  (kernel-evaluate-on kernel-hierarchy order bits theta))
+
+;; A failing evaluation must surface as a FAIL line, not as an uncaught exception
+;; that hides every later check.
+(define (complex-result? value)
+  (and (pair? value) (real? (car value)) (real? (cdr value))))
+
 (define (kernel-error order bits theta)
-  (c-abs (c-sub (kernel-evaluate order bits theta) kernel-reference)))
+  (let ((value (kernel-evaluate order bits theta)))
+    (if (complex-result? value)
+        (c-abs (c-sub value kernel-reference))
+        +inf.0)))
+
+(assert-true (complex-result? (kernel-evaluate 8 0 0.5))
+             "cartan-fmm-evaluate returns a complex number as a (real . imaginary) pair")
 
 ;; Reference oracle: sum over s = 1..N-1 of 1 / (1 - w^s) equals (N-1)/2.
 (assert-near (car kernel-reference) 31.5 1.0e-9
@@ -94,7 +108,11 @@
              "Error shrinks by more than 100x from order 8 to order 16")
 
 ;; The frontier discipline only changes the traversal order, not the value.
-(assert-near (c-abs (c-sub (kernel-evaluate 8 0 0.5) (kernel-evaluate 8 #xFFF 0.5)))
+(assert-near (let ((stack-value (kernel-evaluate 8 0 0.5))
+                   (queue-value (kernel-evaluate 8 #xFFF 0.5)))
+               (if (and (complex-result? stack-value) (complex-result? queue-value))
+                   (c-abs (c-sub stack-value queue-value))
+                   +inf.0))
              0.0 1.0e-9
              "Stack and queue frontiers give the same potential")
 
@@ -103,8 +121,10 @@
              "theta = 0 reduces to the direct sum")
 
 ;; A cell that contains the target must never be expanded.
-(assert-near (c-abs (c-sub (kernel-evaluate 8 0 0.5 (vector (iota kernel-n 0)))
-                           kernel-reference))
+(assert-near (let ((value (kernel-evaluate-on (vector (iota kernel-n 0)) 8 0 0.5)))
+               (if (complex-result? value)
+                   (c-abs (c-sub value kernel-reference))
+                   +inf.0))
              0.0 1.0e-9
              "A cell containing the target is summed directly")
 
