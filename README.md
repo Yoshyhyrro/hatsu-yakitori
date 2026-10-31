@@ -72,7 +72,8 @@ The interaction loop delegates flow control to the frontier policy:
         (unless (null? cell-indices)
           (let* ((level-center (calculate-geometric-center grid cell-indices))
                  (dist (c-abs (c-sub target-pos level-center)))
-                 (is-near-field (< dist 0.5))) ; Proximity threshold
+                 (radius (calculate-cell-radius grid cell-indices level-center))
+                 (is-near-field (not (cell-admissible? radius dist theta)))) ; near field when radius / dist >= theta
             
             (cond
              ;; Near Field: Direct particle-particle interaction
@@ -105,7 +106,7 @@ The interaction loop delegates flow control to the frontier policy:
 ### Key Points
 
 1. **Frontier manages traversal order**: Stack (LIFO) for DFS, Queue (FIFO) for BFS
-2. **Geometry-driven cutoff**: `is-near-field` determines direct vs. multipole calculation
+2. **Acceptance-ratio criterion**: `is-near-field` routes a cell to direct summation unless `radius / distance < θ` (default 0.5). Under this condition the multipole series converges geometrically, and the truncation error decays proportionally to `θ^order`.
 3. **Algebraic interpretation**: 
    - Near field = discrete sum (poles on curve)
    - Far field = Laurent expansion (local parameter basis)
