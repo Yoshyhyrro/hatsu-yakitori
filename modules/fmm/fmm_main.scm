@@ -23,7 +23,7 @@
   (define default-order 8)
   (define default-precision 8)
   (define default-threads 1)
-  (define default-theta fmm-default-near-field-cutoff)
+  (define default-theta fmm-default-theta)
   (define default-target-index 0)
   (define default-frontier-bits 0)
   (define default-benchmark-iterations 3)
@@ -154,6 +154,16 @@
           value
           (fatal "CLI_PARSE" (sprintf "Option ~a expects a real number, got ~a" option raw)))))
 
+  ;; theta is the multipole acceptance ratio radius / distance; the expansion
+  ;; only converges for 0 <= theta < 1.
+  (define (check-theta label value)
+    (if (and (real? value) (<= 0 value) (< value 1))
+        value
+        (fatal "CLI_PARSE" (sprintf "~a expects a ratio in [0, 1), got ~a" label value))))
+
+  (define (parse-theta option raw)
+    (check-theta (sprintf "Option ~a" option) (parse-real option raw)))
+
   (define (apply-preset config name)
     (cond
       ((string=? name "conservative")
@@ -203,7 +213,7 @@
                  (loop (cddr rest) (config-set config 'threads value))))
 
               ((string=? arg "--theta")
-               (let ((value (parse-real arg (require-value arg rest))))
+               (let ((value (parse-theta arg (require-value arg rest))))
                  (loop (cddr rest) (config-set config 'theta value))))
 
               ((string=? arg "--input")
@@ -407,11 +417,10 @@
         (note "PRECISION001"
               (sprintf "precision target ~a was mapped to effective order ~a." precision (effective-order config)))
         (subline-help (sprintf "pass --order ~a explicitly to skip precision mapping" (effective-order config))))
-      (when (not (= theta fmm-default-near-field-cutoff))
+      (when (>= theta 0.8)
         (note "THETA001"
-          (sprintf "--theta ~a accepted; kernel evaluates with built-in cutoff ~a." theta fmm-default-near-field-cutoff))
-        (subline-note "theta-driven cutoff is planned for a future release slice")
-        (subline-note (sprintf "current fixed near-field cutoff is ~a" fmm-default-near-field-cutoff)))))
+              (sprintf "theta ~a admits cells whose expansion converges slowly; the error decays like theta^order." theta))
+        (subline-help "use a smaller --theta or a larger --order for tighter accuracy"))))
 
   (define (print-usage)
     (help-line "USAGE" "hatsu-fmm [mode] [options]")
@@ -419,7 +428,7 @@
     (subline-note "only one mode may be given per invocation; --job runs multiple steps from a job file")
     (help-line "OPTIONS" "-p, --precision INT    Accuracy target mapped to effective order")
     (help-line "OPTIONS" "-t, --threads INT      Requested worker count; current runtime falls back to 1")
-    (help-line "OPTIONS" "--theta FLOAT          Requested admissibility hint; current kernel uses a fixed cutoff")
+    (help-line "OPTIONS" "--theta FLOAT          Multipole acceptance ratio in [0, 1); smaller is more accurate (default 0.5)")
     (help-line "OPTIONS" "--input PATH           Problem file as a single Scheme form with (grid ...), optional (charges ...), (sources ...), and (hierarchy ...)")
     (help-line "OPTIONS" "--grid-size INT        Generated particle count when no input file is supplied")
     (help-line "OPTIONS" "--order INT            Explicit multipole order before precision mapping")
@@ -445,14 +454,14 @@
       (info "ENV001" (sprintf "fmm-cli-version=~a" fmm-cli-version))
       (info "ENV002" (sprintf "machine-epsilon=~a" machine-epsilon))
       (info "ENV003" (sprintf "kernel-import=ok, sample-grid-size=~a" (vector-length sample-grid)))
-      (info "ENV004" (sprintf "default-near-field-cutoff=~a" fmm-default-near-field-cutoff))
+      (info "ENV004" (sprintf "default-theta=~a" fmm-default-theta))
       (info "ENV005" "problem-file-input=enabled")))
 
   (define (run-list-caps)
     (info "CAPS001" "command-modes=compute,help,check-env,list-caps,dry-run,benchmark,check,explain")
     (info "CAPS002" "runtime=CHICKEN Scheme")
     (info "CAPS003" (sprintf "threading=requested-via-cli,fallback=1"))
-    (info "CAPS004" (sprintf "near-field-cutoff=fixed-at-~a" fmm-default-near-field-cutoff))
+    (info "CAPS004" (sprintf "acceptance-criterion=radius/distance<theta,default-theta=~a" fmm-default-theta))
     (info "CAPS005" "precision-control=mapped-to-effective-order")
     (info "CAPS006" "blas=not-linked")
     (info "CAPS007" "simd=not-detected")
@@ -484,8 +493,8 @@
         (sprintf "file:~a" input-path)
         "generated"))
 
-  (define (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits)
-    (cartan-fmm-evaluate grid hierarchy sources charges target-index order frontier-bits))
+  (define (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits theta)
+    (cartan-fmm-evaluate grid hierarchy sources charges target-index order frontier-bits theta))
 
   (define (run-compute config)
     (call-with-values
@@ -499,7 +508,8 @@
                        order
                        target-index
                        frontier-bits))
-        (let ((result (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits)))
+        (let ((result (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits
+                                         (config-ref config 'theta))))
           (info "RUN002" (sprintf "potential.real=~a" (car result)))
           (info "RUN003" (sprintf "potential.imag=~a" (cdr result)))))))
 
@@ -514,7 +524,8 @@
           (note "BENCH001" "Benchmark mode measures the current Scheme runtime on the resolved problem payload.")
           (do ((i 0 (+ i 1)))
               ((= i iterations))
-            (set! last-result (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits)))
+            (set! last-result (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits
+                                         (config-ref config 'theta))))
           (let* ((elapsed (- (current-milliseconds) start-time))
                  (average (/ elapsed iterations)))
             (info "BENCH002"
@@ -545,10 +556,10 @@
                     "machine-epsilon is available and positive"
                     "machine-epsilon must be positive")
 
-      (record-check (> fmm-default-near-field-cutoff 0)
+      (record-check (and (>= fmm-default-theta 0) (< fmm-default-theta 1))
                     "CHECK002"
-                    "near-field cutoff constant is available"
-                    "near-field cutoff constant must be positive")
+                    "default acceptance ratio theta is in [0, 1)"
+                    "default acceptance ratio theta must satisfy 0 <= theta < 1")
 
       (let ((grid (make-goppa-grid 2 5 8)))
         (record-check (= (vector-length grid) 8)
@@ -565,7 +576,8 @@
       (call-with-values
           (lambda () (resolve-problem config))
         (lambda (origin input-path grid hierarchy sources charges target-index order frontier-bits)
-          (let ((result (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits)))
+          (let ((result (evaluate-problem-values grid hierarchy sources charges target-index order frontier-bits
+                                         (config-ref config 'theta))))
             (record-check (and (pair? result)
                                (number? (car result))
                                (number? (cdr result)))
@@ -612,8 +624,8 @@
        (info "EXPLAIN" "Threads are accepted for interface stability. The current runtime remains single-threaded and emits a NOTE when a larger value is requested.")
        (subline-seealso "--explain precision  (also a stub-capable option)"))
       ((or (string=? topic "theta") (string=? topic "FMM-THETA"))
-       (info "EXPLAIN" (sprintf "Theta is recorded in the CLI today, but the current evaluator still uses the fixed near-field cutoff ~a from the kernel." fmm-default-near-field-cutoff))
-       (subline-note (sprintf "fixed cutoff value: ~a" fmm-default-near-field-cutoff))
+       (info "EXPLAIN" "Theta is the multipole acceptance ratio. A cell is expanded only when radius / distance < theta; otherwise it is summed directly, so the order-p truncation error decays like theta^p.")
+       (subline-note (sprintf "default theta: ~a (valid range 0 <= theta < 1)" fmm-default-theta))
        (subline-seealso "--explain dry-run  (inspect effective parameters without running)"))
       ((or (string=? topic "benchmark") (string=? topic "FMM-BENCHMARK"))
        (info "EXPLAIN" "Benchmark mode measures the current generated-input runtime. It is a system probe, not a claim about external physics workloads.")
@@ -665,7 +677,7 @@
                         ((grid-size)     (config-set cfg 'grid-size val))
                         ((precision)     (config-set cfg 'precision val))
                         ((order)         (config-set cfg 'order val))
-                        ((theta)         (config-set cfg 'theta val))
+                        ((theta)         (config-set cfg 'theta (check-theta "Job field theta" val)))
                         ((threads)       (config-set cfg 'threads val))
                         ((iterations)    (config-set cfg 'benchmark-iterations val))
                         ((input)         (config-set cfg 'input-path val))
