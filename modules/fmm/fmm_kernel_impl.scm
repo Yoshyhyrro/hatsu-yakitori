@@ -1,7 +1,18 @@
-  ;; ------------------------------------------------------------------
+;; ------------------------------------------------------------------
   ;; Math Helpers
   ;; ------------------------------------------------------------------
-  (define fmm-default-near-field-cutoff 0.5)
+  ;; Multipole acceptance ratio theta.  A cell is evaluated with a multipole
+  ;; expansion only when  radius / distance < theta,  where `radius` is the
+  ;; largest distance from the cell center to one of its points and `distance`
+  ;; is the distance from the target to the cell center.  The expansion is a
+  ;; geometric series in radius / distance, so its truncation error at order p
+  ;; decays like theta^p.  Admissible values are 0 <= theta < 1.
+  (define fmm-default-theta 0.5)
+
+  ;; Deprecated alias, kept so that existing exports and callers still link.
+  ;; It used to be an absolute distance that ignored the cell size; it is now
+  ;; the default acceptance ratio.  Prefer `fmm-default-theta`.
+  (define fmm-default-near-field-cutoff fmm-default-theta)
 
   ;; NOTE: Removed incorrect redefinitions of sin, cos, etc.
   ;; Standard Scheme functions handle types correctly and are optimized.
@@ -170,6 +181,34 @@
                     indices)
           (cons (/ (car sum) count) (/ (cdr sum) count)))))
 
+  ;; Largest distance from CENTER to one of the grid points of a cell.
+  (define (calculate-cell-radius grid indices center)
+    (fold (lambda (idx acc)
+            (max acc (c-abs (c-sub (local-parameter grid idx) center))))
+          0.0
+          indices))
+
+  ;; Multipole acceptance test: #t when radius / dist < theta.
+  ;; Written without a division, so a target located at the cell center
+  ;; (dist = 0) is classified as near field instead of dividing by zero.
+  ;; A target that is itself a point of the cell has dist <= radius, hence
+  ;; ratio >= 1 >= theta, and is always routed to the direct sum.
+  (define (cell-admissible? radius dist theta)
+    (< radius (* theta dist)))
+
+  ;; Reference value: direct summation over every grid point but the target.
+  (define (fmm-direct-potential grid charges target-idx)
+    (let ((target-pos (local-parameter grid target-idx))
+          (q (list->vector charges)))
+      (let loop ((idx 0) (acc (cons 0.0 0.0)))
+        (if (= idx (vector-length grid))
+            acc
+            (loop (+ idx 1)
+                  (if (= idx target-idx)
+                      acc
+                      (c-add acc (c-div (cons (vector-ref q idx) 0.0)
+                                        (c-sub target-pos (vector-ref grid idx))))))))))
+
   ;; ------------------------------------------------------------------
   ;; FMM Kernels
   ;; ------------------------------------------------------------------
@@ -194,7 +233,12 @@
         (let ((sum (cons 0.0 0.0)))
           (do ((k 0 (+ k 1))) ((= k order))
             (let* ((binom (exact->inexact (nCk (+ j k) k)))
-                   (sign (if (odd? k) -1.0 1.0))
+                   ;; The sign (-1)^j is attached to the local index j, not to the multipole index k:
+                   ;;   1/(u+z)^(k+1) = sum_j (-1)^j C(j+k,k) z^j / u^(j+k+1),
+                   ;; where u = z-t - z-s.  Attaching the sign to k instead evaluates the
+                   ;; kernel at the source mirrored about the cell center, which agrees
+                   ;; with the true kernel only for the zeroth multipole term.
+                   (sign (if (odd? j) -1.0 1.0))
                    (denom-pow (c-pow z-diff (+ j k 1)))
                    (numerator (cons (* sign binom) 0.0))
                    (factor (c-div numerator denom-pow))
@@ -205,8 +249,14 @@
   ;; ------------------------------------------------------------------
   ;; Frontier-driven FMM Evaluation
   ;; ------------------------------------------------------------------
-  (define (cartan-fmm-evaluate grid hierarchy sources charges target-idx order frontier-info-bits)
-    "Evaluate potential at target-idx using FMM with a local frontier policy."
+  (define (cartan-fmm-evaluate grid hierarchy sources charges target-idx order frontier-info-bits
+                               #!optional (theta fmm-default-theta))
+    "Evaluate potential at target-idx using FMM with a local frontier policy.
+     THETA is the multipole acceptance ratio (0 <= theta < 1); a cell is
+     expanded only when radius / distance < theta, otherwise it is summed directly."
+
+    (unless (and (real? theta) (<= 0 theta) (< theta 1))
+      (error "cartan-fmm-evaluate: theta must satisfy 0 <= theta < 1" theta
 
         (let* ((frontier (make-adaptive-frontier frontier-info-bits))
                (target-pos (local-parameter grid target-idx))
@@ -219,12 +269,12 @@
 
           (print-frontier-info frontier)
 
-      ;; レベルをフロンティアに追加
+      ;; Seed the frontier with every hierarchy level
          (let ((num-levels (vector-length hierarchy)))
            (do ((i 0 (+ i 1))) ((= i num-levels))
              (set! frontier (adaptive-frontier-push frontier i))))
 
-      ;; フロンティア処理ループ
+      ;; Frontier processing loop
          (let loop ()
            (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
              (when level-idx
@@ -234,7 +284,8 @@
                  (unless (null? cell-indices)
                    (let* ((level-center (calculate-geometric-center grid cell-indices))
                           (dist (c-abs (c-sub target-pos level-center)))
-                          (is-near-field (< dist fmm-default-near-field-cutoff)))
+                          (radius (calculate-cell-radius grid cell-indices level-center))
+                          (is-near-field (not (cell-admissible? radius dist theta))))
 
                      (cond
                       ;; Near Field: Direct Sum
@@ -259,7 +310,7 @@
 
                (loop))))
 
-         total-potential))
+         total-potential))))
 
   ;; ------------------------------------------------------------------
   ;; Demo
@@ -277,16 +328,21 @@
                        (iota 8 1)
                        (iota 8 9)
                        (iota 16 17)
-                       (iota 31 33))))
+                       (iota 31 33)))
+           (reference (fmm-direct-potential grid charges target-idx)))
 
       (printf "\n--- Run 1: Low Entropy (Stack/DFS) ---\n")
       (let ((res1 (cartan-fmm-evaluate
                    grid hierarchy sources charges target-idx order 0)))
-        (printf "Result Potential: ~a + ~ai\n" (car res1) (cdr res1)))
+        (printf "Result Potential: ~a + ~ai\n" (car res1) (cdr res1))
+        (printf "Direct-sum reference: ~a + ~ai (abs error ~a)\n"
+                (car reference) (cdr reference) (c-abs (c-sub res1 reference))))
 
       (printf "\n--- Run 2: High Entropy (Queue/BFS) ---\n")
       (let ((res2 (cartan-fmm-evaluate
                    grid hierarchy sources charges target-idx order #xFFF)))
-        (printf "Result Potential: ~a + ~ai\n" (car res2) (cdr res2)))
+        (printf "Result Potential: ~a + ~ai\n" (car res2) (cdr res2))
+        (printf "Direct-sum reference: ~a + ~ai (abs error ~a)\n"
+                (car reference) (cdr reference) (c-abs (c-sub res2 reference))))
 
       (printf "\n(Processing order differs based on Golay weight)\n")))
