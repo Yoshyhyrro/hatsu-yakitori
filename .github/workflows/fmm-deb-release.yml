@@ -39,7 +39,7 @@ on:
       deb_version:
         description: 'Optional package version to build (overrides tag)'
         required: false
-        default: '0.4.9'
+        default: '0.5.0.alpha1'
       deb_arch:
         description: 'Target Debian architecture (amd64, arm64)'
         required: false
