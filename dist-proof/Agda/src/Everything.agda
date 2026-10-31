@@ -29,3 +29,4 @@ open import CayleyDicksonQuiver.AbelianCurse.CliffordContraction
 open import CayleyDicksonQuiver.AbelianCurse.CliffordDerivation
 open import CayleyDicksonQuiver.AbelianCurse.CliffordSectors
 open import CayleyDicksonQuiver.AssociatorRelation
+open import CayleyDicksonQuiver.AbelianCurse.CappedResidue
