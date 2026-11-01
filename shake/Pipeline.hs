@@ -7,14 +7,11 @@
 module Pipeline
   ( buildModule
   , testModule
-  , gcOptimizedModule
-  , gcOptimizedModuleWith
   , Module(..)
   , BuildConfig(..)
   , defaultBuildConfig
   , regularModule
   , specialModule
-  , withGCStrategy -- Added export
   , proofBuildConfig
   ) where
 
@@ -28,7 +25,6 @@ import Chicken
 import qualified Rules.Compile as Compile
 import qualified Rules.Link as Link
 import qualified Rules.StandardToplevel as TopLevel
-import qualified Rules.GC as GC
 import qualified Salmonella
 
 -- ============================================================
@@ -41,7 +37,6 @@ data BuildConfig = BuildConfig
   , bcDistDir :: FilePath
   , bcProofBuildDir :: FilePath
   , bcProofDistDir :: FilePath
-  , bcGCStrategy :: Maybe GC.GCStrategyType
   } deriving (Show)
 
 defaultBuildConfig :: BuildConfig
@@ -51,11 +46,7 @@ defaultBuildConfig = BuildConfig
   , bcDistDir = "dist"
   , bcProofBuildDir = "_build_proof"
   , bcProofDistDir = "dist-proof"
-  , bcGCStrategy = Nothing
   }
-
-withGCStrategy :: GC.GCStrategyType -> BuildConfig -> BuildConfig
-withGCStrategy strat cfg = cfg { bcGCStrategy = Just strat }
 
 -- | Switch to proof-dedicated output directories while preserving flags.
 proofBuildConfig :: BuildConfig -> BuildConfig
@@ -118,30 +109,6 @@ testModule m cfg = do
       unless (Salmonella.trPassed result) $
         fail $ "Tests failed for " ++ modName m
 
--- | GC-optimized build with auto strategy selection
-gcOptimizedModule :: Module -> BuildConfig -> Action (Artifact 'Exe)
-gcOptimizedModule m cfg
-  | modIsSpecial m = 
-      fail "GC optimization not supported for special modules"
-  | otherwise =
-      let gcCfg = cfg 
-            { bcCompileFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
-            , bcGCStrategy = Nothing
-            }
-      in buildRegularModule m gcCfg
-
--- | GC-optimized build with explicit strategy
-gcOptimizedModuleWith :: GC.GCStrategyType -> Module -> BuildConfig -> Action (Artifact 'Exe)
-gcOptimizedModuleWith strat m cfg
-  | modIsSpecial m = 
-      fail "GC optimization not supported for special modules"
-  | otherwise =
-      let gcCfg = cfg 
-            { bcCompileFlags = "-O3 -d0 -scrutinize -specialize -inline 3"
-            , bcGCStrategy = Just strat
-            }
-      in buildRegularModule m gcCfg
-
 -- ============================================================
 -- Implementation
 -- ============================================================
@@ -155,11 +122,7 @@ buildRegularModule m cfg = do
   
   liftIO $ Dir.createDirectoryIfMissing True (bcDistDir cfg)
   
-  case bcGCStrategy cfg of
-    Nothing -> 
-      compileAndLink allSrcs (words (bcCompileFlags cfg)) outPath
-    Just strat -> 
-      compileAndLinkWithGC strat allSrcs (words (bcCompileFlags cfg)) outPath
+  compileAndLink allSrcs (words (bcCompileFlags cfg)) outPath
 
 buildSpecialModule :: Module -> BuildConfig -> Action (Artifact 'Exe)
 buildSpecialModule m cfg = do
@@ -188,7 +151,7 @@ compileAndLink srcs flags outPath = do
   
   liftIO $ putStrLn $ "[Pipeline] Dependencies: " ++ show allDeps
   
-  -- 依存するカスタムモジュールを先にコンパイル
+  -- Compile the custom dependency modules first
   _ <- compileCustomDeps projectRoot allDeps
   
   -- Compile using CompileInfo (src is now tracked!)
@@ -201,36 +164,6 @@ compileAndLink srcs flags outPath = do
   
   putInfo $ "[Pipeline] Linking " ++ show (length objs) ++ " objects"
   Link.linkWithDeps objs allDeps outPath
-
--- ============================================================
--- GC-Optimized Compile-and-Link
--- ============================================================
-
-compileAndLinkWithGC :: GC.GCStrategyType -> [FilePath] -> [String] -> FilePath -> Action (Artifact 'Exe)
-compileAndLinkWithGC strat srcs flags outPath = do
-  projectRoot <- liftIO Dir.getCurrentDirectory
-  liftIO $ putStrLn $ "[Pipeline-GC] GC strategy: " ++ show strat
-  
-  allDeps <- liftIO $ do
-    depsList <- mapM TopLevel.extractAllDeps srcs
-    return $ nub (concat depsList)
-  
-  putInfo $ "[Pipeline-GC] Dependencies: " ++ show allDeps
-  
-  _ <- compileCustomDeps projectRoot allDeps
-  
-  -- Compile with GC optimization
-  compileInfos <- forM srcs $ \src -> do
-    let flags' = unwords flags
-    Compile.compileObject src flags'
-  
-  let objs = map Compile.ciArtifact compileInfos
-  
-  putInfo $ "[Pipeline-GC] Building GC object with " ++ show strat
-  gcObj <- GC.buildWithGCStrategy strat outPath
-  
-  putInfo $ "[Pipeline-GC] Linking with GC optimization"
-  Link.linkWithDeps objs [] outPath
 
 -- ============================================================
 -- Special Module Compile-and-Link
@@ -254,10 +187,10 @@ compileAndLinkSpecial srcs flags outPath = do
     let flags' = unwords flags
     Compile.compileObject src flags'  
   
-  let objs = map Compile.ciArtifact compileInfos  -- ← 型安全
+  let objs = map Compile.ciArtifact compileInfos  -- type-safe
   
   putInfo $ "[Pipeline-Special] Linking filtered objects"
-  Link.linkWithDeps objs allDeps outPath  -- ← 型安全なリンク
+  Link.linkWithDeps objs allDeps outPath  -- type-safe link
 
 -- ============================================================
 -- Helper
@@ -267,7 +200,7 @@ nub :: Eq a => [a] -> [a]
 nub [] = []
 nub (x:xs) = x : nub (filter (/= x) xs)
 
--- カスタムモジュールを事前コンパイル (-J) して import 可能にする
+-- Precompile the custom modules (-J) so that they can be imported
 compileCustomDeps :: FilePath -> [String] -> Action [FilePath]
 compileCustomDeps projectRoot deps = do
   let modNames = nub [m | dep <- deps, TopLevel.CustomMod m <- [TopLevel.classifyDependency dep]]
