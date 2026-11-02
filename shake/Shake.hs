@@ -37,7 +37,6 @@ coreFiles =
     , "modules/kak_physics_core.scm"
     , "modules/kak_optimization.scm"
     , "modules/kak_quiver_safety.scm"
-    , "modules/topological-gc.scm"
     ]
 
 allModules :: [Module]

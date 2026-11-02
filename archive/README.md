@@ -34,10 +34,32 @@ Formerly the `Rules.GC` module: a Polysemy-based selection of "topological GC" s
 
 ### Not changed
 
-- `modules/topological-gc.scm` and its remaining dependants.
+- `modules/topological-gc.scm` itself and its egg descriptors. After the changes recorded here and
+  below, no Scheme source imports the module any more.
 - The `polysemy` pins in `stack.yaml` and `stack.yaml.lock`; unused extra-deps are not built.
 
 ### Restoring
 
 Move the file back to `shake/Rules/GC.hs`, restore the removed entries listed above from the
 commit that archived it (`git show <commit>`), and re-add the Polysemy dependencies.
+
+## `tools/golay24-tool/topological-gc-runner.scm`
+
+A command-line style driver (`run-topological-gc`, `analyze-gc-strategy`,
+`benchmark-gc-strategies`) written against `modules/topological-gc.scm`. It is archived verbatim,
+including its original Japanese comments and docstrings.
+
+### Reasons for archiving
+
+- **It does not compile.** Against the current `topological-gc` module, the compiler reports four
+  unresolved identifiers: `make-topological-gc-strategy` and `topological-gc-analyze` (never
+  exported by the module), `assoc-ref` and `current-seconds` (not imported).
+- **Nothing referenced it.** It was not listed in `golay24-tool.egg`, in `setup.scm`, in the Shake
+  rules or in any documentation.
+- **Its results were placeholders.** `execute-collection` assumed 1 KiB per object without
+  freeing anything, and the `traditional` branch of `benchmark-gc-strategies` returned fixed
+  numbers, so the comparison table did not measure anything.
+
+### Changes made together with the move
+
+None other than the move itself.
