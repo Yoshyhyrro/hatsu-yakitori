@@ -111,11 +111,6 @@
           
           (hash-table-set! graph idx neighbors))))
     
-    ;; **NEW: Validate that the graph preserves Witt structure**
-    (when *witt-enable-validation*
-      (unless (graph-respects-witt? graph witt-ctx)
-        (printf "WARNING: Graph does not preserve Witt structure!~n")))
-    
     graph))
 
 (define (grid-point-to-octad-coord i j width height)
@@ -478,7 +473,7 @@
   (let ((grid (make-yee-grid 64 64 1e-12 1e-9 *epsilon-0* *mu-0*))
         (ctx (make-witt-context)))
     (set-witt-symmetric-pulse! grid ctx 1.0)
-    (printf "  Pulse set with M24 symmetry: ✓~n"))
+    (printf "  Pulse applied (M24 symmetry of the pattern is not verified)~n"))
   
   ;; Test 4: Galois Height Function
   (printf "~nTest 4: Galois Height Function~n")
