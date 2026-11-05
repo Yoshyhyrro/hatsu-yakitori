@@ -43,6 +43,8 @@
    
    ;; --- Galois Height Function ---
    galois-height
+   max-cycle-length
+   permutation-cycle-lengths
    height-discriminant
    height-comparison
    
@@ -82,36 +84,59 @@
   ;;; ========================================================
 
   (define (galois-height sigma-action)
-    "Computes the height of an element σ in the Absolute Galois Group.
-     
-     Mathematical Definition:
-       h(σ) = log|det(matrix representation of σ)|
-     
-     The σ-action is represented as a 24x24 matrix in this implementation:
-       σ: Octad Lattice → Octad Lattice
-     
+    "Height of a permutation σ of the 24 points, normalised so that a cycle of
+     length 24 has height K:
+
+       h(σ) = K * log(c(σ)) / log(24),   c(σ) = largest cycle length of σ.
+
+     c(σ) does not depend on how the 24 points are labelled: conjugating σ by a
+     relabelling leaves it unchanged. It equals the largest orbit length of σ over
+     all choices of the base point. For σ in the Mathieu group M_24 it also equals
+     the order of σ, and it is at most 23, so h(σ) lies in [0, K].
+
+     NOTE: Reading this quantity as a height on the absolute Galois group is a
+     hypothesis; it is not a result of this module.
+
      Args:
-       sigma-action: Group action represented as a permutation
-         e.g., (lambda (point) (modulo (+ point 1) 24))
-     
-     Returns: Real number h(σ) ∈ [0, K]"
-    
-    ;; Simplified version: Estimate height from permutation cycle length
-    ;; Full version would compute the determinant of the representation
-    (let ((cycle-length (detect-cycle-length sigma-action)))
-      ;; h(σ) ≈ log(cycle-length) / log(24)
-      ;; Normalized to fit within [0, K]
-      (* galois-height-bound
-         (/ (safe-log cycle-length)
-            (safe-log 24)))))
-  
-  (define (detect-cycle-length perm)
-    "Detect cycle length of a permutation (Simplified version)"
-    (let loop ((point 0) (visited '()) (count 0))
-      (cond
-        ((member point visited) count)
-        ((>= count 24) 24)
-        (else (loop (perm point) (cons point visited) (+ count 1))))))
+       sigma-action: a bijection of the points 0..23, given as a procedure,
+         e.g. (lambda (point) (modulo (+ point 1) 24)).
+         An error is signalled when it is not a bijection of 0..23.
+
+     Returns: Real number h(σ) in [0, K]"
+
+    (* galois-height-bound
+       (/ (safe-log (max-cycle-length sigma-action))
+          (safe-log 24))))
+
+  (define (permutation-cycle-lengths perm)
+    "Cycle lengths of the permutation PERM of the points 0..23, listed by the
+     smallest point of each cycle. PERM is a procedure on the points.
+     An error is signalled when PERM is not a bijection of 0..23."
+    (let ((seen (make-vector 24 #f)))
+      (do ((p 0 (+ p 1)))
+          ((= p 24))
+        (let ((q (perm p)))
+          (if (and (integer? q) (exact? q) (<= 0 q) (< q 24) (not (vector-ref seen q)))
+              (vector-set! seen q #t)
+              (error "permutation-cycle-lengths: not a bijection of the points 0..23" p q))))
+      (let ((visited (make-vector 24 #f)))
+        (let loop ((p 0) (lengths '()))
+          (cond
+           ((= p 24) (reverse lengths))
+           ((vector-ref visited p) (loop (+ p 1) lengths))
+           (else
+            (let walk ((x p) (n 0))
+              (if (vector-ref visited x)
+                  (loop (+ p 1) (cons n lengths))
+                  (begin
+                    (vector-set! visited x #t)
+                    (walk (perm x) (+ n 1)))))))))))
+
+  (define (max-cycle-length perm)
+    "Largest cycle length of the permutation PERM of the points 0..23.
+     It is independent of the labelling of the points, and it equals the largest
+     orbit length over all choices of the base point."
+    (fold max 1 (permutation-cycle-lengths perm)))
   
   (define (height-discriminant h1 h2)
     "Computes the discriminant between two heights.
