@@ -205,37 +205,33 @@
         (else     (* (/ w 24.0) galois-height-bound)))))
   
   (define (witt-galois-correspondence octad)
-    "Constructs the corresponding Galois action from a Witt octad.
-     
-     Mathematical Assertion:
-       M₂₄ ≅ Aut(Golay) ⊂ Gal(Q̄/Q)|_{24-torsion}
-     
-     Elements of M₂₄ are isomorphic to a subgroup of the Absolute 
-     Galois Group restricted to 24-torsion points.
-     
-     Args:
-       octad: 24-bit integer
-     
-     Returns: 
-       (height permutation orbit-size)"
-    
+    "Height data attached to a Witt octad (a 24-bit pattern).
+
+     Returns an association list with the keys
+       height        the height of the pattern (see octad-height)
+       orbit-size    the value of orbit-size-estimate
+       galois-class  the class given by classify-by-height
+
+     NOTE: No permutation is returned, because an octad does not determine one.
+     The permutations that belong to an octad canonically are the elements of its
+     pointwise stabiliser in M_24: a group of order 16 that acts regularly on the
+     16 points outside the octad, and whose 15 non-trivial elements are all
+     involutions with eight fixed points. None of them is distinguished. An
+     earlier version built a map from the octad that is not a bijection of the
+     24 points.
+
+     NOTE: Reading these data as a Galois-theoretic height is a hypothesis; it is
+     not established by this module. In particular M_24 is not a subgroup of
+     Gal(Qbar/Q), whose finite subgroups have order at most 2; M_24 is known to
+     occur as a Galois group over Q, that is, as a quotient."
+
     (let* ((h (octad-height octad))
-           (perm (octad-to-permutation octad))
            (orbit (orbit-size-estimate octad)))
-      
+
       (list (cons 'height h)
-            (cons 'permutation perm)
             (cons 'orbit-size orbit)
             (cons 'galois-class (classify-by-height h)))))
-  
-  (define (octad-to-permutation octad)
-    "Constructs a permutation from an octad (Simplified version)"
-    (lambda (point)
-      (let ((is-in (bitwise-and (arithmetic-shift octad (- point)) 1)))
-        (if (= is-in 1)
-            (modulo (+ point 1) 24)  ; Internal cycle
-            point))))                 ; External fixed point
-  
+
   (define (orbit-size-estimate octad)
     "Orbit size estimation under M24 action"
     (let ((w (hamming-weight octad)))
