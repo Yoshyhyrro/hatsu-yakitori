@@ -369,9 +369,8 @@ the Hopf structure formalized in `HopfStructure.lean`.
 | counit triangle ineq    | HopfStructure.lean    | ✓      |
 | h(w)+h(S(w)) = K        | MachineConstants.lean | ✓      |
 | orbitSize palindromic    | MachineConstants.lean | ✓      |
-| e·f = φ(24) = 8         | MachineConstants.lean | ✓      |
+| e·f·g = φ(24) = 8       | MachineConstants.lean | ✓      |
 | K/6 = 4/3 (Hida ratio)  | MachineConstants.lean | ✓      |
-| rigid triple (2,3,8)    | MachineConstants.lean | sorry  |
 | ε ↔ log|a_p|/log p      | (this file)           | sorry  |
 | ⊗! count = r            | (this file)           | axiom  |
 | BSD                     | (this file)           | axiom  |
@@ -471,26 +470,16 @@ theorem theta_data_prime_ge_5 (θ : InitialThetaData) : θ.prime ≥ 5 :=
   θ.prime_ge_5
 
 /-- Bridge from Θ-data to the cyclotomic ramification machinery.
-    For a prime `p` in the initial Θ-data, the ramification indices
-    `(e, f)` are retrieved from `cyclotomic_ramification_24`, and
-    the product `e · f = 8 = φ(24)` holds. -/
+    For a prime `p` in the initial Θ-data, the splitting data
+    `(e, f, g)` are retrieved from `cyclotomic_ramification_24`, and
+    the product `e · f · g = 8 = φ(24)` holds. -/
 theorem theta_data_ramification_compatible
-    (θ : InitialThetaData)
-    (h2 : θ.prime = 2 ∨ θ.prime = 3) :
+    (θ : InitialThetaData) :
     haveI := θ.prime_fact
     let ram := cyclotomic_ramification_24 θ.prime
-    ram.e * ram.f = 8 := by
+    ram.e * ram.f * ram.g = 8 := by
   haveI := θ.prime_fact
   exact ramification_degree_check θ.prime
-
-/-- The rigid triple from `MachineConstants` constrains the
-    Θ-data prime: the distinguished orders {2, 3, 8} in the
-    rigid triple correspond to ramification at p = 2 and p = 3,
-    and the full cyclotomic extension degree 8. -/
-theorem theta_data_rigid_triple_connection :
-    let (c₂, c₃, c₈) := M24_rigid_triple
-    c₂.order = 2 ∧ c₃.order = 3 ∧ c₈.order = 8 := by
-  simp [M24_rigid_triple]
 
 /-- Compatibility of multiple Θ-data structures: two Θ-data are
     compatible when they share the same prime (same arithmetic locus).
@@ -650,16 +639,19 @@ theorem hexadecad_discreteIsogenyHeightDefect :
 
 open HatsuYakitori.MachineConstants in
 /-- Mellin-side bridge: the discrete isogeny defect is controlled by the
-    cyclotomic ramification product `e · f`, i.e. the same quantity that
+    cyclotomic degree `e · f · g = φ(24) = 8`, i.e. the same quantity that
     appears as the height bound in the p-adic Mellin stratification. -/
 theorem discreteIsogenyHeightDefect_le_ramification_product
     (w : GolayWeight) (p : ℕ) [Fact p.Prime] :
     |discreteIsogenyHeightDefect w| ≤
-      (((cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f : ℕ) : ℝ) := by
+      (((cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f *
+        (cyclotomic_ramification_24 p).g : ℕ) : ℝ) := by
   have hbound := discreteIsogenyHeightDefect_bounded w
   have hram : galoisHeightBound =
-      (((cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f : ℕ) : ℝ) := by
-    have hram_nat : (cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f = 8 :=
+      (((cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f *
+        (cyclotomic_ramification_24 p).g : ℕ) : ℝ) := by
+    have hram_nat : (cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f *
+        (cyclotomic_ramification_24 p).g = 8 :=
       ramification_degree_check p
     norm_num [galoisHeightBound, hram_nat]
   simpa [hram] using hbound
