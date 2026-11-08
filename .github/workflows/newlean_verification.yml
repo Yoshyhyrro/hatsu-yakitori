@@ -34,3 +34,4 @@ jobs:
             lake update
             lake build HatsuYakitori.MachineConstants
             lake build HatsuYakitori.PAdicMellin
+            lake build HatsuYakitori.AnabelianSketch
