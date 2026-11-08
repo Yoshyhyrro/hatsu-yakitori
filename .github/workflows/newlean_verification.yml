@@ -33,3 +33,4 @@ jobs:
             lake clean
             lake update
             lake build HatsuYakitori.MachineConstants
+            lake build HatsuYakitori.PAdicMellin
