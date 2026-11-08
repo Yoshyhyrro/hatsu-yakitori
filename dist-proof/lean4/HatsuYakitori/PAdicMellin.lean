@@ -203,11 +203,11 @@ theorem padic_tag_height_nonneg (tag : pAdicTag) :
   The p-adic stratification is compatible with the cyclotomic
   ramification data from `MachineConstants.cyclotomic_ramification_24`.
 
-  For p = 2: e = 4, f = 2 → ramification index 4
-  For p = 3: e = 2, f = 4 → ramification index 2
+  For p = 2: e = 4, f = 2, g = 1 → ramification index 4
+  For p = 3: e = 2, f = 2, g = 2 → ramification index 2
 
-  The ramified stratum corresponds to the octad (w8), and the
-  octad orbit size 759 = |Class 8A| connects to the rigid triple.
+  The ramified stratum corresponds to the octad (w8); the octad
+  orbit has 759 elements.
 -/
 theorem ramified_octad_connection :
     pAdicTag.toGolayWeight .ramified = .w8 ∧
@@ -238,9 +238,10 @@ theorem unramified_discreteIsogenyHeightDefect_eq :
       -(galoisHeightBound / 3) := by
   simpa [pAdicTag.toGolayWeight] using HatsuYakitori.hexadecad_discreteIsogenyHeightDefect
 
-/-- The ramification product e·f = 8 = galoisHeightBound (as ℕ). -/
+/-- The cyclotomic degree e·f·g = φ(24) = 8 = galoisHeightBound (as ℕ). -/
 theorem ramification_product_is_height_bound (p : ℕ) [Fact p.Prime] :
-    (cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f = 8 := by
+    (cyclotomic_ramification_24 p).e * (cyclotomic_ramification_24 p).f *
+      (cyclotomic_ramification_24 p).g = 8 := by
   exact ramification_degree_check p
 
 -- ===================================================================
@@ -710,9 +711,8 @@ theorem orbit_palindromic (w : GolayWeight) :
     w.orbitSize = w.antipode.orbitSize :=
   w.orbitSize_complement
 
-/-- The octad orbit matches the rigid triple class 8A from
-    `MachineConstants.rigid_triple_octad_size`. -/
-theorem orbit_w8_matches_rigid_triple :
+/-- The octad orbit has 759 elements: the number of octads of the Golay code. -/
+theorem orbit_w8_eq_759 :
     GolayWeight.w8.orbitSize = 759 := by rfl
 
 -- ===================================================================
@@ -775,7 +775,7 @@ theorem complementary_orbit_heights (w : GolayWeight) :
   8. Coproduct factorization holds for every orbit
   9. BSD vertices lift to Mellin vertices
   10. The complete pipeline processes all 5 orbits with `integrates` effect
-  11. Orbit sizes match rigid triple data
+  11. The octad orbit has 759 elements
   12. Complementary orbits have complementary heights
 -/
 theorem padic_mellin_bridge_summary :
@@ -804,7 +804,7 @@ theorem padic_mellin_bridge_summary :
       (mellinEffectToTransformEffect .changes_valuation)
       (mellinEffectToTransformEffect .integrates) =
      .preserves_algebraic) ∧
-    -- Octad = 759 (rigid triple)
+    -- Octad orbit size = 759
     (GolayWeight.w8.orbitSize = 759) := by
   exact ⟨padic_tag_card,
          ramified_unramified_antipodal,
