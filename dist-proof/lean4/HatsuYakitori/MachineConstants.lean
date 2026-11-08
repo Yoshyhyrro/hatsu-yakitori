@@ -637,7 +637,7 @@ theorem mem_projectiveCompletion_iff (v : Fin 12 → ℝ) :
 
 The height bound 4/3 arises from Hida eigenvalue theory:
 - Ariki-Koike parameter: r = 3 (cyclic, essential for Hida theory)
-- Ramification at p = 3 is tame (e = 2, f = 4)
+- Ramification at p = 3 is tame (e = 2, f = 2, g = 2)
 - μ-invariant vanishes (Ferrero-Washington type)
 - This forces the eigenvalue ratio 4/3 in weight-8 representations
 -/
@@ -771,15 +771,15 @@ theorem HidaWeightFiberDef.isCommutative {G : Type} [Group G] (F : HidaWeightFib
     Lifting tower interpretation:
     - Level 0→1: Golay → Leech uses the weight structure
     - Level 1→2: Leech → K3 uses Kähler rigidity (commutativity)
-    - Level 2→3: K3 → p-adic uses p=3 ramification (e=2, f=4)
+    - Level 2→3: K3 → p-adic uses p=3 ramification (e=2, f=2, g=2)
     - Level 3→4: p-adic → automorphic uses Hida families
 -/
 theorem p3_ramification_bridge :
     arikiKoikeR = 3 ∧
-    (∃ (e f : ℕ), e = 2 ∧ f = 4 ∧ e * f = 8) := by
+    (∃ (e f g : ℕ), e = 2 ∧ f = 2 ∧ g = 2 ∧ e * f * g = 8) := by
   constructor
   · rfl
-  · use 2, 4
+  · use 2, 2, 2
 
 /-- Height theory connects to group structure via the p=3 ramification.
 
@@ -1323,113 +1323,68 @@ theorem GolayWeight.total_codewords :
     GolayWeight.w0.orbitSize + GolayWeight.w8.orbitSize +
     GolayWeight.w12.orbitSize + GolayWeight.w16.orbitSize +
     GolayWeight.w24.orbitSize = 2 ^ 12 := by
-  native_decide
+  decide
 
 /-!
-## Ramification Data and Rigid Triple for M₂₄
+## Splitting Data of Primes in ℚ(ζ₂₄)
 
-This section provides the computable data connecting:
-1. Cyclotomic ramification at primes dividing 24
-2. M₂₄ conjugacy classes (rigid triple)
-3. The rigidity condition connecting them
+This section provides computable data on how the primes split in the cyclotomic field `ℚ(ζ₂₄)`,
+and a note on the Mathieu group `M₂₄`, whose class data was removed because it was incorrect.
 -/
 
-/-- Ramification index and inertia degree at a prime -/
+/-- Splitting data of a prime in `ℚ(ζ₂₄)/ℚ`: the ramification index `e`, the inertia degree `f`
+    and the number `g` of primes above it. -/
 structure RamificationData where
   e : ℕ  -- ramification index
   f : ℕ  -- inertia degree (residue field degree)
+  g : ℕ  -- number of primes above the given prime
   deriving DecidableEq
 
 /--
-Cyclotomic ramification for ℚ(ζ₂₄)/ℚ at primes.
+Splitting of primes in `ℚ(ζ₂₄)/ℚ`, which has degree `φ(24) = 8` and Galois group `(ℤ/24)ˣ`.
 
-For prime p dividing 24 = 2³ × 3:
-- p = 2: e = 4 (ramification index), f = 2 (inertia degree)
-  Because ζ₂₄ = ζ₈ · ζ₃ and 2 ramifies totally in ℚ(ζ₈)
-- p = 3: e = 2, f = 4
-  Because 3 ramifies in ℚ(ζ₃) but not fully in ℚ(ζ₈)
-- p ∤ 24: e = 1, f = 8 (unramified, splits completely in degree φ(24)=8)
+Write `24 = pᵃ · m` with `p ∤ m`. Then `e = φ(pᵃ)`, `f` is the order of `p` modulo `m`, and
+`g = 8 / (e · f)`.
+- `p = 2`: `e = 4`, `f = 2`, `g = 1`. The field `ℚ(ζ₈)` is totally ramified at 2, and 2 has
+  order 2 modulo 3.
+- `p = 3`: `e = 2`, `f = 2`, `g = 2`. The field `ℚ(ζ₃)` is ramified at 3, and 3 has order 2
+  modulo 8.
+- `p ∤ 24`: `e = 1`. Since `(ℤ/24)ˣ` has exponent 2, `f = 1` when `p ≡ 1 (mod 24)` and `f = 2`
+  otherwise, with `g = 8 / f`.
+
+An earlier version used `f = 4` for `p = 3`, and `e = 1`, `f = 8` for every `p ∤ 24`. Those values were
+incorrect, and the identity it checked, `e · f = 8`, holds only when `g = 1`.
 -/
 def cyclotomic_ramification_24 (p : ℕ) [Fact p.Prime] : RamificationData :=
-  if p = 2 then ⟨4, 2⟩
-  else if p = 3 then ⟨2, 4⟩
-  else ⟨1, 8⟩  -- Assuming p ∤ 24; degree φ(24) = 8
+  if p = 2 then ⟨4, 2, 1⟩
+  else if p = 3 then ⟨2, 2, 2⟩
+  else if p % 24 = 1 then ⟨1, 1, 8⟩
+  else ⟨1, 2, 4⟩
 
-/-- Verification: e · f = [ℚ(ζ₂₄) : ℚ] = φ(24) = 8 -/
+/-- Verification: `e · f · g = [ℚ(ζ₂₄) : ℚ] = φ(24) = 8`. -/
 theorem ramification_degree_check (p : ℕ) [Fact p.Prime] :
     let data := cyclotomic_ramification_24 p
-    data.e * data.f = 8 := by
+    data.e * data.f * data.g = 8 := by
   unfold cyclotomic_ramification_24
   split_ifs <;> norm_num
 
-/-! ### M₂₄ Conjugacy Classes and Rigid Triple -/
+/-! ### Conjugacy classes of the Mathieu group M₂₄
 
-/-- Placeholder for M₂₄ group (implemented as S₂₄ for placeholder purposes, avoiding axiom) -/
-abbrev M24 : Type := Equiv.Perm (Fin 24)
+An earlier version of this section declared `M24 := Equiv.Perm (Fin 24)` (that is, the symmetric
+group `S₂₄`), a "rigid triple" with class sizes 276, 1288 and 759, and a rigidity criterion
+`1/|C₁| + 1/|C₂| + 1/|C₃| = 1`. None of this was correct.
 
-/-- Conjugacy class in M₂₄ -/
-structure ConjugacyClass (G : Type*) [Group G] where
-  representative : G
-  order : ℕ
-  size : ℕ  -- Number of elements in this class
+* `M24` was the symmetric group `S₂₄`, not the Mathieu group.
+* 276, 1288 and 759 are not class sizes of `M₂₄`. The classes of elements of order 2, 3 and 8
+  have sizes 11385 and 31878 (order 2), 226688 and 485760 (order 3), and 15301440 (order 8).
+  The number 276 is `C(24, 2)`, the number of transpositions of `S₂₄`; `M₂₄` contains none.
+* The stated criterion is not the rigidity criterion, which concerns the number of triples with
+  product 1 up to conjugation. The theorem that was proved stated that the sum is `81/14168`,
+  not 1.
 
-/--
-The rigid triple for M₂₄.
-From Curtis and Conway-Norton: M₂₄ has a rigid triple of classes.
-
-Specific values (from literature):
-- Class of order 2: Transpositions (type 2A)
-- Class of order 3: 3-cycles (type 3A)
-- Class of order 8: Octad stabilizer elements (type 8A)
--/
-def M24_rigid_triple :
-    ConjugacyClass M24 × ConjugacyClass M24 × ConjugacyClass M24 :=
-  ( ⟨1, 2, 276⟩,   -- Class 2A: 276 elements of order 2
-    ⟨1, 3, 1288⟩,  -- Class 3A: 1288 elements of order 3
-    ⟨1, 8, 759⟩ )  -- Class 8A: 759 elements of order 8 (octads!)
-
-/--
-Verification: This is indeed rigid.
-A triple (C₁, C₂, C₃) is rigid if:
-  1/|C₁| + 1/|C₂| + 1/|C₃| = 1
--/
-theorem M24_triple_is_rigid :
-    let (c₁, c₂, c₃) := M24_rigid_triple
-    (1 : ℚ) / (c₁.size : ℚ) + (1 : ℚ) / (c₂.size : ℚ) + (1 : ℚ) / (c₃.size : ℚ) = 81 / 14168 := by
-  dsimp [M24_rigid_triple]
-  norm_num
-
-/-! ### The Rigidity Condition -/
-
-/--
-**THE RIGIDITY CONDITION**:
-Conjugacy class orders match ramification indices.
-
-The orders should relate to ramification as:
-- p=2 ramifies with e=4, and we have order 2 elements
-- p=3 ramifies with e=2, and we have order 3 elements
-- The order 8 = 2³ relates to the full ramification at 2
--/
-def rigidity_condition (triple : ConjugacyClass M24 × ConjugacyClass M24 × ConjugacyClass M24) : Prop :=
-  let (c₂, c₃, c₈) := triple
-  c₂.order = 2 ∧
-  c₃.order = 3 ∧
-  c₈.order = 8 ∧
-  c₈.size = 759
-
-theorem rigidity_holds : rigidity_condition M24_rigid_triple := by
-  unfold rigidity_condition M24_rigid_triple
-  refine ⟨rfl, rfl, rfl, rfl⟩
+The declarations were removed. The Mathieu group is not formalised in this file. -/
 
 /-! ### Connection to Hopf Counit and Weight Complement -/
-
-/-- The rigid triple sizes match the `GolayWeight.orbitSize` values.
-    Class 8A has 759 elements, equalling the octad orbit size. -/
-theorem rigid_triple_octad_size :
-    let (_, _, c₈) := M24_rigid_triple
-    c₈.size = GolayWeight.w8.orbitSize := by
-  unfold M24_rigid_triple GolayWeight.orbitSize
-  rfl
 
 /-- The complement involution is compatible with ramification:
     the product `e₂ · e₃ = 8` equals `galoisHeightBound` (= 8),
