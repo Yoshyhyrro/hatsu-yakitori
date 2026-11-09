@@ -372,6 +372,15 @@ cabal run shake -- witt
 Additional Shake examples (HDF5)
 
 ```bash
+# Install the generator's Python dependencies (NumPy + h5py; SciPy is not required)
+python -m pip install -r examples/fmm/requirements.txt
+
+# Regenerate the deterministic 1D electrostatic plasma fixture
+python examples/fmm/gen_mock_plasma.py
+
+# Validate an existing fixture without rewriting it
+python examples/fmm/gen_mock_plasma.py --validate examples/fmm/plasma_landau_mock.h5
+
 # Generate JSON header dumps from HDF5 files under the repository (e.g. examples/fmm)
 cabal run shake -- hdf5-scan
 
@@ -386,6 +395,15 @@ Expected outputs / behaviour:
 
 - Output files: `build/hdf5/<name>.json` — contains the `h5dump -H` header output for `data/<name>.h5`.
 - If `h5dump` is missing or fails, the Shake rule prints stderr and fails; install `hdf5-tools` on Debian/Ubuntu.
+
+The fixture generator uses a small periodic particle-in-cell model with
+cloud-in-cell charge deposition and a NumPy spectral Poisson solve. It is
+intended for reproducible examples and CI, not as a production plasma solver.
+The generator tests can be run with:
+
+```bash
+python -m unittest discover -s tests -p test_gen_mock_plasma.py
+```
 
 ## Classroom Demo: One Request, One Response
 

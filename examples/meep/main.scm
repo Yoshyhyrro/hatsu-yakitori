@@ -9,7 +9,6 @@
 ;;;  2. Adaptive update strategy with Quiver analysis
 ;;;  3. Computation reduction with KAK optimization
 ;;;  4. **NEW: Witt design S(5,8,24) symmetry preservation**
-;;;  5. Memory management with Topological GC (optional)
 ;;; ============================================================
 
 (import scheme
@@ -28,20 +27,6 @@
         witt_foundation
         witt_symmetry_explicit
         machine_constants)  ; Galois Height Function supported version
-
-;; Topological GC is conditionally imported (optional feature)
-(cond-expand
-  (topological-gc
-   (import topological-gc))
-  (else
-   ;; Dummy implementation of GC functions
-   (begin
-     (define (make-topological-frontier graph root) #f)
-     (define (topological-gc-collect frontier) (values '() 0))
-     (define (topological-gc-stats frontier) '())
-     (define (set-gc-strategy! s) (void))
-     (define (set-bottleneck-threshold! t) (void))
-     (define (report-gc-regions f) (void)))))
 
 ;;; ================================================================
 ;;; Simulation Configuration (Witt-Enhanced)
@@ -125,11 +110,6 @@
               (set! neighbors (append neighbors witt-neighbors))))
           
           (hash-table-set! graph idx neighbors))))
-    
-    ;; **NEW: Validate that the graph preserves Witt structure**
-    (when *witt-enable-validation*
-      (unless (graph-respects-witt? graph witt-ctx)
-        (printf "WARNING: Graph does not preserve Witt structure!~n")))
     
     graph))
 
@@ -399,7 +379,6 @@
                             (height *default-grid-height*)
                             (steps *default-time-steps*)
                             (source-type 'witt-symmetric)  ; Changed default
-                            (enable-gc #f)
                             (enable-witt #t)  ; **NEW**
                             (verbose #t))
   "MEEP simulation main entry point (Witt-Enhanced)"
@@ -494,7 +473,7 @@
   (let ((grid (make-yee-grid 64 64 1e-12 1e-9 *epsilon-0* *mu-0*))
         (ctx (make-witt-context)))
     (set-witt-symmetric-pulse! grid ctx 1.0)
-    (printf "  Pulse set with M24 symmetry: ✓~n"))
+    (printf "  Pulse applied (M24 symmetry of the pattern is not verified)~n"))
   
   ;; Test 4: Galois Height Function
   (printf "~nTest 4: Galois Height Function~n")
@@ -519,7 +498,6 @@
   (let ((width *default-grid-width*)
         (height *default-grid-height*)
         (steps *default-time-steps*)
-        (enable-gc #f)
         (enable-witt #t)  ; **NEW: Enabled by default**
         (test-mode #f))
     
@@ -530,15 +508,11 @@
     (when (member "--no-witt" args)
       (set! enable-witt #f))
     
-    (when (member "--gc" args)
-      (set! enable-gc #t))
-    
     (when (member "--help" args)
       (printf "Usage: meep [options]~n")
       (printf "Options:~n")
       (printf "  --test-witt   Run Witt integration tests~n")
       (printf "  --no-witt     Disable Witt symmetry~n")
-      (printf "  --gc          Enable topological GC~n")
       (printf "  --help        Show this help~n")
       (exit 0))
     
@@ -553,7 +527,6 @@
                            #:height height
                            #:steps steps
                            #:source-type 'witt-symmetric
-                           #:enable-gc enable-gc
                            #:enable-witt enable-witt
                            #:verbose #t)))))
 
@@ -569,7 +542,6 @@
                        #:height 64
                        #:steps 200
                        #:source-type 'witt-symmetric
-                       #:enable-gc #f
                        #:enable-witt #t
                        #:verbose #t))
 

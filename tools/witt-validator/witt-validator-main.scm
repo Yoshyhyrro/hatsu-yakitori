@@ -9,9 +9,9 @@
 (import cross_validation)
 
 (define (main)
-  "Entry point for witt-validator executable."
-  (run-cross-validation-tests)
-  (exit 0))
+  "Entry point for the witt-validator executable.
+   The exit status is 0 only when every validation phase passed."
+  (exit (if (run-cross-validation-tests) 0 1)))
 
 ;; Run on startup
 (main)

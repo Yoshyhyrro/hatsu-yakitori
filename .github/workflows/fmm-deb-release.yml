@@ -17,6 +17,7 @@ on:
     branches:
       - main
       - 'hotfix/**'
+      - 'bugfix/**'
       - feature/fmm_classroom_rpc_actions
       - feature/example/input_HDF5_fmm-deb-ci
       - 'release/**'
@@ -85,7 +86,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential chicken-bin dpkg-dev apt-utils gnupg haskell-stack libhdf5-dev hdf5-tools
+          sudo apt-get install -y build-essential chicken-bin dpkg-dev apt-utils gnupg haskell-stack libhdf5-dev hdf5-tools python3-numpy python3-h5py
 
       - name: Determine DEB_VERSION/DEB_ARCH/DEB_PACKAGE_NAME
         run: |
@@ -144,18 +145,17 @@ jobs:
       - name: Build Debian package
         run: stack exec shake -- deb-fmm
 
-      - name: Run SBV proof with mock HDF5
-        # hdf5-tools is installed in the environment, so we can check for h5dump and run the proof with a mock HDF5 file if it exists.
-        # Warning is emitted if the mock HDF5 file is missing, but the proof will still run without it (JCL philosophy).
+      - name: Generate plasma HDF5 input
         run: |
           H5="examples/fmm/plasma_landau_mock.h5"
-          if [ -f "$H5" ]; then
-            echo "info[HYK002N]: running sbv-so-fmm with --hdf5 $H5"
-            stack exec shake -- --hdf5 "$H5" sbv-so-fmm
-          else
-            echo "warning[HYK001W]: $H5 not found; running sbv-so-fmm without HDF5 input"
-            stack exec shake -- sbv-so-fmm
-          fi
+          python3 examples/fmm/gen_mock_plasma.py "$H5"
+          h5dump -H "$H5" | grep -q "goppa_grid" || {
+            echo "error[HYK004E]: generated HDF5 file is missing the goppa_grid group"
+            exit 1
+          }
+
+      - name: Run SBV proof with plasma HDF5
+        run: stack exec shake -- --hdf5 examples/fmm/plasma_landau_mock.h5 sbv-so-fmm
 
       - name: Inspect packaged outputs
         run: find dist -type f | sort
