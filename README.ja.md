@@ -257,6 +257,25 @@ cabal run shake -- --module=fmm test
 cabal run shake -- clean
 ```
 
+## 再現可能なプラズマ HDF5 サンプル
+
+`examples/fmm/plasma_landau_mock.h5` は、周期境界条件の1次元静電
+particle-in-cell モックから生成できます。NumPy の FFT を使うため SciPy は不要です。
+
+```bash
+python -m pip install -r examples/fmm/requirements.txt
+python examples/fmm/gen_mock_plasma.py
+
+# 既存ファイルを再生成せずに検証
+python examples/fmm/gen_mock_plasma.py --validate examples/fmm/plasma_landau_mock.h5
+
+# 生成器のテスト
+python -m unittest discover -s tests -p test_gen_mock_plasma.py
+```
+
+この生成器は再現可能な例と CI fixture を目的とした小規模モデルであり、
+本番用のプラズマシミュレーターではありません。
+
 履歴ワークフローで使用されるローカル ビルド出力を設定することもできます。
 
 ```bash
