@@ -215,6 +215,15 @@ def validate_hdf5(filepath: Path) -> None:
                 "HDF5 metadata is missing required attributes: "
                 + ", ".join(missing_attributes)
             )
+        for name in ("k_wave", "noise_amp", "thermal_vel"):
+            if not math.isfinite(float(metadata[name])):
+                raise ValueError(f"HDF5 metadata attribute '{name}' must be finite")
+        if float(metadata["k_wave"]) <= 0.0:
+            raise ValueError("HDF5 metadata contains an invalid wave number")
+        if not 0.0 <= float(metadata["noise_amp"]) < 1.0:
+            raise ValueError("HDF5 metadata contains an invalid noise amplitude")
+        if float(metadata["thermal_vel"]) < 0.0:
+            raise ValueError("HDF5 metadata contains an invalid thermal velocity")
 
         n_grid = int(metadata["n_grid"])
         n_particles = int(metadata["n_particles"])
@@ -224,6 +233,18 @@ def validate_hdf5(filepath: Path) -> None:
             raise ValueError("HDF5 metadata contains invalid grid or box dimensions")
         if not math.isfinite(dt) or dt <= 0.0:
             raise ValueError("HDF5 metadata contains an invalid time step")
+        grid_attributes = h5_file["goppa_grid"].attrs
+        if "cell_width" not in grid_attributes or "n_cells" not in grid_attributes:
+            raise ValueError("goppa_grid is missing cell_width or n_cells metadata")
+        if int(grid_attributes["n_cells"]) != n_grid:
+            raise ValueError("goppa_grid/n_cells does not match metadata/n_grid")
+        if not math.isclose(
+            float(grid_attributes["cell_width"]),
+            box_length / n_grid,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError("goppa_grid/cell_width does not match the periodic grid")
 
         centers = h5_file["goppa_grid/cell_centers"][...]
         cell_indices = h5_file["goppa_grid/particle_cell_index"][...]
@@ -338,7 +359,12 @@ def _write_fixture(
             metadata.attrs["steps"] = parameters.steps
 
             timeseries = h5_file.create_group("timeseries")
-            timeseries.create_dataset("E_field", data=data["E_field"], compression="gzip")
+            electric_field = timeseries.create_dataset(
+                "E_field", data=data["E_field"], compression="gzip"
+            )
+            electric_field.attrs["description"] = (
+                "Signed sine-mode amplitude of the fundamental electric field"
+            )
             timeseries.create_dataset("time", data=data["time"])
 
             trajectories = h5_file.create_group("trajectories")
