@@ -6,12 +6,11 @@ module Main where
 
 import Development.Shake
 import Development.Shake.FilePath
-import Control.Monad (forM_, unless)
+import Control.Monad (forM_)
 import qualified System.Directory as Dir
 
 import Pipeline
 import qualified Clean
-import qualified Rules.GC as GC
 import qualified Rules.DebFMM as DebFMM
 import qualified Rules.Proof.Main as Proof
 import qualified Rules.Proof.LLVM_IR as ProofLLVM
@@ -38,7 +37,6 @@ coreFiles =
     , "modules/kak_physics_core.scm"
     , "modules/kak_optimization.scm"
     , "modules/kak_quiver_safety.scm"
-    , "modules/topological-gc.scm"
     ]
 
 allModules :: [Module]
@@ -91,21 +89,10 @@ defaultCfg = defaultBuildConfig
     { bcCompileFlags = "-O3 -d0"
     , bcBuildDir = "_build"
     , bcDistDir = "dist"
-    , bcGCStrategy = Nothing
     }
 
 wittCfg :: BuildConfig
 wittCfg = defaultCfg { bcCompileFlags = "-O2 -d0" }
-
--- GC strategy variants
-gcGomoryHuCfg :: BuildConfig
-gcGomoryHuCfg = withGCStrategy GC.GomoryHu defaultCfg
-
-gcUltrametricCfg :: BuildConfig
-gcUltrametricCfg = withGCStrategy GC.Ultrametric defaultCfg
-
-gcConnesKreimer :: BuildConfig
-gcConnesKreimer = withGCStrategy GC.ConnesKreimer defaultCfg
 
 -- ============================================================
 -- Main
@@ -132,8 +119,6 @@ main = do
     Diag.summarize diags
 
     withArgs shakeArgsList $ shakeArgs shakeOptions{shakeFiles="_build/", shakeVerbosity=Info} $ do
-        GC.gcRule
-
         Proof.setupProofPhonies hdf5Opt
 
         phony "verify-examples" $ do
@@ -160,23 +145,12 @@ main = do
             phony ("wasm-"  ++ mName) $ Wasm.buildWasm m cfg
             phony mName               $ need ["build-" ++ mName]
 
-            unless (modIsSpecial m) $ do
-                phony ("gc-"            ++ mName) $ gcOptimizedModule           m cfg >> return ()
-                phony ("gc-gomory-"     ++ mName) $ gcOptimizedModuleWith GC.GomoryHu    m cfg >> return ()
-                phony ("gc-ultrametric-"++ mName) $ gcOptimizedModuleWith GC.Ultrametric m cfg >> return ()
-                phony ("gc-connes-"     ++ mName) $ gcOptimizedModuleWith GC.ConnesKreimer m cfg >> return ()
-
         -- Meta-targets
         phony "witt"     $ need ["build-witt-validator"]
         phony "test-witt"$ need ["test-witt-validator"]
         phony "build"    $ need ["build-" ++ modName m | m <- allModules]
         phony "test-all" $ need ["test-"  ++ modName m | m <- allModules]
         phony "test"     $ need ["test-all"]
-
-        phony "gc-all"            $ need ["gc-"             ++ modName m | m <- allModules, not (modIsSpecial m)]
-        phony "gc-gomory-all"     $ need ["gc-gomory-"      ++ modName m | m <- allModules, not (modIsSpecial m)]
-        phony "gc-ultrametric-all"$ need ["gc-ultrametric-" ++ modName m | m <- allModules, not (modIsSpecial m)]
-        phony "gc-connes-all"     $ need ["gc-connes-"      ++ modName m | m <- allModules, not (modIsSpecial m)]
 
         -- Cleanup
         phony "clean"         $ Clean.cleanAll

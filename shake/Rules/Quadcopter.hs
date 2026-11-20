@@ -31,8 +31,7 @@ quadcopterRules cfg = do
               , "core/cartan_utils.scm"
               , "modules/kak_physics_core.scm"
               , "modules/kak_optimization.scm"
-              , "modules/kak_quiver_safety.scm"
-              , "modules/topological-gc.scm" ]
+              , "modules/kak_quiver_safety.scm" ]
     exe <- buildModule m cfg
     putNormal $ "quadcopter built: " ++ (getPath exe)
 
@@ -49,8 +48,7 @@ quadcopterRules cfg = do
               , "core/cartan_utils.scm"
               , "modules/kak_physics_core.scm"
               , "modules/kak_optimization.scm"
-              , "modules/kak_quiver_safety.scm"
-              , "modules/topological-gc.scm" ]
+              , "modules/kak_quiver_safety.scm" ]
     exe <- buildModule m cfg
     putNormal $ "running: " ++ (getPath exe)
     cmd_ (getPath exe)

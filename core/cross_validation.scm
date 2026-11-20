@@ -14,7 +14,6 @@
    ;; --- Cross-Validation Interfaces ---
    validate-golay-witt-consistency
    validate-cartan-witt-alignment
-   validate-gc-topology-witt
    validate-machine-constants-witt
    
    ;; --- Integrated Validation ---
@@ -43,6 +42,12 @@
   (import witt_foundation)
   (import machine_constants)
   
+  (define (bit-count n)
+    "Number of 1-bits of N, computed from its binary string representation.
+     Deliberately independent of golay-weight and of the popcount loops used elsewhere."
+    (length (filter (lambda (c) (char=? c #\1))
+                    (string->list (number->string n 2)))))
+
   ;; ============================================================
   ;; 1. Golay <=> Witt Consistency
   ;; ============================================================
@@ -69,14 +74,20 @@
            (printf "Info: 0x~X -> Codeword: 0x~X (tau=~a)~%" 
                    info codeword weight)
            
-           ;; Verification 1: Weight Consistency
-           (let ((hamming-w (golay-weight codeword)))
-             (if (= weight hamming-w)
-                 (printf "  [OK] Weight match: ~a~%" weight)
-                 (begin
-                   (printf "  [FAIL] Weight mismatch: Golay=~a, Hamming=~a~%" 
-                           weight hamming-w)
-                   (set! all-pass? #f))))
+           ;; Verification 1: the weight reported by golay-weight must agree with an
+           ;; independent bit count and must be a weight of the extended Golay code.
+           (let ((reference-weight (bit-count codeword)))
+             (cond
+              ((not (= weight reference-weight))
+               (printf "  [FAIL] Weight mismatch: golay-weight=~a, bit-count=~a~%"
+                       weight reference-weight)
+               (set! all-pass? #f))
+              ((not (memv weight '(0 8 12 16 24)))
+               (printf "  [FAIL] Weight ~a does not occur in the extended Golay code~%" weight)
+               (set! all-pass? #f))
+              (else
+               (printf "  [OK] Weight ~a agrees with the bit count and is a Golay weight~%"
+                       weight))))
            
            ;; Verification 2: Mode and Witt-level Consistency
            (let* ((expected-mode (if (< weight 12) 'stack 'queue))
@@ -148,36 +159,7 @@
       all-pass?))
   
   ;; ============================================================
-  ;; 3. GC Topology <=> Witt Structure
-  ;; ============================================================
-  
-  (define (validate-gc-topology-witt)
-    "Verify GC topology alignment with Witt geometry."
-    (printf "╔════════════════════════════════════════════════╗~%")
-    (printf "║ GC Topology <=> Witt Consistency Check   ║~%")
-    (printf "╚════════════════════════════════════════════════╝~%~%")
-    
-    (let ((all-pass? #t))
-      (printf "Connes-Kreimer Hopf Algebra Mapping:~%")
-      
-      ;; Primitives <-> Octad Interior
-      (printf "  [OK] Primitives <-> Octad interiors~%")
-      (printf "       - Core GC operations align with octad internal structure.~%")
-      
-      ;; Coproducts <-> Octad Boundary
-      (printf "  [OK] Coproducts <-> Octad boundaries~%")
-      (printf "       - Decomposition operations align with octad boundaries.~%")
-      
-      ;; Lattice Respect
-      (printf "  [OK] Topological GC respects Witt lattice symmetry.~%")
-      
-      ;; Trigger existing verification in the foundation
-      (verify-topological-gc-uses-witt)
-      
-      all-pass?))
-  
-  ;; ============================================================
-  ;; 4. Machine Constants <=> Witt Mathematics
+  ;; 3. Machine Constants <=> Witt Mathematics
   ;; ============================================================
   
   (define (validate-machine-constants-witt)
@@ -225,7 +207,7 @@
       all-pass?))
   
   ;; ============================================================
-  ;; 5. Full System Validation
+  ;; 4. Full System Validation
   ;; ============================================================
   
   (define (full-system-validation)
@@ -241,15 +223,16 @@
       (printf "--- Phase 2: Cartan <=> Witt ---~%")
       (set! results (cons (validate-cartan-witt-alignment 8 4) results))
       
-      (printf "--- Phase 3: GC Topology <=> Witt ---~%")
-      (set! results (cons (validate-gc-topology-witt) results))
-      
-      (printf "--- Phase 4: Machine Constants ---~%")
+      (printf "--- Phase 3: Machine Constants ---~%")
       (set! results (cons (validate-machine-constants-witt) results))
       
-      (printf "--- Phase 5: Witt Foundation Integrity ---~%")
-      (let ((ctx (make-witt-context)))
-        (set! results (cons (validate-witt-structure ctx) results)))
+      (printf "--- Phase 4: Witt Foundation Integrity ---~%")
+      (let* ((ctx (make-witt-context))
+             (structure-ok (validate-witt-structure ctx)))
+        (if structure-ok
+            (printf "  [OK] 759 octads of weight 8 with pairwise intersections <= 4 (Steiner system S(5,8,24))~%")
+            (printf "  [FAIL] The octad system is not the Steiner system S(5,8,24)~%"))
+        (set! results (cons structure-ok results)))
       
       ;; Summary Table
       (printf "~%╔════════════════════════════════════════════════╗~%")
@@ -268,7 +251,7 @@
       (= (length (filter identity results)) (length results))))
 
   ;; ============================================================
-  ;; 6. Diagnostics and Contracts
+  ;; 5. Diagnostics and Contracts
   ;; ============================================================
 
   (define (diagnose-inconsistency module1 module2 symptom)

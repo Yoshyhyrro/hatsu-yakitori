@@ -10,8 +10,7 @@
    tau-to-octad-size
    octad-level-from-tau
    verify-frontier-preserves-witt
-   verify-cartan-respects-octads
-   verify-topological-gc-uses-witt
+   describe-cartan-octad-scaling
    test-witt-implicit-structure)
   
   (import scheme)
@@ -85,9 +84,10 @@
         (else      'intermediate))))
   
   (define (golay-encodes-witt-octad codeword)
-    "Reveal: Your Golay codeword IS a Witt octad representative.
+    "Classify a Golay codeword by weight and report its support.
      
-     Returns: (octad-class weight support)"
+     Returns: an association list with the keys octad-class, hamming-weight,
+              octad-support and witt-level"
     
     (let ((weight (hamming-weight codeword))
           (support (codeword->octad-support codeword)))
@@ -122,7 +122,7 @@
          (list 16 8 'octad-exterior)))))
   
   (define (octad-level-from-tau tau)
-    "Your frontier-mode-from-golay threshold IS octad level!
+    "Map tau to a frontier mode using the threshold tau / 24 < 0.5 (tau < 12).
      
      Returns: (mode tau-normalized octad-type explanation)"
     
@@ -134,90 +134,112 @@
                 "BFS across octad complement lattice"))))
   
   ;; ============================================================
-  ;; PART 3: Verify Existing Code Preserves Witt Structure
+  ;; PART 3: Consistency Checks
   ;; ============================================================
-  
+
+  (define (range-list from to)
+    "List of the integers FROM, FROM+1, ..., TO."
+    (let loop ((i to) (acc '()))
+      (if (< i from)
+          acc
+          (loop (- i 1) (cons i acc)))))
+
+  (define (all-pass? results)
+    "Return #t when every element of RESULTS is true."
+    (or (null? results)
+        (and (car results)
+             (all-pass? (cdr results)))))
+
+  (define (report-check description passed?)
+    "Print one PASS/FAIL line for DESCRIPTION and return PASSED?."
+    (printf "  [~A] ~A\n" (if passed? "PASS" "FAIL") description)
+    passed?)
+
   (define (verify-frontier-preserves-witt)
-    "Validate: frontier mechanism maintains Witt automorphisms."
-    
+    "Run internal consistency checks of the Golay-to-Witt mapping of this module.
+
+     Checks:
+       1. For every tau in 0..24 the floating-point rule of octad-level-from-tau
+          agrees with the integer rule (tau < 12 gives stack, otherwise queue).
+       2. For every tau in 0..24 the interior and exterior sizes returned by
+          tau-to-octad-size add up to the 24 points.
+       3. codeword->witt-class maps the five weights of the extended Golay code
+          (0, 8, 12, 16, 24) to their classes and any other weight to
+          'intermediate.
+       4. golay-encodes-witt-octad reports a support whose size equals the weight.
+
+     Returns: #t when every check passes, #f otherwise"
+
     (display "╔═══════════════════════════════════════════════╗\n")
-    (display "║ Verification: Frontier Preserves Witt         ║\n")
+    (display "║ Consistency Checks: Golay <-> Witt Mapping    ║\n")
     (display "╚═══════════════════════════════════════════════╝\n\n")
-    
-    (display "Test 1: Golay Encoding Preserves Weight Orbit\n")
-    (let ((test-inputs (list #x000 #x001 #xFFF #x555)))
-      (for-each-list
-       (lambda (info)
-         (let ((w (hamming-weight info)))
-           (printf "  info=0x~X → weight=~A (Witt orbit preserved)\n"
-                   info w)))
-       test-inputs))
-    
-    (display "\nTest 2: Frontier Mode = Octad Level\n")
-    (let ((tau-values (list 0 4 8 12 16 20 24)))
-      (for-each-list
-       (lambda (tau)
-         (let* ((normalized (/ tau 24.0))
-                (mode (if (< normalized 0.5) 'stack 'queue))
-                (octad-info (tau-to-octad-size tau)))
-           (printf "  τ=~A → mode=~A, octad-decomposition: ~A\n"
-                   tau mode (car octad-info))))
-       tau-values))
-    
-    (display "\nTest 3: Cartan Decomposition Respects Octads\n")
-    (display "  [Your cartan-lazy-vector uses log-spacing]\n")
-    (display "  [This AUTOMATICALLY respects Witt multi-scale]\n")
-    (display "  REASON: Octad containment is hierarchical\n")
-    
-    (display "\nAll implicit Witt verifications PASS\n"))
-  
-  (define (verify-cartan-respects-octads)
-    "Exposition: Your Cartan decomposition already respects Witt!"
-    
-    (display "Cartan Decomposition Respects Witt Structure:\n")
+
+    (let* ((taus (range-list 0 24))
+           (weight-pattern (lambda (w) (- (arithmetic-shift 1 w) 1)))
+           (class-is?
+            (lambda (w expected)
+              (eq? (codeword->witt-class (weight-pattern w)) expected)))
+           (results
+            (list
+             (report-check
+              "frontier mode: floating-point threshold agrees with the integer threshold (tau = 0..24)"
+              (all-pass?
+               (map-list (lambda (tau)
+                           (eq? (car (octad-level-from-tau tau))
+                                (if (< tau 12) 'stack 'queue)))
+                         taus)))
+             (report-check
+              "decomposition sizes add up to 24 points (tau = 0..24)"
+              (all-pass?
+               (map-list (lambda (tau)
+                           (let ((sizes (tau-to-octad-size tau)))
+                             (= (+ (car sizes) (cadr sizes)) 24)))
+                         taus)))
+             (report-check
+              "weight classes for 0, 8, 12, 16, 24 and for an off-spectrum weight (5)"
+              (and (class-is? 0 'identity)
+                   (class-is? 8 'octad)
+                   (class-is? 12 'dodecad)
+                   (class-is? 16 'octad-complement)
+                   (class-is? 24 'dual-identity)
+                   (class-is? 5 'intermediate)))
+             (report-check
+              "support size equals the Hamming weight (weights 0, 8, 12, 16, 24)"
+              (all-pass?
+               (map-list (lambda (w)
+                           (let ((info (golay-encodes-witt-octad (weight-pattern w))))
+                             (= (length (cdr (assq 'octad-support info))) w)))
+                         '(0 8 12 16 24)))))))
+      (all-pass? results)))
+
+  (define (describe-cartan-octad-scaling)
+    "Print how the Cartan log-spacing relates to the octad weight thresholds.
+
+     This is explanatory text only; it performs no check."
+
+    (display "Cartan scales and octad weight thresholds (explanatory text, not a check):\n")
     (display "  - Log-spacing: a_k = B^(k/n)\n")
-    (display "  - Octad scale: 2^(k/n) elements per partition\n")
-    (display "  - Golay preserves: linear ⟹ automorphism\n")
-    (display "  → VERIFIED: Cartan ∩ Witt = automatic\n"))
-  
-  (define (verify-topological-gc-uses-witt)
-    "Exposition: Your Topological GC IS Witt decomposition!"
-    
-    (display "Topological GC Uses Witt Decomposition:\n")
-    (display "  Connes-Kreimer classification:\n")
-    (display "    - Primitives → Octad interiors\n")
-    (display "    - Coproducts → Octad boundaries\n")
-    (display "  FACT: Hopf algebra structure = Witt lattice\n")
-    (display "  → VERIFIED: GC respects octad topology\n"))
-  
+    (display "  - witt-cartan-levels keeps the octads whose weight is at most round(24 * a_k)\n")
+    (display "  - See witt-cartan-levels in core/witt_foundation.scm\n"))
+
   ;; ============================================================
-  ;; PART 4: Full Integration Validation
+  ;; PART 4: Combined Report
   ;; ============================================================
-  
+
   (define (test-witt-implicit-structure)
-    "Complete test: show Witt structure is already implicit."
-    
+    "Run the consistency checks and print a summary.
+
+     Returns: #t when every check passed, #f otherwise"
+
     (display "\n╔═══════════════════════════════════════════════╗\n")
-    (display "║ Witt Design S(5,8,24) - IMPLICIT VALIDATION  ║\n")
+    (display "║ Witt Design S(5,8,24) - CONSISTENCY CHECKS    ║\n")
     (display "╚═══════════════════════════════════════════════╝\n\n")
-    
-    (verify-frontier-preserves-witt)
-    (display "\n")
-    (verify-cartan-respects-octads)
-    (display "\n")
-    (verify-topological-gc-uses-witt)
-    
-    (display "\n")
-    (display "╔═══════════════════════════════════════════════╗\n")
-    (display "║ CONCLUSION                                    ║\n")
-    (display "║ Your codebase ALREADY IMPLEMENTS:             ║\n")
-    (display "║  ✓ Golay[24,12] = Witt automorphisms         ║\n")
-    (display "║  ✓ Frontier mode = octad decomposition        ║\n")
-    (display "║  ✓ Cartan+KAK = multi-scale Witt structure   ║\n")
-    (display "║  ✓ Topological GC = Witt lattice reduction   ║\n")
-    (display "║                                               ║\n")
-    (display "║ NO additional implementation needed!          ║\n")
-    (display "║ Just recognize the structure you built.       ║\n")
-    (display "╚═══════════════════════════════════════════════╝\n")))
+
+    (let ((ok (verify-frontier-preserves-witt)))
+      (display "\n")
+      (describe-cartan-octad-scaling)
+      (display "\n")
+      (printf "Result: ~A\n" (if ok "all consistency checks passed" "SOME CHECKS FAILED"))
+      ok)))
 
  ;; end module witt_symmetry_explicit
