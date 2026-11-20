@@ -1,0 +1,130 @@
+**Draft — review required / 草稿 — 需要審核**
+
+# Hatsu Yakitori
+
+**Hatsu Yakitori** 是一個實驗性的 Scheme 函式庫，探索 *幾何分解*、*編碼理論* 和 *控制流* 的交集。
+
+它實現了一個自適應演算法邊界，根據 *高雷碼* 資訊比特的熵在 *DFS (棧)* 和 *BFS (佇列)* 策略之間切換。這個邏輯被應用到 KAK (Cartan) 圖分解和高帕網格上的快速多極子方法 (FMM)。
+
+## FMM Debian 套件
+
+Linux 現在有一條獨立的 spin-off release 線，提供 standalone FMM CLI。當前發布的套件是 `hatsu-fmm_0.0.1_amd64.deb`，位於 `fmm-v0.4.1` release 頁面。
+
+https://github.com/Yoshyhyrro/hatsu-yakitori/releases/tag/fmm-v0.4.1
+
+安裝後的路徑：
+
+- 可執行檔：`/usr/bin/hatsu-fmm`
+- 套件說明：`/usr/share/doc/hatsu-fmm/README.Debian`
+
+### 快速開始
+
+```sh
+curl -LO https://github.com/Yoshyhyrro/hatsu-yakitori/releases/download/fmm-v0.4.1/hatsu-fmm_0.0.1_amd64.deb
+sudo apt install ./hatsu-fmm_0.0.1_amd64.deb
+hatsu-fmm --check-env
+hatsu-fmm --check
+```
+
+### 基本命令
+
+```sh
+hatsu-fmm --help
+hatsu-fmm --check-env
+hatsu-fmm --list-caps
+hatsu-fmm --check
+```
+
+`--check-env` 用來確認核心匯入與環境常數是否正常。  
+`--check` 會執行輕量自檢：常數、網格生成、階層生成，以及一次合成 FMM 計算。
+
+`--list-caps` 輸出範例：
+
+```text
+INFO[CAPS001]: command-modes=compute,help,check-env,list-caps,dry-run,benchmark,check,explain
+INFO[CAPS002]: runtime=CHICKEN Scheme
+INFO[CAPS008]: c-abi=not-packaged-in-this-slice
+INFO[CAPS009]: input=generated-or-s-expression-file
+```
+
+`--check-env` 輸出範例：
+
+```text
+INFO[ENV001]: fmm-cli-version=0.1.0
+INFO[ENV002]: machine-epsilon=<platform value>
+INFO[ENV003]: kernel-import=ok, sample-grid-size=8
+INFO[ENV004]: default-near-field-cutoff=0.5
+```
+
+`--check` 輸出範例：
+
+```text
+INFO[CHECK001]: machine-epsilon is available and positive
+INFO[CHECK005]: FMM evaluation returned a numeric complex pair
+INFO[CHECK006]: summary passed=5 failed=0
+```
+
+### 目前限制
+
+- runtime: CHICKEN Scheme  
+- `--threads` 已保留，但目前仍為單執行緒  
+- `--theta` 為了介面穩定性而保留，但求值器仍使用內建 cutoff  
+- 沒有 `--input` 時，CLI 會退回到合成問題  
+- 這個套件不提供 C ABI
+
+## 核心概念
+
+該函式庫建立在三個理論支柱之上：
+
+### 1. 自適應高雷邊界
+
+傳統的圖遍歷演算法通常會選擇特定的資料結構（棧或佇列）。本函式庫引入了 `K-frontier-adaptive`，它根據資訊論動態選擇其模式：
+
+- *低熵（低漢明重量）：* 邊界作為 `Stack`（深度優先搜尋）工作。  
+- *高熵（高漢明重量）：* 邊界作為 `Queue`（廣度優先搜尋）工作。
+
+這允許演算法根據輸入向量 (`info-bits`) 來 "放鬆" 或 "收緊" 搜尋策略。
+
+### 2. KAK (Cartan) 分解
+
+位於 `core/kak_decomposition.scm`。
+
+實現了使用 *Cartan 對數空間係數* 的逐級圖分解演算法。
+
+- **輸入：** 相鄰圖、源節點和邊界 `B`。  
+- **邏輯：** 它使用自適應邊界來傳播距離。邊權重在分解的每一步被 Cartan 係數 (`a_k`) 縮放。  
+- **輸出：** 受分解級別幾何 "曲率" 影響的最短距離雜湊表。
+
+### 3. 高帕網格上的 FMM
+
+位於 `modules/fmm/fmm_on_goppa_grid.scm`。
+
+在稱為 *高帕網格*（分佈在單位圓/複平面上的點）的幾何配置上實現 *快速多極子方法*。
+
+- *P2M / M2L：* 使用複數運算實現 "粒子到多極子" 和 "多極子到局部" 轉譯。  
+- *控制：* 單元格求值的順序（近場 vs. 遠場）由高雷邊界驅動。
+
+## 模組
+
+### Core
+
+- `kak_decomposition.scm`：KAK-apply 和邊界管理的主要邏輯。  
+- `golay_frontier.scm`：（依賴）從 info-bits 計算熵/tau 的邏輯。
+
+### Extensions
+
+- `fmm_on_goppa_grid.scm`：將核心邏輯應用於物理/數學模擬。
+
+## 使用範例
+
+### 執行 KAK 分解
+
+```scheme
+(import kak_decomposition)
+
+;; 定義一個簡單圖
+(define my-graph (alist->hash-table '((A . ((B . 1.0) (C . 2.0)))
+                                      (B . ((D . 1.0)))
+                                      (C . ((D . 5.0)))
+                                      (D . ()))) )
+```
