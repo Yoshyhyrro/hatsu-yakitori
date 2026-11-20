@@ -118,7 +118,11 @@ theorem cellDistance_nonneg (input : FmmInput) (cell : FmmCell) :
     0 ≤ input.cellDistance cell := by
   simp [FmmInput.cellDistance]
 
-/-- Near-field predicate matching the current runtime cutoff style. -/
+/-- Near-field predicate with an absolute distance cutoff.
+    NOTE: the runtime (`fmm_kernel_impl.scm`) now classifies a cell as admissible
+    when `radius / distance < θ`, with the cell radius taken from the cell center.
+    This Lean model still uses the legacy absolute cutoff and has to be aligned
+    together with `FmmTransition`, `step?_transition` and the two oracles. -/
 noncomputable def FmmInput.isNearField (input : FmmInput) (cell : FmmCell) : Prop :=
   input.cellDistance cell < input.config.admissibilityRadius
 
@@ -671,7 +675,12 @@ noncomputable def FmmInput.p2mCoeffs (input : FmmInput) (payload : MultipolePayl
         acc + source.2 * delta ^ k)
       0
 
-/-- M2L coefficients matching the runtime binomial translation. -/
+/-- M2L coefficients matching the runtime binomial translation.
+    The sign `(-1)^j` is attached to the local index `j`, because
+    `1/(u+z)^(k+1) = ∑ⱼ (-1)^j C(j+k,k) z^j / u^(j+k+1)`.
+    Attaching the sign to `k` instead yields the potential of the source
+    distribution mirrored about the cell center; the order-one oracles below
+    cannot detect this, because only the `k = 0` term is present. -/
 noncomputable def FmmInput.m2lCoeffs (_input : FmmInput) (payload : MultipolePayload) :
     List Potential :=
   let zDiff := payload.targetPos - payload.center
@@ -680,7 +689,7 @@ noncomputable def FmmInput.m2lCoeffs (_input : FmmInput) (payload : MultipolePay
       (fun acc k =>
         let coeff := payload.multipoleCoeffs.getD k 0
         let binom : Potential := (Nat.choose (j + k) k : ℂ)
-        let signedBinom := if k % 2 = 0 then binom else -binom
+        let signedBinom := if j % 2 = 0 then binom else -binom
         let factor := signedBinom / (zDiff ^ (j + k + 1))
         acc + coeff * factor)
       0

@@ -4,7 +4,11 @@
   (make-goppa-grid
    local-parameter
    calculate-geometric-center
-   fmm-default-near-field-cutoff
+   fmm-default-theta
+   fmm-default-near-field-cutoff ; deprecated alias of fmm-default-theta
+   calculate-cell-radius
+   cell-admissible?
+   fmm-direct-potential
    cartan-fmm-evaluate
    demo-cartan-fmm)
 

@@ -4,7 +4,7 @@ dist/
 _build/
 _build_test/
 shake/_build/
-shake/Rules/Proof/SExpr.hs
+shake/Rules/Proof/LLVM_IR.hs
 shake/Rules/Proof/Forth.hs
 .stack-work/
 salmonella-logs/
@@ -49,6 +49,7 @@ hatsu-yakitori.install.sh
 # Local debug helpers
 core/gf_test.scm
 core/golay_frontier_tmp_debug.scm
+dist-proof/llvm-ir
 dist-proof/lean4/.tmp_*.lean
 dist-proof/lean4/HatsuYakitori/_test_*.lean
 tools/read_forms.scm

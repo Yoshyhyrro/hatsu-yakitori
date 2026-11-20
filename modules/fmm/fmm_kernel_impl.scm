@@ -1,7 +1,18 @@
-  ;; ------------------------------------------------------------------
+;; ------------------------------------------------------------------
   ;; Math Helpers
   ;; ------------------------------------------------------------------
-  (define fmm-default-near-field-cutoff 0.5)
+  ;; Multipole acceptance ratio theta.  A cell is evaluated with a multipole
+  ;; expansion only when  radius / distance < theta,  where `radius` is the
+  ;; largest distance from the cell center to one of its points and `distance`
+  ;; is the distance from the target to the cell center.  The expansion is a
+  ;; geometric series in radius / distance, so its truncation error at order p
+  ;; decays like theta^p.  Admissible values are 0 <= theta < 1.
+  (define fmm-default-theta 0.5)
+
+  ;; Deprecated alias, kept so that existing exports and callers still link.
+  ;; It used to be an absolute distance that ignored the cell size; it is now
+  ;; the default acceptance ratio.  Prefer `fmm-default-theta`.
+  (define fmm-default-near-field-cutoff fmm-default-theta)
 
   ;; NOTE: Removed incorrect redefinitions of sin, cos, etc.
   ;; Standard Scheme functions handle types correctly and are optimized.
@@ -70,8 +81,11 @@
   (define (frontier-mode-from-golay tau)
     (if (< tau 12) 'stack 'queue))
 
-  (define (make-adaptive-frontier #!optional (info-bits 0))
-    (let* ((codeword (encode-golay24 info-bits))
+  ;; The optional argument INFO-BITS (default 0) is taken from a rest list so that
+  ;; this definition does not depend on CHICKEN's #!optional extension.
+  (define (make-adaptive-frontier . options)
+    (let* ((info-bits (if (null? options) 0 (car options)))
+           (codeword (encode-golay24 info-bits))
            (tau (golay-weight codeword))
            (mode (frontier-mode-from-golay tau)))
       (vector mode
@@ -170,6 +184,34 @@
                     indices)
           (cons (/ (car sum) count) (/ (cdr sum) count)))))
 
+  ;; Largest distance from CENTER to one of the grid points of a cell.
+  (define (calculate-cell-radius grid indices center)
+    (fold (lambda (idx acc)
+            (max acc (c-abs (c-sub (local-parameter grid idx) center))))
+          0.0
+          indices))
+
+  ;; Multipole acceptance test: #t when radius / dist < theta.
+  ;; Written without a division, so a target located at the cell center
+  ;; (dist = 0) is classified as near field instead of dividing by zero.
+  ;; A target that is itself a point of the cell has dist <= radius, hence
+  ;; ratio >= 1 >= theta, and is always routed to the direct sum.
+  (define (cell-admissible? radius dist theta)
+    (< radius (* theta dist)))
+
+  ;; Reference value: direct summation over every grid point but the target.
+  (define (fmm-direct-potential grid charges target-idx)
+    (let ((target-pos (local-parameter grid target-idx))
+          (q (list->vector charges)))
+      (let loop ((idx 0) (acc (cons 0.0 0.0)))
+        (if (= idx (vector-length grid))
+            acc
+            (loop (+ idx 1)
+                  (if (= idx target-idx)
+                      acc
+                      (c-add acc (c-div (cons (vector-ref q idx) 0.0)
+                                        (c-sub target-pos (vector-ref grid idx))))))))))
+
   ;; ------------------------------------------------------------------
   ;; FMM Kernels
   ;; ------------------------------------------------------------------
@@ -194,7 +236,12 @@
         (let ((sum (cons 0.0 0.0)))
           (do ((k 0 (+ k 1))) ((= k order))
             (let* ((binom (exact->inexact (nCk (+ j k) k)))
-                   (sign (if (odd? k) -1.0 1.0))
+                   ;; The sign (-1)^j is attached to the local index j, not to the multipole index k:
+                   ;;   1/(u+z)^(k+1) = sum_j (-1)^j C(j+k,k) z^j / u^(j+k+1),
+                   ;; where u = z-t - z-s.  Attaching the sign to k instead evaluates the
+                   ;; kernel at the source mirrored about the cell center, which agrees
+                   ;; with the true kernel only for the zeroth multipole term.
+                   (sign (if (odd? j) -1.0 1.0))
                    (denom-pow (c-pow z-diff (+ j k 1)))
                    (numerator (cons (* sign binom) 0.0))
                    (factor (c-div numerator denom-pow))
@@ -205,9 +252,29 @@
   ;; ------------------------------------------------------------------
   ;; Frontier-driven FMM Evaluation
   ;; ------------------------------------------------------------------
-  (define (cartan-fmm-evaluate grid hierarchy sources charges target-idx order frontier-info-bits)
-    "Evaluate potential at target-idx using FMM with a local frontier policy."
+  ;; Rejects acceptance ratios outside 0 <= theta < 1, for which the
+  ;; multipole series does not converge.  Returns THETA when it is valid.
+  (define (check-acceptance-ratio theta)
+    (if (and (real? theta) (<= 0 theta) (< theta 1))
+        theta
+        (error "cartan-fmm-evaluate: theta must satisfy 0 <= theta < 1" theta)))
 
+  ;; Evaluates the potential at TARGET-IDX using FMM with a local frontier policy.
+  ;; An optional trailing argument sets the multipole acceptance ratio theta
+  ;; (default: fmm-default-theta).  A cell is expanded only when
+  ;; radius / distance < theta; otherwise it is summed directly.
+  ;; The optional argument is taken from a rest list on purpose: this entry point
+  ;; relies only on standard `define` forms, not on CHICKEN's #!optional extension.
+  (define (cartan-fmm-evaluate grid hierarchy sources charges target-idx order frontier-info-bits
+                               . options)
+    (when (and (pair? options) (pair? (cdr options)))
+      (error "cartan-fmm-evaluate: at most one optional argument (theta) is accepted" options))
+    (cartan-fmm-evaluate/theta
+     grid hierarchy sources charges target-idx order frontier-info-bits
+     (check-acceptance-ratio (if (null? options) fmm-default-theta (car options)))))
+
+  (define (cartan-fmm-evaluate/theta grid hierarchy sources charges target-idx order
+                                     frontier-info-bits theta)
         (let* ((frontier (make-adaptive-frontier frontier-info-bits))
                (target-pos (local-parameter grid target-idx))
                (total-potential (cons 0.0 0.0)))
@@ -219,12 +286,12 @@
 
           (print-frontier-info frontier)
 
-      ;; レベルをフロンティアに追加
+      ;; Seed the frontier with every hierarchy level
          (let ((num-levels (vector-length hierarchy)))
            (do ((i 0 (+ i 1))) ((= i num-levels))
              (set! frontier (adaptive-frontier-push frontier i))))
 
-      ;; フロンティア処理ループ
+      ;; Frontier processing loop
          (let loop ()
            (let-values (((level-idx updated-frontier) (adaptive-frontier-pop frontier)))
              (when level-idx
@@ -234,7 +301,8 @@
                  (unless (null? cell-indices)
                    (let* ((level-center (calculate-geometric-center grid cell-indices))
                           (dist (c-abs (c-sub target-pos level-center)))
-                          (is-near-field (< dist fmm-default-near-field-cutoff)))
+                          (radius (calculate-cell-radius grid cell-indices level-center))
+                          (is-near-field (not (cell-admissible? radius dist theta))))
 
                      (cond
                       ;; Near Field: Direct Sum
@@ -277,16 +345,21 @@
                        (iota 8 1)
                        (iota 8 9)
                        (iota 16 17)
-                       (iota 31 33))))
+                       (iota 31 33)))
+           (reference (fmm-direct-potential grid charges target-idx)))
 
       (printf "\n--- Run 1: Low Entropy (Stack/DFS) ---\n")
       (let ((res1 (cartan-fmm-evaluate
                    grid hierarchy sources charges target-idx order 0)))
-        (printf "Result Potential: ~a + ~ai\n" (car res1) (cdr res1)))
+        (printf "Result Potential: ~a + ~ai\n" (car res1) (cdr res1))
+        (printf "Direct-sum reference: ~a + ~ai (abs error ~a)\n"
+                (car reference) (cdr reference) (c-abs (c-sub res1 reference))))
 
       (printf "\n--- Run 2: High Entropy (Queue/BFS) ---\n")
       (let ((res2 (cartan-fmm-evaluate
                    grid hierarchy sources charges target-idx order #xFFF)))
-        (printf "Result Potential: ~a + ~ai\n" (car res2) (cdr res2)))
+        (printf "Result Potential: ~a + ~ai\n" (car res2) (cdr res2))
+        (printf "Direct-sum reference: ~a + ~ai (abs error ~a)\n"
+                (car reference) (cdr reference) (c-abs (c-sub res2 reference))))
 
       (printf "\n(Processing order differs based on Golay weight)\n")))
